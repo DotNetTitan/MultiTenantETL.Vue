@@ -18,7 +18,12 @@ const lightTheme = {
     error: '#FF5252',
     info: '#2196F3',
     success: '#4CAF50',
-    warning: '#FFC107'
+    warning: '#FFC107',
+    surface: '#FFFFFF',
+    'surface-variant': '#f2f2f2',
+    'on-surface-variant': '#424242',
+    background: '#F5F5F5',
+    'on-background': '#212121'
   }
 }
 
@@ -33,7 +38,10 @@ const darkTheme = {
     success: '#4CAF50',
     warning: '#FFC107',
     background: '#121212',
-    surface: '#212121'
+    surface: '#212121',
+    'surface-variant': '#1e1e1e',
+    'on-surface-variant': '#e0e0e0',
+    'on-background': '#e0e0e0'
   }
 }
 

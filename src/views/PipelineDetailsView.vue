@@ -265,11 +265,9 @@
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Execution Logs</div>
               <v-card
                 variant="outlined"
-                class="log-container"
+                class="app-log-container custom-scrollbar"
               >
-                <v-card-text class="logs pa-2">
-                  <pre>{{ selectedExecution.logs || 'No logs available' }}</pre>
-                </v-card-text>
+                <pre class="app-log-text">{{ selectedExecution.logs || 'No logs available' }}</pre>
               </v-card>
             </v-col>
           </v-row>
@@ -701,6 +699,7 @@ onBeforeUnmount(() => {
 .log-container {
   max-height: 250px;
   overflow-y: auto;
+  border-radius: var(--app-border-radius);
 }
 
 .logs {
@@ -715,5 +714,31 @@ onBeforeUnmount(() => {
   font-weight: bold;
   font-size: 1rem;
   margin-right: 8px;
+}
+
+/* Theme-specific styling */
+:deep(.v-timeline-divider__line) {
+  border-left-width: 2px !important;
+}
+
+:deep(.v-theme--dark .v-timeline-divider__line) {
+  border-left-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+:deep(.v-theme--light .v-timeline-divider__line) {
+  border-left-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+:deep(.v-timeline-item__dot--filled .v-timeline-item__inner-dot) {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.v-card) {
+  border-radius: var(--app-border-radius);
+  transition: all var(--app-transition-speed) ease-in-out;
+}
+
+:deep(.v-card:hover) {
+  box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
 }
 </style>

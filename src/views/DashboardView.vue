@@ -376,10 +376,30 @@ onMounted(() => {
 .status-card {
   transition: all var(--app-transition-speed) ease;
   text-align: center;
+  border-radius: var(--app-border-radius);
 }
 
 .status-card.on-hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(var(--v-theme-on-surface-variant), 0.2);
+  box-shadow: 0 8px 16px rgba(var(--v-theme-on-surface), 0.15);
+}
+
+/* Theme-specific styling */
+:deep(.v-card) {
+  border-radius: var(--app-border-radius);
+  overflow: hidden;
+}
+
+:deep(.v-theme--dark .v-table) {
+  background-color: transparent !important;
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+:deep(.v-theme--dark .status-card) {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+:deep(.v-theme--light .status-card) {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

@@ -793,3 +793,24 @@ onMounted(async () => {
   });
 });
 </script>
+
+<style scoped>
+/* Theme-aware styling */
+:deep(.v-card) {
+  border-radius: var(--app-border-radius);
+  transition: all var(--app-transition-speed) ease;
+}
+
+:deep(.v-dialog > .v-card) {
+  border-radius: var(--app-border-radius);
+  overflow: hidden;
+}
+
+:deep(.v-list-item:hover) {
+  background-color: rgba(var(--v-theme-primary), 0.05);
+}
+
+.execution-row:hover {
+  background-color: rgba(var(--v-theme-primary), 0.05);
+}
+</style>

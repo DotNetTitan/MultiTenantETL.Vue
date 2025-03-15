@@ -112,6 +112,7 @@
         <v-banner
           :color="getStatusColor(selectedExecution.status)"
           class="execution-header pa-4 pb-6"
+          elevation="1"
         >
           <template v-slot:prepend>
             <v-avatar
@@ -152,7 +153,7 @@
         </v-banner>
 
         <!-- Content with tabs - KEEP AS IS -->
-        <v-tabs v-model="activeTab" bg-color="grey-lighten-4" class="execution-tabs">
+        <v-tabs v-model="activeTab" :bg-color="theme.global.current.value.dark ? 'grey-darken-3' : 'grey-lighten-4'" class="execution-tabs">
           <v-tab value="overview" class="px-6">Overview</v-tab>
           <v-tab value="logs" class="px-6">Logs</v-tab>
           <v-tab value="timeline" class="px-6">Timeline</v-tab>
@@ -266,7 +267,7 @@
             </v-card-text>
           </v-window-item>
           
-          <!-- Logs Tab - KEEP AS IS -->
+          <!-- Logs Tab -->
           <v-window-item value="logs">
             <v-card-text>
               <div class="d-flex align-center mb-3">
@@ -286,11 +287,9 @@
               
               <v-card
                 variant="outlined"
-                class="log-container"
+                class="logs-container custom-scrollbar"
               >
-                <v-card-text class="logs pa-2 bg-grey-darken-4">
-                  <pre class="log-text">{{ selectedExecution.logs || 'No logs available' }}</pre>
-                </v-card-text>
+                <pre class="logs-content">{{ selectedExecution.logs || 'No logs available' }}</pre>
               </v-card>
             </v-card-text>
           </v-window-item>
@@ -309,7 +308,7 @@
               </div>
               
               <!-- Added scrollable container -->
-              <div v-else class="timeline-scrollable-container">
+              <div v-else class="timeline-scrollable-container custom-scrollbar">
                 <v-timeline side="end" line-color="grey-lighten-1" class="timeline-container">
                   <v-timeline-item
                     v-for="(step, index) in getExecutionSteps()"
@@ -318,13 +317,13 @@
                     :size="step.important ? 'x-small' : 'x-small'"
                     :icon="step.important ? step.icon : undefined"
                     :icon-color="step.important ? 'white' : undefined"
-                    class="timeline-item"
+                    class="app-timeline-item"
                   >
                     <template v-slot:opposite>
                       <div class="text-caption text-grey timeline-time">{{ formatTimelineTime(step.time) }}</div>
                     </template>
                     
-                    <v-card variant="outlined" :color="step.color + '-lighten-5'" class="timeline-card" density="compact">
+                    <v-card variant="outlined" :color="step.color + '-lighten-5'" class="app-timeline-card" density="compact">
                       <v-card-title class="text-subtitle-2 pb-1 pt-2 px-3 d-flex align-center">
                         <v-icon :color="step.color" size="small" class="mr-2">
                           {{ step.icon }}
@@ -393,8 +392,10 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
+import { useTheme } from 'vuetify';
 
 const tenantStore = useTenantStore();
+const theme = useTheme();
 
 // Data table
 const headers = [
@@ -852,22 +853,51 @@ onBeforeUnmount(() => {
   color: #e0e0e0;
 }
 
+/* Update the execution-header styles */
 .execution-header {
   position: relative;
   overflow: hidden;
-  z-index: 2; /* Ensure banner is above tabs */
-  margin-bottom: -8px; /* Pull tabs up slightly to avoid gap */
+  z-index: 2;
+  margin-bottom: -8px;
+  border-radius: var(--app-border-radius) var(--app-border-radius) 0 0;
 }
 
+/* Remove the custom gradient overlay */
 .execution-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0));
-  pointer-events: none;
+  content: none;
+}
+
+/* Ensure text is visible in both themes */
+:deep(.execution-header) {
+  background: rgb(var(--v-theme-primary));
+}
+
+:deep(.execution-header .v-banner__text),
+:deep(.execution-header .text-subtitle-2),
+:deep(.execution-header .text-h5) {
+  color: rgb(var(--v-theme-on-primary)) !important;
+}
+
+/* Update status avatar styles for better contrast */
+.status-avatar {
+  background-color: rgba(var(--v-theme-on-primary), 0.1);
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(var(--v-theme-on-primary), 0.2);
+  position: relative;
+  z-index: 3;
+}
+
+/* Update cancel button styles to match theme */
+.cancel-btn {
+  background-color: rgba(var(--v-theme-on-primary), 0.1) !important;
+  color: rgb(var(--v-theme-on-primary)) !important;
+  backdrop-filter: blur(5px);
+  position: relative;
+  z-index: 3;
+}
+
+.cancel-btn:hover {
+  background-color: rgba(var(--v-theme-on-primary), 0.2) !important;
 }
 
 /* New styles */
@@ -949,16 +979,6 @@ onBeforeUnmount(() => {
   border-left-width: 2px !important;
 }
 
-.timeline-card {
-  transition: transform 0.2s;
-  margin-left: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.timeline-card:hover {
-  transform: translateX(4px);
-}
-
 .timeline-title {
   word-break: break-word; /* Prevent long titles from overflowing */
   line-height: 1.4;
@@ -997,5 +1017,115 @@ onBeforeUnmount(() => {
 .timeline-scrollable-container {
   max-height: 400px;
   overflow-y: auto;
+  border-radius: var(--app-border-radius);
+}
+
+/* Theme-specific styling */
+:deep(.v-theme--dark .v-timeline-divider__line) {
+  border-left-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+:deep(.v-theme--light .v-timeline-divider__line) {
+  border-left-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Updated logs styling for better light/dark mode support */
+.logs-container {
+  max-height: 450px;
+  overflow-y: auto;
+  border-radius: var(--app-border-radius);
+  font-family: 'Consolas', 'Monaco', monospace;
+  white-space: pre-wrap;
+  font-size: 13px;
+  padding: 0;
+  border: 1px solid;
+}
+
+.logs-content {
+  padding: 16px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+:deep(.v-theme--dark .logs-container) {
+  background-color: #1e1e1e;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+:deep(.v-theme--dark .logs-content) {
+  color: #e0e0e0;
+}
+
+:deep(.v-theme--light .logs-container) {
+  background-color: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+:deep(.v-theme--light .logs-content) {
+  color: #333333;
+}
+
+/* Ensure timeline items have better contrast in light mode */
+:deep(.v-theme--light .app-timeline-card) {
+  background-color: #f9f9f9 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+:deep(.v-theme--light .timeline-title) {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+:deep(.v-theme--light .timeline-description) {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+:deep(.v-theme--dark .app-timeline-card) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Make execution dialog consistent between themes */
+:deep(.v-dialog > .v-card) {
+  border-radius: var(--app-border-radius);
+  overflow: hidden;
+}
+
+:deep(.v-banner) {
+  position: relative;
+}
+
+:deep(.v-banner::before) {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(0,0,0,0.2), rgba(0,0,0,0));
+  pointer-events: none;
+}
+
+/* Fix tab colors for light mode */
+:deep(.v-theme--light .v-tabs) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+:deep(.v-theme--dark .v-tabs) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+:deep(.v-tab) {
+  opacity: 0.7;
+}
+
+:deep(.v-tab--selected) {
+  opacity: 1;
+}
+
+:deep(.v-theme--light .v-tab--selected) {
+  color: var(--v-theme-primary);
+}
+
+:deep(.v-window-item) {
+  padding-top: 16px;
 }
 </style>
