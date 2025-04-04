@@ -8,9 +8,17 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v2
-    - id: Build-Vue
-      uses: xRealNeon/VuePagesAction@1.0.1
+    - name: Setup Node
+      uses: actions/setup-node@v2
       with:
-        username: 'DotNetTitan'
-        reponame: 'MultiTenantETL.Vue'
+        node-version: '18'
+    - name: Install Dependencies
+      run: npm install
+    - name: Build
+      run: npm run build
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: gh-pages
+        folder: dist
         token: ${{ secrets.GITHUB_TOKEN }}

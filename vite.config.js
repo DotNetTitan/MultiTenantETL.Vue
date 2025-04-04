@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/MultiTenantETL.Vue/',  // Add this line
   plugins: [
     vue(),
   ],
