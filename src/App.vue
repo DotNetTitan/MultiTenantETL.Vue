@@ -104,7 +104,7 @@
             </v-btn>
           </div>
           <div class="px-2 py-1 text-center text-caption text-disabled">
-            v1.2.0 • © 2025 Cascade ETL
+            v1.2.0 • © 2025 ETL Portal
           </div>
         </template>
       </v-navigation-drawer>
