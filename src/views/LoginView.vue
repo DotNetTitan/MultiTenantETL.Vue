@@ -6,21 +6,27 @@
           Multi-Tenant ETL Platform
         </v-card-title>
         <v-card-text>
-          <v-form @submit.prevent="handleLogin">
-            <v-text-field
+          <v-form @submit.prevent="handleLogin" :disabled="authStore.loading">
+            <FormInput
               v-model="username"
               label="Username"
               prepend-icon="mdi-account"
-              variant="outlined"
-              :error-messages="usernameError"
+              :error-messages="errors.username"
+              @update:model-value="validateField('username', $event, [required])"
             />
-            <v-text-field
+            <FormInput
               v-model="password"
               label="Password"
-              prepend-icon="mdi-lock"
               type="password"
-              variant="outlined"
-              :error-messages="passwordError"
+              prepend-icon="mdi-lock"
+              :error-messages="errors.password"
+              @update:model-value="validateField('password', $event, [required, minLength(6)])"
+            />
+            <v-checkbox
+              v-model="rememberMe"
+              label="Remember me"
+              class="mt-2"
+              hide-details
             />
             <v-alert
               v-if="authStore.error"
@@ -39,6 +45,7 @@
             block
             @click="handleLogin"
             :loading="authStore.loading"
+            :disabled="authStore.loading"
           >
             Login
           </v-btn>
@@ -51,39 +58,27 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useFormValidation, required, minLength } from '@/composables/useFormValidation';
+import FormInput from '@/components/form/FormInput.vue';
 
 const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
-const usernameError = ref('');
-const passwordError = ref('');
-
-function validateForm() {
-  let isValid = true;
-  
-  // Reset errors
-  usernameError.value = '';
-  passwordError.value = '';
-  
-  if (!username.value) {
-    usernameError.value = 'Username is required';
-    isValid = false;
-  }
-  
-  if (!password.value) {
-    passwordError.value = 'Password is required';
-    isValid = false;
-  }
-  
-  return isValid;
-}
+const rememberMe = ref(false);
+const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 
 async function handleLogin() {
-  if (!validateForm()) return;
-  
+  const isValid = validateForm({
+    username: { value: username.value, rules: [required] },
+    password: { value: password.value, rules: [required, minLength(6)] }
+  });
+
+  if (!isValid) return;
+
   await authStore.login({
     username: username.value,
-    password: password.value
+    password: password.value,
+    rememberMe: rememberMe.value
   });
 }
 </script>
