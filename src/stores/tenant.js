@@ -17,8 +17,33 @@ export const useTenantStore = defineStore('tenant', () => {
     try {
       loading.value = true
       error.value = null
-      const response = await axios.get('/api/tenants')
-      tenants.value = response.data
+
+      // Mock data instead of API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      tenants.value = [
+        {
+          id: '1',
+          name: 'Acme Corporation',
+          identifier: 'acme',
+          description: 'A multinational company producing various products',
+          isActive: true
+        },
+        {
+          id: '2',
+          name: 'Globex Corporation',
+          identifier: 'globex',
+          description: 'Electronics manufacturing company',
+          isActive: true
+        },
+        {
+          id: '3',
+          name: 'Initech',
+          identifier: 'initech',
+          description: 'Software company',
+          isActive: true
+        }
+      ]
       
       // Set first tenant as default if none selected and user has access to tenants
       if (!currentTenantId.value && tenants.value.length > 0) {
@@ -36,9 +61,15 @@ export const useTenantStore = defineStore('tenant', () => {
     try {
       loading.value = true
       error.value = null
-      const response = await axios.post('/api/tenants', tenantData)
-      tenants.value.push(response.data)
-      return response.data
+      
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const newTenant = {
+        ...tenantData,
+        id: Math.random().toString(36).substring(2, 15)
+      }
+      tenants.value.push(newTenant)
+      return newTenant
     } catch (err) {
       console.error('Error creating tenant:', err)
       error.value = 'Failed to create tenant'

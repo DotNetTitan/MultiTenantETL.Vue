@@ -1,14 +1,14 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Tenants</h1>
+      <h1 class="text-h4 mr-4">Users</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
         prepend-icon="mdi-plus" 
         @click="showCreateDialog = true"
       >
-        Create Tenant
+        Create User
       </v-btn>
     </div>
 
@@ -18,12 +18,12 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              label="Search Tenants"
+              label="Search Users"
               prepend-inner-icon="mdi-magnify"
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchTenants"
+              @update:model-value="fetchUsers"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -34,7 +34,7 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchTenants"
+              @update:model-value="fetchUsers"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -45,14 +45,14 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchTenants"
+              @update:model-value="fetchUsers"
             />
           </v-col>
         </v-row>
 
         <v-data-table
           :headers="headers"
-          :items="tenants"
+          :items="users"
           :loading="loading"
           :items-per-page="10"
           class="mt-2"
@@ -66,6 +66,15 @@
               {{ item.isActive ? 'Active' : 'Inactive' }}
             </v-chip>
           </template>
+          <template v-slot:item.role="{ item }">
+            <v-chip
+              :color="getRoleColor(item.role)"
+              text-color="white"
+              size="small"
+            >
+              {{ item.role }}
+            </v-chip>
+          </template>
           <template v-slot:item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
@@ -74,8 +83,8 @@
               icon
               variant="text"
               size="small"
-              @click="editTenant(item)"
-              title="Edit tenant"
+              @click="editUser(item)"
+              title="Edit user"
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -85,8 +94,8 @@
               variant="text"
               size="small"
               color="success"
-              @click="toggleTenantStatus(item)"
-              title="Activate tenant"
+              @click="toggleUserStatus(item)"
+              title="Activate user"
             >
               <v-icon>mdi-check</v-icon>
             </v-btn>
@@ -96,8 +105,8 @@
               variant="text"
               size="small"
               color="warning"
-              @click="toggleTenantStatus(item)"
-              title="Deactivate tenant"
+              @click="toggleUserStatus(item)"
+              title="Deactivate user"
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
@@ -107,7 +116,7 @@
               size="small"
               color="error"
               @click="confirmDelete(item)"
-              title="Delete tenant"
+              title="Delete user"
               :disabled="item.isActive"
             >
               <v-icon>mdi-delete</v-icon>
@@ -117,7 +126,7 @@
       </v-card-text>
     </v-card>
 
-    <!-- Create/Edit Tenant Dialog -->
+    <!-- Create/Edit User Dialog -->
     <v-dialog
       v-model="showCreateDialog"
       max-width="600px"
@@ -125,57 +134,51 @@
     >
       <v-card>
         <v-card-title>
-          {{ editedTenant.id ? 'Edit Tenant' : 'Create Tenant' }}
+          {{ editedUser.id ? 'Edit User' : 'Create User' }}
         </v-card-title>
         <v-card-text>
-          <v-form ref="form" @submit.prevent="saveTenant">
+          <v-form ref="form" @submit.prevent="saveUser">
             <v-row>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="editedTenant.name"
-                  label="Tenant Name"
+                  v-model="editedUser.firstName"
+                  label="First Name"
                   required
-                  :rules="[v => !!v || 'Name is required']"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="editedTenant.identifier"
-                  label="Identifier"
-                  required
-                  :rules="[
-                    v => !!v || 'Identifier is required',
-                    v => /^[a-z0-9-]+$/.test(v) || 'Identifier can only contain lowercase letters, numbers, and hyphens'
-                  ]"
-                  hint="Used as subdomain and in API requests"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="editedTenant.description"
-                  label="Description"
-                  rows="2"
+                  :rules="[v => !!v || 'First name is required']"
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="editedTenant.contactName"
-                  label="Contact Name"
+                  v-model="editedUser.lastName"
+                  label="Last Name"
+                  required
+                  :rules="[v => !!v || 'Last name is required']"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="editedUser.email"
+                  label="Email"
+                  type="email"
+                  required
+                  :rules="[
+                    v => !!v || 'Email is required',
+                    v => /.+@.+\..+/.test(v) || 'Email must be valid'
+                  ]"
                 />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedTenant.contactEmail"
-                  label="Contact Email"
-                  :rules="[
-                    v => !v || /.+@.+\..+/.test(v) || 'Email must be valid'
-                  ]"
+                <v-select
+                  v-model="editedUser.role"
+                  label="Role"
+                  :items="roles"
+                  required
+                  :rules="[v => !!v || 'Role is required']"
                 />
               </v-col>
               <v-col cols="12">
                 <v-switch
-                  v-model="editedTenant.isActive"
+                  v-model="editedUser.isActive"
                   label="Active"
                   color="success"
                   hide-details
@@ -194,8 +197,8 @@
           </v-btn>
           <v-btn
             color="primary"
-            @click="saveTenant"
-            :loading="savingTenant"
+            @click="saveUser"
+            :loading="savingUser"
           >
             Save
           </v-btn>
@@ -210,10 +213,10 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          Delete Tenant
+          Delete User
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete the tenant "{{ tenantToDelete?.name }}"? This action cannot be undone and all associated data will be permanently deleted.
+          Are you sure you want to delete the user "{{ userToDelete?.firstName }} {{ userToDelete?.lastName }}"? This action cannot be undone.
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -225,8 +228,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="deleteTenant"
-            :loading="deletingTenant"
+            @click="deleteUser"
+            :loading="deletingUser"
           >
             Delete
           </v-btn>
@@ -238,19 +241,19 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 // Data table
 const headers = [
   { title: 'Name', key: 'name' },
-  { title: 'Identifier', key: 'identifier' },
-  { title: 'Description', key: 'description' },
+  { title: 'Email', key: 'email' },
+  { title: 'Role', key: 'role', width: '120px' },
   { title: 'Status', key: 'status', width: '120px' },
   { title: 'Created', key: 'createdAt', width: '150px' },
-  { title: 'Contact', key: 'contactName' },
   { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
 ];
 
@@ -270,29 +273,29 @@ const sortOptions = ref([
   { title: 'Created (Oldest)', value: 'created_asc' }
 ]);
 
-// Tenant data
-const tenants = ref([]);
+// User data
+const users = ref([]);
+const roles = ['Admin', 'Manager', 'User'];
 const loading = ref(false);
-const savingTenant = ref(false);
-const deletingTenant = ref(false);
+const savingUser = ref(false);
+const deletingUser = ref(false);
 
 // Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
-const tenantToDelete = ref(null);
+const userToDelete = ref(null);
 
 // Form data
 const form = ref(null);
-const editedTenant = ref(createEmptyTenant());
+const editedUser = ref(createEmptyUser());
 
-function createEmptyTenant() {
+function createEmptyUser() {
   return {
     id: null,
-    name: '',
-    identifier: '',
-    description: '',
-    contactName: '',
-    contactEmail: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: 'User',
     isActive: true
   };
 }
@@ -303,7 +306,18 @@ function formatDate(dateString) {
   return date.toLocaleString();
 }
 
-async function fetchTenants() {
+function getRoleColor(role) {
+  switch (role) {
+    case 'Admin':
+      return 'deep-purple';
+    case 'Manager':
+      return 'indigo';
+    default:
+      return 'blue';
+  }
+}
+
+async function fetchUsers() {
   try {
     loading.value = true;
     
@@ -311,79 +325,75 @@ async function fetchTenants() {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // Mock data
-    tenants.value = [
+    users.value = [
       {
         id: '1',
-        name: 'Acme Corporation',
-        identifier: 'acme',
-        description: 'A multinational company producing various products',
-        contactName: 'John Smith',
-        contactEmail: 'john.smith@acme.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        role: 'Admin',
         isActive: true,
         createdAt: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: '2',
-        name: 'Globex Corporation',
-        identifier: 'globex',
-        description: 'Electronics manufacturing company',
-        contactName: 'Jane Doe',
-        contactEmail: 'jane.doe@globex.com',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'jane.smith@example.com',
+        role: 'Manager',
         isActive: true,
         createdAt: new Date(Date.now() - 80 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: '3',
-        name: 'Soylent Corp',
-        identifier: 'soylent',
-        description: 'Food production company',
-        contactName: 'Bob Johnson',
-        contactEmail: 'bob.johnson@soylent.com',
+        firstName: 'Bob',
+        lastName: 'Johnson',
+        email: 'bob.johnson@example.com',
+        role: 'User',
         isActive: false,
         createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: '4',
-        name: 'Initech',
-        identifier: 'initech',
-        description: 'Software company specializing in finance',
-        contactName: 'Michael Bolton',
-        contactEmail: 'michael.bolton@initech.com',
+        firstName: 'Alice',
+        lastName: 'Williams',
+        email: 'alice.williams@example.com',
+        role: 'User',
         isActive: true,
         createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString()
       },
       {
         id: '5',
-        name: 'Umbrella Corporation',
-        identifier: 'umbrella',
-        description: 'Pharmaceutical company',
-        contactName: 'Albert Wesker',
-        contactEmail: 'albert.wesker@umbrella.com',
+        firstName: 'Mike',
+        lastName: 'Brown',
+        email: 'mike.brown@example.com',
+        role: 'Manager',
         isActive: true,
         createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
       }
-    ];
+    ].map(user => ({
+      ...user,
+      name: `${user.firstName} ${user.lastName}`
+    }));
     
     // Apply filters
     if (search.value) {
       const searchLower = search.value.toLowerCase();
-      tenants.value = tenants.value.filter(t => 
-        t.name.toLowerCase().includes(searchLower) || 
-        t.identifier.toLowerCase().includes(searchLower) ||
-        t.description.toLowerCase().includes(searchLower) ||
-        (t.contactName && t.contactName.toLowerCase().includes(searchLower)) ||
-        (t.contactEmail && t.contactEmail.toLowerCase().includes(searchLower))
+      users.value = users.value.filter(u => 
+        u.name.toLowerCase().includes(searchLower) || 
+        u.email.toLowerCase().includes(searchLower) ||
+        u.role.toLowerCase().includes(searchLower)
       );
     }
     
     if (statusFilter.value !== 'All') {
       const isActive = statusFilter.value === 'Active';
-      tenants.value = tenants.value.filter(t => t.isActive === isActive);
+      users.value = users.value.filter(u => u.isActive === isActive);
     }
     
     // Apply sorting
     const [field, direction] = sortBy.value.split('_');
-    tenants.value.sort((a, b) => {
+    users.value.sort((a, b) => {
       let aVal = a[field];
       let bVal = b[field];
       
@@ -399,97 +409,97 @@ async function fetchTenants() {
       }
     });
   } catch (error) {
-    console.error('Error fetching tenants:', error);
+    console.error('Error fetching users:', error);
   } finally {
     loading.value = false;
   }
 }
 
-function editTenant(tenant) {
-  // Clone the tenant to avoid modifying the original directly
-  editedTenant.value = JSON.parse(JSON.stringify(tenant));
+function editUser(user) {
+  editedUser.value = {
+    ...user,
+    firstName: user.firstName,
+    lastName: user.lastName
+  };
   showCreateDialog.value = true;
 }
 
-async function toggleTenantStatus(tenant) {
+async function toggleUserStatus(user) {
   try {
     loading.value = true;
     
-    // In a real app, this would be an actual API call
-    // await axios.put(`/api/tenants/${tenant.id}/toggle-status`);
-    
-    // For now, using simulated response
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // Update local state
-    tenant.isActive = !tenant.isActive;
+    user.isActive = !user.isActive;
   } catch (error) {
-    console.error('Error toggling tenant status:', error);
+    console.error('Error toggling user status:', error);
   } finally {
     loading.value = false;
   }
 }
 
-function confirmDelete(tenant) {
-  tenantToDelete.value = tenant;
+function confirmDelete(user) {
+  userToDelete.value = user;
   showDeleteDialog.value = true;
 }
 
-async function deleteTenant() {
+async function deleteUser() {
   try {
-    deletingTenant.value = true;
+    deletingUser.value = true;
     
-    // In a real app, this would be an actual API call
-    // await axios.delete(`/api/tenants/${tenantToDelete.value.id}`);
-    
-    // For now, using simulated response
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Remove from local array
-    const index = tenants.value.findIndex(t => t.id === tenantToDelete.value.id);
+    const index = users.value.findIndex(u => u.id === userToDelete.value.id);
     if (index !== -1) {
-      tenants.value.splice(index, 1);
+      users.value.splice(index, 1);
     }
     
     showDeleteDialog.value = false;
-    tenantToDelete.value = null;
+    userToDelete.value = null;
   } catch (error) {
-    console.error('Error deleting tenant:', error);
+    console.error('Error deleting user:', error);
   } finally {
-    deletingTenant.value = false;
+    deletingUser.value = false;
   }
 }
 
-async function saveTenant() {
+async function saveUser() {
   try {
-    savingTenant.value = true;
+    savingUser.value = true;
     
-    // In a real app, this would be an actual API call
-    // const response = await axios.post('/api/tenants', editedTenant.value);
-    
-    // For now, using simulated response
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // If it's a new tenant, add an ID and created date
-    if (!editedTenant.value.id) {
-      editedTenant.value.id = Math.random().toString(36).substring(2, 15);
-      editedTenant.value.createdAt = new Date().toISOString();
+    // If it's a new user, add an ID and created date
+    if (!editedUser.value.id) {
+      editedUser.value.id = Math.random().toString(36).substring(2, 15);
+      editedUser.value.createdAt = new Date().toISOString();
     }
     
+    // Add computed name field
+    const userData = {
+      ...editedUser.value,
+      name: `${editedUser.value.firstName} ${editedUser.value.lastName}`
+    };
+    
     // Update or add to the local array
-    const index = tenants.value.findIndex(t => t.id === editedTenant.value.id);
+    const index = users.value.findIndex(u => u.id === userData.id);
     if (index !== -1) {
-      tenants.value[index] = { ...editedTenant.value };
+      users.value[index] = userData;
     } else {
-      tenants.value.push({ ...editedTenant.value });
+      users.value.push(userData);
     }
     
     showCreateDialog.value = false;
-    editedTenant.value = createEmptyTenant();
+    editedUser.value = createEmptyUser();
   } catch (error) {
-    console.error('Error saving tenant:', error);
+    console.error('Error saving user:', error);
   } finally {
-    savingTenant.value = false;
+    savingUser.value = false;
   }
 }
 
@@ -500,6 +510,6 @@ onMounted(async () => {
     return;
   }
   
-  await fetchTenants();
+  await fetchUsers();
 });
 </script>

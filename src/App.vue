@@ -81,13 +81,6 @@
             <v-list-item to="/users" prepend-icon="mdi-account-group" title="Users" rounded="lg" />
             <v-list-item to="/settings" prepend-icon="mdi-cog" title="Settings" rounded="lg" />
           </template>
-          
-          <!-- TOOLS section -->
-          <v-list-subheader>TOOLS</v-list-subheader>
-          
-          <v-list-item to="/reports" prepend-icon="mdi-chart-bar" title="Reports" rounded="lg" />
-          <v-list-item to="/logs" prepend-icon="mdi-text-box-search" title="Logs" rounded="lg" />
-          <v-list-item to="/scheduler" prepend-icon="mdi-calendar-clock" title="Scheduler" rounded="lg" />
         </v-list>
         
         <template v-slot:append>
