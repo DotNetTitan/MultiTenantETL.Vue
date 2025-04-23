@@ -14,41 +14,19 @@
 
     <v-card>
       <v-card-text>
-        <v-row>
-          <v-col cols="12" md="4">
-            <v-text-field
-              v-model="search"
-              label="Search Tenants"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchTenants"
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="statusFilter"
-              label="Status"
-              :items="statusOptions"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchTenants"
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="sortBy"
-              label="Sort By"
-              :items="sortOptions"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchTenants"
-            />
-          </v-col>
-        </v-row>
+        <TableFilters
+          search-label="Search Tenants"
+          v-model:search="search"
+          :filters="[{
+            key: 'status',
+            label: 'Status',
+            items: statusOptions,
+            cols: 3
+          }]"
+          :sort-options="sortOptions"
+          @filter="handleFilter"
+          @sort="handleSort"
+        />
 
         <v-data-table
           :headers="headers"
@@ -124,71 +102,21 @@
       persistent
     >
       <v-card>
-        <v-card-title>
+        <v-card-title class="text-h5 pa-4">
           {{ editedTenant.id ? 'Edit Tenant' : 'Create Tenant' }}
         </v-card-title>
-        <v-card-text>
-          <v-form ref="form" @submit.prevent="saveTenant">
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="editedTenant.name"
-                  label="Tenant Name"
-                  required
-                  :rules="[v => !!v || 'Name is required']"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="editedTenant.identifier"
-                  label="Identifier"
-                  required
-                  :rules="[
-                    v => !!v || 'Identifier is required',
-                    v => /^[a-z0-9-]+$/.test(v) || 'Identifier can only contain lowercase letters, numbers, and hyphens'
-                  ]"
-                  hint="Used as subdomain and in API requests"
-                  persistent-hint
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="editedTenant.description"
-                  label="Description"
-                  rows="2"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedTenant.contactName"
-                  label="Contact Name"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedTenant.contactEmail"
-                  label="Contact Email"
-                  :rules="[
-                    v => !v || /.+@.+\..+/.test(v) || 'Email must be valid'
-                  ]"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-switch
-                  v-model="editedTenant.isActive"
-                  label="Active"
-                  color="success"
-                  hide-details
-                />
-              </v-col>
-            </v-row>
-          </v-form>
+        <v-card-text class="pa-4">
+          <TenantForm
+            v-model:tenant="editedTenant"
+            @submit="saveTenant"
+          />
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
             variant="text"
-            @click="showCreateDialog = false"
+            @click="closeCreateDialog"
+            :disabled="savingTenant"
           >
             Cancel
           </v-btn>
@@ -204,43 +132,28 @@
     </v-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog
-      v-model="showDeleteDialog"
-      max-width="400px"
+    <ConfirmationDialog
+      v-model:show="showDeleteDialog"
+      title="Delete Tenant"
+      confirm-text="Delete"
+      confirm-color="error"
+      :loading="deletingTenant"
+      @confirm="deleteTenant"
     >
-      <v-card>
-        <v-card-title class="text-h5">
-          Delete Tenant
-        </v-card-title>
-        <v-card-text>
-          Are you sure you want to delete the tenant "{{ tenantToDelete?.name }}"? This action cannot be undone and all associated data will be permanently deleted.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            @click="showDeleteDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            @click="deleteTenant"
-            :loading="deletingTenant"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      Are you sure you want to delete the tenant "{{ tenantToDelete?.name }}"? This action cannot be undone and all associated data will be permanently deleted.
+    </ConfirmationDialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import TenantForm from '@/components/tenants/TenantForm.vue';
+import TableFilters from '@/components/table/TableFilters.vue';
+import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 // Data table
@@ -258,31 +171,26 @@ const headers = [
 const search = ref('');
 const statusFilter = ref('All');
 const sortBy = ref('name_asc');
-const statusOptions = ref([
+const statusOptions = [
   { title: 'All Statuses', value: 'All' },
   { title: 'Active', value: 'Active' },
   { title: 'Inactive', value: 'Inactive' }
-]);
-const sortOptions = ref([
+];
+const sortOptions = [
   { title: 'Name (A-Z)', value: 'name_asc' },
   { title: 'Name (Z-A)', value: 'name_desc' },
   { title: 'Created (Newest)', value: 'created_desc' },
   { title: 'Created (Oldest)', value: 'created_asc' }
-]);
+];
 
-// Tenant data
+// State management
 const tenants = ref([]);
 const loading = ref(false);
 const savingTenant = ref(false);
 const deletingTenant = ref(false);
-
-// Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const tenantToDelete = ref(null);
-
-// Form data
-const form = ref(null);
 const editedTenant = ref(createEmptyTenant());
 
 function createEmptyTenant() {
@@ -297,10 +205,27 @@ function createEmptyTenant() {
   };
 }
 
+function closeCreateDialog() {
+  showCreateDialog.value = false;
+  editedTenant.value = createEmptyTenant();
+}
+
 function formatDate(dateString) {
   if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleString();
+}
+
+function handleFilter({ key, value }) {
+  if (key === 'status') {
+    statusFilter.value = value;
+    fetchTenants();
+  }
+}
+
+function handleSort(value) {
+  sortBy.value = value;
+  fetchTenants();
 }
 
 async function fetchTenants() {
@@ -370,9 +295,9 @@ async function fetchTenants() {
       tenants.value = tenants.value.filter(t => 
         t.name.toLowerCase().includes(searchLower) || 
         t.identifier.toLowerCase().includes(searchLower) ||
-        t.description.toLowerCase().includes(searchLower) ||
-        (t.contactName && t.contactName.toLowerCase().includes(searchLower)) ||
-        (t.contactEmail && t.contactEmail.toLowerCase().includes(searchLower))
+        t.description?.toLowerCase().includes(searchLower) ||
+        t.contactName?.toLowerCase().includes(searchLower) ||
+        t.contactEmail?.toLowerCase().includes(searchLower)
       );
     }
     
@@ -494,7 +419,6 @@ async function saveTenant() {
 }
 
 onMounted(async () => {
-  // Only allow access if user is admin
   if (!authStore.isAdmin) {
     router.push('/');
     return;
