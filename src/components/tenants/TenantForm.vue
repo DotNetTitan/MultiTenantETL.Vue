@@ -3,19 +3,19 @@
     <v-row>
       <v-col cols="12">
         <FormInput
-          v-model="form.name"
+          :model-value="form.name"
           label="Tenant Name"
           prepend-icon="mdi-domain"
-          @update:model-value="validateField('name', $event, [required])"
+          @update:model-value="updateField('name', $event)"
           :error-messages="errors.name"
         />
       </v-col>
       <v-col cols="12">
         <FormInput
-          v-model="form.identifier"
+          :model-value="form.identifier"
           label="Identifier"
           prepend-icon="mdi-identifier"
-          @update:model-value="validateField('identifier', $event, [required, identifierRule])"
+          @update:model-value="updateField('identifier', $event)"
           :error-messages="errors.identifier"
           hint="Used as subdomain and in API requests"
           persistent-hint
@@ -23,35 +23,38 @@
       </v-col>
       <v-col cols="12">
         <FormInput
-          v-model="form.description"
+          :model-value="form.description"
           label="Description"
           type="textarea"
           rows="2"
           prepend-icon="mdi-text"
+          @update:model-value="updateField('description', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">
         <FormInput
-          v-model="form.contactName"
+          :model-value="form.contactName"
           label="Contact Name"
           prepend-icon="mdi-account"
+          @update:model-value="updateField('contactName', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">
         <FormInput
-          v-model="form.contactEmail"
+          :model-value="form.contactEmail"
           label="Contact Email"
           prepend-icon="mdi-email"
-          @update:model-value="validateField('contactEmail', $event, [emailRule])"
+          @update:model-value="updateField('contactEmail', $event)"
           :error-messages="errors.contactEmail"
         />
       </v-col>
       <v-col cols="12">
         <v-switch
-          v-model="form.isActive"
+          :model-value="form.isActive"
           label="Active"
           color="success"
           hide-details
+          @update:model-value="updateField('isActive', $event)"
         />
       </v-col>
     </v-row>
@@ -59,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation, required } from '@/composables/useFormValidation';
 
@@ -79,9 +82,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:tenant', 'submit']);
-
 const { errors, validateField, validateForm } = useFormValidation();
-
 const form = ref({ ...props.tenant });
 
 // Custom validation rules
@@ -94,15 +95,24 @@ const emailRule = (value) => {
   return /.+@.+\..+/.test(value) || 'Email must be valid';
 };
 
-// Watch for external changes
-watch(() => props.tenant, (newValue) => {
-  form.value = { ...newValue };
-}, { deep: true });
+onMounted(() => {
+  form.value = { ...props.tenant };
+});
 
-// Watch for form changes
-watch(form, (newValue) => {
-  emit('update:tenant', { ...newValue });
-}, { deep: true });
+const updateField = (field, value) => {
+  form.value[field] = value;
+  
+  // Validate the field if it has validation rules
+  if (field === 'name') {
+    validateField(field, value, [required]);
+  } else if (field === 'identifier') {
+    validateField(field, value, [required, identifierRule]);
+  } else if (field === 'contactEmail') {
+    validateField(field, value, [emailRule]);
+  }
+  
+  emit('update:tenant', { ...form.value });
+};
 
 const handleSubmit = () => {
   const isValid = validateForm({
@@ -112,7 +122,7 @@ const handleSubmit = () => {
   });
 
   if (isValid) {
-    emit('submit', form.value);
+    emit('submit', { ...form.value });
   }
 };
 </script>

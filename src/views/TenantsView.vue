@@ -142,6 +142,9 @@
     >
       Are you sure you want to delete the tenant "{{ tenantToDelete?.name }}"? This action cannot be undone and all associated data will be permanently deleted.
     </ConfirmationDialog>
+
+    <!-- Notification -->
+    <AppNotification ref="notification" />
   </div>
 </template>
 
@@ -152,6 +155,7 @@ import { useAuthStore } from '@/stores/auth';
 import TenantForm from '@/components/tenants/TenantForm.vue';
 import TableFilters from '@/components/table/TableFilters.vue';
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
+import AppNotification from '@/components/notifications/AppNotification.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -339,20 +343,33 @@ function editTenant(tenant) {
 async function toggleTenantStatus(tenant) {
   try {
     loading.value = true;
+    const newStatus = !tenant.isActive;
     
     // In a real app, this would be an actual API call
-    // await axios.put(`/api/tenants/${tenant.id}/toggle-status`);
+    // await axios.put(`/api/tenants/${tenant.id}/toggle-status`, { isActive: newStatus });
     
-    // For now, using simulated response
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Update local state
-    tenant.isActive = !tenant.isActive;
+    // Update local state only after successful API call
+    tenant.isActive = newStatus;
+    
+    // Show success message
+    showMessage(`Tenant ${tenant.name} ${newStatus ? 'activated' : 'deactivated'} successfully`);
   } catch (error) {
     console.error('Error toggling tenant status:', error);
+    showError('Failed to update tenant status. Please try again.');
   } finally {
     loading.value = false;
   }
+}
+
+function showMessage(message) {
+  notification.value?.showNotification(message, 'success');
+}
+
+function showError(message) {
+  notification.value?.showNotification(message, 'error', 5000);
 }
 
 function confirmDelete(tenant) {

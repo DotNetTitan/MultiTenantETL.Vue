@@ -14,41 +14,19 @@
 
     <v-card>
       <v-card-text>
-        <v-row>
-          <v-col cols="12" md="4">
-            <v-text-field
-              v-model="search"
-              label="Search Users"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchUsers"
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="statusFilter"
-              label="Status"
-              :items="statusOptions"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchUsers"
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="sortBy"
-              label="Sort By"
-              :items="sortOptions"
-              density="compact"
-              hide-details
-              class="mb-4"
-              @update:model-value="fetchUsers"
-            />
-          </v-col>
-        </v-row>
+        <TableFilters
+          search-label="Search Users"
+          v-model:search="search"
+          :filters="[{
+            key: 'status',
+            label: 'Status',
+            items: statusOptions,
+            cols: 3
+          }]"
+          :sort-options="sortOptions"
+          @filter="handleFilter"
+          @sort="handleSort"
+        />
 
         <v-data-table
           :headers="headers"
@@ -133,65 +111,22 @@
       persistent
     >
       <v-card>
-        <v-card-title>
+        <v-card-title class="text-h5 pa-4">
           {{ editedUser.id ? 'Edit User' : 'Create User' }}
         </v-card-title>
-        <v-card-text>
-          <v-form ref="form" @submit.prevent="saveUser">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedUser.firstName"
-                  label="First Name"
-                  required
-                  :rules="[v => !!v || 'First name is required']"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editedUser.lastName"
-                  label="Last Name"
-                  required
-                  :rules="[v => !!v || 'Last name is required']"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-text-field
-                  v-model="editedUser.email"
-                  label="Email"
-                  type="email"
-                  required
-                  :rules="[
-                    v => !!v || 'Email is required',
-                    v => /.+@.+\..+/.test(v) || 'Email must be valid'
-                  ]"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="editedUser.role"
-                  label="Role"
-                  :items="roles"
-                  required
-                  :rules="[v => !!v || 'Role is required']"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-switch
-                  v-model="editedUser.isActive"
-                  label="Active"
-                  color="success"
-                  hide-details
-                />
-              </v-col>
-            </v-row>
-          </v-form>
+        <v-card-text class="pa-4">
+          <UserForm
+            v-model:user="editedUser"
+            :roles="roles"
+            @submit="saveUser"
+          />
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
             variant="text"
-            @click="showCreateDialog = false"
+            @click="closeCreateDialog"
+            :disabled="savingUser"
           >
             Cancel
           </v-btn>
@@ -207,42 +142,30 @@
     </v-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog
-      v-model="showDeleteDialog"
-      max-width="400px"
+    <ConfirmationDialog
+      v-model:show="showDeleteDialog"
+      title="Delete User"
+      confirm-text="Delete"
+      confirm-color="error"
+      :loading="deletingUser"
+      @confirm="deleteUser"
     >
-      <v-card>
-        <v-card-title class="text-h5">
-          Delete User
-        </v-card-title>
-        <v-card-text>
-          Are you sure you want to delete the user "{{ userToDelete?.firstName }} {{ userToDelete?.lastName }}"? This action cannot be undone.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            @click="showDeleteDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            @click="deleteUser"
-            :loading="deletingUser"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      Are you sure you want to delete the user "{{ userToDelete?.firstName }} {{ userToDelete?.lastName }}"? This action cannot be undone.
+    </ConfirmationDialog>
+
+    <!-- Notification -->
+    <AppNotification ref="notification" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import UserForm from '@/components/users/UserForm.vue';
+import TableFilters from '@/components/table/TableFilters.vue';
+import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
+import AppNotification from '@/components/notifications/AppNotification.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -261,17 +184,17 @@ const headers = [
 const search = ref('');
 const statusFilter = ref('All');
 const sortBy = ref('name_asc');
-const statusOptions = ref([
+const statusOptions = [
   { title: 'All Statuses', value: 'All' },
   { title: 'Active', value: 'Active' },
   { title: 'Inactive', value: 'Inactive' }
-]);
-const sortOptions = ref([
+];
+const sortOptions = [
   { title: 'Name (A-Z)', value: 'name_asc' },
   { title: 'Name (Z-A)', value: 'name_desc' },
   { title: 'Created (Newest)', value: 'created_desc' },
   { title: 'Created (Oldest)', value: 'created_asc' }
-]);
+];
 
 // User data
 const users = ref([]);
@@ -284,10 +207,9 @@ const deletingUser = ref(false);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const userToDelete = ref(null);
-
-// Form data
-const form = ref(null);
 const editedUser = ref(createEmptyUser());
+
+const notification = ref(null);
 
 function createEmptyUser() {
   return {
@@ -298,6 +220,11 @@ function createEmptyUser() {
     role: 'User',
     isActive: true
   };
+}
+
+function closeCreateDialog() {
+  showCreateDialog.value = false;
+  editedUser.value = createEmptyUser();
 }
 
 function formatDate(dateString) {
@@ -315,6 +242,18 @@ function getRoleColor(role) {
     default:
       return 'blue';
   }
+}
+
+function handleFilter({ key, value }) {
+  if (key === 'status') {
+    statusFilter.value = value;
+    fetchUsers();
+  }
+}
+
+function handleSort(value) {
+  sortBy.value = value;
+  fetchUsers();
 }
 
 async function fetchUsers() {
@@ -427,17 +366,33 @@ function editUser(user) {
 async function toggleUserStatus(user) {
   try {
     loading.value = true;
+    const newStatus = !user.isActive;
     
-    // Simulate API delay
+    // In a real app, this would be an actual API call
+    // await axios.put(`/api/users/${user.id}/toggle-status`, { isActive: newStatus });
+    
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Update local state
-    user.isActive = !user.isActive;
+    // Update local state only after successful API call
+    user.isActive = newStatus;
+    
+    // Show success message
+    showMessage(`User ${user.firstName} ${user.lastName} ${newStatus ? 'activated' : 'deactivated'} successfully`);
   } catch (error) {
     console.error('Error toggling user status:', error);
+    showError('Failed to update user status. Please try again.');
   } finally {
     loading.value = false;
   }
+}
+
+function showMessage(message) {
+  notification.value?.showNotification(message, 'success');
+}
+
+function showError(message) {
+  notification.value?.showNotification(message, 'error', 5000);
 }
 
 function confirmDelete(user) {
@@ -504,7 +459,6 @@ async function saveUser() {
 }
 
 onMounted(async () => {
-  // Only allow access if user is admin
   if (!authStore.isAdmin) {
     router.push('/');
     return;
