@@ -438,7 +438,7 @@ const passwordChange = ref({
 
 // Preferences
 const preferences = ref({
-  darkMode: false,
+  darkMode: true,
   highContrast: false,
   defaultDashboardView: 'pipeline-stats',
   dashboardRefreshInterval: 60,
