@@ -5,7 +5,7 @@
         <FormInput
           :model-value="form.firstName"
           label="First Name"
-          prepend-icon="mdi-account"
+          prepend-icon="mdi-account-outline"
           @update:model-value="updateField('firstName', $event)"
           :error-messages="errors.firstName"
         />
@@ -14,7 +14,7 @@
         <FormInput
           :model-value="form.lastName"
           label="Last Name"
-          prepend-icon="mdi-account"
+          prepend-icon="mdi-account-outline"
           @update:model-value="updateField('lastName', $event)"
           :error-messages="errors.lastName"
         />
@@ -24,7 +24,7 @@
           :model-value="form.email"
           label="Email"
           type="email"
-          prepend-icon="mdi-email"
+          prepend-icon="mdi-email-outline"
           @update:model-value="updateField('email', $event)"
           :error-messages="errors.email"
         />
@@ -34,7 +34,7 @@
           :model-value="form.role"
           label="Role"
           :items="roles"
-          prepend-icon="mdi-shield-account"
+          prepend-icon="mdi-shield-account-outline"
           @update:model-value="updateField('role', $event)"
           :error-messages="errors.role"
         />
