@@ -79,17 +79,6 @@
       
       <template v-slot:append>
         <v-divider></v-divider>
-        <div class="pa-2">
-          <v-btn 
-            variant="tonal" 
-            color="primary" 
-            block 
-            prepend-icon="mdi-plus" 
-            to="/pipelines/create"
-          >
-            New Pipeline
-          </v-btn>
-        </div>
         <div class="px-2 py-1 text-center text-caption text-disabled">
           v1.2.0 • © 2025 ETL Portal
         </div>
