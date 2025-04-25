@@ -510,6 +510,51 @@ function createEmptyDataSource() {
   };
 }
 
+function editDataSource(dataSource) {
+  // Clone the data source to avoid modifying the original directly
+  const clonedSource = JSON.parse(JSON.stringify(dataSource));
+  
+  // Ensure credentials object exists
+  if (!clonedSource.credentials) {
+    clonedSource.credentials = {
+      username: '',
+      password: '',
+      apiKey: '',
+      token: ''
+    };
+  }
+
+  // Ensure other required objects exist
+  if (!clonedSource.database) {
+    clonedSource.database = {
+      provider: 'SQL Server',
+      server: '',
+      port: '',
+      databaseName: ''
+    };
+  }
+  
+  if (!clonedSource.file) {
+    clonedSource.file = {
+      storageType: 'Local',
+      path: '',
+      fileType: 'CSV',
+      delimiter: ','
+    };
+  }
+  
+  if (!clonedSource.api) {
+    clonedSource.api = {
+      baseUrl: '',
+      authType: 'None',
+      dataFormat: 'JSON'
+    };
+  }
+  
+  editedDataSource.value = clonedSource;
+  showCreateDialog.value = true;
+}
+
 function getTypeColor(type) {
   switch (type) {
     case 'Database':
@@ -697,13 +742,6 @@ function updateCredentialsFields() {
   }
 }
 
-function editDataSource(dataSource) {
-  // Clone the data source to avoid modifying the original directly
-  editedDataSource.value = JSON.parse(JSON.stringify(dataSource));
-  
-  showCreateDialog.value = true;
-}
-
 function confirmDelete(dataSource) {
   dataSourceToDelete.value = dataSource;
   showDeleteDialog.value = true;
@@ -735,13 +773,32 @@ async function saveDataSource() {
   try {
     savingDataSource.value = true;
     
+    // Validate form if refs are available
+    if (form.value?.validate && !(await form.value.validate())) {
+      return;
+    }
+    
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    showCreateDialog.value = false;
+    if (editedDataSource.value.id) {
+      // Update existing data source
+      const index = dataSources.value.findIndex(ds => ds.id === editedDataSource.value.id);
+      if (index !== -1) {
+        dataSources.value[index] = { ...editedDataSource.value };
+      }
+    } else {
+      // Create new data source
+      const newDataSource = {
+        ...editedDataSource.value,
+        id: String(dataSources.value.length + 1),
+        createdAt: new Date().toISOString()
+      };
+      dataSources.value.push(newDataSource);
+    }
     
-    // Refresh the list
-    await fetchDataSources();
+    showCreateDialog.value = false;
+    editedDataSource.value = createEmptyDataSource();
   } catch (error) {
     console.error('Error saving data source:', error);
   } finally {
