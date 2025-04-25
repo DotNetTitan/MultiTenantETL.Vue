@@ -2,17 +2,85 @@
   <v-app>
     <authenticated-layout v-if="isAuthenticated" />
     <guest-layout v-else />
+
+    <!-- Global Notifications -->
+    <div class="notifications-container">
+      <TransitionGroup name="notification">
+        <v-alert
+          v-for="notification in notifications"
+          :key="notification.id"
+          :type="notification.type"
+          variant="tonal"
+          closable
+          class="notification-alert ma-2"
+          @click:close="removeNotification(notification.id)"
+        >
+          {{ notification.message }}
+        </v-alert>
+      </TransitionGroup>
+    </div>
   </v-app>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onBeforeUnmount, provide } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import AuthenticatedLayout from '@/components/layouts/AuthenticatedLayout.vue';
 import GuestLayout from '@/components/layouts/GuestLayout.vue';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+const notifications = ref([]);
+const notificationTimeout = ref(null);
+
+const showNotification = (message, type = 'info', timeout = 5000) => {
+  const id = Date.now();
+  notifications.value.push({
+    id,
+    message,
+    type
+  });
+
+  if (timeout > 0) {
+    setTimeout(() => {
+      removeNotification(id);
+    }, timeout);
+  }
+};
+
+const removeNotification = (id) => {
+  notifications.value = notifications.value.filter(n => n.id !== id);
+};
+
+// Global error handler
+window.onerror = (message, source, lineno, colno, error) => {
+  console.error('Global error:', { message, source, lineno, colno, error });
+  showNotification(
+    'An unexpected error occurred. Please try again.',
+    'error'
+  );
+};
+
+// Handle unhandled promise rejections
+window.onunhandledrejection = (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  showNotification(
+    'An unexpected error occurred. Please try again.',
+    'error'
+  );
+};
+
+// Clean up on component unmount
+onBeforeUnmount(() => {
+  if (notificationTimeout.value) {
+    clearTimeout(notificationTimeout.value);
+  }
+});
+
+// Provide the notification functions to child components
+provide('showNotification', showNotification);
+provide('removeNotification', removeNotification);
 </script>
 
 <style>
@@ -162,5 +230,28 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
   bottom: 0;
   background: linear-gradient(45deg, rgba(0,0,0,0.3), rgba(0,0,0,0));
   pointer-events: none;
+}
+
+.notifications-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  max-width: 400px;
+}
+
+.notification-alert {
+  margin-bottom: 8px;
+}
+
+.notification-enter-active,
+.notification-leave-active {
+  transition: all 0.3s ease;
+}
+
+.notification-enter-from,
+.notification-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
 </style>

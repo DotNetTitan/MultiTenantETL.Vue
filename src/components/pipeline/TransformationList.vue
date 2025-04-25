@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useTransformation } from '@/composables/useTransformation';
 import TransformationDialog from './TransformationDialog.vue';
 
@@ -139,9 +139,9 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'update:schema']);
+const emit = defineEmits(['update:modelValue', 'update:schema', 'show-error']);
 
-const { getOutputSchema } = useTransformation();
+const { getOutputSchema, validateSchemaImpact } = useTransformation();
 
 const showEditDialog = ref(false);
 const editingTransformation = ref(null);
@@ -156,21 +156,71 @@ const typeClasses = {
 
 const getTypeClass = (type) => typeClasses[type] || 'bg-gray-100 text-gray-800';
 
-const moveTransformation = (index, direction) => {
-  const newTransformations = [...props.modelValue];
-  const newIndex = direction === 'up' ? index - 1 : index + 1;
-  
-  [newTransformations[index], newTransformations[newIndex]] = 
-    [newTransformations[newIndex], newTransformations[index]];
-  
-  emit('update:modelValue', newTransformations);
-  updateSchemas();
+const validateTransformationDependencies = async (transformations) => {
+  const errors = [];
+  let currentSchema = props.inputSchema;
+
+  for (let i = 0; i < transformations.length; i++) {
+    const transformation = transformations[i];
+    
+    try {
+      // Validate transformation against current schema
+      const validationResult = await validateSchemaImpact(transformation, currentSchema);
+      
+      if (!validationResult.isValid) {
+        errors.push({
+          transformationIndex: i,
+          transformation: transformation.name,
+          errors: validationResult.errors
+        });
+      } else {
+        // Update schema for next transformation
+        currentSchema = validationResult.outputSchema;
+      }
+    } catch (err) {
+      errors.push({
+        transformationIndex: i,
+        transformation: transformation.name,
+        errors: ['Failed to validate transformation']
+      });
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    finalSchema: currentSchema
+  };
 };
 
-const removeTransformation = (index) => {
+const moveTransformation = async (fromIndex, toIndex) => {
+  const newTransformations = [...props.modelValue];
+  const [movedItem] = newTransformations.splice(fromIndex, 1);
+  newTransformations.splice(toIndex, 0, movedItem);
+
+  // Validate the new order
+  const validationResult = await validateTransformationDependencies(newTransformations);
+  
+  if (validationResult.isValid) {
+    emit('update:modelValue', newTransformations);
+    emit('update:schema', validationResult.finalSchema);
+  } else {
+    // Show error and revert the move
+    emit('show-error', {
+      title: 'Invalid Transformation Order',
+      message: 'The new order would break schema dependencies. Please check the transformation requirements.'
+    });
+  }
+};
+
+const removeTransformation = async (index) => {
   const newTransformations = props.modelValue.filter((_, i) => i !== index);
+  
+  // Validate remaining transformations
+  const validationResult = await validateTransformationDependencies(newTransformations);
+  
   emit('update:modelValue', newTransformations);
-  updateSchemas();
+  emit('update:schema', validationResult.finalSchema);
 };
 
 const editTransformation = (index) => {
@@ -211,6 +261,41 @@ const updateSchemas = () => {
   });
 
   emit('update:schema', currentSchema);
+};
+
+watch(() => props.inputSchema, async () => {
+  // Revalidate all transformations when input schema changes
+  const validationResult = await validateTransformationDependencies(props.modelValue);
+  
+  if (!validationResult.isValid) {
+    emit('show-error', {
+      title: 'Schema Change Warning',
+      message: 'Some transformations may be invalid due to schema changes. Please review the pipeline configuration.'
+    });
+  }
+  
+  emit('update:schema', validationResult.finalSchema);
+}, { deep: true });
+
+// Helper function to get column type from schema
+const getColumnType = (schema, columnName) => {
+  const column = schema.columns.find(c => c.name === columnName);
+  return column?.type || 'unknown';
+};
+
+// Helper function to validate data type compatibility
+const validateDataTypes = (sourceType, targetType) => {
+  // Define type compatibility rules
+  const typeCompatibility = {
+    'int': ['int', 'decimal', 'varchar'],
+    'decimal': ['decimal', 'varchar'],
+    'varchar': ['varchar'],
+    'datetime': ['datetime', 'varchar'],
+    'boolean': ['boolean', 'int', 'varchar']
+  };
+
+  const compatibleTypes = typeCompatibility[sourceType] || [];
+  return compatibleTypes.includes(targetType);
 };
 </script>
 

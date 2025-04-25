@@ -257,18 +257,40 @@ const errors = ref({});
 const testing = ref(false);
 const saving = ref(false);
 
+// Clear errors when form fields change
+watch(() => form.value, () => {
+  clearFormErrors();
+}, { deep: true });
+
+function clearFormErrors() {
+  errors.value = {};
+}
+
 const isFormValid = computed(() => {
   const requiredFields = ['name', 'type', 'provider'];
   
   if (form.value.type === 'Database') {
     requiredFields.push('server', 'database', 'username', 'password');
   } else if (form.value.type === 'API') {
-    requiredFields.push('url');
+    requiredFields.push('url', 'method');
+    if (form.value.method !== 'GET') {
+      requiredFields.push('requestBody');
+    }
   } else if (form.value.type === 'File') {
     requiredFields.push('format', 'path');
+    if (form.value.format === 'CSV') {
+      requiredFields.push('delimiter');
+    }
   }
 
-  return requiredFields.every(field => form.value[field]);
+  return requiredFields.every(field => {
+    const value = form.value[field];
+    if (!value && value !== false) {
+      errors.value[field] = 'This field is required';
+      return false;
+    }
+    return true;
+  });
 });
 
 watch(() => form.value.type, (newType) => {

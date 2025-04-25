@@ -289,6 +289,65 @@ const showAddTransformation = ref(false);
 const sourceSchema = ref(null);
 const currentSchema = ref(null);
 
+// Clear errors when form changes
+watch(() => form.value, () => {
+  clearErrors();
+}, { deep: true });
+
+function clearErrors() {
+  errors.value = {};
+}
+
+const validateForm = () => {
+  const newErrors = {};
+  
+  // Validate required fields
+  if (!form.value.name?.trim()) {
+    newErrors.name = 'Pipeline name is required';
+  }
+  
+  if (!form.value.sourceId) {
+    newErrors.sourceId = 'Source is required';
+  }
+  
+  if (!form.value.destinationId) {
+    newErrors.destinationId = 'Destination is required';
+  }
+
+  // Validate error handling config
+  if (form.value.errorStrategy === 'RETRY') {
+    if (!form.value.errorConfig?.maxRetries || form.value.errorConfig.maxRetries < 1) {
+      newErrors.maxRetries = 'Max retries must be at least 1';
+    }
+    if (!form.value.errorConfig?.retryDelay || form.value.errorConfig.retryDelay < 1) {
+      newErrors.retryDelay = 'Retry delay must be at least 1 second';
+    }
+  }
+
+  // Validate schedule if enabled
+  if (form.value.isScheduled) {
+    if (!form.value.schedule.frequency) {
+      newErrors.frequency = 'Schedule frequency is required';
+    }
+    if (form.value.schedule.frequency === 'Custom') {
+      if (!form.value.schedule.cronExpression) {
+        newErrors.cronExpression = 'Cron expression is required';
+      }
+      // Add basic cron expression validation here if needed
+    } else {
+      if (!form.value.schedule.time) {
+        newErrors.scheduleTime = 'Schedule time is required';
+      }
+    }
+    if (!form.value.schedule.timezone) {
+      newErrors.timezone = 'Timezone is required';
+    }
+  }
+
+  errors.value = newErrors;
+  return Object.keys(newErrors).length === 0;
+};
+
 const availableDataSources = computed(() => 
   props.dataSources.map(ds => ({
     value: ds.id,
@@ -341,6 +400,21 @@ const handleSchemaUpdate = (schema) => {
 const handleAddTransformation = (transformation) => {
   form.value.transformations.push(transformation);
   showAddTransformation.value = false;
+  
+  // Validate and update schema after adding transformation
+  validateTransformation(transformation, currentSchema.value)
+    .then(result => {
+      if (!result.isValid) {
+        emit('notify', {
+          type: 'warning',
+          message: 'Added transformation may have validation issues. Please review.'
+        });
+      }
+      currentSchema.value = getOutputSchema(transformation, currentSchema.value);
+    })
+    .catch(error => {
+      console.error('Error validating transformation:', error);
+    });
 };
 
 const handleValidatePipeline = async () => {
@@ -373,16 +447,34 @@ const handleValidatePipeline = async () => {
   }
 };
 
-const handleSubmit = () => {
-  if (!isFormValid.value) return;
+const handleSubmit = async () => {
+  if (!validateForm()) return;
   
   saving.value = true;
   errors.value = {};
 
   try {
+    // Validate entire pipeline before saving
+    const pipelineValidation = await validatePipeline(form.value);
+    if (!pipelineValidation.isValid) {
+      errors.value = pipelineValidation.errors.reduce((acc, err) => {
+        acc[err.field] = err.message;
+        return acc;
+      }, {});
+      emit('notify', {
+        type: 'error',
+        message: 'Pipeline validation failed. Please review the errors.'
+      });
+      return;
+    }
+
     emit('save', form.value);
   } catch (err) {
     errors.value.submit = err.message;
+    emit('notify', {
+      type: 'error',
+      message: 'Failed to save pipeline: ' + err.message
+    });
   } finally {
     saving.value = false;
   }
@@ -399,4 +491,187 @@ const getMockSchema = (sourceId) => {
     ]
   };
 };
+
+const validateSchedule = (schedule) => {
+  const errors = [];
+  
+  if (!schedule.frequency) {
+    errors.push('Schedule frequency is required');
+    return errors;
+  }
+
+  switch (schedule.frequency) {
+    case 'Custom':
+      if (!schedule.cronExpression?.trim()) {
+        errors.push('Cron expression is required');
+      } else if (!isValidCronExpression(schedule.cronExpression)) {
+        errors.push('Invalid cron expression format');
+      }
+      break;
+
+    case 'Hourly':
+      if (!schedule.minute || schedule.minute < 0 || schedule.minute > 59) {
+        errors.push('Minute must be between 0 and 59');
+      }
+      break;
+
+    case 'Daily':
+    case 'Weekly':
+    case 'Monthly':
+      if (!schedule.time) {
+        errors.push('Time is required');
+      } else if (!isValidTimeFormat(schedule.time)) {
+        errors.push('Invalid time format');
+      }
+      
+      if (schedule.frequency === 'Weekly' && !schedule.dayOfWeek) {
+        errors.push('Day of week is required');
+      }
+      
+      if (schedule.frequency === 'Monthly' && !schedule.dayOfMonth) {
+        errors.push('Day of month is required');
+      }
+      break;
+  }
+
+  if (!schedule.timezone) {
+    errors.push('Timezone is required');
+  } else if (!Intl.supportedValuesOf('timeZone').includes(schedule.timezone)) {
+    errors.push('Invalid timezone');
+  }
+
+  return errors;
+};
+
+const isValidCronExpression = (cron) => {
+  const cronRegex = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|(\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]))) (\*|([0-9]|1[0-9]|2[0-3])|(\*\/([0-9]|1[0-9]|2[0-3]))) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|(\*\/([1-9]|1[0-9]|2[0-9]|3[0-1]))) (\*|([1-9]|1[0-2])|(\*\/([1-9]|1[0-2]))) (\*|([0-6])|(\*\/([0-6])))$/;
+  return cronRegex.test(cron.trim());
+};
+
+const isValidTimeFormat = (time) => {
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeRegex.test(time.trim());
+};
+
+const getNextExecutions = (schedule, count = 5) => {
+  if (!schedule.frequency) return [];
+
+  const now = new Date();
+  const executions = [];
+  let date = new Date(now);
+
+  try {
+    switch (schedule.frequency) {
+      case 'Hourly':
+        for (let i = 0; i < count; i++) {
+          date = new Date(date);
+          date.setMinutes(schedule.minute || 0);
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+          if (date <= now) {
+            date.setHours(date.getHours() + 1);
+          }
+          executions.push(new Date(date));
+          date.setHours(date.getHours() + 1);
+        }
+        break;
+
+      case 'Daily':
+        const [hours, minutes] = schedule.time.split(':');
+        for (let i = 0; i < count; i++) {
+          date = new Date(date);
+          date.setHours(parseInt(hours));
+          date.setMinutes(parseInt(minutes));
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+          if (date <= now) {
+            date.setDate(date.getDate() + 1);
+          }
+          executions.push(new Date(date));
+          date.setDate(date.getDate() + 1);
+        }
+        break;
+
+      case 'Weekly':
+        const targetDay = parseInt(schedule.dayOfWeek);
+        const [weeklyHours, weeklyMinutes] = schedule.time.split(':');
+        for (let i = 0; i < count; i++) {
+          date = new Date(date);
+          date.setHours(parseInt(weeklyHours));
+          date.setMinutes(parseInt(weeklyMinutes));
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+          
+          // Adjust to next occurrence of target day
+          while (date.getDay() !== targetDay || date <= now) {
+            date.setDate(date.getDate() + 1);
+          }
+          executions.push(new Date(date));
+          date.setDate(date.getDate() + 7);
+        }
+        break;
+
+      case 'Monthly':
+        const targetDay = parseInt(schedule.dayOfMonth);
+        const [monthlyHours, monthlyMinutes] = schedule.time.split(':');
+        for (let i = 0; i < count; i++) {
+          date = new Date(date);
+          date.setDate(targetDay);
+          date.setHours(parseInt(monthlyHours));
+          date.setMinutes(parseInt(monthlyMinutes));
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+          
+          if (date <= now || date.getDate() !== targetDay) { // Check if we overflowed to next month
+            date.setDate(1); // Reset to first day
+            date.setMonth(date.getMonth() + 1); // Go to next month
+            date.setDate(targetDay); // Try setting target day again
+          }
+          executions.push(new Date(date));
+          date.setMonth(date.getMonth() + 1);
+        }
+        break;
+
+      case 'Custom':
+        // For custom cron expressions, we'd use a cron parser library
+        // This is a placeholder for demonstration
+        executions.push(new Date(now.getTime() + 3600000)); // +1 hour
+        executions.push(new Date(now.getTime() + 7200000)); // +2 hours
+        executions.push(new Date(now.getTime() + 10800000)); // +3 hours
+        executions.push(new Date(now.getTime() + 14400000)); // +4 hours
+        executions.push(new Date(now.getTime() + 18000000)); // +5 hours
+        break;
+    }
+  } catch (err) {
+    console.error('Error calculating next executions:', err);
+    return [];
+  }
+
+  // Convert all dates to the selected timezone
+  return executions.map(date => {
+    try {
+      return new Date(date.toLocaleString('en-US', { timeZone: schedule.timezone }));
+    } catch {
+      return date;
+    }
+  });
+};
+
+const nextExecutions = computed(() => {
+  if (!form.value.isScheduled) return [];
+  return getNextExecutions(form.value.schedule);
+});
+
+watch(() => [form.value.isScheduled, form.value.schedule], () => {
+  if (form.value.isScheduled) {
+    const scheduleErrors = validateSchedule(form.value.schedule);
+    if (scheduleErrors.length > 0) {
+      errors.value.schedule = scheduleErrors;
+    } else {
+      delete errors.value.schedule;
+    }
+  } else {
+    delete errors.value.schedule;
+  }
+}, { deep: true });
 </script>

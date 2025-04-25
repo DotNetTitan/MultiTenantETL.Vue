@@ -60,6 +60,7 @@
 import { ref, computed } from 'vue';
 import { useTransformation } from '@/composables/useTransformation';
 import TransformationForm from '@/components/transformation/TransformationForm.vue';
+import { useFormValidation } from '@/composables/useFormValidation';
 
 const props = defineProps({
   transformation: {
@@ -88,6 +89,191 @@ const form = ref(props.transformation ? { ...props.transformation } : {
 const errors = ref({});
 const isValid = ref(false);
 const saving = ref(false);
+
+const { errors: validationErrors, validateField, validateForm, clearErrors } = useFormValidation();
+const transformationErrors = ref([]);
+
+const validateTransformation = async () => {
+  const validationFields = {
+    name: { value: form.value.name, rules: [v => !!v || 'Name is required'] },
+    type: { value: form.value.type, rules: [v => !!v || 'Type is required'] }
+  };
+
+  // Add config validation based on type
+  switch (form.value.type) {
+    case 'Filter':
+      validationFields['filterColumn'] = {
+        value: form.value.config.filterColumn,
+        rules: [
+          v => !!v || 'Filter column is required',
+          v => inputSchema.value.columns.includes(v) || 'Column does not exist in input schema'
+        ]
+      };
+      validationFields['operator'] = {
+        value: form.value.config.operator,
+        rules: [v => !!v || 'Operator is required']
+      };
+      if (!['isEmpty', 'isNotEmpty'].includes(form.value.config.operator)) {
+        validationFields['value'] = {
+          value: form.value.config.value,
+          rules: [v => !!v || 'Value is required for this operator']
+        };
+      }
+      break;
+
+    case 'Map':
+      validationFields['sourceColumn'] = {
+        value: form.value.config.sourceColumn,
+        rules: [
+          v => !!v || 'Source column is required',
+          v => inputSchema.value.columns.includes(v) || 'Column does not exist in input schema'
+        ]
+      };
+      validationFields['targetColumn'] = {
+        value: form.value.config.targetColumn,
+        rules: [v => !!v || 'Target column is required']
+      };
+      break;
+
+    case 'Join':
+      validationFields['joinTable'] = {
+        value: form.value.config.joinTable,
+        rules: [v => !!v || 'Join table is required']
+      };
+      validationFields['joinType'] = {
+        value: form.value.config.joinType,
+        rules: [v => !!v || 'Join type is required']
+      };
+      validationFields['joinConditions'] = {
+        value: form.value.config.joinConditions,
+        rules: [
+          v => Array.isArray(v) && v.length > 0 || 'At least one join condition is required',
+          v => v.every(c => c.leftColumn && c.rightColumn) || 'All join conditions must have left and right columns'
+        ]
+      };
+      break;
+
+    case 'Aggregate':
+      validationFields['groupByColumns'] = {
+        value: form.value.config.groupByColumns,
+        rules: [
+          v => Array.isArray(v) && v.length > 0 || 'At least one group by column is required',
+          v => v.every(col => inputSchema.value.columns.includes(col)) || 'All columns must exist in input schema'
+        ]
+      };
+      validationFields['aggregations'] = {
+        value: form.value.config.aggregations,
+        rules: [
+          v => Array.isArray(v) && v.length > 0 || 'At least one aggregation is required',
+          v => v.every(a => a.type && a.column && a.alias) || 'All aggregations must have type, column and alias'
+        ]
+      };
+      break;
+
+    case 'Script':
+      validationFields['script'] = {
+        value: form.value.config.script,
+        rules: [
+          v => !!v || 'Script is required',
+          v => {
+            try {
+              // Validate script syntax
+              new Function('row', v);
+              return true;
+            } catch (e) {
+              return `Invalid script syntax: ${e.message}`;
+            }
+          }
+        ]
+      };
+      break;
+  }
+
+  // Validate schema impact
+  try {
+    const outputSchema = await validateSchemaImpact(form.value, inputSchema.value);
+    if (!outputSchema.isValid) {
+      transformationErrors.value = outputSchema.errors;
+      return false;
+    }
+    transformationErrors.value = [];
+  } catch (err) {
+    console.error('Schema validation error:', err);
+    transformationErrors.value = ['Failed to validate schema impact'];
+    return false;
+  }
+
+  return await validateForm(validationFields);
+};
+
+const validateSchemaImpact = async (transformation, schema) => {
+  const errors = [];
+  
+  try {
+    switch (transformation.type) {
+      case 'Filter':
+        // Filter doesn't change schema structure, just validate column exists
+        if (!schema.columns.includes(transformation.config.filterColumn)) {
+          errors.push(`Filter column '${transformation.config.filterColumn}' not found in schema`);
+        }
+        break;
+
+      case 'Map':
+        // Ensure source column exists and target column name is valid
+        if (!schema.columns.includes(transformation.config.sourceColumn)) {
+          errors.push(`Source column '${transformation.config.sourceColumn}' not found in schema`);
+        }
+        if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(transformation.config.targetColumn)) {
+          errors.push('Target column name must be a valid identifier');
+        }
+        break;
+
+      case 'Join':
+        // Validate join columns exist in both schemas
+        for (const condition of transformation.config.joinConditions) {
+          if (!schema.columns.includes(condition.leftColumn)) {
+            errors.push(`Left join column '${condition.leftColumn}' not found in schema`);
+          }
+          // Right table columns would be validated against the join table's schema in a real implementation
+        }
+        break;
+
+      case 'Aggregate':
+        // Validate all group by columns exist
+        for (const column of transformation.config.groupByColumns) {
+          if (!schema.columns.includes(column)) {
+            errors.push(`Group by column '${column}' not found in schema`);
+          }
+        }
+        // Validate aggregation columns exist
+        for (const agg of transformation.config.aggregations) {
+          if (agg.type !== 'count' && !schema.columns.includes(agg.column)) {
+            errors.push(`Aggregation column '${agg.column}' not found in schema`);
+          }
+          if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(agg.alias)) {
+            errors.push(`Invalid alias name '${agg.alias}'`);
+          }
+        }
+        break;
+
+      case 'Script':
+        // Script validation would require analyzing the script's output schema
+        // This would be implemented based on your specific script execution engine
+        break;
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  } catch (err) {
+    console.error('Schema validation error:', err);
+    return {
+      isValid: false,
+      errors: ['Failed to validate schema impact']
+    };
+  }
+};
 
 const handleSave = async () => {
   saving.value = true;

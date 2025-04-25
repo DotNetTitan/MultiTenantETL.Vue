@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation, required } from '@/composables/useFormValidation';
 
@@ -82,18 +82,24 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:tenant', 'submit']);
-const { errors, validateField, validateForm } = useFormValidation();
+const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 const form = ref({ ...props.tenant });
 
 // Custom validation rules
 const identifierRule = (value) => {
+  if (!value) return null;
   return /^[a-z0-9-]+$/.test(value) || 'Identifier can only contain lowercase letters, numbers, and hyphens';
 };
 
 const emailRule = (value) => {
-  if (!value) return true; // Email is optional
+  if (!value) return null; // Email is optional
   return /.+@.+\..+/.test(value) || 'Email must be valid';
 };
+
+// Clear errors when form changes
+watch(() => form.value, () => {
+  clearErrors();
+}, { deep: true });
 
 onMounted(() => {
   form.value = { ...props.tenant };
@@ -102,27 +108,67 @@ onMounted(() => {
 const updateField = (field, value) => {
   form.value[field] = value;
   
-  // Validate the field if it has validation rules
-  if (field === 'name') {
-    validateField(field, value, [required]);
-  } else if (field === 'identifier') {
-    validateField(field, value, [required, identifierRule]);
-  } else if (field === 'contactEmail') {
-    validateField(field, value, [emailRule]);
+  switch (field) {
+    case 'name':
+      validateField(field, value, [required]);
+      break;
+    case 'identifier':
+      validateField(field, value, [required, identifierRule]);
+      // Also check for uniqueness through API (mock for now)
+      checkIdentifierUniqueness(value);
+      break;
+    case 'contactEmail':
+      validateField(field, value, [emailRule]);
+      break;
   }
   
   emit('update:tenant', { ...form.value });
 };
 
-const handleSubmit = () => {
-  const isValid = validateForm({
+// Mock function to check identifier uniqueness
+const checkIdentifierUniqueness = async (identifier) => {
+  if (!identifier) return;
+  
+  try {
+    // In real app, this would be an API call
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Mock check - consider existing tenants
+    const existingTenant = props.existingTenants?.find(
+      t => t.identifier === identifier && t.id !== form.value.id
+    );
+    
+    if (existingTenant) {
+      errors.value.identifier = 'This identifier is already in use';
+    }
+  } catch (err) {
+    console.error('Error checking identifier uniqueness:', err);
+  }
+};
+
+const handleSubmit = async () => {
+  const validationConfig = {
     name: { value: form.value.name, rules: [required] },
-    identifier: { value: form.value.identifier, rules: [required, identifierRule] },
-    contactEmail: { value: form.value.contactEmail, rules: [emailRule] }
-  });
+    identifier: { value: form.value.identifier, rules: [required, identifierRule] }
+  };
+
+  if (form.value.contactEmail) {
+    validationConfig.contactEmail = { value: form.value.contactEmail, rules: [emailRule] };
+  }
+
+  const isValid = validateForm(validationConfig);
 
   if (isValid) {
-    emit('submit', { ...form.value });
+    try {
+      // Check identifier uniqueness one final time before submit
+      await checkIdentifierUniqueness(form.value.identifier);
+      
+      if (!errors.value.identifier) {
+        emit('submit', { ...form.value });
+      }
+    } catch (err) {
+      errors.value.submit = err.message;
+    }
   }
 };
 </script>

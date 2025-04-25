@@ -397,6 +397,43 @@ import { useTheme } from 'vuetify';
 const tenantStore = useTenantStore();
 const theme = useTheme();
 
+// Mock data for demo
+const mockExecutions = [
+  {
+    id: '1',
+    pipelineName: 'Sales Data ETL',
+    status: 'Completed',
+    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    endTime: new Date(Date.now() - 1.9 * 60 * 60 * 1000).toISOString(),
+    duration: 360000, // 6 minutes
+    rowsProcessed: 12345,
+    progressPercent: 100,
+    logs: '[2025-04-24 10:15:01] Starting pipeline execution\n[2025-04-24 10:15:02] Extracted 12345 rows from source\n[2025-04-24 10:15:03] Applying transformations\n[2025-04-24 10:15:04] Successfully loaded data to destination'
+  },
+  {
+    id: '2',
+    pipelineName: 'Customer Import',
+    status: 'Running',
+    startTime: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    endTime: null,
+    duration: 900000, // 15 minutes so far
+    rowsProcessed: 5000,
+    progressPercent: 45,
+    logs: '[2025-04-24 11:45:01] Starting pipeline execution\n[2025-04-24 11:45:02] Extracting customer data\n[2025-04-24 11:45:03] Processing batch 1/3\n[2025-04-24 11:45:04] Processing batch 2/3'
+  },
+  {
+    id: '3',
+    pipelineName: 'Product Sync',
+    status: 'Failed',
+    startTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    endTime: new Date(Date.now() - 44.9 * 60 * 60 * 1000).toISOString(),
+    duration: 180000, // 3 minutes
+    rowsProcessed: 0,
+    progressPercent: 15,
+    logs: '[2025-04-24 11:15:01] Starting pipeline execution\n[2025-04-24 11:15:02] Error: Failed to connect to source database\n[2025-04-24 11:15:03] Pipeline execution failed'
+  }
+];
+
 // Data table
 const headers = [
   { title: 'Pipeline', key: 'pipelineName' },
@@ -436,9 +473,6 @@ const showDetailsDialog = ref(false);
 const showCancelDialog = ref(false);
 const selectedExecution = ref(null);
 const executionToCancel = ref(null);
-
-// Polling
-const pollingInterval = ref(null);
 
 // Add to existing variables
 const activeTab = ref('overview');
@@ -644,97 +678,12 @@ function getTimeRangeFilter() {
 async function fetchExecutions() {
   try {
     loading.value = true;
-    
-    // In a real app, this would be an actual API call
-    // const response = await axios.get('/api/pipeline-executions', {
-    //   params: {
-    //     search: search.value,
-    //     status: statusFilter.value !== 'All' ? statusFilter.value : null,
-    //     from: getTimeRangeFilter()?.toISOString()
-    //   }
-    // });
-    
-    // For now, using simulated data
+    // In real implementation this will be an API call
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Filter by time range
-    const timeFilter = getTimeRangeFilter();
-    
-    // Mock data
-    const mockExecutions = [
-      {
-        id: '1',
-        pipelineId: '1',
-        pipelineName: 'Sales Data ETL',
-        status: 'Completed',
-        startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 1.9 * 60 * 60 * 1000).toISOString(),
-        duration: 360000, // 6 minutes
-        rowsProcessed: 12345,
-        logs: '[2025-03-14 22:15:01] Starting extraction from source: SQL Server - Sales\n[2025-03-14 22:15:03] Extracted 12345 rows from source\n[2025-03-14 22:15:05] Applying 3 transformations\n[2025-03-14 22:15:06] Applying transformation: Filter Inactive Customers\n[2025-03-14 22:15:07] Applying transformation: Map Customer Segments\n[2025-03-14 22:15:08] Applying transformation: Format Phone Numbers\n[2025-03-14 22:15:09] Loading data to destination: Data Warehouse\n[2025-03-14 22:15:11] Successfully loaded 12345 rows to destination',
-        progressPercent: 100
-      },
-      {
-        id: '2',
-        pipelineId: '2',
-        pipelineName: 'Customer Import',
-        status: 'Failed',
-        startTime: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 11.9 * 60 * 60 * 1000).toISOString(),
-        duration: 180000, // 3 minutes
-        rowsProcessed: 0,
-        logs: '[2025-03-14 12:30:01] Starting extraction from source: SFTP - Customer Files\n[2025-03-14 12:30:05] Error: Failed to connect to SFTP server. Connection refused.\n[2025-03-14 12:30:05] Execution failed: Failed to connect to SFTP server',
-        progressPercent: 0
-      },
-      {
-        id: '3',
-        pipelineId: '3',
-        pipelineName: 'Product Sync',
-        status: 'Running',
-        startTime: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-        endTime: null,
-        duration: Date.now() - new Date(Date.now() - 5 * 60 * 1000).getTime(),
-        rowsProcessed: 3200,
-        logs: '[2025-03-14 23:45:01] Starting extraction from source: ERP API\n[2025-03-14 23:45:03] Extracted 5000 rows from source\n[2025-03-14 23:45:08] Applying transformations\n[2025-03-14 23:45:10] Loading data to destination: E-commerce Platform\n[2025-03-14 23:45:16] Processing batch...',
-        progressPercent: 60
-      },
-      {
-        id: '4',
-        pipelineId: '4',
-        pipelineName: 'Analytics Export',
-        status: 'Cancelled',
-        startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 23.9 * 60 * 60 * 1000).toISOString(),
-        duration: 240000, // 4 minutes
-        rowsProcessed: 1500,
-        logs: '[2025-03-13 23:50:01] Starting extraction from source: Analytics DB\n[2025-03-13 23:50:04] Extracted 5000 rows from source\n[2025-03-13 23:50:06] Applying 1 transformation\n[2025-03-13 23:50:08] Applying transformation: Aggregate Daily Metrics\n[2025-03-13 23:50:12] Execution was cancelled',
-        progressPercent: 30
-      },
-      {
-        id: '5',
-        pipelineId: '1',
-        pipelineName: 'Sales Data ETL',
-        status: 'Completed',
-        startTime: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 25.9 * 60 * 60 * 1000).toISOString(),
-        duration: 300000, // 5 minutes
-        rowsProcessed: 10200,
-        logs: '[2025-03-13 00:15:01] Starting extraction from source: SQL Server - Sales\n[2025-03-13 00:15:03] Extracted 10200 rows from source\n[2025-03-13 00:15:05] Applying 3 transformations\n[2025-03-13 00:15:06] Applying transformation: Filter Inactive Customers\n[2025-03-13 00:15:07] Applying transformation: Map Customer Segments\n[2025-03-13 00:15:08] Applying transformation: Format Phone Numbers\n[2025-03-13 00:15:09] Loading data to destination: Data Warehouse\n[2025-03-13 00:15:11] Successfully loaded 10200 rows to destination',
-        progressPercent: 100
-      }
-    ];
-    
-    // Apply filters
     let filteredExecutions = [...mockExecutions];
     
-    if (timeFilter) {
-      filteredExecutions = filteredExecutions.filter(e => new Date(e.startTime) >= timeFilter);
-    }
-    
-    if (statusFilter.value !== 'All') {
-      filteredExecutions = filteredExecutions.filter(e => e.status === statusFilter.value);
-    }
-    
+    // Apply filters
     if (search.value) {
       const searchLower = search.value.toLowerCase();
       filteredExecutions = filteredExecutions.filter(e => 
@@ -742,32 +691,29 @@ async function fetchExecutions() {
         e.id.toLowerCase().includes(searchLower)
       );
     }
-    
-    // Sort by start time (newest first)
-    filteredExecutions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+    if (statusFilter.value !== 'All') {
+      filteredExecutions = filteredExecutions.filter(e => e.status === statusFilter.value);
+    }
     
     executions.value = filteredExecutions;
-    
-    // Update duration for running executions
-    executions.value.forEach(execution => {
-      if (execution.status === 'Running') {
-        execution.duration = Date.now() - new Date(execution.startTime).getTime();
-      }
-    });
-    
-    // If we have an open execution detail, update it
-    if (selectedExecution.value) {
-      const updatedExecution = executions.value.find(e => e.id === selectedExecution.value.id);
-      if (updatedExecution) {
-        selectedExecution.value = { ...updatedExecution };
-      }
-    }
   } catch (error) {
     console.error('Error fetching executions:', error);
+    // This will be replaced with proper error handling when real API is integrated
   } finally {
     loading.value = false;
   }
-}
+};
+
+onMounted(async () => {
+  await fetchExecutions();
+});
+
+// Clean up the component setup
+const handleRefresh = () => {
+  fetchExecutions();
+};
+
 
 function viewExecutionDetails(execution) {
   selectedExecution.value = { ...execution };
@@ -810,30 +756,6 @@ async function confirmCancelExecution() {
   }
 }
 
-onMounted(() => {
-  fetchExecutions();
-  
-  // Set up polling for real-time updates (every 5 seconds)
-  pollingInterval.value = setInterval(() => {
-    if (!showDetailsDialog.value && !showCancelDialog.value) {
-      fetchExecutions();
-    }
-  }, 5000);
-  
-  // Refetch if tenant changes
-  tenantStore.$subscribe(() => {
-    if (tenantStore.currentTenantId) {
-      fetchExecutions();
-    }
-  });
-});
-
-onBeforeUnmount(() => {
-  // Clear polling interval
-  if (pollingInterval.value) {
-    clearInterval(pollingInterval.value);
-  }
-});
 </script>
 
 <style scoped>

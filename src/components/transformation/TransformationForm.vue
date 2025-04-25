@@ -208,6 +208,7 @@ row => ({
 import { ref, computed, watch } from 'vue';
 import { useTransformation } from '@/composables/useTransformation';
 import FormInput from '@/components/form/FormInput.vue';
+import { useFormValidation, required, maxLength } from '@/composables/useFormValidation';
 
 const props = defineProps({
   initialData: {
@@ -223,6 +224,7 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel', 'notify']);
 
 const { validateTransformation } = useTransformation();
+const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 
 const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script'];
 const errorHandlingOptions = ['Stop', 'Skip', 'Retry'];
@@ -259,6 +261,42 @@ const form = ref({
   },
   ...props.initialData
 });
+
+const transformationRules = {
+  name: [required, maxLength(100)],
+  type: [required],
+  errorHandling: [required],
+  config: {
+    Filter: {
+      filterColumn: [required],
+      operator: [required],
+      value: (value, { operator }) => operator && !['isEmpty', 'isNotEmpty'].includes(operator) && !value ? 'Value is required for this operator' : null
+    },
+    Map: {
+      sourceColumn: [required],
+      targetColumn: [required],
+      mappings: (value) => (!Array.isArray(value) || value.length === 0) ? 'At least one mapping is required' : null
+    },
+    Aggregation: {
+      groupByColumns: (value) => (!Array.isArray(value) || value.length === 0) ? 'At least one group by column is required' : null,
+      aggregationType: [required],
+      resultColumn: [required],
+      aggregationColumn: (value, { aggregationType }) => 
+        aggregationType && aggregationType !== 'count' && !value ? 'Aggregation column is required for this type' : null
+    },
+    Script: {
+      script: [(value) => {
+        if (!value?.trim()) return 'Script is required';
+        try {
+          new Function('row', value);
+          return null;
+        } catch (e) {
+          return `Script syntax error: ${e.message}`;
+        }
+      }]
+    }
+  }
+};
 
 const errors = ref({});
 const validating = ref(false);
@@ -369,18 +407,61 @@ const handleValidateTransformation = async () => {
   }
 };
 
-const handleSubmit = () => {
-  if (!isFormValid.value) return;
+const validateTransformationField = async (field, value) => {
+  let rules = [];
   
-  saving.value = true;
-  errors.value = {};
+  if (field === 'name' || field === 'type' || field === 'errorHandling') {
+    rules = transformationRules[field];
+  } else if (field.startsWith('config.')) {
+    const [_, configField] = field.split('.');
+    rules = transformationRules.config[form.value.type]?.[configField] || [];
+  }
 
-  try {
-    emit('save', form.value);
-  } catch (err) {
-    errors.value.submit = err.message;
-  } finally {
-    saving.value = false;
+  await validateField(field, value, Array.isArray(rules) ? rules : [rules], {
+    operator: form.value.config.operator,
+    aggregationType: form.value.config.aggregationType
+  });
+};
+
+const handleFieldUpdate = async (field, value) => {
+  if (field === 'type') {
+    form.value.config = getDefaultConfig(value);
+    clearErrors();
+  } else {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      form.value[parent][child] = value;
+    } else {
+      form.value[field] = value;
+    }
+    await validateTransformationField(field, value);
+  }
+};
+
+const handleSubmit = async () => {
+  const configRules = transformationRules.config[form.value.type];
+  const validationFields = {
+    name: { value: form.value.name, rules: transformationRules.name },
+    type: { value: form.value.type, rules: transformationRules.type },
+    errorHandling: { value: form.value.errorHandling, rules: transformationRules.errorHandling }
+  };
+
+  // Add config field validations
+  Object.entries(configRules).forEach(([field, rules]) => {
+    validationFields[`config.${field}`] = {
+      value: form.value.config[field],
+      rules,
+      options: {
+        operator: form.value.config.operator,
+        aggregationType: form.value.config.aggregationType
+      }
+    };
+  });
+
+  const isValid = await validateForm(validationFields);
+
+  if (isValid) {
+    emit('save', { ...form.value });
   }
 };
 </script>

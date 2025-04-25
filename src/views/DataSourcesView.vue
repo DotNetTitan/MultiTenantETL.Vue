@@ -402,14 +402,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
+import { useDataSource } from '@/composables/useDataSource';
 
 const route = useRoute();
 const router = useRouter();
 const tenantStore = useTenantStore();
+
+const { validateConnection } = useDataSource();
 
 // Data table
 const headers = [
@@ -769,6 +772,121 @@ async function deleteDataSource() {
   }
 }
 
+const validateSchema = async (dataSource) => {
+  if (dataSource.type === 'Database') {
+    return validateDatabaseSchema(dataSource);
+  } else if (dataSource.type === 'File') {
+    return validateFileSchema(dataSource);
+  } else if (dataSource.type === 'API') {
+    return validateApiSchema(dataSource);
+  }
+  return { isValid: false, errors: ['Invalid data source type'] };
+};
+
+const validateDatabaseSchema = async (dataSource) => {
+  const errors = [];
+  
+  if (!dataSource.database?.provider) {
+    errors.push('Database provider is required');
+  }
+  if (!dataSource.database?.server) {
+    errors.push('Server name is required');
+  }
+  if (!dataSource.database?.databaseName) {
+    errors.push('Database name is required');
+  }
+  if (dataSource.requiresCredentials) {
+    if (!dataSource.credentials?.username) {
+      errors.push('Username is required');
+    }
+    if (!dataSource.credentials?.password) {
+      errors.push('Password is required');
+    }
+  }
+  
+  // Validate port if provided
+  if (dataSource.database?.port && isNaN(Number(dataSource.database.port))) {
+    errors.push('Port must be a valid number');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+const validateFileSchema = async (dataSource) => {
+  const errors = [];
+  
+  if (!dataSource.file?.storageType) {
+    errors.push('Storage type is required');
+  }
+  if (!dataSource.file?.path) {
+    errors.push('File path is required');
+  }
+  if (!dataSource.file?.fileType) {
+    errors.push('File type is required');
+  }
+  
+  if (dataSource.file?.fileType === 'CSV' && !dataSource.file?.delimiter) {
+    errors.push('Delimiter is required for CSV files');
+  }
+  
+  if (dataSource.requiresCredentials && ['SFTP', 'S3'].includes(dataSource.file?.storageType)) {
+    if (!dataSource.credentials?.username) {
+      errors.push('Username is required for ' + dataSource.file.storageType);
+    }
+    if (!dataSource.credentials?.password) {
+      errors.push('Password/key is required for ' + dataSource.file.storageType);
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+const validateApiSchema = async (dataSource) => {
+  const errors = [];
+  
+  if (!dataSource.api?.baseUrl) {
+    errors.push('Base URL is required');
+  } else {
+    try {
+      new URL(dataSource.api.baseUrl);
+    } catch {
+      errors.push('Base URL must be a valid URL');
+    }
+  }
+  
+  if (!dataSource.api?.dataFormat) {
+    errors.push('Data format is required');
+  }
+  
+  if (dataSource.api?.authType === 'Bearer Token' && !dataSource.credentials?.token) {
+    errors.push('Bearer token is required');
+  }
+  
+  if (dataSource.api?.authType === 'API Key' && !dataSource.credentials?.apiKey) {
+    errors.push('API key is required');
+  }
+  
+  if (dataSource.api?.authType === 'Basic' && dataSource.requiresCredentials) {
+    if (!dataSource.credentials?.username) {
+      errors.push('Username is required for Basic auth');
+    }
+    if (!dataSource.credentials?.password) {
+      errors.push('Password is required for Basic auth');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 async function saveDataSource() {
   try {
     savingDataSource.value = true;
@@ -776,6 +894,34 @@ async function saveDataSource() {
     // Validate form if refs are available
     if (form.value?.validate && !(await form.value.validate())) {
       return;
+    }
+    
+    // Validate schema
+    const schemaValidation = await validateSchema(editedDataSource.value);
+    if (!schemaValidation.isValid) {
+      // Show validation errors to user
+      const errorDialog = {
+        show: true,
+        title: 'Validation Error',
+        message: schemaValidation.errors.join('\n'),
+        type: 'error'
+      };
+      emit('show-error', errorDialog);
+      return;
+    }
+    
+    // Test connection if credentials are provided
+    if (editedDataSource.value.requiresCredentials) {
+      const connectionTest = await validateConnection(editedDataSource.value);
+      if (!connectionTest.success) {
+        const confirmContinue = await confirm(
+          'Connection test failed. Are you sure you want to save this data source?\n\n' +
+          'Error: ' + connectionTest.message
+        );
+        if (!confirmContinue) {
+          return;
+        }
+      }
     }
     
     // Simulate API call
@@ -799,8 +945,16 @@ async function saveDataSource() {
     
     showCreateDialog.value = false;
     editedDataSource.value = createEmptyDataSource();
+    
+    // Show success message
+    emit('show-success', {
+      message: `Data source ${editedDataSource.value.id ? 'updated' : 'created'} successfully`
+    });
   } catch (error) {
     console.error('Error saving data source:', error);
+    emit('show-error', {
+      message: 'Failed to save data source: ' + error.message
+    });
   } finally {
     savingDataSource.value = false;
   }
@@ -813,26 +967,25 @@ async function testConnection(dataSource) {
     testingConnection.value = true;
     connectionTestResult.value = false;
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const result = await validateConnection(dataSource);
     
-    // Simulate random success/failure for demo purposes
-    const success = Math.random() > 0.3;
-    connectionTestSuccess.value = success;
-    connectionTestMessage.value = success
+    connectionTestSuccess.value = result.success;
+    connectionTestMessage.value = result.success
       ? `Successfully connected to ${dataSource.name}`
-      : `Failed to connect to ${dataSource.name}. Please check your credentials and connection details.`;
+      : `Failed to connect to ${dataSource.name}: ${result.message}`;
     
     connectionTestResult.value = true;
   } catch (error) {
     console.error('Error testing connection:', error);
     connectionTestSuccess.value = false;
-    connectionTestMessage.value = `An error occurred: ${error.message}`;
+    connectionTestMessage.value = `Error testing connection: ${error.message}`;
     connectionTestResult.value = true;
   } finally {
     testingConnection.value = false;
   }
 }
+
+let tenantSubscription = null;
 
 onMounted(async () => {
   await fetchDataSources();
@@ -843,11 +996,26 @@ onMounted(async () => {
   }
   
   // Refetch if tenant changes
-  tenantStore.$subscribe(() => {
+  tenantSubscription = tenantStore.$subscribe(() => {
     if (tenantStore.currentTenantId) {
       fetchDataSources();
     }
   });
+});
+
+onBeforeUnmount(() => {
+  // Clean up tenant subscription
+  if (tenantSubscription) {
+    tenantSubscription();
+  }
+  
+  // Reset all state
+  showCreateDialog.value = false;
+  showDeleteDialog.value = false;
+  showConnectionDialog.value = false;
+  dataSourceToDelete.value = null;
+  connectionTestSource.value = null;
+  editedDataSource.value = createEmptyDataSource();
 });
 </script>
 
