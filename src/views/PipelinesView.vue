@@ -235,6 +235,7 @@
                 <v-switch
                   v-model="editedPipeline.isScheduled"
                   label="Schedule this pipeline"
+                  color="primary"
                   hide-details
                   class="mb-2"
                 />

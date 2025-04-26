@@ -90,17 +90,19 @@
 
     <!-- Scheduling -->
     <div class="border rounded-lg p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium">Schedule</h3>
-        <label class="inline-flex items-center">
-          <input
-            type="checkbox"
+      <v-row align="center" class="mb-4">
+        <v-col>
+          <h3 class="text-lg font-medium">Schedule</h3>
+        </v-col>
+        <v-col cols="auto">
+          <v-switch
             v-model="form.isScheduled"
-            class="form-checkbox"
-          />
-          <span class="ml-2">Enable Scheduling</span>
-        </label>
-      </div>
+            label="Schedule this pipeline"
+            color="primary"
+            hide-details
+          ></v-switch>
+        </v-col>
+      </v-row>
 
       <div v-if="form.isScheduled" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
@@ -612,20 +614,20 @@ const getNextExecutions = (schedule, count = 5) => {
         break;
 
       case 'Monthly':
-        const targetDay = parseInt(schedule.dayOfMonth);
+        const monthlyTargetDay = parseInt(schedule.dayOfMonth);
         const [monthlyHours, monthlyMinutes] = schedule.time.split(':');
         for (let i = 0; i < count; i++) {
           date = new Date(date);
-          date.setDate(targetDay);
+          date.setDate(monthlyTargetDay);
           date.setHours(parseInt(monthlyHours));
           date.setMinutes(parseInt(monthlyMinutes));
           date.setSeconds(0);
           date.setMilliseconds(0);
           
-          if (date <= now || date.getDate() !== targetDay) { // Check if we overflowed to next month
+          if (date <= now || date.getDate() !== monthlyTargetDay) { // Check if we overflowed to next month
             date.setDate(1); // Reset to first day
             date.setMonth(date.getMonth() + 1); // Go to next month
-            date.setDate(targetDay); // Try setting target day again
+            date.setDate(monthlyTargetDay); // Try setting target day again
           }
           executions.push(new Date(date));
           date.setMonth(date.getMonth() + 1);

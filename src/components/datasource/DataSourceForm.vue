@@ -68,16 +68,16 @@
           :error="errors.connectionString"
           :disabled="!form.customConnection"
         />
-        <div class="mt-2">
-          <label class="inline-flex items-center">
-            <input
-              type="checkbox"
+        <v-row align="center" class="mt-2">
+          <v-col cols="auto">
+            <v-switch
               v-model="form.customConnection"
-              class="form-checkbox"
-            />
-            <span class="ml-2">Custom Connection String</span>
-          </label>
-        </div>
+              label="Custom Connection String"
+              color="primary"
+              hide-details
+            ></v-switch>
+          </v-col>
+        </v-row>
       </div>
     </div>
 
@@ -145,14 +145,14 @@
           :error="errors.delimiter"
         />
         <div class="mt-2">
-          <label class="inline-flex items-center">
-            <input
-              type="checkbox"
-              v-model="form.hasHeader"
-              class="form-checkbox"
-            />
-            <span class="ml-2">Has Header Row</span>
-          </label>
+          <v-switch
+            v-model="form.hasHeader"
+            label="Has Header Row"
+            color="primary"
+            inset
+            density="compact"
+            hide-details
+          />
         </div>
       </div>
     </div>

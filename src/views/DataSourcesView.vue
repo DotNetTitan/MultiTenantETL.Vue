@@ -140,6 +140,7 @@
                 <v-switch
                   v-model="editedDataSource.isSource"
                   label="Can be used as source"
+                  color="primary"
                   hide-details
                 />
               </v-col>
@@ -148,6 +149,7 @@
                 <v-switch
                   v-model="editedDataSource.isDestination"
                   label="Can be used as destination"
+                  color="primary"
                   hide-details
                 />
               </v-col>
@@ -156,6 +158,7 @@
                 <v-switch
                   v-model="editedDataSource.requiresCredentials"
                   label="Requires credentials"
+                  color="primary"
                   hide-details
                   @update:model-value="updateCredentialsFields"
                 />
@@ -697,7 +700,7 @@ async function fetchDataSources() {
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
-        return aVal < bVal ? 1 : -1;
+        return aVal < bVal ? -1 : 1;
       }
     });
   } catch (error) {

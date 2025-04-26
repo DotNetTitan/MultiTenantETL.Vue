@@ -25,6 +25,8 @@
           v-model="form.enableNotifications"
           label="Enable Notifications"
           color="primary"
+          inset
+          density="compact"
           hide-details
           @update:model-value="updateField('enableNotifications', $event)"
         />
