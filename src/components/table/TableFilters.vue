@@ -77,16 +77,20 @@ const selectedSort = ref('');
 
 // Initialize selected filters
 watch(() => props.filters, (newFilters) => {
+  if (!newFilters) return;
+  
   newFilters.forEach(filter => {
-    if (!(filter.key in selectedFilters.value)) {
-      selectedFilters.value[filter.key] = filter.default || filter.items[0]?.value;
+    if (!filter?.key || !(filter.key in selectedFilters.value)) {
+      selectedFilters.value[filter.key] = filter.default ?? (filter.items?.[0]?.value ?? null);
     }
   });
 }, { immediate: true });
 
 // Initialize sort
 watch(() => props.sortOptions, (newOptions) => {
-  if (!selectedSort.value && newOptions.length > 0) {
+  if (!newOptions?.length) return;
+  
+  if (!selectedSort.value) {
     selectedSort.value = newOptions[0].value;
   }
 }, { immediate: true });

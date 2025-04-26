@@ -2,38 +2,40 @@
 <template>
   <v-layout>
     <v-app-bar :color="appBarColor" density="compact" elevation="1">
-      <div class="d-flex align-center">
-        <v-app-bar-nav-icon @click="drawer = !drawer" />
-        <v-app-bar-title class="text-truncate font-weight-medium">
-          ETL Portal
-        </v-app-bar-title>
-      </div>
-      
-      <v-spacer />
-      
-      <div class="d-flex align-center">
-        <tenant-selector class="mr-2" />
+      <template #default>
+        <div class="d-flex align-center">
+          <v-app-bar-nav-icon @click="drawer = !drawer" />
+          <v-app-bar-title class="text-truncate font-weight-medium">
+            ETL Portal
+          </v-app-bar-title>
+        </div>
         
-        <v-switch
-          v-model="isDarkMode"
-          hide-details
-          inset
-          density="compact"
-          color="purple"
-          class="mt-1 mr-3"
-          true-icon="mdi-weather-night"
-          false-icon="mdi-weather-sunny"
-          @update:model-value="toggleTheme"
-        />
+        <v-spacer />
         
-        <v-btn 
-          icon 
-          class="mr-1" 
-          @click="logout"
-        >
-          <v-icon>mdi-logout</v-icon>
-        </v-btn>
-      </div>
+        <div class="d-flex align-center">
+          <tenant-selector class="mr-2" />
+          
+          <v-switch
+            v-model="isDarkMode"
+            hide-details
+            inset
+            density="compact"
+            color="purple"
+            class="mt-1 mr-3"
+            true-icon="mdi-weather-night"
+            false-icon="mdi-weather-sunny"
+            @update:model-value="toggleTheme"
+          />
+          
+          <v-btn 
+            icon 
+            class="mr-1" 
+            @click="logout"
+          >
+            <v-icon>mdi-logout</v-icon>
+          </v-btn>
+        </div>
+      </template>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -42,42 +44,62 @@
       :theme="theme.global.name.value"
       class="sidebar-drawer"
     >
-      <!-- User profile section -->
-      <v-list>
-        <v-list-item>
-          <template v-slot:prepend>
-            <v-avatar color="primary">
-              <span class="text-h6 text-white">{{ userInitials }}</span>
-            </v-avatar>
-          </template>
-          <v-list-item-title>{{ userName }}</v-list-item-title>
-          <v-list-item-subtitle>{{ userRole }}</v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
+      <template #default>
+        <!-- User profile section -->
+        <v-list>
+          <v-list-item>
+            <template #prepend>
+              <v-avatar color="primary">
+                <template #default>
+                  <span class="text-h6 text-white">{{ userInitials }}</span>
+                </template>
+              </v-avatar>
+            </template>
+            <v-list-item-title>{{ userName }}</v-list-item-title>
+            <v-list-item-subtitle>{{ userRole }}</v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
 
-      <v-divider class="my-2"></v-divider>
+        <v-divider class="my-2"></v-divider>
 
-      <!-- Navigation Items -->
-      <v-list density="compact" nav>
-        <v-list-item to="/" prepend-icon="mdi-view-dashboard" title="Dashboard" rounded="lg" />
-        
-        <v-list-subheader>DATA</v-list-subheader>
-        
-        <v-list-item to="/pipelines" prepend-icon="mdi-pipe" title="Pipelines" rounded="lg" />
-        <v-list-item to="/data-sources" prepend-icon="mdi-database" title="Data Sources" rounded="lg" />
-        <v-list-item to="/executions" prepend-icon="mdi-history" title="Executions" rounded="lg" />
-        <v-list-item to="/transformations" prepend-icon="mdi-transfer" title="Transformations" rounded="lg" />
-        
-        <template v-if="isAdmin">
-          <v-list-subheader>ADMINISTRATION</v-list-subheader>
+        <!-- Navigation Items -->
+        <v-list density="compact" nav>
+          <v-list-item to="/" prepend-icon="mdi-view-dashboard" title="Dashboard" rounded="lg">
+            <template #title>Dashboard</template>
+          </v-list-item>
           
-          <v-list-item to="/tenants" prepend-icon="mdi-office-building" title="Tenants" rounded="lg" />
-          <v-list-item to="/users" prepend-icon="mdi-account-group" title="Users" rounded="lg" />
-          <v-list-item to="/settings" prepend-icon="mdi-cog" title="Settings" rounded="lg" />
-        </template>
-      </v-list>
+          <v-list-subheader>DATA</v-list-subheader>
+          
+          <v-list-item to="/pipelines" prepend-icon="mdi-pipe" rounded="lg">
+            <template #title>Pipelines</template>
+          </v-list-item>
+          <v-list-item to="/data-sources" prepend-icon="mdi-database" rounded="lg">
+            <template #title>Data Sources</template>
+          </v-list-item>
+          <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
+            <template #title>Executions</template>
+          </v-list-item>
+          <v-list-item to="/transformations" prepend-icon="mdi-transfer" rounded="lg">
+            <template #title>Transformations</template>
+          </v-list-item>
+          
+          <template v-if="isAdmin">
+            <v-list-subheader>ADMINISTRATION</v-list-subheader>
+            
+            <v-list-item to="/tenants" prepend-icon="mdi-office-building" rounded="lg">
+              <template #title>Tenants</template>
+            </v-list-item>
+            <v-list-item to="/users" prepend-icon="mdi-account-group" rounded="lg">
+              <template #title>Users</template>
+            </v-list-item>
+            <v-list-item to="/settings" prepend-icon="mdi-cog" rounded="lg">
+              <template #title>Settings</template>
+            </v-list-item>
+          </template>
+        </v-list>
+      </template>
       
-      <template v-slot:append>
+      <template #append>
         <v-divider></v-divider>
         <div class="px-2 py-1 text-center text-caption text-disabled">
           v1.2.0 • © 2025 ETL Portal

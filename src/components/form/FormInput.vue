@@ -31,6 +31,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  prependIcon: {
+    type: String,
+    default: ''
+  },
   rules: {
     type: Array,
     default: () => []

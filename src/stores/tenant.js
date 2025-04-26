@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import { tenantService } from '@/services/tenantService'
+import api from '@/services/api'
 
 export const useTenantStore = defineStore('tenant', () => {
   const currentTenantId = ref(localStorage.getItem('currentTenantId') || null)
@@ -17,41 +18,19 @@ export const useTenantStore = defineStore('tenant', () => {
     try {
       loading.value = true
       error.value = null
-
-      // Mock data instead of API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      tenants.value = [
-        {
-          id: '1',
-          name: 'Acme Corporation',
-          identifier: 'acme',
-          description: 'A multinational company producing various products',
-          isActive: true
-        },
-        {
-          id: '2',
-          name: 'Globex Corporation',
-          identifier: 'globex',
-          description: 'Electronics manufacturing company',
-          isActive: true
-        },
-        {
-          id: '3',
-          name: 'Initech',
-          identifier: 'initech',
-          description: 'Software company',
-          isActive: true
-        }
-      ]
-      
-      // Set first tenant as default if none selected and user has access to tenants
-      if (!currentTenantId.value && tenants.value.length > 0) {
-        setCurrentTenant(tenants.value[0].id)
-      }
+      const response = await tenantService.getAll()
+      tenants.value = response
     } catch (err) {
       console.error('Error fetching tenants:', err)
-      error.value = 'Failed to load tenants'
+      if (err.code === 'ERR_CONNECTION_REFUSED') {
+        error.value = 'Unable to connect to the server. Please check if the API server is running.'
+      } else if (err.response?.status === 401) {
+        error.value = 'Authentication required'
+      } else {
+        error.value = 'Failed to load tenants. Please try again later.'
+      }
+      tenants.value = []
+      throw err
     } finally {
       loading.value = false
     }
@@ -61,18 +40,16 @@ export const useTenantStore = defineStore('tenant', () => {
     try {
       loading.value = true
       error.value = null
-      
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      const newTenant = {
-        ...tenantData,
-        id: Math.random().toString(36).substring(2, 15)
-      }
+      const newTenant = await tenantService.create(tenantData)
       tenants.value.push(newTenant)
       return newTenant
     } catch (err) {
       console.error('Error creating tenant:', err)
-      error.value = 'Failed to create tenant'
+      if (err.code === 'ERR_CONNECTION_REFUSED') {
+        error.value = 'Unable to connect to the server. Please check if the API server is running.'
+      } else {
+        error.value = 'Failed to create tenant. Please try again later.'
+      }
       throw err
     } finally {
       loading.value = false
@@ -82,18 +59,11 @@ export const useTenantStore = defineStore('tenant', () => {
   function setCurrentTenant(tenantId) {
     currentTenantId.value = tenantId
     localStorage.setItem('currentTenantId', tenantId)
-    
-    // Set tenant ID in request headers for API calls
     if (tenantId) {
-      axios.defaults.headers.common['X-Tenant-Id'] = tenantId
+      api.defaults.headers['X-Tenant-Id'] = tenantId
     } else {
-      delete axios.defaults.headers.common['X-Tenant-Id']
+      delete api.defaults.headers['X-Tenant-Id']
     }
-  }
-
-  // Initialize axios header if tenant ID exists
-  if (currentTenantId.value) {
-    axios.defaults.headers.common['X-Tenant-Id'] = currentTenantId.value
   }
 
   return {

@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <FormInput
-          :model-value="form.name"
+          v-model="form.name"
           label="Tenant Name"
           prepend-icon="mdi-domain"
           @update:model-value="updateField('name', $event)"
@@ -12,7 +12,7 @@
       </v-col>
       <v-col cols="12">
         <FormInput
-          :model-value="form.identifier"
+          v-model="form.identifier"
           label="Identifier"
           prepend-icon="mdi-identifier"
           @update:model-value="updateField('identifier', $event)"
@@ -23,7 +23,7 @@
       </v-col>
       <v-col cols="12">
         <FormInput
-          :model-value="form.description"
+          v-model="form.description"
           label="Description"
           type="textarea"
           rows="2"
@@ -33,7 +33,7 @@
       </v-col>
       <v-col cols="12" md="6">
         <FormInput
-          :model-value="form.contactName"
+          v-model="form.contactName"
           label="Contact Name"
           prepend-icon="mdi-account"
           @update:model-value="updateField('contactName', $event)"
@@ -41,7 +41,7 @@
       </v-col>
       <v-col cols="12" md="6">
         <FormInput
-          :model-value="form.contactEmail"
+          v-model="form.contactEmail"
           label="Contact Email"
           prepend-icon="mdi-email"
           @update:model-value="updateField('contactEmail', $event)"
@@ -50,7 +50,7 @@
       </v-col>
       <v-col cols="12">
         <v-switch
-          :model-value="form.isActive"
+          v-model="form.isActive"
           label="Active"
           color="success"
           hide-details
@@ -69,15 +69,7 @@ import { useFormValidation, required } from '@/composables/useFormValidation';
 const props = defineProps({
   tenant: {
     type: Object,
-    default: () => ({
-      id: null,
-      name: '',
-      identifier: '',
-      description: '',
-      contactName: '',
-      contactEmail: '',
-      isActive: true
-    })
+    required: true
   }
 });
 
@@ -85,25 +77,15 @@ const emit = defineEmits(['update:tenant', 'submit']);
 const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 const form = ref({ ...props.tenant });
 
-// Custom validation rules
-const identifierRule = (value) => {
-  if (!value) return null;
-  return /^[a-z0-9-]+$/.test(value) || 'Identifier can only contain lowercase letters, numbers, and hyphens';
-};
-
-const emailRule = (value) => {
-  if (!value) return null; // Email is optional
-  return /.+@.+\..+/.test(value) || 'Email must be valid';
-};
-
 // Clear errors when form changes
 watch(() => form.value, () => {
   clearErrors();
 }, { deep: true });
 
-onMounted(() => {
-  form.value = { ...props.tenant };
-});
+// Watch for prop changes
+watch(() => props.tenant, (newValue) => {
+  form.value = { ...newValue };
+}, { deep: true });
 
 const updateField = (field, value) => {
   form.value[field] = value;
@@ -123,6 +105,17 @@ const updateField = (field, value) => {
   }
   
   emit('update:tenant', { ...form.value });
+};
+
+// Custom validation rules
+const identifierRule = (value) => {
+  if (!value) return null;
+  return /^[a-z0-9-]+$/.test(value) || 'Identifier can only contain lowercase letters, numbers, and hyphens';
+};
+
+const emailRule = (value) => {
+  if (!value) return null; // Email is optional
+  return /.+@.+\..+/.test(value) || 'Email must be valid';
 };
 
 // Mock function to check identifier uniqueness

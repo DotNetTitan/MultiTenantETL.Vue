@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
 import router from '@/router'
+import { authService } from '@/services/authService'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
@@ -17,38 +17,31 @@ export const useAuthStore = defineStore('auth', () => {
       loading.value = true
       error.value = null
       
-      // TODO: Replace with actual API endpoint
-      // Mock login for now
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Simulate successful login
-      const response = {
-        data: {
-          token: 'mock-jwt-token',
-          user: {
-            id: '1',
-            username: credentials.username,
-            email: `${credentials.username}@example.com`,
-            isAdmin: credentials.username === 'admin'
-          }
-        }
-      }
-      
-      setUser(response.data.user)
-      setToken(response.data.token)
+      const response = await authService.login(credentials)
+      setUser(response.user)
+      setToken(response.token)
       router.push('/')
     } catch (err) {
       console.error('Login error:', err)
       error.value = 'Invalid username or password'
+      throw err
     } finally {
       loading.value = false
     }
   }
 
-  function logout() {
-    setUser(null)
-    setToken(null)
-    router.push('/login')
+  async function logout() {
+    try {
+      if (token.value) {
+        await authService.logout()
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      setUser(null)
+      setToken(null)
+      router.push('/login')
+    }
   }
 
   function setUser(userData) {
@@ -62,19 +55,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setToken(newToken) {
     token.value = newToken
-    
     if (newToken) {
       localStorage.setItem('token', newToken)
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
     } else {
       localStorage.removeItem('token')
-      delete axios.defaults.headers.common['Authorization']
     }
-  }
-
-  // Initialize axios header if token exists
-  if (token.value) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
 
   return {

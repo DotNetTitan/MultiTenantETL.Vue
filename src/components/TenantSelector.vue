@@ -9,6 +9,8 @@
       bg-color="transparent"
       class="tenant-select"
       :loading="tenantStore.loading"
+      :error="!!tenantStore.error"
+      :error-messages="tenantStore.error"
       @update:model-value="changeTenant"
     >
       <template v-slot:prepend>
@@ -27,6 +29,7 @@ const selectedTenantId = ref(tenantStore.currentTenantId);
 
 // Convert tenants array to format needed for v-select
 const tenantItems = computed(() => {
+  if (tenantStore.error) return [];
   return tenantStore.tenants.map(tenant => ({
     title: tenant.name,
     value: tenant.id,
@@ -44,7 +47,12 @@ watch(() => tenantStore.currentTenantId, (newTenantId) => {
 });
 
 onMounted(async () => {
-  await tenantStore.fetchTenants();
+  try {
+    await tenantStore.fetchTenants();
+  } catch (error) {
+    // Error is already handled in the store
+    console.debug('Failed to fetch tenants in TenantSelector');
+  }
 });
 </script>
 
@@ -60,5 +68,9 @@ onMounted(async () => {
 
 .tenant-select :deep(.v-field__append-inner) {
   color: white;
+}
+
+.tenant-select :deep(.v-field--error) {
+  color: rgb(var(--v-theme-error));
 }
 </style>
