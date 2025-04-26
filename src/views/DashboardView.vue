@@ -216,150 +216,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useTenantStore } from '@/stores/tenant';
+import { onMounted } from 'vue';
+import { useDashboard } from '@/composables/useDashboard';
 
-const tenantStore = useTenantStore();
-const loading = ref(true);
-const recentExecutions = ref([]);
-const stats = ref({
-  totalPipelines: 0,
-  activePipelines: 0,
-  dataSources: 0,
-  recentExecutions: 0
-});
-const statusDistribution = ref([
-  { name: 'Completed', count: 0 },
-  { name: 'Running', count: 0 },
-  { name: 'Failed', count: 0 }
-]);
-
-function getStatusColor(status) {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return 'success';
-    case 'running':
-      return 'info';
-    case 'failed':
-      return 'error';
-    case 'cancelled':
-      return 'warning';
-    default:
-      return 'grey';
-  }
-}
-
-function getStatusIcon(status) {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return 'mdi-check-circle';
-    case 'running':
-      return 'mdi-progress-clock';
-    case 'failed':
-      return 'mdi-alert-circle';
-    case 'cancelled':
-      return 'mdi-cancel';
-    default:
-      return 'mdi-information';
-  }
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString();
-}
-
-function formatDuration(milliseconds) {
-  if (!milliseconds) return '-';
-  
-  const seconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`;
-  } else {
-    return `${seconds}s`;
-  }
-}
-
-async function fetchDashboardData() {
-  try {
-    loading.value = true;
-    
-    // In a real app, these would be actual API calls
-    // For now, using simulated data
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock data
-    stats.value = {
-      totalPipelines: 12,
-      activePipelines: 3,
-      dataSources: 8,
-      recentExecutions: 27
-    };
-    
-    statusDistribution.value = [
-      { name: 'Completed', count: 18 },
-      { name: 'Running', count: 3 },
-      { name: 'Failed', count: 6 }
-    ];
-    
-    recentExecutions.value = [
-      {
-        id: '1',
-        pipelineName: 'Sales Data ETL',
-        startTime: new Date(Date.now() - 30 * 60000).toISOString(),
-        duration: 245000,
-        status: 'Completed',
-        rowsProcessed: 12345
-      },
-      {
-        id: '2',
-        pipelineName: 'Customer Import',
-        startTime: new Date(Date.now() - 120 * 60000).toISOString(),
-        duration: 183000,
-        status: 'Completed',
-        rowsProcessed: 5280
-      },
-      {
-        id: '3',
-        pipelineName: 'Product Sync',
-        startTime: new Date(Date.now() - 10 * 60000).toISOString(),
-        duration: 450000,
-        status: 'Running',
-        rowsProcessed: 3200
-      },
-      {
-        id: '4',
-        pipelineName: 'Analytics Export',
-        startTime: new Date(Date.now() - 180 * 60000).toISOString(),
-        duration: 360000,
-        status: 'Failed',
-        rowsProcessed: 0
-      }
-    ];
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-  } finally {
-    loading.value = false;
-  }
-}
+const {
+  loading,
+  stats,
+  recentExecutions,
+  statusDistribution,
+  getStatusColor,
+  getStatusIcon,
+  formatDate,
+  formatDuration,
+  loadDashboardData,
+  setupTenantSubscription
+} = useDashboard();
 
 onMounted(() => {
-  fetchDashboardData();
-  
-  // Refetch if tenant changes
-  tenantStore.$subscribe(() => {
-    if (tenantStore.currentTenantId) {
-      fetchDashboardData();
-    }
-  });
+  loadDashboardData();
+  setupTenantSubscription();
 });
 </script>
 

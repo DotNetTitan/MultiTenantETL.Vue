@@ -23,7 +23,7 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchPipelines"
+              @update:model-value="loadPipelines"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -34,7 +34,7 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchPipelines"
+              @update:model-value="loadPipelines"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -45,7 +45,7 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchPipelines"
+              @update:model-value="loadPipelines"
             />
           </v-col>
         </v-row>
@@ -93,7 +93,7 @@
               variant="text"
               size="small"
               color="success"
-              @click="executePipeline(item)"
+              @click="handleExecutePipeline(item)"
               :disabled="item.status === 'Running'"
               title="Execute pipeline"
             >
@@ -125,7 +125,7 @@
           {{ editedPipeline.id ? 'Edit Pipeline' : 'Create Pipeline' }}
         </v-card-title>
         <v-card-text>
-          <v-form ref="form" @submit.prevent="savePipeline">
+          <v-form ref="form" @submit.prevent="handleSavePipeline">
             <v-row>
               <v-col cols="12">
                 <v-text-field
@@ -281,7 +281,7 @@
           </v-btn>
           <v-btn
             color="primary"
-            @click="savePipeline"
+            @click="handleSavePipeline"
             :loading="savingPipeline"
           >
             Save
@@ -312,7 +312,7 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="deletePipeline"
+            @click="handleDeletePipeline"
             :loading="deletingPipeline"
           >
             Delete
@@ -379,13 +379,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { useTenantStore } from '@/stores/tenant';
+import { usePipeline } from '@/composables/usePipeline';
 
 const router = useRouter();
-const tenantStore = useTenantStore();
+
+// Get functionality from composables
+const {
+  pipelines,
+  loading,
+  savingPipeline,
+  deletingPipeline,
+  search,
+  statusFilter,
+  sortBy,
+  statusOptions,
+  sortOptions,
+  loadPipelines,
+  savePipeline,
+  deletePipeline,
+  executePipeline,
+  createEmptyPipeline,
+  getStatusColor,
+  formatDate,
+  setupTenantSubscription
+} = usePipeline();
 
 // Data table
 const headers = [
@@ -398,30 +417,9 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
 ];
 
-// Filters and sorting
-const search = ref('');
-const statusFilter = ref('All');
-const sortBy = ref('name_asc');
-const statusOptions = ref([
-  { title: 'All Statuses', value: 'All' },
-  { title: 'Idle', value: 'Idle' },
-  { title: 'Running', value: 'Running' },
-  { title: 'Failed', value: 'Failed' }
-]);
-const sortOptions = ref([
-  { title: 'Name (A-Z)', value: 'name_asc' },
-  { title: 'Name (Z-A)', value: 'name_desc' },
-  { title: 'Last Run (Newest)', value: 'lastRun_desc' },
-  { title: 'Last Run (Oldest)', value: 'lastRun_asc' }
-]);
-
 // Pipeline data
-const pipelines = ref([]);
 const dataSources = ref([]);
 const transformationTypes = ref(['Filter', 'Map', 'Join', 'Aggregate', 'Enrich', 'Custom']);
-const loading = ref(false);
-const savingPipeline = ref(false);
-const deletingPipeline = ref(false);
 
 // Dialog controls
 const showCreateDialog = ref(false);
@@ -441,151 +439,22 @@ const editedTransformation = ref({
 });
 const editedTransformationIndex = ref(-1);
 
-function createEmptyPipeline() {
-  return {
-    id: null,
-    name: '',
-    description: '',
-    sourceId: null,
-    destinationId: null,
-    transformations: [],
-    isScheduled: false,
-    schedule: {
-      frequency: 'Daily',
-      time: '00:00',
-      cronExpression: '0 0 * * *'
-    }
-  };
-}
-
-function getStatusColor(status) {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return 'success';
-    case 'running':
-      return 'info';
-    case 'failed':
-      return 'error';
-    case 'idle':
-      return 'grey';
-    default:
-      return 'grey';
-  }
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString();
-}
-
-async function fetchPipelines() {
-  try {
-    loading.value = true;
-    
-    // In a real app, these would be actual API calls
-    // For now, using simulated data
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock data
-    pipelines.value = [
-      {
-        id: '1',
-        name: 'Sales Data ETL',
-        description: 'Extract sales data from SQL Server, transform, and load to data warehouse',
-        sourceName: 'SQL Server - Sales',
-        destinationName: 'Data Warehouse',
-        status: 'Idle',
-        lastRunAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        isScheduled: true
-      },
-      {
-        id: '2',
-        name: 'Customer Import',
-        description: 'Import customer data from CSV files',
-        sourceName: 'SFTP - Customer Files',
-        destinationName: 'Customer Database',
-        status: 'Idle',
-        lastRunAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        isScheduled: true
-      },
-      {
-        id: '3',
-        name: 'Product Sync',
-        description: 'Sync product data between systems',
-        sourceName: 'ERP API',
-        destinationName: 'E-commerce Platform',
-        status: 'Running',
-        lastRunAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-        isScheduled: false
-      },
-      {
-        id: '4',
-        name: 'Analytics Export',
-        description: 'Export analytics data to reporting system',
-        sourceName: 'Analytics DB',
-        destinationName: 'Reporting System',
-        status: 'Failed',
-        lastRunAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        isScheduled: true
-      }
-    ];
-    
-    // Apply filters
-    if (search.value) {
-      const searchLower = search.value.toLowerCase();
-      pipelines.value = pipelines.value.filter(p => 
-        p.name.toLowerCase().includes(searchLower) || 
-        p.description.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    if (statusFilter.value !== 'All') {
-      pipelines.value = pipelines.value.filter(p => p.status === statusFilter.value);
-    }
-    
-    // Apply sorting
-    const [field, direction] = sortBy.value.split('_');
-    pipelines.value.sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
-      
-      if (field === 'lastRun') {
-        aVal = a.lastRunAt ? new Date(a.lastRunAt).getTime() : 0;
-        bVal = b.lastRunAt ? new Date(b.lastRunAt).getTime() : 0;
-      }
-      
-      if (direction === 'asc') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching pipelines:', error);
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function fetchDataSources() {
+function fetchDataSources() {
   try {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Mock data
-    dataSources.value = [
-      { id: '1', name: 'SQL Server - Sales', type: 'Database' },
-      { id: '2', name: 'SFTP - Customer Files', type: 'File' },
-      { id: '3', name: 'ERP API', type: 'API' },
-      { id: '4', name: 'Analytics DB', type: 'Database' },
-      { id: '5', name: 'Data Warehouse', type: 'Database' },
-      { id: '6', name: 'Customer Database', type: 'Database' },
-      { id: '7', name: 'E-commerce Platform', type: 'API' },
-      { id: '8', name: 'Reporting System', type: 'API' }
-    ];
+    setTimeout(() => {
+      // Mock data
+      dataSources.value = [
+        { id: '1', name: 'SQL Server - Sales', type: 'Database' },
+        { id: '2', name: 'SFTP - Customer Files', type: 'File' },
+        { id: '3', name: 'ERP API', type: 'API' },
+        { id: '4', name: 'Analytics DB', type: 'Database' },
+        { id: '5', name: 'Data Warehouse', type: 'Database' },
+        { id: '6', name: 'Customer Database', type: 'Database' },
+        { id: '7', name: 'E-commerce Platform', type: 'API' },
+        { id: '8', name: 'Reporting System', type: 'API' }
+      ];
+    }, 300);
   } catch (error) {
     console.error('Error fetching data sources:', error);
   }
@@ -616,25 +485,22 @@ function confirmDelete(pipeline) {
   showDeleteDialog.value = true;
 }
 
-async function deletePipeline() {
+async function handleDeletePipeline() {
   try {
-    deletingPipeline.value = true;
+    const success = await deletePipeline(pipelineToDelete.value.id);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Remove from local array
-    const index = pipelines.value.findIndex(p => p.id === pipelineToDelete.value.id);
-    if (index !== -1) {
-      pipelines.value.splice(index, 1);
+    if (success) {
+      // Remove from local array
+      const index = pipelines.value.findIndex(p => p.id === pipelineToDelete.value.id);
+      if (index !== -1) {
+        pipelines.value.splice(index, 1);
+      }
     }
     
     showDeleteDialog.value = false;
     pipelineToDelete.value = null;
   } catch (error) {
     console.error('Error deleting pipeline:', error);
-  } finally {
-    deletingPipeline.value = false;
   }
 }
 
@@ -680,34 +546,37 @@ function saveTransformation() {
   showTransformationDialog.value = false;
 }
 
-async function savePipeline() {
+async function handleSavePipeline() {
   try {
-    savingPipeline.value = true;
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await savePipeline(editedPipeline.value);
     showCreateDialog.value = false;
     
     // Refresh the list
-    await fetchPipelines();
+    await loadPipelines();
   } catch (error) {
     console.error('Error saving pipeline:', error);
-  } finally {
-    savingPipeline.value = false;
   }
 }
 
-function executePipeline(pipeline) {
-  // Simulate pipeline execution
-  pipeline.status = 'Running';
-  pipeline.lastRunAt = new Date().toISOString();
-  
-  // In a real app, this would call the API endpoint to execute the pipeline
-  // For now, just simulate the execution process
-  setTimeout(() => {
-    pipeline.status = Math.random() > 0.2 ? 'Completed' : 'Failed';
-  }, 5000);
+async function handleExecutePipeline(pipeline) {
+  try {
+    // Execute the pipeline
+    await executePipeline(pipeline.id);
+    
+    // Update the local state to reflect the change
+    pipeline.status = 'Running';
+    pipeline.lastRunAt = new Date().toISOString();
+    
+    // In a real app, you might want to poll for updates or use websockets
+    // to track execution progress. For now, we'll just simulate completion
+    setTimeout(() => {
+      pipeline.status = Math.random() > 0.2 ? 'Completed' : 'Failed';
+      // Refresh the data
+      loadPipelines();
+    }, 5000);
+  } catch (error) {
+    console.error('Error executing pipeline:', error);
+  }
 }
 
 function goToCreateDataSource() {
@@ -716,15 +585,8 @@ function goToCreateDataSource() {
 }
 
 onMounted(async () => {
-  await fetchDataSources();
-  await fetchPipelines();
-  
-  // Refetch if tenant changes
-  tenantStore.$subscribe(() => {
-    if (tenantStore.currentTenantId) {
-      fetchDataSources();
-      fetchPipelines();
-    }
-  });
+  fetchDataSources();
+  loadPipelines();
+  setupTenantSubscription();
 });
 </script>

@@ -1,12 +1,166 @@
 import { ref } from 'vue';
 import { useTransformation } from './useTransformation';
 import { useDataSource } from './useDataSource';
+import { fetchPipelines, fetchPipelineById, savePipeline as apiSavePipeline, deletePipeline as apiDeletePipeline, executePipeline as apiExecutePipeline } from '@/services/pipelineService';
+import { useTenantStore } from '@/stores/tenant';
 
 export function usePipeline() {
   const { validateTransformation, getOutputSchema } = useTransformation();
   const { detectSchema } = useDataSource();
+  const tenantStore = useTenantStore();
   
+  // State
   const error = ref(null);
+  const pipelines = ref([]);
+  const loading = ref(false);
+  const savingPipeline = ref(false);
+  const deletingPipeline = ref(false);
+  
+  // Form data
+  const search = ref('');
+  const statusFilter = ref('All');
+  const sortBy = ref('name_asc');
+  
+  // Status and sort options for UI
+  const statusOptions = [
+    { title: 'All Statuses', value: 'All' },
+    { title: 'Idle', value: 'Idle' },
+    { title: 'Running', value: 'Running' },
+    { title: 'Failed', value: 'Failed' }
+  ];
+  
+  const sortOptions = [
+    { title: 'Name (A-Z)', value: 'name_asc' },
+    { title: 'Name (Z-A)', value: 'name_desc' },
+    { title: 'Last Run (Newest)', value: 'lastRun_desc' },
+    { title: 'Last Run (Oldest)', value: 'lastRun_asc' }
+  ];
+  
+  // Fetch pipeline list with optional filters
+  const loadPipelines = async () => {
+    try {
+      loading.value = true;
+      
+      const filters = {
+        search: search.value,
+        status: statusFilter.value,
+        sortBy: sortBy.value
+      };
+      
+      pipelines.value = await fetchPipelines(filters);
+    } catch (err) {
+      error.value = err.message;
+      console.error('Error loading pipelines:', err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Fetch pipeline by ID
+  const getPipeline = async (id) => {
+    try {
+      loading.value = true;
+      return await fetchPipelineById(id);
+    } catch (err) {
+      error.value = err.message;
+      console.error(`Error getting pipeline ${id}:`, err);
+      return null;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // Save (create or update) a pipeline
+  const savePipeline = async (pipeline) => {
+    try {
+      savingPipeline.value = true;
+      const result = await apiSavePipeline(pipeline);
+      return result;
+    } catch (err) {
+      error.value = err.message;
+      console.error('Error saving pipeline:', err);
+      throw err;
+    } finally {
+      savingPipeline.value = false;
+    }
+  };
+
+  // Delete a pipeline
+  const deletePipeline = async (id) => {
+    try {
+      deletingPipeline.value = true;
+      await apiDeletePipeline(id);
+      return true;
+    } catch (err) {
+      error.value = err.message;
+      console.error(`Error deleting pipeline ${id}:`, err);
+      return false;
+    } finally {
+      deletingPipeline.value = false;
+    }
+  };
+
+  // Execute a pipeline
+  const executePipeline = async (id) => {
+    try {
+      const result = await apiExecutePipeline(id);
+      return result;
+    } catch (err) {
+      error.value = err.message;
+      console.error(`Error executing pipeline ${id}:`, err);
+      throw err;
+    }
+  };
+
+  // Create an empty pipeline object
+  const createEmptyPipeline = () => {
+    return {
+      id: null,
+      name: '',
+      description: '',
+      sourceId: null,
+      destinationId: null,
+      transformations: [],
+      isScheduled: false,
+      schedule: {
+        frequency: 'Daily',
+        time: '00:00',
+        cronExpression: '0 0 * * *'
+      }
+    };
+  };
+
+  // Get color for a status
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'success';
+      case 'running':
+        return 'info';
+      case 'failed':
+        return 'error';
+      case 'idle':
+        return 'grey';
+      default:
+        return 'grey';
+    }
+  };
+  
+  // Format a date string
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+  
+  // Setup tenant subscription to refresh data when tenant changes
+  const setupTenantSubscription = () => {
+    tenantStore.$subscribe(() => {
+      if (tenantStore.currentTenantId) {
+        loadPipelines();
+      }
+    });
+  };
 
   // Validate entire pipeline including data flow and dependencies
   const validatePipeline = async (pipeline) => {
@@ -162,7 +316,32 @@ export function usePipeline() {
   };
 
   return {
+    // State
     error,
+    pipelines,
+    loading,
+    savingPipeline,
+    deletingPipeline,
+    search,
+    statusFilter,
+    sortBy,
+    statusOptions,
+    sortOptions,
+    
+    // Methods - API related
+    loadPipelines,
+    getPipeline,
+    savePipeline,
+    deletePipeline,
+    executePipeline,
+    createEmptyPipeline,
+    setupTenantSubscription,
+    
+    // UI helper methods
+    getStatusColor,
+    formatDate,
+    
+    // Validation methods
     validatePipeline,
     getDependencies,
     getExecutionOrder,
