@@ -204,7 +204,11 @@ async function fetchTenants() {
   try {
     loading.value = true;
     error.value = null;
-    tenants.value = await tenantService.getAll({ status: statusFilter.value }, sortBy.value);
+    const allTenants = await tenantService.getAll();
+    tenants.value = tenantService.applyFilters(allTenants, {
+      status: statusFilter.value,
+      sort: sortBy.value
+    });
   } catch (err) {
     console.error('Error fetching tenants:', err);
     error.value = 'Failed to load tenants';

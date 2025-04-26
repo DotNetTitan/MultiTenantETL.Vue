@@ -226,7 +226,8 @@ const notification = ref(null);
 async function fetchUsers() {
   try {
     loading.value = true;
-    users.value = await userService.getAll({
+    const allUsers = await userService.getAll();
+    users.value = userService.applyFilters(allUsers, {
       search: search.value,
       status: statusFilter.value,
       sort: sortBy.value

@@ -52,6 +52,13 @@ const mockUsers = [
   name: `${user.firstName} ${user.lastName}`
 }));
 
+const sortFunctions = {
+  name_asc: (a, b) => a.name.localeCompare(b.name),
+  name_desc: (b, a) => a.name.localeCompare(b.name),
+  created_desc: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+};
+
 export const userService = {
   async getAll(filters = {}) {
     // Simulate API delay
@@ -184,5 +191,32 @@ export const userService = {
 
   getAvailableRoles() {
     return ['Admin', 'Manager', 'User'];
+  },
+
+  applyFilters(users, filters = {}) {
+    let filtered = [...users];
+    
+    // Apply search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(user => 
+        user.name.toLowerCase().includes(searchLower) || 
+        user.email.toLowerCase().includes(searchLower) ||
+        user.role.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply status filter
+    if (filters.status && filters.status !== 'All') {
+      const isActive = filters.status === 'Active';
+      filtered = filtered.filter(user => user.isActive === isActive);
+    }
+
+    // Apply sorting
+    if (filters.sort && sortFunctions[filters.sort]) {
+      filtered.sort(sortFunctions[filters.sort]);
+    }
+    
+    return filtered;
   }
 };

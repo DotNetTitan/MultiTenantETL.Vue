@@ -30,6 +30,13 @@ const saveTenants = (tenants) => {
   localStorage.setItem(TENANTS_STORAGE_KEY, JSON.stringify(tenants))
 }
 
+const sortFunctions = {
+  name_asc: (a, b) => a.name.localeCompare(b.name),
+  name_desc: (b, a) => a.name.localeCompare(b.name),
+  createdAt_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+  createdAt_desc: (b, a) => new Date(a.createdAt) - new Date(b.createdAt)
+};
+
 export const tenantService = {
   async getAll(filters = {}, sortBy = 'name') {
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -122,5 +129,22 @@ export const tenantService = {
     if (!dateString) return '-'
     const date = new Date(dateString)
     return date.toLocaleString()
+  },
+
+  applyFilters(tenants, filters = {}) {
+    let filtered = [...tenants];
+    
+    // Apply status filter
+    if (filters.status && filters.status !== 'all') {
+      const isActive = filters.status === 'active';
+      filtered = filtered.filter(tenant => tenant.isActive === isActive);
+    }
+
+    // Apply sorting
+    if (filters.sort && sortFunctions[filters.sort]) {
+      filtered.sort(sortFunctions[filters.sort]);
+    }
+    
+    return filtered;
   }
 }

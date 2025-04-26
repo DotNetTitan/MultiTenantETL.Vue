@@ -10,6 +10,15 @@ const mockColumns = [
 // Transformation types
 const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script']
 
+// Sort functions
+const sortFunctions = {
+  name_asc: (a, b) => a.name.localeCompare(b.name),
+  name_desc: (a, b) => b.name.localeCompare(a.name),
+  type_asc: (a, b) => a.type.localeCompare(b.type),
+  created_desc: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+};
+
 export const transformationService = {
   async getAll(filters = {}) {
     // Simulate API delay
@@ -217,5 +226,30 @@ return data;`
       default:
         return 'grey'
     }
+  },
+
+  applyFilters(transformations, filters = {}) {
+    let filtered = [...transformations];
+    
+    // Apply search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(searchLower) || 
+        t.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply type filter
+    if (filters.type && filters.type !== 'All') {
+      filtered = filtered.filter(t => t.type === filters.type);
+    }
+    
+    // Apply sorting
+    if (filters.sort && sortFunctions[filters.sort]) {
+      filtered.sort(sortFunctions[filters.sort]);
+    }
+    
+    return filtered;
   }
 }

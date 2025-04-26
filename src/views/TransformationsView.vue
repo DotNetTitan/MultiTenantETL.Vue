@@ -404,7 +404,8 @@ const mockColumns = getAvailableColumns();
 async function fetchTransformations() {
   try {
     loading.value = true;
-    transformations.value = await transformationService.getAll({
+    const allTransformations = await transformationService.getAll();
+    transformations.value = transformationService.applyFilters(allTransformations, {
       search: search.value,
       type: typeFilter.value,
       sort: sortBy.value
