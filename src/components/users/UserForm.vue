@@ -3,45 +3,46 @@
     <v-row>
       <v-col cols="12" md="6">
         <FormInput
-          :model-value="form.firstName"
+          v-model="form.firstName"
           label="First Name"
-          prepend-icon="mdi-account-outline"
+          prepend-icon="mdi-account"
           @update:model-value="updateField('firstName', $event)"
           :error-messages="errors.firstName"
         />
       </v-col>
       <v-col cols="12" md="6">
         <FormInput
-          :model-value="form.lastName"
+          v-model="form.lastName"
           label="Last Name"
-          prepend-icon="mdi-account-outline"
+          prepend-icon="mdi-account"
           @update:model-value="updateField('lastName', $event)"
           :error-messages="errors.lastName"
         />
       </v-col>
       <v-col cols="12">
         <FormInput
-          :model-value="form.email"
+          v-model="form.email"
           label="Email"
           type="email"
-          prepend-icon="mdi-email-outline"
+          prepend-icon="mdi-email"
           @update:model-value="updateField('email', $event)"
           :error-messages="errors.email"
         />
       </v-col>
       <v-col cols="12" md="6">
         <v-select
-          :model-value="form.role"
-          label="Role"
+          v-model="form.role"
           :items="roles"
-          prepend-icon="mdi-shield-account-outline"
+          label="Role"
+          prepend-icon="mdi-shield-account"
+          variant="outlined"
           @update:model-value="updateField('role', $event)"
           :error-messages="errors.role"
         />
       </v-col>
-      <v-col cols="12">
+      <v-col cols="12" md="6">
         <v-switch
-          :model-value="form.isActive"
+          v-model="form.isActive"
           label="Active"
           color="success"
           hide-details
@@ -53,57 +54,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import FormInput from '@/components/form/FormInput.vue';
-import { useFormValidation, required } from '@/composables/useFormValidation';
+import { useFormValidation } from '@/composables/useFormValidation';
 
 const props = defineProps({
   user: {
     type: Object,
-    default: () => ({
-      id: null,
-      firstName: '',
-      lastName: '',
-      email: '',
-      role: 'User',
-      isActive: true
-    })
+    required: true
   },
   roles: {
     type: Array,
-    default: () => ['Admin', 'Manager', 'User']
+    required: true
   }
 });
 
 const emit = defineEmits(['update:user', 'submit']);
-const { errors, validateField, validateForm } = useFormValidation();
+const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 const form = ref({ ...props.user });
 
-// Custom validation rules
-const emailRule = (value) => {
-  return /.+@.+\..+/.test(value) || 'Email must be valid';
-};
+// Clear errors when form changes
+watch(() => form.value, () => {
+  clearErrors();
+}, { deep: true });
 
-onMounted(() => {
-  form.value = { ...props.user };
-});
+// Watch for prop changes
+watch(() => props.user, (newValue) => {
+  form.value = { ...newValue };
+}, { deep: true });
+
+const required = v => !!v || 'This field is required';
+const emailRule = v => {
+  if (!v) return 'Email is required';
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return pattern.test(v) || 'Please enter a valid email address';
+};
 
 const updateField = (field, value) => {
   form.value[field] = value;
-  
-  // Validate the field if it has validation rules
-  if (field === 'firstName' || field === 'lastName') {
-    validateField(field, value, [required]);
-  } else if (field === 'email') {
-    validateField(field, value, [required, emailRule]);
-  } else if (field === 'role') {
-    validateField(field, value, [required]);
-  }
-  
   emit('update:user', { ...form.value });
+  
+  switch (field) {
+    case 'firstName':
+    case 'lastName':
+      validateField(field, value, [required]);
+      break;
+    case 'email':
+      validateField(field, value, [required, emailRule]);
+      break;
+    case 'role':
+      validateField(field, value, [required]);
+      break;
+  }
 };
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   const isValid = validateForm({
     firstName: { value: form.value.firstName, rules: [required] },
     lastName: { value: form.value.lastName, rules: [required] },

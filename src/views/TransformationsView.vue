@@ -341,8 +341,17 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
+import { transformationService } from '@/services/transformationService';
+
+// Destructure methods from service
+const { 
+  getTypeColor, 
+  formatDate,
+  getTransformationTypes,
+  createEmpty,
+  getAvailableColumns 
+} = transformationService;
 
 const tenantStore = useTenantStore();
 
@@ -355,16 +364,19 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
 ];
 
+// Get transformation types from service
+const transformationTypes = getTransformationTypes();
+
 // Filters and sorting
 const search = ref('');
 const typeFilter = ref('All');
 const sortBy = ref('name_asc');
 const typeOptions = ref([
   { title: 'All Types', value: 'All' },
-  { title: 'Filter', value: 'Filter' },
-  { title: 'Map', value: 'Map' },
-  { title: 'Aggregation', value: 'Aggregation' },
-  { title: 'Script', value: 'Script' }
+  ...transformationTypes.map(type => ({ 
+    title: type, 
+    value: type 
+  }))
 ]);
 const sortOptions = ref([
   { title: 'Name (A-Z)', value: 'name_asc' },
@@ -374,15 +386,7 @@ const sortOptions = ref([
   { title: 'Created (Oldest)', value: 'created_asc' }
 ]);
 
-// Transformation options
-const transformationTypes = [
-  'Filter',
-  'Map',
-  'Aggregation',
-  'Script'
-];
-
-// Transformation data
+// Data
 const transformations = ref([]);
 const loading = ref(false);
 const savingTransformation = ref(false);
@@ -392,206 +396,19 @@ const deletingTransformation = ref(false);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const transformationToDelete = ref(null);
+const editedTransformation = ref(createEmpty());
 
-// Form data
-const form = ref(null);
-const editedTransformation = ref(createEmptyTransformation());
-
-// Mock data for dropdown options
-const mockColumns = [
-  'id',
-  'firstName',
-  'lastName',
-  'email',
-  'phone',
-  'address',
-  'city',
-  'state',
-  'zipCode',
-  'country',
-  'age',
-  'income',
-  'purchaseAmount',
-  'orderDate',
-  'productCategory'
-];
-
-function createEmptyTransformation() {
-  return {
-    id: null,
-    name: '',
-    type: 'Filter',
-    description: '',
-    config: {
-      // Filter config
-      filterColumn: '',
-      operator: 'equals',
-      value: '',
-      
-      // Map config
-      sourceColumn: '',
-      targetColumn: '',
-      mappings: [],
-      
-      // Aggregation config
-      groupByColumns: [],
-      aggregationType: 'sum',
-      aggregationColumn: '',
-      resultColumn: '',
-      
-      // Script config
-      script: ''
-    }
-  };
-}
-
-function getTypeColor(type) {
-  switch (type) {
-    case 'Filter':
-      return 'info';
-    case 'Map':
-      return 'success';
-    case 'Aggregation':
-      return 'warning';
-    case 'Script':
-      return 'deep-purple';
-    default:
-      return 'grey';
-  }
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString();
-}
+// Mock columns for dropdowns
+const mockColumns = getAvailableColumns();
 
 async function fetchTransformations() {
   try {
     loading.value = true;
-    
-    // In a real app, this would be an actual API call
-    // const response = await axios.get('/api/transformations');
-    
-    // For now, using simulated data
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock data
-    const mockTransformations = [
-      {
-        id: '1',
-        name: 'Filter Inactive Customers',
-        type: 'Filter',
-        description: 'Removes inactive customers from the dataset',
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          filterColumn: 'isActive',
-          operator: 'equals',
-          value: 'true'
-        }
-      },
-      {
-        id: '2',
-        name: 'Map Customer Segments',
-        type: 'Map',
-        description: 'Maps numeric customer segments to readable names',
-        createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          sourceColumn: 'segmentId',
-          targetColumn: 'segmentName',
-          mappings: [
-            { from: '1', to: 'High Value' },
-            { from: '2', to: 'Medium Value' },
-            { from: '3', to: 'Low Value' }
-          ]
-        }
-      },
-      {
-        id: '3',
-        name: 'Sales by Region Aggregation',
-        type: 'Aggregation',
-        description: 'Aggregates sales data by region',
-        createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          groupByColumns: ['region', 'country'],
-          aggregationType: 'sum',
-          aggregationColumn: 'salesAmount',
-          resultColumn: 'totalSales'
-        }
-      },
-      {
-        id: '4',
-        name: 'Format Phone Numbers',
-        type: 'Script',
-        description: 'Formats phone numbers to a consistent pattern',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          script: `
-// Format phone numbers to (XXX) XXX-XXXX
-data.forEach(row => {
-  if (row.phone) {
-    // Remove any non-digit characters
-    let digits = row.phone.replace(/\\D/g, '');
-    
-    // Check if we have enough digits for a US phone number
-    if (digits.length === 10) {
-      row.phone = \`(\${digits.substring(0, 3)}) \${digits.substring(3, 6)}-\${digits.substring(6)}\`;
-    }
-  }
-});
-
-return data;
-          `
-        }
-      },
-      {
-        id: '5',
-        name: 'Remove Duplicate Orders',
-        type: 'Filter',
-        description: 'Removes duplicate orders based on order ID',
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          filterColumn: 'isDuplicate',
-          operator: 'equals',
-          value: 'false'
-        }
-      }
-    ];
-    
-    // Apply filters
-    let filteredTransformations = [...mockTransformations];
-    
-    if (search.value) {
-      const searchLower = search.value.toLowerCase();
-      filteredTransformations = filteredTransformations.filter(t => 
-        t.name.toLowerCase().includes(searchLower) || 
-        t.description.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    if (typeFilter.value !== 'All') {
-      filteredTransformations = filteredTransformations.filter(t => t.type === typeFilter.value);
-    }
-    
-    // Apply sorting
-    const [field, direction] = sortBy.value.split('_');
-    filteredTransformations.sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
-      
-      if (field === 'created') {
-        aVal = new Date(a.createdAt).getTime();
-        bVal = new Date(b.createdAt).getTime();
-      }
-      
-      if (direction === 'asc') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? -1 : 1;
-      }
+    transformations.value = await transformationService.getAll({
+      search: search.value,
+      type: typeFilter.value,
+      sort: sortBy.value
     });
-    
-    transformations.value = filteredTransformations;
   } catch (error) {
     console.error('Error fetching transformations:', error);
   } finally {
@@ -600,25 +417,24 @@ return data;
 }
 
 function editTransformation(transformation) {
-  // Deep clone the transformation to avoid modifying the original directly
   editedTransformation.value = JSON.parse(JSON.stringify(transformation));
   showCreateDialog.value = true;
 }
 
-function cloneTransformation(transformation) {
-  // Deep clone the transformation to avoid modifying the original directly
-  const cloned = JSON.parse(JSON.stringify(transformation));
-  cloned.id = null;
-  cloned.name = `Copy of ${cloned.name}`;
-  editedTransformation.value = cloned;
-  showCreateDialog.value = true;
+async function cloneTransformation(transformation) {
+  try {
+    const cloned = await transformationService.clone(transformation);
+    transformations.value.push(cloned);
+    editTransformation(cloned);
+  } catch (error) {
+    console.error('Error cloning transformation:', error);
+  }
 }
 
 function addMapping() {
   if (!editedTransformation.value.config.mappings) {
     editedTransformation.value.config.mappings = [];
   }
-  
   editedTransformation.value.config.mappings.push({ from: '', to: '' });
 }
 
@@ -634,14 +450,8 @@ function confirmDelete(transformation) {
 async function deleteTransformation() {
   try {
     deletingTransformation.value = true;
+    await transformationService.delete(transformationToDelete.value.id);
     
-    // In a real app, this would be an actual API call
-    // await axios.delete(`/api/transformations/${transformationToDelete.value.id}`);
-    
-    // For now, using simulated response
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Remove from local array
     const index = transformations.value.findIndex(t => t.id === transformationToDelete.value.id);
     if (index !== -1) {
       transformations.value.splice(index, 1);
@@ -660,28 +470,25 @@ async function saveTransformation() {
   try {
     savingTransformation.value = true;
     
-    // In a real app, this would be an actual API call
-    // await axios.post('/api/transformations', editedTransformation.value);
-    
-    // For now, using simulated response
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // If it's a new transformation, add an ID and created date
-    if (!editedTransformation.value.id) {
-      editedTransformation.value.id = Math.random().toString(36).substring(2, 15);
-      editedTransformation.value.createdAt = new Date().toISOString();
+    let savedTransformation;
+    if (editedTransformation.value.id) {
+      savedTransformation = await transformationService.update(
+        editedTransformation.value.id, 
+        editedTransformation.value
+      );
+    } else {
+      savedTransformation = await transformationService.create(editedTransformation.value);
     }
     
-    // Update or add to the local array without validation
-    const index = transformations.value.findIndex(t => t.id === editedTransformation.value.id);
+    const index = transformations.value.findIndex(t => t.id === savedTransformation.id);
     if (index !== -1) {
-      transformations.value[index] = { ...editedTransformation.value };
+      transformations.value[index] = savedTransformation;
     } else {
-      transformations.value.push({ ...editedTransformation.value });
+      transformations.value.push(savedTransformation);
     }
     
     showCreateDialog.value = false;
-    editedTransformation.value = createEmptyTransformation();
+    editedTransformation.value = transformationService.createEmpty();
   } catch (error) {
     console.error('Error saving transformation:', error);
   } finally {
