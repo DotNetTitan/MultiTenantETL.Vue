@@ -58,12 +58,7 @@ export const useTenantStore = defineStore('tenant', () => {
 
   function setCurrentTenant(tenantId) {
     currentTenantId.value = tenantId
-    localStorage.setItem('currentTenantId', tenantId)
-    if (tenantId) {
-      api.defaults.headers['X-Tenant-Id'] = tenantId
-    } else {
-      delete api.defaults.headers['X-Tenant-Id']
-    }
+    localStorage.setItem('currentTenantId', tenantId || '')
   }
 
   return {

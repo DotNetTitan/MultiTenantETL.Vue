@@ -1,6 +1,6 @@
-import api from './api'
 import { API_ENDPOINTS } from '@/config/api'
 
+// Mock users data
 const mockUsers = [
   {
     id: '1',
@@ -52,9 +52,14 @@ const mockUsers = [
   name: `${user.firstName} ${user.lastName}`
 }));
 
+// Sort functions
 const sortFunctions = {
   name_asc: (a, b) => a.name.localeCompare(b.name),
-  name_desc: (b, a) => a.name.localeCompare(b.name),
+  name_desc: (a, b) => b.name.localeCompare(a.name),
+  email_asc: (a, b) => a.email.localeCompare(b.email),
+  email_desc: (a, b) => b.email.localeCompare(a.email),
+  role_asc: (a, b) => a.role.localeCompare(b.role),
+  role_desc: (a, b) => b.role.localeCompare(a.role),
   created_desc: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
   created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
 };
@@ -83,29 +88,18 @@ export const userService = {
     }
     
     // Apply sorting
-    if (filters.sort) {
-      const [field, direction] = filters.sort.split('_');
-      users.sort((a, b) => {
-        let aVal = a[field];
-        let bVal = b[field];
-        
-        if (field === 'created') {
-          aVal = new Date(a.createdAt).getTime();
-          bVal = new Date(b.createdAt).getTime();
-        }
-        
-        if (direction === 'asc') {
-          return aVal > bVal ? 1 : -1;
-        } else {
-          return aVal < bVal ? 1 : -1;
-        }
-      });
+    if (filters.sort && sortFunctions[filters.sort]) {
+      users.sort(sortFunctions[filters.sort]);
+    } else {
+      // Default sort by name
+      users.sort(sortFunctions.name_asc);
     }
 
     return users;
   },
 
   async create(userData) {
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const newUser = {
@@ -116,15 +110,18 @@ export const userService = {
     };
 
     mockUsers.push(newUser);
-    return newUser;
+    return { ...newUser };
   },
 
   async update(id, userData) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     const index = mockUsers.findIndex(u => u.id === id);
     if (index === -1) {
-      throw new Error('User not found');
+      const error = new Error('User not found');
+      error.response = { status: 404 };
+      throw error;
     }
 
     const updatedUser = {
@@ -132,33 +129,44 @@ export const userService = {
       ...userData,
       name: `${userData.firstName} ${userData.lastName}`
     };
-    mockUsers[index] = updatedUser;
     
-    return updatedUser;
+    mockUsers[index] = updatedUser;
+    return { ...updatedUser };
   },
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
     const index = mockUsers.findIndex(u => u.id === id);
-    if (index !== -1) {
-      mockUsers.splice(index, 1);
+    if (index === -1) {
+      const error = new Error('User not found');
+      error.response = { status: 404 };
+      throw error;
     }
+    
+    mockUsers.splice(index, 1);
+    return true;
   },
 
   async toggleStatus(id) {
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const index = mockUsers.findIndex(u => u.id === id);
     if (index === -1) {
-      throw new Error('User not found');
+      const error = new Error('User not found');
+      error.response = { status: 404 };
+      throw error;
     }
 
-    mockUsers[index] = {
+    const updatedUser = {
       ...mockUsers[index],
       isActive: !mockUsers[index].isActive
     };
-
-    return mockUsers[index];
+    
+    mockUsers[index] = updatedUser;
+    return { ...updatedUser };
   },
 
   formatDate(dateString) {

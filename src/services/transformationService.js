@@ -1,4 +1,4 @@
-import api from './api'
+// Mock implementation of transformation service
 import { API_ENDPOINTS } from '@/config/api'
 
 // Mock columns for development
@@ -19,62 +19,57 @@ const sortFunctions = {
   created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
 };
 
-export const transformationService = {
-  async getAll(filters = {}) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-
-    // Mock data for development
-    let transformations = [
-      {
-        id: '1',
-        name: 'Filter Inactive Customers',
-        type: 'Filter',
-        description: 'Removes inactive customers from the dataset',
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          filterColumn: 'isActive',
-          operator: 'equals',
-          value: 'true'
-        }
-      },
-      {
-        id: '2',
-        name: 'Map Customer Segments',
-        type: 'Map',
-        description: 'Maps numeric customer segments to readable names',
-        createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          sourceColumn: 'segmentId',
-          targetColumn: 'segmentName',
-          mappings: [
-            { from: '1', to: 'High Value' },
-            { from: '2', to: 'Medium Value' },
-            { from: '3', to: 'Low Value' }
-          ]
-        }
-      },
-      {
-        id: '3',
-        name: 'Sales by Region Aggregation',
-        type: 'Aggregation',
-        description: 'Aggregates sales data by region',
-        createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          groupByColumns: ['region', 'country'],
-          aggregationType: 'sum',
-          aggregationColumn: 'salesAmount',
-          resultColumn: 'totalSales'
-        }
-      },
-      {
-        id: '4',
-        name: 'Format Phone Numbers',
-        type: 'Script',
-        description: 'Formats phone numbers to a consistent pattern',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          script: `// Format phone numbers to (XXX) XXX-XXXX
+// Mock transformations data
+const mockTransformations = [
+  {
+    id: '1',
+    name: 'Filter Inactive Customers',
+    type: 'Filter',
+    description: 'Removes inactive customers from the dataset',
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      filterColumn: 'isActive',
+      operator: 'equals',
+      value: 'true'
+    }
+  },
+  {
+    id: '2',
+    name: 'Map Customer Segments',
+    type: 'Map',
+    description: 'Maps numeric customer segments to readable names',
+    createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      sourceColumn: 'segmentId',
+      targetColumn: 'segmentName',
+      mappings: [
+        { from: '1', to: 'High Value' },
+        { from: '2', to: 'Medium Value' },
+        { from: '3', to: 'Low Value' }
+      ]
+    }
+  },
+  {
+    id: '3',
+    name: 'Sales by Region Aggregation',
+    type: 'Aggregation',
+    description: 'Aggregates sales data by region',
+    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      groupByColumns: ['region', 'country'],
+      aggregationType: 'sum',
+      aggregationColumn: 'salesAmount',
+      resultColumn: 'totalSales'
+    }
+  },
+  {
+    id: '4',
+    name: 'Format Phone Numbers',
+    type: 'Script',
+    description: 'Formats phone numbers to a consistent pattern',
+    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      script: `// Format phone numbers to (XXX) XXX-XXXX
 data.forEach(row => {
   if (row.phone) {
     // Remove any non-digit characters
@@ -88,77 +83,111 @@ data.forEach(row => {
 });
 
 return data;`
-        }
-      },
-      {
-        id: '5',
-        name: 'Remove Duplicate Orders',
-        type: 'Filter',
-        description: 'Removes duplicate orders based on order ID',
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        config: {
-          filterColumn: 'isDuplicate',
-          operator: 'equals',
-          value: 'false'
-        }
-      }
-    ]
+    }
+  },
+  {
+    id: '5',
+    name: 'Remove Duplicate Orders',
+    type: 'Filter',
+    description: 'Removes duplicate orders based on order ID',
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      filterColumn: 'isDuplicate',
+      operator: 'equals',
+      value: 'false'
+    }
+  }
+];
+
+export const transformationService = {
+  async getAll(filters = {}) {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    let transformations = [...mockTransformations];
 
     // Apply filters
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
+      const searchLower = filters.search.toLowerCase();
       transformations = transformations.filter(t => 
         t.name.toLowerCase().includes(searchLower) || 
-        t.description.toLowerCase().includes(searchLower)
-      )
+        t.description?.toLowerCase().includes(searchLower)
+      );
     }
 
     if (filters.type && filters.type !== 'All') {
-      transformations = transformations.filter(t => t.type === filters.type)
+      transformations = transformations.filter(t => t.type === filters.type);
     }
 
     // Apply sorting
-    if (filters.sort) {
-      const [field, direction] = filters.sort.split('_')
-      transformations.sort((a, b) => {
-        let aVal = a[field]
-        let bVal = b[field]
-        
-        if (field === 'created') {
-          aVal = new Date(a.createdAt).getTime()
-          bVal = new Date(b.createdAt).getTime()
-        }
-        
-        if (direction === 'asc') {
-          return aVal > bVal ? 1 : -1
-        } else {
-          return aVal < bVal ? 1 : -1
-        }
-      })
+    if (filters.sort && sortFunctions[filters.sort]) {
+      transformations.sort(sortFunctions[filters.sort]);
     }
 
-    return transformations
+    return transformations;
+  },
+
+  async getById(id) {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const transformation = mockTransformations.find(t => t.id === id);
+    if (!transformation) {
+      const error = new Error('Transformation not found');
+      error.response = { status: 404 };
+      throw error;
+    }
+    
+    return { ...transformation };
   },
 
   async create(transformationData) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     const newTransformation = {
       ...transformationData,
       id: Math.random().toString(36).substring(2, 15),
       createdAt: new Date().toISOString()
-    }
-
-    return newTransformation
+    };
+    
+    mockTransformations.push(newTransformation);
+    return { ...newTransformation };
   },
 
   async update(id, transformationData) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    return { ...transformationData, id }
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    const index = mockTransformations.findIndex(t => t.id === id);
+    if (index === -1) {
+      const error = new Error('Transformation not found');
+      error.response = { status: 404 };
+      throw error;
+    }
+    
+    const updatedTransformation = {
+      ...mockTransformations[index],
+      ...transformationData
+    };
+    
+    mockTransformations[index] = updatedTransformation;
+    return { ...updatedTransformation };
   },
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+    
+    const index = mockTransformations.findIndex(t => t.id === id);
+    if (index === -1) {
+      const error = new Error('Transformation not found');
+      error.response = { status: 404 };
+      throw error;
+    }
+    
+    mockTransformations.splice(index, 1);
+    return true;
   },
 
   async clone(transformation) {
@@ -166,16 +195,16 @@ return data;`
       ...transformation,
       id: null,
       name: `Copy of ${transformation.name}`
-    }
-    return this.create(cloned)
+    };
+    return this.create(cloned);
   },
 
   getAvailableColumns() {
-    return mockColumns
+    return mockColumns;
   },
 
   getTransformationTypes() {
-    return transformationTypes
+    return transformationTypes;
   },
 
   createEmpty() {
@@ -184,47 +213,28 @@ return data;`
       name: '',
       type: 'Filter',
       description: '',
-      config: {
-        // Filter config
-        filterColumn: '',
-        operator: 'equals',
-        value: '',
-        
-        // Map config
-        sourceColumn: '',
-        targetColumn: '',
-        mappings: [],
-        
-        // Aggregation config
-        groupByColumns: [],
-        aggregationType: 'sum',
-        aggregationColumn: '',
-        resultColumn: '',
-        
-        // Script config
-        script: ''
-      }
-    }
+      config: {}
+    };
   },
 
   formatDate(dateString) {
-    if (!dateString) return '-'
-    const date = new Date(dateString)
-    return date.toLocaleString()
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString();
   },
 
   getTypeColor(type) {
     switch (type) {
       case 'Filter':
-        return 'info'
+        return 'indigo';
       case 'Map':
-        return 'success'
+        return 'teal';
       case 'Aggregation':
-        return 'warning'
+        return 'deep-purple';
       case 'Script':
-        return 'deep-purple'
+        return 'orange';
       default:
-        return 'grey'
+        return 'blue';
     }
   },
 

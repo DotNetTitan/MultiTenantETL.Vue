@@ -1,4 +1,3 @@
-<!-- Move the existing authenticated layout here -->
 <template>
   <v-layout>
     <v-app-bar :color="appBarColor" density="compact" elevation="1">

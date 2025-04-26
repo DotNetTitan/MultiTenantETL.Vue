@@ -28,13 +28,35 @@
               class="mt-2"
               hide-details
             />
+            
+            <!-- Regular error alert -->
             <v-alert
-              v-if="authStore.error"
+              v-if="authStore.error && !authStore.apiOffline"
               type="error"
               class="mt-4"
               density="compact"
             >
               {{ authStore.error }}
+            </v-alert>
+            
+            <!-- Enhanced error alert for API server offline -->
+            <v-alert
+              v-if="authStore.apiOffline"
+              type="warning"
+              class="mt-4"
+              variant="tonal"
+              icon="mdi-connection"
+              title="Connection Error"
+            >
+              <p>Unable to connect to the API server. Please ensure that:</p>
+              <ul class="ml-4 mt-2">
+                <li>The backend server is running</li>
+                <li>The API URL is configured correctly</li>
+                <li>Your network connection is working</li>
+              </ul>
+              <p class="mt-2 text-caption">
+                Current API URL: {{ apiUrl }}
+              </p>
             </v-alert>
           </v-form>
         </v-card-text>
@@ -56,16 +78,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useFormValidation, required, minLength } from '@/composables/useFormValidation';
 import FormInput from '@/components/form/FormInput.vue';
+import { API_CONFIG } from '@/config/api';
 
 const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
 const rememberMe = ref(false);
 const { errors, validateField, validateForm, clearErrors } = useFormValidation();
+
+// Get the API URL for display in error message
+const apiUrl = computed(() => {
+  return API_CONFIG.baseURL;
+});
 
 async function handleLogin() {
   const isValid = validateForm({
@@ -75,10 +103,15 @@ async function handleLogin() {
 
   if (!isValid) return;
 
-  await authStore.login({
-    username: username.value,
-    password: password.value,
-    rememberMe: rememberMe.value
-  });
+  try {
+    await authStore.login({
+      username: username.value,
+      password: password.value,
+      rememberMe: rememberMe.value
+    });
+  } catch (error) {
+    // Error is already handled in the store
+    console.warn('Login failed:', error.message);
+  }
 }
 </script>
