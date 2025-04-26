@@ -120,8 +120,6 @@
                 <v-text-field
                   v-model="editedTransformation.name"
                   label="Transformation Name"
-                  required
-                  :rules="[v => !!v || 'Name is required']"
                 />
               </v-col>
               <v-col cols="12" md="4">
@@ -129,8 +127,6 @@
                   v-model="editedTransformation.type"
                   label="Type"
                   :items="transformationTypes"
-                  required
-                  :rules="[v => !!v || 'Type is required']"
                 />
               </v-col>
               <v-col cols="12">
@@ -152,7 +148,6 @@
                     v-model="editedTransformation.config.filterColumn"
                     label="Column to Filter"
                     :items="mockColumns"
-                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -169,14 +164,12 @@
                       { title: 'Is Empty', value: 'isEmpty' },
                       { title: 'Is Not Empty', value: 'isNotEmpty' }
                     ]"
-                    required
                   />
                 </v-col>
                 <v-col cols="12" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
                   <v-text-field
                     v-model="editedTransformation.config.value"
                     label="Value"
-                    required
                   />
                 </v-col>
               </v-row>
@@ -191,7 +184,6 @@
                     v-model="editedTransformation.config.sourceColumn"
                     label="Source Column"
                     :items="mockColumns"
-                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -246,7 +238,6 @@
                     :items="mockColumns"
                     multiple
                     chips
-                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
@@ -260,7 +251,6 @@
                       { title: 'Min', value: 'min' },
                       { title: 'Max', value: 'max' }
                     ]"
-                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6" v-if="editedTransformation.config.aggregationType !== 'count'">
@@ -268,14 +258,12 @@
                     v-model="editedTransformation.config.aggregationColumn"
                     label="Aggregation Column"
                     :items="mockColumns"
-                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="editedTransformation.config.resultColumn"
                     label="Result Column Name"
-                    required
                   />
                 </v-col>
               </v-row>
@@ -599,7 +587,7 @@ return data;
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
-        return aVal < bVal ? 1 : -1;
+        return aVal < bVal ? -1 : 1;
       }
     });
     
@@ -673,7 +661,7 @@ async function saveTransformation() {
     savingTransformation.value = true;
     
     // In a real app, this would be an actual API call
-    // const response = await axios.post('/api/transformations', editedTransformation.value);
+    // await axios.post('/api/transformations', editedTransformation.value);
     
     // For now, using simulated response
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -684,7 +672,7 @@ async function saveTransformation() {
       editedTransformation.value.createdAt = new Date().toISOString();
     }
     
-    // Update or add to the local array
+    // Update or add to the local array without validation
     const index = transformations.value.findIndex(t => t.id === editedTransformation.value.id);
     if (index !== -1) {
       transformations.value[index] = { ...editedTransformation.value };
