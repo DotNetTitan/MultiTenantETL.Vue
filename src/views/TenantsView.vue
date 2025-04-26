@@ -104,13 +104,19 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            variant="text"
+            @click="closeDialog"
+            :disabled="loading"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
             color="primary"
             :loading="loading"
             @click="saveTenant"
           >
             Save
           </v-btn>
-          <v-btn @click="closeDialog">Cancel</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
