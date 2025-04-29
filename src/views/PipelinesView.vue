@@ -380,13 +380,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePipeline } from '@/composables/usePipeline';
+import { usePipelineForm } from '@/composables/usePipelineForm'; // Import the new composable
 
 const router = useRouter();
 
-// Get functionality from composables
+// Get functionality from main pipeline composable
 const {
   pipelines,
   loading,
@@ -398,16 +399,35 @@ const {
   statusOptions,
   sortOptions,
   loadPipelines,
-  savePipeline,
+  savePipeline, // Keep savePipeline from usePipeline
   deletePipeline,
   executePipeline,
-  createEmptyPipeline,
+  // createEmptyPipeline, // Now handled by usePipelineForm
   getStatusColor,
   formatDate,
   setupTenantSubscription
 } = usePipeline();
 
-// Data table
+// Get functionality from the form composable
+const {
+  form, // Main form ref
+  editedPipeline,
+  dataSources,
+  transformationTypes,
+  showTransformationDialog,
+  transformationForm, // Transformation dialog form ref
+  editedTransformation,
+  editedTransformationIndex,
+  fetchDataSources,
+  prepareEditPipeline,
+  resetForm,
+  addTransformation,
+  editTransformation,
+  removeTransformation,
+  saveTransformation,
+} = usePipelineForm();
+
+// Data table headers (remain the same)
 const headers = [
   { title: 'Name', key: 'name' },
   { title: 'Source', key: 'sourceName' },
@@ -418,66 +438,22 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
 ];
 
-// Pipeline data
-const dataSources = ref([]);
-const transformationTypes = ref(['Filter', 'Map', 'Join', 'Aggregate', 'Enrich', 'Custom']);
-
-// Dialog controls
+// Dialog controls (main dialogs remain here)
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
-const showTransformationDialog = ref(false);
 const pipelineToDelete = ref(null);
 
-// Form data
-const form = ref(null);
-const transformationForm = ref(null);
-const editedPipeline = ref(createEmptyPipeline());
-const editedTransformation = ref({
-  name: '',
-  type: 'Filter',
-  executionOrder: 1,
-  configuration: '{}'
-});
-const editedTransformationIndex = ref(-1);
-
-function fetchDataSources() {
-  try {
-    // Simulate API call
-    setTimeout(() => {
-      // Mock data
-      dataSources.value = [
-        { id: '1', name: 'SQL Server - Sales', type: 'Database' },
-        { id: '2', name: 'SFTP - Customer Files', type: 'File' },
-        { id: '3', name: 'ERP API', type: 'API' },
-        { id: '4', name: 'Analytics DB', type: 'Database' },
-        { id: '5', name: 'Data Warehouse', type: 'Database' },
-        { id: '6', name: 'Customer Database', type: 'Database' },
-        { id: '7', name: 'E-commerce Platform', type: 'API' },
-        { id: '8', name: 'Reporting System', type: 'API' }
-      ];
-    }, 300);
-  } catch (error) {
-    console.error('Error fetching data sources:', error);
-  }
+// Function to open the edit dialog
+function openEditPipelineDialog(pipeline) {
+  fetchDataSources(); // Ensure datasources are loaded before preparing
+  prepareEditPipeline(pipeline); // Use the function from the composable
+  showCreateDialog.value = true;
 }
 
-function editPipeline(pipeline) {
-  // Clone the pipeline to avoid modifying the original directly
-  editedPipeline.value = {
-    id: pipeline.id,
-    name: pipeline.name,
-    description: pipeline.description,
-    sourceId: dataSources.value.find(ds => ds.name === pipeline.sourceName) || null,
-    destinationId: dataSources.value.find(ds => ds.name === pipeline.destinationName) || null,
-    transformations: pipeline.transformations || [],
-    isScheduled: pipeline.isScheduled,
-    schedule: pipeline.schedule || {
-      frequency: 'Daily',
-      time: '00:00',
-      cronExpression: '0 0 * * *'
-    }
-  };
-  
+// Function to open the create dialog
+function openCreatePipelineDialog() {
+  fetchDataSources(); // Ensure datasources are loaded
+  resetForm(); // Use the function from the composable
   showCreateDialog.value = true;
 }
 
@@ -488,8 +464,7 @@ function confirmDelete(pipeline) {
 
 async function handleDeletePipeline() {
   try {
-    const success = await deletePipeline(pipelineToDelete.value.id);
-    
+    await deletePipeline(pipelineToDelete.value.id); // Call composable
     showDeleteDialog.value = false;
     pipelineToDelete.value = null;
   } catch (error) {
@@ -497,66 +472,37 @@ async function handleDeletePipeline() {
   }
 }
 
-function addTransformation() {
-  editedTransformation.value = {
-    name: '',
-    type: 'Filter',
-    executionOrder: editedPipeline.value.transformations.length + 1,
-    configuration: '{}'
-  };
-  editedTransformationIndex.value = -1;
-  showTransformationDialog.value = true;
-}
-
-function editTransformation(index) {
-  const transformation = editedPipeline.value.transformations[index];
-  editedTransformation.value = { ...transformation };
-  editedTransformationIndex.value = index;
-  showTransformationDialog.value = true;
-}
-
-function removeTransformation(index) {
-  editedPipeline.value.transformations.splice(index, 1);
-  
-  // Update execution order
-  editedPipeline.value.transformations.forEach((t, i) => {
-    t.executionOrder = i + 1;
-  });
-}
-
-function saveTransformation() {
-  if (editedTransformationIndex.value === -1) {
-    // Add new transformation
-    editedPipeline.value.transformations.push({ ...editedTransformation.value });
-  } else {
-    // Update existing transformation
-    editedPipeline.value.transformations[editedTransformationIndex.value] = { ...editedTransformation.value };
+async function handleSavePipeline() {
+  // Validate the main form using the ref from the composable
+  if (form.value) {
+    const { valid } = await form.value.validate();
+    if (!valid) return;
   }
   
-  // Sort transformations by execution order
-  editedPipeline.value.transformations.sort((a, b) => a.executionOrder - b.executionOrder);
-  
-  showTransformationDialog.value = false;
-}
-
-async function handleSavePipeline() {
   try {
-    await savePipeline(editedPipeline.value);
+    // Pass the editedPipeline object from the form composable
+    // Need to map sourceId/destinationId back to just IDs if they are objects
+    const pipelineToSave = { 
+      ...editedPipeline.value, 
+      sourceId: editedPipeline.value.sourceId?.id || editedPipeline.value.sourceId,
+      destinationId: editedPipeline.value.destinationId?.id || editedPipeline.value.destinationId
+    };
+    await savePipeline(pipelineToSave); // Call main composable's save function
     showCreateDialog.value = false;
-    
-    // Refresh the list
-    await loadPipelines();
+    await loadPipelines(); // Refresh the list
   } catch (error) {
     console.error('Error saving pipeline:', error);
+    // Show error notification
   }
 }
 
 async function handleExecutePipeline(pipeline) {
   try {
-    // Execute the pipeline
-    await executePipeline(pipeline.id);
+    await executePipeline(pipeline.id); // Call composable
+    // Show success notification
   } catch (error) {
     console.error('Error executing pipeline:', error);
+    // Show error notification
   }
 }
 
@@ -565,9 +511,19 @@ function goToCreateDataSource() {
   router.push('/data-sources?action=create');
 }
 
+// --- Lifecycle Hook ---
 onMounted(async () => {
-  fetchDataSources();
+  // fetchDataSources(); // Moved to dialog open functions
   loadPipelines();
   setupTenantSubscription();
 });
+
+// Watcher to reset form when dialog closes (optional, good practice)
+watch(showCreateDialog, (newValue) => {
+  if (!newValue) {
+    // Optionally reset form state when dialog is closed
+    // resetForm(); // Or just let it keep state until next open
+  }
+});
+
 </script>
