@@ -772,11 +772,8 @@ This API specification is designed to replace all the mock data in your Vue appl
 8. **Dashboard**: Aggregate statistics for the dashboard view
 9. **Settings**: User preferences and configuration
 
-To implement the backend, you could use:
-- Node.js with Express.js or NestJS
-- ASP.NET Core
-- Python with FastAPI or Django REST Framework
-- Java with Spring Boot
+To implement the backend, use:
+- ASP.NET Core Web API
 
 When implementing, make sure to:
 1. Secure all endpoints with proper authentication and tenant isolation
