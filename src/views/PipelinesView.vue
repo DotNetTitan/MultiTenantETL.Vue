@@ -6,7 +6,7 @@
       <v-btn 
         color="primary" 
         prepend-icon="mdi-plus" 
-        @click="showCreateDialog = true"
+        @click="openCreatePipelineDialog"
       >
         Create Pipeline
       </v-btn>
@@ -255,13 +255,40 @@
                           v-model="editedPipeline.schedule.time"
                           label="Time"
                           type="time"
+                          hint="24-hour format (HH:MM)"
+                          persistent-hint
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6" v-if="editedPipeline.schedule.frequency === 'Weekly'">
+                        <v-select
+                          v-model="editedPipeline.schedule.dayOfWeek"
+                          label="Day of Week"
+                          :items="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6" v-if="editedPipeline.schedule.frequency === 'Monthly'">
+                        <v-select
+                          v-model="editedPipeline.schedule.dayOfMonth"
+                          label="Day of Month"
+                          :items="Array.from({length: 31}, (_, i) => i + 1)"
                         />
                       </v-col>
                       <v-col cols="12" v-if="editedPipeline.schedule.frequency === 'Custom'">
                         <v-text-field
                           v-model="editedPipeline.schedule.cronExpression"
                           label="Cron Expression"
-                          hint="e.g. 0 0 * * *"
+                          hint="e.g. 0 0 * * * (runs at midnight every day)"
+                          persistent-hint
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-select
+                          v-model="editedPipeline.schedule.timezone"
+                          label="Timezone"
+                          :items="timezones"
+                          item-title="name"
+                          item-value="value"
+                          hint="All schedules are stored in the selected timezone"
                           persistent-hint
                         />
                       </v-col>
@@ -425,6 +452,7 @@ const {
   editTransformation,
   removeTransformation,
   saveTransformation,
+  timezones // Add timezones from the composable
 } = usePipelineForm();
 
 // Data table headers (remain the same)
@@ -454,6 +482,19 @@ function openEditPipelineDialog(pipeline) {
 function openCreatePipelineDialog() {
   fetchDataSources(); // Ensure datasources are loaded
   resetForm(); // Use the function from the composable
+  
+  // Ensure UTC timezone is selected by default
+  if (editedPipeline.value.schedule) {
+    editedPipeline.value.schedule.timezone = 'UTC';
+  } else {
+    editedPipeline.value.schedule = {
+      frequency: 'Daily',
+      time: '00:00',
+      cronExpression: '0 0 * * *',
+      timezone: 'UTC'
+    };
+  }
+  
   showCreateDialog.value = true;
 }
 
