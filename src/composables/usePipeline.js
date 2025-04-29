@@ -90,6 +90,11 @@ export function usePipeline() {
     try {
       deletingPipeline.value = true;
       await apiDeletePipeline(id);
+      // Remove the pipeline from the local state after successful deletion
+      const index = pipelines.value.findIndex(p => p.id === id);
+      if (index !== -1) {
+        pipelines.value.splice(index, 1);
+      }
       return true;
     } catch (err) {
       error.value = err.message;
@@ -104,6 +109,12 @@ export function usePipeline() {
   const executePipeline = async (id) => {
     try {
       const result = await apiExecutePipeline(id);
+      // Update the pipeline status in the local state after successful execution start
+      const pipeline = pipelines.value.find(p => p.id === id);
+      if (pipeline) {
+        pipeline.status = 'Running'; // Or update based on actual API response if available
+        pipeline.lastRunAt = new Date().toISOString(); // Update last run time
+      }
       return result;
     } catch (err) {
       error.value = err.message;

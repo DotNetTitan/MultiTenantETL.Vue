@@ -490,14 +490,6 @@ async function handleDeletePipeline() {
   try {
     const success = await deletePipeline(pipelineToDelete.value.id);
     
-    if (success) {
-      // Remove from local array
-      const index = pipelines.value.findIndex(p => p.id === pipelineToDelete.value.id);
-      if (index !== -1) {
-        pipelines.value.splice(index, 1);
-      }
-    }
-    
     showDeleteDialog.value = false;
     pipelineToDelete.value = null;
   } catch (error) {
@@ -563,18 +555,6 @@ async function handleExecutePipeline(pipeline) {
   try {
     // Execute the pipeline
     await executePipeline(pipeline.id);
-    
-    // Update the local state to reflect the change
-    pipeline.status = 'Running';
-    pipeline.lastRunAt = new Date().toISOString();
-    
-    // In a real app, you might want to poll for updates or use websockets
-    // to track execution progress. For now, we'll just simulate completion
-    setTimeout(() => {
-      pipeline.status = Math.random() > 0.2 ? 'Completed' : 'Failed';
-      // Refresh the data
-      loadPipelines();
-    }, 5000);
   } catch (error) {
     console.error('Error executing pipeline:', error);
   }
