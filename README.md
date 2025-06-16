@@ -1,6 +1,6 @@
 # Multi-tenant ETL Platform
 
-A modern, responsive web application for managing ETL (Extract, Transform, Load) pipelines across multiple tenants. Built with Vue 3, Vuetify, and Vite.
+A modern, responsive web application for managing ETL (Extract, Transform, Load) pipelines across multiple tenants. Built with Vue 3 and Vite.
 
 ## Features
 
