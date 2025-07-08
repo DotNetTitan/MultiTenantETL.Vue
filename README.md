@@ -2,7 +2,7 @@
 
 A modern, responsive web application for managing ETL (Extract, Transform, Load) pipelines across multiple tenants. Built with Vue 3 and Vite.
 
-## Features
+## Features 
 
 - 📊 **Real-time Dashboard**: Monitor pipeline status, data sources, and recent executions
 - 🔄 **ETL Pipeline Management**: Create, configure, and monitor data pipelines
