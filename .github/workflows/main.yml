@@ -13,11 +13,11 @@ jobs:
       with:
         node-version: '18'
     - name: Install Dependencies
-      run: npm install
-    - name: Install Vite Globally
-      run: npm install -g vite
+      run: |
+        npm ci
+        chmod +x node_modules/.bin/vite
     - name: Build
-      run: npm run build
+      run: npx vite build
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.4
       with:
