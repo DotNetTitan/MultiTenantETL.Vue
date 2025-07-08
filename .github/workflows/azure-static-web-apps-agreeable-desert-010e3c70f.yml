@@ -44,7 +44,7 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_DESERT_010E3C70F }}
           action: "upload"
-          app_location: "/"           # root folder of your project
+          app_location: "/"           # Root folder of your project
           output_location: "dist"     # Vite output dir
 
   close_pull_request_job:
