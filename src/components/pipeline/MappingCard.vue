@@ -43,7 +43,6 @@
             multiple
             chips
             closable-chips
-            :rules="[v => v && v.length > 0 || 'At least one source field is required']"
           >
             <template v-slot:chip="{ item, props }">
               <v-chip v-bind="props" size="small">
@@ -82,7 +81,6 @@
             v-model="localMapping.destinationField"
             :items="destinationFieldItems"
             label="Destination Field"
-            :rules="[v => !!v || 'Destination field is required']"
           >
             <template v-slot:item="{ item, props }">
               <v-list-item v-bind="props">
@@ -307,23 +305,17 @@ const transformationHint = computed(() => {
 const validationErrors = computed(() => {
   const errors = [];
   
-  // Only show validation errors if user has started filling out the mapping
-  const hasStarted = (localMapping.value.sourceFields && localMapping.value.sourceFields.length > 0) || 
-                     localMapping.value.destinationField;
+  const hasSourceFields = localMapping.value.sourceFields && localMapping.value.sourceFields.length > 0;
+  const hasDestinationField = !!localMapping.value.destinationField;
   
-  if (!hasStarted) {
-    return []; // Don't show errors for brand new empty mappings
+  // Don't show ANY errors until BOTH fields have been filled at least once
+  // This prevents premature validation messages while user is still filling the form
+  if (!hasSourceFields || !hasDestinationField) {
+    return []; // Still filling out the mapping
   }
   
-  if (!localMapping.value.sourceFields || localMapping.value.sourceFields.length === 0) {
-    errors.push('At least one source field is required');
-  }
-  
-  if (!localMapping.value.destinationField) {
-    errors.push('Destination field is required');
-  }
-  
-  if (localMapping.value.sourceFields && localMapping.value.sourceFields.length > 1 && !localMapping.value.transformationId) {
+  // Only show transformation error when both fields are filled
+  if (localMapping.value.sourceFields.length > 1 && !localMapping.value.transformationId) {
     errors.push('Multiple source fields require a transformation');
   }
   

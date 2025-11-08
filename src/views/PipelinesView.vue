@@ -83,7 +83,7 @@
               icon
               variant="text"
               size="small"
-              @click="openEditPipelineDialog(item)"
+              @click="openEditDialog(item)"
               title="Edit pipeline"
             >
               <v-icon>mdi-pencil</v-icon>

@@ -14,24 +14,6 @@
 
     <!-- Main Content -->
     <div v-else class="content-wrapper">
-      <!-- Auto-Detection Warning -->
-      <v-alert v-if="usingAutoDetection" type="info" variant="tonal" class="mb-4">
-        <div class="d-flex align-center">
-          <v-icon start>mdi-information</v-icon>
-          <div class="flex-grow-1">
-            Schema was auto-detected. For better accuracy, consider defining a manual schema for this data source.
-          </div>
-          <v-btn
-            variant="tonal"
-            size="small"
-            prepend-icon="mdi-file-document-edit"
-            @click="showConversionDialog = true"
-          >
-            Convert to Manual
-          </v-btn>
-        </div>
-      </v-alert>
-
       <!-- Validation Summary (only show if there are errors and at least one mapping is complete) -->
       <ValidationSummary
         v-if="hasCompleteMappings && !validationResult.isValid"
