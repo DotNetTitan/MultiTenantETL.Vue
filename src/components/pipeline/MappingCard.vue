@@ -410,7 +410,12 @@ function getTransformationColor(type) {
     'Map': 'green',
     'Aggregation': 'orange',
     'Script': 'purple',
-    'Join': 'teal'
+    'Join': 'teal',
+    'Trim': 'cyan',
+    'Case Convert': 'indigo',
+    'Substring': 'pink',
+    'Replace': 'amber',
+    'Split': 'lime'
   };
   return colors[type] || 'grey';
 }
@@ -421,7 +426,12 @@ function getTransformationIcon(type) {
     'Map': 'mdi-map',
     'Aggregation': 'mdi-chart-bar',
     'Script': 'mdi-code-braces',
-    'Join': 'mdi-link-variant'
+    'Join': 'mdi-link-variant',
+    'Trim': 'mdi-content-cut',
+    'Case Convert': 'mdi-format-letter-case',
+    'Substring': 'mdi-format-text',
+    'Replace': 'mdi-find-replace',
+    'Split': 'mdi-call-split'
   };
   return icons[type] || 'mdi-cog';
 }

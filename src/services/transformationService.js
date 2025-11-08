@@ -12,7 +12,7 @@ const mockColumns = [
 ]
 
 // Transformation types
-const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script']
+const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script', 'Trim', 'Case Convert', 'Substring', 'Replace', 'Split']
 
 // Sort functions
 const sortFunctions = {
@@ -347,6 +347,16 @@ export const transformationService = {
         return 'deep-purple';
       case 'Script':
         return 'orange';
+      case 'Trim':
+        return 'cyan';
+      case 'Case Convert':
+        return 'blue';
+      case 'Substring':
+        return 'pink';
+      case 'Replace':
+        return 'amber';
+      case 'Split':
+        return 'lime';
       default:
         return 'blue';
     }

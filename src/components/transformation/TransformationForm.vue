@@ -174,6 +174,186 @@ row => ({
       </div>
     </div>
 
+    <!-- Trim Transformation -->
+    <div v-else-if="form.type === 'Trim'" class="space-y-4">
+      <FormInput
+        v-model="form.config.column"
+        label="Column"
+        type="select"
+        :options="availableColumns"
+        :error="errors.column"
+        required
+      />
+
+      <FormInput
+        v-model="form.config.trimType"
+        label="Trim Type"
+        type="select"
+        :options="['both', 'start', 'end']"
+        :error="errors.trimType"
+        required
+      />
+
+      <div class="bg-gray-100 p-4 rounded text-sm">
+        <strong>both:</strong> Remove whitespace from both ends<br>
+        <strong>start:</strong> Remove whitespace from the beginning<br>
+        <strong>end:</strong> Remove whitespace from the end
+      </div>
+    </div>
+
+    <!-- Case Convert Transformation -->
+    <div v-else-if="form.type === 'Case Convert'" class="space-y-4">
+      <FormInput
+        v-model="form.config.column"
+        label="Column"
+        type="select"
+        :options="availableColumns"
+        :error="errors.column"
+        required
+      />
+
+      <FormInput
+        v-model="form.config.caseType"
+        label="Case Type"
+        type="select"
+        :options="['uppercase', 'lowercase', 'titlecase', 'camelcase']"
+        :error="errors.caseType"
+        required
+      />
+
+      <div class="bg-gray-100 p-4 rounded text-sm">
+        <strong>uppercase:</strong> HELLO WORLD<br>
+        <strong>lowercase:</strong> hello world<br>
+        <strong>titlecase:</strong> Hello World<br>
+        <strong>camelcase:</strong> helloWorld
+      </div>
+    </div>
+
+    <!-- Substring Transformation -->
+    <div v-else-if="form.type === 'Substring'" class="space-y-4">
+      <FormInput
+        v-model="form.config.column"
+        label="Column"
+        type="select"
+        :options="availableColumns"
+        :error="errors.column"
+        required
+      />
+
+      <div class="grid grid-cols-2 gap-4">
+        <FormInput
+          v-model.number="form.config.start"
+          label="Start Position"
+          type="number"
+          :error="errors.start"
+          required
+          placeholder="0"
+        />
+
+        <FormInput
+          v-model.number="form.config.length"
+          label="Length (optional)"
+          type="number"
+          :error="errors.length"
+          placeholder="Leave empty for rest of string"
+        />
+      </div>
+
+      <div class="bg-gray-100 p-4 rounded text-sm">
+        Extract a portion of the string starting at the specified position.<br>
+        Position is 0-based (first character is at position 0).
+      </div>
+    </div>
+
+    <!-- Replace Transformation -->
+    <div v-else-if="form.type === 'Replace'" class="space-y-4">
+      <FormInput
+        v-model="form.config.column"
+        label="Column"
+        type="select"
+        :options="availableColumns"
+        :error="errors.column"
+        required
+      />
+
+      <FormInput
+        v-model="form.config.searchValue"
+        label="Search For"
+        :error="errors.searchValue"
+        required
+        placeholder="Text or pattern to find"
+      />
+
+      <FormInput
+        v-model="form.config.replaceValue"
+        label="Replace With"
+        :error="errors.replaceValue"
+        placeholder="Replacement text (empty to remove)"
+      />
+
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center">
+          <input
+            type="checkbox"
+            v-model="form.config.useRegex"
+            class="mr-2"
+          />
+          Use Regular Expression
+        </label>
+
+        <label v-if="form.config.useRegex" class="flex items-center">
+          <input
+            type="checkbox"
+            v-model="form.config.caseSensitive"
+            class="mr-2"
+          />
+          Case Sensitive
+        </label>
+
+        <label class="flex items-center">
+          <input
+            type="checkbox"
+            v-model="form.config.replaceAll"
+            class="mr-2"
+          />
+          Replace All Occurrences
+        </label>
+      </div>
+    </div>
+
+    <!-- Split Transformation -->
+    <div v-else-if="form.type === 'Split'" class="space-y-4">
+      <FormInput
+        v-model="form.config.column"
+        label="Column"
+        type="select"
+        :options="availableColumns"
+        :error="errors.column"
+        required
+      />
+
+      <FormInput
+        v-model="form.config.delimiter"
+        label="Delimiter"
+        :error="errors.delimiter"
+        required
+        placeholder="e.g., comma (,), pipe (|), space"
+      />
+
+      <FormInput
+        v-model.number="form.config.maxSplits"
+        label="Maximum Splits (optional)"
+        type="number"
+        :error="errors.maxSplits"
+        placeholder="Leave empty for unlimited"
+      />
+
+      <div class="bg-gray-100 p-4 rounded text-sm">
+        <strong>Output:</strong> Creates an array from the split string.<br>
+        You can access individual parts using array indexing in subsequent transformations.
+      </div>
+    </div>
+
     <div class="flex justify-between mt-6">
       <button
         type="button"
@@ -226,7 +406,7 @@ const emit = defineEmits(['save', 'cancel', 'notify']);
 const { validateTransformation } = useTransformation();
 const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 
-const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script'];
+const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script', 'Trim', 'Case Convert', 'Substring', 'Replace', 'Split'];
 const errorHandlingOptions = ['Stop', 'Skip', 'Retry'];
 const filterOperators = ['equals', 'notEquals', 'contains', 'startsWith', 'endsWith', 'isEmpty', 'isNotEmpty'];
 const aggregationTypes = ['sum', 'avg', 'min', 'max', 'count'];
@@ -324,6 +504,21 @@ const isFormValid = computed(() => {
     case 'Script':
       return !!form.value.config.script;
     
+    case 'Trim':
+      return form.value.config.column && form.value.config.trimType;
+    
+    case 'Case Convert':
+      return form.value.config.column && form.value.config.caseType;
+    
+    case 'Substring':
+      return form.value.config.column && form.value.config.start !== null && form.value.config.start !== '';
+    
+    case 'Replace':
+      return form.value.config.column && form.value.config.searchValue;
+    
+    case 'Split':
+      return form.value.config.column && form.value.config.delimiter;
+    
     default:
       return false;
   }
@@ -358,6 +553,37 @@ const getDefaultConfig = (type) => {
     case 'Script':
       return {
         script: ''
+      };
+    case 'Trim':
+      return {
+        column: '',
+        trimType: 'both'
+      };
+    case 'Case Convert':
+      return {
+        column: '',
+        caseType: 'lowercase'
+      };
+    case 'Substring':
+      return {
+        column: '',
+        start: 0,
+        length: null
+      };
+    case 'Replace':
+      return {
+        column: '',
+        searchValue: '',
+        replaceValue: '',
+        useRegex: false,
+        caseSensitive: false,
+        replaceAll: true
+      };
+    case 'Split':
+      return {
+        column: '',
+        delimiter: ',',
+        maxSplits: null
       };
     default:
       return {};

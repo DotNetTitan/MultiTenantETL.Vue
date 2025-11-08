@@ -304,6 +304,152 @@
                 </v-col>
               </v-row>
             </div>
+
+            <!-- Trim Transformation -->
+            <div v-if="editedTransformation.type === 'Trim'">
+              <v-divider class="my-4" />
+              <h3 class="text-subtitle-1 mb-3">Trim Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Remove leading and/or trailing whitespace from text fields.
+              </v-alert>
+              <v-row>
+                <v-col cols="12">
+                  <v-select
+                    v-model="editedTransformation.config.trimType"
+                    label="Trim Type"
+                    :items="[
+                      { title: 'Both (Leading & Trailing)', value: 'both' },
+                      { title: 'Start (Leading only)', value: 'start' },
+                      { title: 'End (Trailing only)', value: 'end' }
+                    ]"
+                  />
+                </v-col>
+              </v-row>
+            </div>
+
+            <!-- Case Convert Transformation -->
+            <div v-if="editedTransformation.type === 'Case Convert'">
+              <v-divider class="my-4" />
+              <h3 class="text-subtitle-1 mb-3">Case Convert Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Convert text to different case formats.
+              </v-alert>
+              <v-row>
+                <v-col cols="12">
+                  <v-select
+                    v-model="editedTransformation.config.caseType"
+                    label="Case Type"
+                    :items="[
+                      { title: 'UPPERCASE', value: 'uppercase' },
+                      { title: 'lowercase', value: 'lowercase' },
+                      { title: 'Title Case', value: 'titlecase' },
+                      { title: 'camelCase', value: 'camelcase' }
+                    ]"
+                  />
+                </v-col>
+              </v-row>
+            </div>
+
+            <!-- Substring Transformation -->
+            <div v-if="editedTransformation.type === 'Substring'">
+              <v-divider class="my-4" />
+              <h3 class="text-subtitle-1 mb-3">Substring Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Extract a portion of text starting at a specific position.
+              </v-alert>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="editedTransformation.config.start"
+                    label="Start Position"
+                    type="number"
+                    hint="0-based index (0 = first character)"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="editedTransformation.config.length"
+                    label="Length (Optional)"
+                    type="number"
+                    hint="Leave empty to extract to end of string"
+                    persistent-hint
+                  />
+                </v-col>
+              </v-row>
+            </div>
+
+            <!-- Replace Transformation -->
+            <div v-if="editedTransformation.type === 'Replace'">
+              <v-divider class="my-4" />
+              <h3 class="text-subtitle-1 mb-3">Replace Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Find and replace text or patterns in fields.
+              </v-alert>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="editedTransformation.config.searchValue"
+                    label="Search For"
+                    hint="Text or pattern to find"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="editedTransformation.config.replaceValue"
+                    label="Replace With"
+                    hint="Replacement text (empty to remove)"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-checkbox
+                    v-model="editedTransformation.config.useRegex"
+                    label="Use Regular Expression"
+                    hide-details
+                  />
+                  <v-checkbox
+                    v-model="editedTransformation.config.caseSensitive"
+                    label="Case Sensitive"
+                    hide-details
+                  />
+                  <v-checkbox
+                    v-model="editedTransformation.config.replaceAll"
+                    label="Replace All Occurrences"
+                    hide-details
+                  />
+                </v-col>
+              </v-row>
+            </div>
+
+            <!-- Split Transformation -->
+            <div v-if="editedTransformation.type === 'Split'">
+              <v-divider class="my-4" />
+              <h3 class="text-subtitle-1 mb-3">Split Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Split text into an array using a delimiter.
+              </v-alert>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="editedTransformation.config.delimiter"
+                    label="Delimiter"
+                    hint="Character(s) to split on (e.g., comma, pipe, space)"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="editedTransformation.config.maxSplits"
+                    label="Maximum Splits (Optional)"
+                    type="number"
+                    hint="Leave empty for unlimited splits"
+                    persistent-hint
+                  />
+                </v-col>
+              </v-row>
+            </div>
           </v-form>
         </v-card-text>
         <v-card-actions>
