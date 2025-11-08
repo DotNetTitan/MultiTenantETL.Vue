@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="wizard-card" :class="{ 'fullscreen-mode': isFullscreen }">
     <v-toolbar color="primary" dark flat>
       <v-btn icon @click="$emit('close')">
         <v-icon>mdi-close</v-icon>
@@ -8,12 +8,15 @@
         {{ pipeline.id ? 'Edit Pipeline' : 'Create New Pipeline' }}
       </v-toolbar-title>
       <v-spacer />
+      <v-btn icon @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
+        <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
+      </v-btn>
       <v-btn variant="text" @click="handleSave" :loading="saving" :disabled="!canSave">
         Save Pipeline
       </v-btn>
     </v-toolbar>
 
-    <v-stepper v-model="currentStep" alt-labels flat>
+    <v-stepper v-model="currentStep" alt-labels flat class="wizard-stepper">
       <v-stepper-header>
         <v-stepper-item
           :complete="currentStep > 1"
@@ -43,7 +46,7 @@
         />
       </v-stepper-header>
 
-      <v-stepper-window class="stepper-content">
+      <v-stepper-window class="stepper-window">
         <!-- Step 1: Basic Info -->
         <v-stepper-window-item :value="1">
           <div class="pa-6">
@@ -289,11 +292,15 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['save', 'close', 'create-datasource', 'add-transformation']);
+const emit = defineEmits(['save', 'close', 'create-datasource', 'add-transformation', 'toggle-fullscreen']);
 
 const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
+const isFullscreen = ref(false);
+
+// Expose isFullscreen to template for styling
+defineExpose({ isFullscreen });
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
@@ -334,6 +341,11 @@ function initializeSchedule(enabled) {
   }
 }
 
+function toggleFullscreen() {
+  isFullscreen.value = !isFullscreen.value;
+  emit('toggle-fullscreen', isFullscreen.value);
+}
+
 async function handleSave() {
   saving.value = true;
   try {
@@ -348,40 +360,36 @@ async function handleSave() {
 </script>
 
 <style scoped>
-.stepper-content {
-  min-height: 400px;
-  max-height: 70vh;
-  overflow-y: auto;
-  background: transparent !important;
-}
-
-.stepper-content :deep(.v-stepper-window-item) {
-  background: transparent !important;
-}
-
-.step-3-content {
+.wizard-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
   height: 100%;
+}
+
+.wizard-card.fullscreen-mode {
+  max-height: 100vh;
+  height: 100vh;
+}
+
+.wizard-stepper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.wizard-stepper :deep(.v-stepper-header) {
+  flex-shrink: 0;
+}
+
+.stepper-window {
+  flex: 1;
   overflow-y: auto;
-  max-height: calc(70vh - 200px);
+  min-height: 0;
 }
 
-@media (max-width: 960px) {
-  .stepper-content {
-    max-height: 60vh;
-  }
-  
-  .step-3-content {
-    max-height: calc(60vh - 200px);
-  }
-}
-
-@media (max-width: 600px) {
-  .stepper-content {
-    max-height: 50vh;
-  }
-  
-  .step-3-content {
-    max-height: calc(50vh - 200px);
-  }
+.stepper-window :deep(.v-stepper-window-item) {
+  background: transparent !important;
 }
 </style>

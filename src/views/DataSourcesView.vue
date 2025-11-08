@@ -120,6 +120,23 @@
     <!-- Create/Edit Data Source Dialog -->
     <v-dialog
       v-model="showCreateDialog"
+      :fullscreen="isDialogFullscreen"
+      :max-width="isDialogFullscreen ? undefined : '900px'"
+      persistent
+      @update:model-value="handleDialogClose"
+    >
+      <DataSourceWizard
+        :data-source="editedDataSource"
+        @save="handleWizardSave"
+        @close="showCreateDialog = false"
+        @toggle-fullscreen="isDialogFullscreen = $event"
+      />
+    </v-dialog>
+
+    <!-- Old inline form (keeping as backup, can be removed later) -->
+    <v-dialog
+      v-if="false"
+      v-model="showCreateDialog"
       max-width="700px"
       persistent
       @update:model-value="handleDialogClose"
@@ -454,6 +471,7 @@ import {
   deleteDataSource as deleteDataSourceAPI, 
   testConnection as testDataSourceConnection 
 } from '@/services/dataSourceService';
+import DataSourceWizard from '@/components/datasource/DataSourceWizard.vue';
 import SchemaEditor from '@/components/datasource/SchemaEditor.vue';
 import SchemaPreview from '@/components/datasource/SchemaPreview.vue';
 import SchemaChangeWarningDialog from '@/components/dialogs/SchemaChangeWarningDialog.vue';
@@ -503,6 +521,7 @@ const deletingDataSource = ref(false);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const showConnectionDialog = ref(false);
+const isDialogFullscreen = ref(false);
 const showSchemaWarningDialog = ref(false);
 const dataSourceToDelete = ref(null);
 const connectionTestSource = ref(null);
@@ -538,10 +557,12 @@ function createEmptyDataSource() {
     id: null,
     name: '',
     description: '',
-    type: 'Database',
+    type: '',
+    provider: '',
     isSource: true,
     isDestination: true,
     requiresCredentials: true,
+    config: {},
     database: {
       provider: 'SQL Server',
       server: '',
@@ -785,14 +806,37 @@ async function saveDataSource() {
   }
 }
 
-async function performSave() {
+async function handleWizardSave(dataSource) {
+  try {
+    // Check if this is an edit and schema has changed
+    if (dataSource.id && schemaHasChanged.value) {
+      // Check if data source is used in any pipelines
+      const pipelines = await findPipelinesUsingDataSource(dataSource.id);
+      
+      if (pipelines.length > 0) {
+        // Show warning dialog
+        affectedPipelines.value = pipelines;
+        showSchemaWarningDialog.value = true;
+        return; // Don't save yet, wait for user confirmation
+      }
+    }
+    
+    // Proceed with save
+    await performSave(dataSource);
+  } catch (error) {
+    console.error('Error saving data source:', error);
+  }
+}
+
+async function performSave(dataSource = null) {
   try {
     savingDataSource.value = true;
     
-    const savedDataSource = await saveDataSourceAPI(editedDataSource.value);
+    const dataToSave = dataSource || editedDataSource.value;
+    const savedDataSource = await saveDataSourceAPI(dataToSave);
     
-    if (editedDataSource.value.id) {
-      const index = dataSources.value.findIndex(ds => ds.id === editedDataSource.value.id);
+    if (dataToSave.id) {
+      const index = dataSources.value.findIndex(ds => ds.id === dataToSave.id);
       if (index !== -1) {
         dataSources.value[index] = savedDataSource;
       }

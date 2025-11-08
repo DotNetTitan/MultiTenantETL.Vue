@@ -117,8 +117,8 @@
     <!-- Create/Edit Pipeline Dialog -->
     <v-dialog
       v-model="showCreateDialog"
-      :fullscreen="$vuetify.display.mobile"
-      max-width="1400px"
+      :fullscreen="isDialogFullscreen || $vuetify.display.mobile"
+      :max-width="isDialogFullscreen ? undefined : '1400px'"
       persistent
       scrollable
     >
@@ -131,6 +131,7 @@
         @close="showCreateDialog = false"
         @create-datasource="goToCreateDataSource"
         @add-transformation="addTransformation"
+        @toggle-fullscreen="isDialogFullscreen = $event"
       />
     </v-dialog>
 
@@ -259,6 +260,7 @@ const headers = [
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const pipelineToDelete = ref(null);
+const isDialogFullscreen = ref(false);
 
 function openEditDialog(pipeline) {
   fetchDataSources();
