@@ -11,8 +11,15 @@
       <v-btn icon @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
         <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
       </v-btn>
-      <v-btn variant="text" @click="handleSave" :loading="saving" :disabled="!canSave">
-        Save Data Source
+      <v-btn 
+        icon
+        variant="text"
+        @click="handleSave" 
+        :loading="saving" 
+        :disabled="!canSave"
+        title="Save Data Source"
+      >
+        <v-icon>mdi-content-save</v-icon>
       </v-btn>
     </v-toolbar>
 
@@ -672,4 +679,6 @@ watch(() => props.dataSource.type, (newType) => {
 .stepper-window :deep(.v-stepper-window-item) {
   background: transparent !important;
 }
+
+
 </style>

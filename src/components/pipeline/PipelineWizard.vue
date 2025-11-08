@@ -11,8 +11,15 @@
       <v-btn icon @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
         <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
       </v-btn>
-      <v-btn variant="text" @click="handleSave" :loading="saving" :disabled="!canSave">
-        Save Pipeline
+      <v-btn 
+        icon
+        variant="text"
+        @click="handleSave" 
+        :loading="saving" 
+        :disabled="!canSave"
+        title="Save Pipeline"
+      >
+        <v-icon>mdi-content-save</v-icon>
       </v-btn>
     </v-toolbar>
 
@@ -442,4 +449,6 @@ async function handleSave() {
 .stepper-window :deep(.v-stepper-window-item) {
   background: transparent !important;
 }
+
+
 </style>
