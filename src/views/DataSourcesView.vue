@@ -72,10 +72,6 @@
               <div v-if="item.schema && item.schema.fields && item.schema.fields.length > 0" class="text-caption text-grey">
                 <v-icon size="x-small" class="mr-1">mdi-table</v-icon>
                 {{ item.schema.fields.length }} field{{ item.schema.fields.length !== 1 ? 's' : '' }}
-                <span v-if="item.schema.isManual" class="ml-1">
-                  <v-icon size="x-small" color="success">mdi-pencil</v-icon>
-                  Manual
-                </span>
               </div>
             </div>
           </template>
@@ -91,6 +87,16 @@
               title="Edit data source"
             >
               <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              color="info"
+              @click="viewSchema(item)"
+              title="View schema"
+            >
+              <v-icon>mdi-table-eye</v-icon>
             </v-btn>
             <v-btn
               icon
@@ -456,6 +462,119 @@
       @cancel="handleSchemaWarningCancel"
       @proceed="handleSchemaWarningProceed"
     />
+
+    <!-- Schema Viewer Dialog -->
+    <v-dialog
+      v-model="showSchemaDialog"
+      max-width="900px"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2">mdi-table-eye</v-icon>
+          {{ selectedDataSource?.name }} - Schema
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showSchemaDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <div v-if="loadingSchema" class="text-center py-8">
+            <v-progress-circular indeterminate color="primary" size="64" />
+            <div class="mt-4">Loading schema...</div>
+          </div>
+          
+          <div v-else-if="schemaError" class="text-center py-8">
+            <v-icon size="64" color="error">mdi-alert-circle</v-icon>
+            <div class="mt-4 text-error">{{ schemaError }}</div>
+          </div>
+          
+          <div v-else-if="dataSourceSchema && dataSourceSchema.fields">
+            <!-- Schema Metadata -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-text>
+                <v-row dense>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Total Fields</div>
+                    <div class="text-h6">{{ dataSourceSchema.fields.length }}</div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Schema Version</div>
+                    <div class="text-h6">{{ dataSourceSchema.version || 1 }}</div>
+                  </v-col>
+                  <v-col cols="12" v-if="dataSourceSchema.lastModified">
+                    <div class="text-caption text-grey">Last Modified</div>
+                    <div class="text-body-2">{{ formatDate(dataSourceSchema.lastModified) }}</div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Fields Table -->
+            <v-table density="comfortable" hover>
+              <thead>
+                <tr>
+                  <th class="text-left">Field Name</th>
+                  <th class="text-left">Data Type</th>
+                  <th class="text-center">Required</th>
+                  <th class="text-center">Nullable</th>
+                  <th class="text-left">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="field in dataSourceSchema.fields" :key="field.name">
+                  <td>
+                    <div class="d-flex align-center">
+                      <v-icon size="small" class="mr-2" color="primary">mdi-table-column</v-icon>
+                      <strong>{{ field.name }}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <v-chip size="small" color="primary" variant="tonal">
+                      {{ field.type }}
+                    </v-chip>
+                    <span v-if="field.length" class="text-caption ml-1">({{ field.length }})</span>
+                  </td>
+                  <td class="text-center">
+                    <v-icon 
+                      :color="field.required ? 'error' : 'grey-lighten-1'" 
+                      size="small"
+                    >
+                      {{ field.required ? 'mdi-check-circle' : 'mdi-minus-circle' }}
+                    </v-icon>
+                  </td>
+                  <td class="text-center">
+                    <v-icon 
+                      :color="field.nullable ? 'success' : 'grey-lighten-1'" 
+                      size="small"
+                    >
+                      {{ field.nullable ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                    </v-icon>
+                  </td>
+                  <td>
+                    <span class="text-caption">{{ field.description || '-' }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </div>
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            @click="showSchemaDialog = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -469,7 +588,8 @@ import {
   fetchDataSources as getDataSources, 
   saveDataSource as saveDataSourceAPI, 
   deleteDataSource as deleteDataSourceAPI, 
-  testConnection as testDataSourceConnection 
+  testConnection as testDataSourceConnection,
+  fetchDataSourceById
 } from '@/services/dataSourceService';
 import DataSourceWizard from '@/components/datasource/DataSourceWizard.vue';
 import SchemaEditor from '@/components/datasource/SchemaEditor.vue';
@@ -521,10 +641,12 @@ const deletingDataSource = ref(false);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const showConnectionDialog = ref(false);
+const showSchemaDialog = ref(false);
 const isDialogFullscreen = ref(false);
 const showSchemaWarningDialog = ref(false);
 const dataSourceToDelete = ref(null);
 const connectionTestSource = ref(null);
+const selectedDataSource = ref(null);
 const testingConnection = ref(false);
 const connectionTestResult = ref(false);
 const connectionTestSuccess = ref(false);
@@ -532,6 +654,9 @@ const connectionTestMessage = ref('');
 const affectedPipelines = ref([]);
 const originalSchema = ref(null);
 const schemaHasChanged = ref(false);
+const loadingSchema = ref(false);
+const dataSourceSchema = ref(null);
+const schemaError = ref(null);
 
 // Form data
 const form = ref(null);
@@ -909,6 +1034,41 @@ async function testConnection(dataSource) {
   }
 }
 
+async function viewSchema(dataSource) {
+  try {
+    selectedDataSource.value = dataSource;
+    showSchemaDialog.value = true;
+    loadingSchema.value = true;
+    dataSourceSchema.value = null;
+    schemaError.value = null;
+    
+    // Fetch the full data source details to get the schema
+    const fullDataSource = await fetchDataSourceById(dataSource.id);
+    
+    if (!fullDataSource.schema || !fullDataSource.schema.fields || fullDataSource.schema.fields.length === 0) {
+      schemaError.value = 'No schema defined for this data source';
+    } else {
+      dataSourceSchema.value = fullDataSource.schema;
+    }
+  } catch (error) {
+    console.error('Error loading schema:', error);
+    schemaError.value = error.message || 'Failed to load schema';
+  } finally {
+    loadingSchema.value = false;
+  }
+}
+
+function getMethodColor(method) {
+  const colors = {
+    'GET': 'success',
+    'POST': 'primary',
+    'PUT': 'warning',
+    'DELETE': 'error',
+    'PATCH': 'info'
+  };
+  return colors[method] || 'grey';
+}
+
 let tenantSubscription = null;
 
 onMounted(async () => {
@@ -937,8 +1097,10 @@ onBeforeUnmount(() => {
   showCreateDialog.value = false;
   showDeleteDialog.value = false;
   showConnectionDialog.value = false;
+  showSchemaDialog.value = false;
   dataSourceToDelete.value = null;
   connectionTestSource.value = null;
+  selectedDataSource.value = null;
   editedDataSource.value = createEmptyDataSource();
 });
 </script>

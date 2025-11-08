@@ -92,6 +92,16 @@
               icon
               variant="text"
               size="small"
+              color="info"
+              @click="viewMappings(item)"
+              title="View field mappings"
+            >
+              <v-icon>mdi-map-marker-path</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
               color="success"
               @click="handleExecutePipeline(item)"
               :disabled="item.status === 'Running'"
@@ -173,6 +183,160 @@
       @select="selectExistingTransformation"
       @close="showTransformationSelector = false"
     />
+
+    <!-- Field Mappings Viewer Dialog -->
+    <v-dialog
+      v-model="showMappingsDialog"
+      max-width="1200px"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2">mdi-map-marker-path</v-icon>
+          {{ selectedPipeline?.name }} - Field Mappings
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showMappingsDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <div v-if="loadingMappings" class="text-center py-8">
+            <v-progress-circular indeterminate color="primary" size="64" />
+            <div class="mt-4">Loading mappings...</div>
+          </div>
+          
+          <div v-else-if="mappingsError" class="text-center py-8">
+            <v-icon size="64" color="error">mdi-alert-circle</v-icon>
+            <div class="mt-4 text-error">{{ mappingsError }}</div>
+          </div>
+          
+          <div v-else-if="pipelineMappings">
+            <!-- Pipeline Info -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-text>
+                <v-row dense>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Source</div>
+                    <div class="text-body-1">
+                      <v-icon size="small" class="mr-1">mdi-database</v-icon>
+                      {{ selectedPipeline?.sourceName }}
+                    </div>
+                  </v-col>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Destination</div>
+                    <div class="text-body-1">
+                      <v-icon size="small" class="mr-1">mdi-database</v-icon>
+                      {{ selectedPipeline?.destinationName }}
+                    </div>
+                  </v-col>
+                  <v-col cols="12">
+                    <div class="text-caption text-grey">Total Mappings</div>
+                    <div class="text-h6">{{ pipelineMappings.length }}</div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+
+            <!-- Mappings List -->
+            <div v-if="pipelineMappings.length === 0" class="text-center py-8">
+              <v-icon size="64" color="grey">mdi-map-marker-off</v-icon>
+              <div class="mt-4 text-grey">No field mappings defined</div>
+            </div>
+            
+            <v-expansion-panels v-else>
+              <v-expansion-panel
+                v-for="(mapping, index) in pipelineMappings"
+                :key="index"
+              >
+                <v-expansion-panel-title>
+                  <div class="d-flex align-center w-100">
+                    <v-chip size="small" class="mr-2">{{ index + 1 }}</v-chip>
+                    <div class="flex-grow-1">
+                      <strong>{{ mapping.sourceField }}</strong>
+                      <v-icon class="mx-2">mdi-arrow-right</v-icon>
+                      <strong>{{ mapping.destinationField }}</strong>
+                    </div>
+                    <v-chip
+                      v-if="mapping.transformation"
+                      size="small"
+                      :color="getTransformationColor(mapping.transformation.type)"
+                      class="ml-2"
+                    >
+                      <v-icon start size="small">{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
+                      {{ mapping.transformation.type }}
+                    </v-chip>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-row dense>
+                    <v-col cols="12" md="5">
+                      <v-card variant="outlined">
+                        <v-card-subtitle>Source Field</v-card-subtitle>
+                        <v-card-text>
+                          <div class="mb-2">
+                            <strong>{{ mapping.sourceField }}</strong>
+                          </div>
+                          <div v-if="mapping.sourceFieldType" class="text-caption">
+                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.sourceFieldType }}</v-chip>
+                          </div>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                    
+                    <v-col cols="12" md="2" class="d-flex align-center justify-center">
+                      <v-icon size="large" color="primary">mdi-arrow-right-thick</v-icon>
+                    </v-col>
+                    
+                    <v-col cols="12" md="5">
+                      <v-card variant="outlined">
+                        <v-card-subtitle>Destination Field</v-card-subtitle>
+                        <v-card-text>
+                          <div class="mb-2">
+                            <strong>{{ mapping.destinationField }}</strong>
+                          </div>
+                          <div v-if="mapping.destinationFieldType" class="text-caption">
+                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.destinationFieldType }}</v-chip>
+                          </div>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                    
+                    <v-col v-if="mapping.transformation" cols="12" class="mt-3">
+                      <v-card variant="outlined" color="info">
+                        <v-card-subtitle>
+                          <v-icon start>{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
+                          Transformation Applied
+                        </v-card-subtitle>
+                        <v-card-text>
+                          <div class="mb-2">
+                            <strong>{{ mapping.transformation.name }}</strong>
+                          </div>
+                          <div class="text-caption">{{ mapping.transformation.description }}</div>
+                        </v-card-text>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </div>
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            @click="showMappingsDialog = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -259,8 +423,13 @@ const headers = [
 // Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showMappingsDialog = ref(false);
 const pipelineToDelete = ref(null);
+const selectedPipeline = ref(null);
 const isDialogFullscreen = ref(false);
+const loadingMappings = ref(false);
+const pipelineMappings = ref(null);
+const mappingsError = ref(null);
 
 function openEditDialog(pipeline) {
   fetchDataSources();
@@ -350,6 +519,65 @@ function getTransformationIcon(type) {
     'Join': 'mdi-link-variant'
   };
   return icons[type] || 'mdi-cog';
+}
+
+async function viewMappings(pipeline) {
+  try {
+    selectedPipeline.value = pipeline;
+    showMappingsDialog.value = true;
+    loadingMappings.value = true;
+    pipelineMappings.value = null;
+    mappingsError.value = null;
+    
+    // Fetch the full pipeline details including mappings
+    // For now, using mock data
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock mappings data
+    pipelineMappings.value = [
+      {
+        sourceField: 'OrderId',
+        destinationField: 'order_id',
+        sourceFieldType: 'int',
+        destinationFieldType: 'integer',
+        transformation: null
+      },
+      {
+        sourceField: 'CustomerName',
+        destinationField: 'customer_name',
+        sourceFieldType: 'varchar(100)',
+        destinationFieldType: 'string',
+        transformation: {
+          type: 'Map',
+          name: 'Name Formatter',
+          description: 'Formats customer names to title case'
+        }
+      },
+      {
+        sourceField: 'OrderDate',
+        destinationField: 'created_at',
+        sourceFieldType: 'datetime',
+        destinationFieldType: 'timestamp',
+        transformation: null
+      },
+      {
+        sourceField: 'TotalAmount',
+        destinationField: 'total',
+        sourceFieldType: 'decimal(18,2)',
+        destinationFieldType: 'decimal',
+        transformation: {
+          type: 'Script',
+          name: 'Currency Converter',
+          description: 'Converts amount to USD'
+        }
+      }
+    ];
+  } catch (error) {
+    console.error('Error loading mappings:', error);
+    mappingsError.value = error.message || 'Failed to load mappings';
+  } finally {
+    loadingMappings.value = false;
+  }
 }
 
 onMounted(async () => {

@@ -16,7 +16,19 @@ const mockDataSources = [
     },
     isSource: true,
     isDestination: true,
-    requiresCredentials: true
+    requiresCredentials: true,
+    schema: {
+      fields: [
+        { name: 'OrderId', type: 'int', required: true, nullable: false, description: 'Unique order identifier' },
+        { name: 'CustomerId', type: 'int', required: true, nullable: false, description: 'Customer reference' },
+        { name: 'OrderDate', type: 'datetime', required: true, nullable: false, description: 'Date order was placed' },
+        { name: 'TotalAmount', type: 'decimal', length: '18,2', required: true, nullable: false, description: 'Total order amount' },
+        { name: 'Status', type: 'varchar', length: '50', required: true, nullable: false, description: 'Order status' }
+      ],
+      version: 1,
+      isManual: true,
+      lastModified: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    }
   },
   {
     id: '2',
@@ -32,7 +44,19 @@ const mockDataSources = [
     },
     isSource: true,
     isDestination: false,
-    requiresCredentials: true
+    requiresCredentials: true,
+    schema: {
+      fields: [
+        { name: 'customer_id', type: 'string', required: true, nullable: false, description: 'Customer ID' },
+        { name: 'first_name', type: 'string', required: true, nullable: false, description: 'First name' },
+        { name: 'last_name', type: 'string', required: true, nullable: false, description: 'Last name' },
+        { name: 'email', type: 'string', required: true, nullable: false, description: 'Email address' },
+        { name: 'phone', type: 'string', required: false, nullable: true, description: 'Phone number' }
+      ],
+      version: 1,
+      isManual: true,
+      lastModified: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+    }
   },
   {
     id: '3',
@@ -47,7 +71,19 @@ const mockDataSources = [
     },
     isSource: true,
     isDestination: true,
-    requiresCredentials: true
+    requiresCredentials: true,
+    schema: {
+      fields: [
+        { name: 'id', type: 'integer', required: true, nullable: false, description: 'Record ID' },
+        { name: 'product_code', type: 'string', required: true, nullable: false, description: 'Product code' },
+        { name: 'quantity', type: 'integer', required: true, nullable: false, description: 'Quantity in stock' },
+        { name: 'price', type: 'decimal', required: true, nullable: false, description: 'Unit price' },
+        { name: 'last_updated', type: 'timestamp', required: false, nullable: true, description: 'Last update timestamp' }
+      ],
+      version: 1,
+      isManual: false,
+      lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+    }
   },
   {
     id: '4',

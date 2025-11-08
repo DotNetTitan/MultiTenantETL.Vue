@@ -62,6 +62,16 @@
                   required
                 />
               </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="dataSource.description"
+                  label="Description"
+                  placeholder="Brief description of this data source"
+                  variant="outlined"
+                  rows="2"
+                  auto-grow
+                />
+              </v-col>
               <v-col cols="12" md="6">
                 <v-select
                   v-model="dataSource.type"
@@ -292,6 +302,13 @@
                     <v-list-item-title>Name</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.name }}</v-list-item-subtitle>
                   </v-list-item>
+                  <v-list-item v-if="dataSource.description">
+                    <template v-slot:prepend>
+                      <v-icon>mdi-text</v-icon>
+                    </template>
+                    <v-list-item-title>Description</v-list-item-title>
+                    <v-list-item-subtitle>{{ dataSource.description }}</v-list-item-subtitle>
+                  </v-list-item>
                   <v-list-item>
                     <template v-slot:prepend>
                       <v-icon>{{ getTypeIcon(dataSource.type) }}</v-icon>
@@ -380,6 +397,7 @@ const props = defineProps({
     default: () => ({
       id: null,
       name: '',
+      description: '',
       type: '',
       provider: '',
       config: {},
