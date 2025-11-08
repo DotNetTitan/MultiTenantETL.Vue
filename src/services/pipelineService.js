@@ -386,6 +386,35 @@ export async function getExecutionById(id) {
   }
 }
 
+/**
+ * Finds all pipelines that use a specific data source
+ * @param {string} dataSourceId - Data source ID
+ * @returns {Promise<Array>} List of pipelines using the data source
+ */
+export async function findPipelinesUsingDataSource(dataSourceId) {
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Find pipelines where the data source is used as source or destination
+    const pipelines = mockPipelines.filter(p => 
+      p.sourceId === dataSourceId || p.destinationId === dataSourceId
+    );
+    
+    // Return simplified pipeline info
+    return pipelines.map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      usedAs: p.sourceId === dataSourceId ? 'source' : 'destination',
+      status: p.status
+    }));
+  } catch (error) {
+    console.error(`Error finding pipelines using data source ${dataSourceId}:`, error);
+    throw error;
+  }
+}
+
 // For backward compatibility with code that might use the old object-based API
 export const pipelineService = {
   getAll: fetchPipelines,
@@ -398,5 +427,6 @@ export const pipelineService = {
   delete: deletePipeline,
   execute: executePipeline,
   getExecutions,
-  getExecutionById
+  getExecutionById,
+  findPipelinesUsingDataSource
 };

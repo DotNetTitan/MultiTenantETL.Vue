@@ -1,0 +1,294 @@
+<template>
+  <v-card variant="outlined" class="mb-4">
+    <v-card-text>
+      <div class="text-center">
+        <v-icon size="48" color="primary" class="mb-2">mdi-file-upload</v-icon>
+        <h4 class="text-h6 mb-2">Upload Sample File to Generate Schema</h4>
+        <p class="text-caption text-grey mb-4">
+          Upload a CSV, JSON, or Excel file to automatically detect field definitions
+        </p>
+
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".csv,.json,.xlsx,.xls"
+          style="display: none"
+          @change="handleFileSelect"
+        />
+
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-file-upload"
+          @click="fileInput.click()"
+          :loading="analyzing"
+        >
+          Choose File
+        </v-btn>
+
+        <div class="mt-2 text-caption text-grey">
+          Supported formats: CSV, JSON, Excel (.xlsx, .xls)
+        </div>
+      </div>
+
+      <v-alert v-if="analyzing" type="info" class="mt-4" density="compact">
+        <v-progress-linear indeterminate class="mb-2" />
+        Analyzing file: {{ selectedFileName }}
+      </v-alert>
+
+      <v-alert v-if="analysisResult" type="success" class="mt-4" density="compact">
+        <div class="d-flex align-center">
+          <v-icon start>mdi-check-circle</v-icon>
+          <div class="flex-grow-1">
+            Found {{ analysisResult.fields.length }} fields in {{ selectedFileName }}
+          </div>
+          <v-btn size="small" variant="text" @click="applySchema">
+            Apply Schema
+          </v-btn>
+        </div>
+      </v-alert>
+
+      <v-alert v-if="error" type="error" class="mt-4" density="compact" closable @click:close="error = null">
+        {{ error }}
+      </v-alert>
+    </v-card-text>
+  </v-card>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
+
+const emit = defineEmits(['schema-generated']);
+
+const fileInput = ref(null);
+const analyzing = ref(false);
+const selectedFileName = ref('');
+const analysisResult = ref(null);
+const error = ref(null);
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  error.value = null;
+  analysisResult.value = null;
+
+  if (file.size > MAX_FILE_SIZE) {
+    error.value = 'File size exceeds 10MB limit. Please use a smaller file.';
+    return;
+  }
+
+  selectedFileName.value = file.name;
+  analyzing.value = true;
+
+  const extension = file.name.split('.').pop().toLowerCase();
+
+  try {
+    if (extension === 'csv') {
+      analyzeCSV(file);
+    } else if (extension === 'json') {
+      analyzeJSON(file);
+    } else if (extension === 'xlsx' || extension === 'xls') {
+      analyzeExcel(file);
+    } else {
+      error.value = 'Unsupported file format';
+      analyzing.value = false;
+    }
+  } catch (err) {
+    error.value = `Error analyzing file: ${err.message}`;
+    analyzing.value = false;
+  }
+
+  event.target.value = '';
+}
+
+function analyzeCSV(file) {
+  Papa.parse(file, {
+    header: true,
+    preview: 1000,
+    complete: (results) => {
+      try {
+        if (!results.data || results.data.length === 0) {
+          error.value = 'CSV file is empty or invalid';
+          analyzing.value = false;
+          return;
+        }
+
+        const fields = inferFieldsFromData(results.meta.fields, results.data);
+        analysisResult.value = { fields };
+        analyzing.value = false;
+      } catch (err) {
+        error.value = `Error parsing CSV: ${err.message}`;
+        analyzing.value = false;
+      }
+    },
+    error: (err) => {
+      error.value = `CSV parsing error: ${err.message}`;
+      analyzing.value = false;
+    }
+  });
+}
+
+function analyzeJSON(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      const json = JSON.parse(e.target.result);
+      let data = json;
+
+      if (Array.isArray(json)) {
+        data = json;
+      } else if (json.data && Array.isArray(json.data)) {
+        data = json.data;
+      } else {
+        data = [json];
+      }
+
+      if (data.length === 0) {
+        error.value = 'JSON file contains no data';
+        analyzing.value = false;
+        return;
+      }
+
+      const firstObject = data[0];
+      const fieldNames = Object.keys(firstObject);
+
+      const fields = inferFieldsFromData(fieldNames, data);
+      analysisResult.value = { fields };
+      analyzing.value = false;
+    } catch (err) {
+      error.value = `Error parsing JSON: ${err.message}`;
+      analyzing.value = false;
+    }
+  };
+
+  reader.onerror = () => {
+    error.value = 'Error reading file';
+    analyzing.value = false;
+  };
+
+  reader.readAsText(file);
+}
+
+function analyzeExcel(file) {
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      if (jsonData.length < 2) {
+        error.value = 'Excel file must have at least a header row and one data row';
+        analyzing.value = false;
+        return;
+      }
+
+      const headers = jsonData[0];
+      const dataRows = jsonData.slice(1, Math.min(1001, jsonData.length));
+
+      const objects = dataRows.map(row => {
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = row[index];
+        });
+        return obj;
+      });
+
+      const fields = inferFieldsFromData(headers, objects);
+      analysisResult.value = { fields };
+      analyzing.value = false;
+    } catch (err) {
+      error.value = `Error parsing Excel: ${err.message}`;
+      analyzing.value = false;
+    }
+  };
+
+  reader.onerror = () => {
+    error.value = 'Error reading file';
+    analyzing.value = false;
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function inferFieldsFromData(fieldNames, data) {
+  return fieldNames.map((name, index) => {
+    const sampleValues = data
+      .slice(0, 100)
+      .map(row => row[name])
+      .filter(val => val !== null && val !== undefined && val !== '');
+
+    const type = inferDataType(sampleValues);
+
+    const hasNulls = data.slice(0, 100).some(row => {
+      const val = row[name];
+      return val === null || val === undefined || val === '';
+    });
+
+    return {
+      id: `field-${Date.now()}-${index}`,
+      name: String(name),
+      type,
+      required: false,
+      nullable: hasNulls,
+      description: '',
+      order: index + 1
+    };
+  });
+}
+
+function inferDataType(values) {
+  if (values.length === 0) return 'varchar';
+
+  let intCount = 0;
+  let decimalCount = 0;
+  let boolCount = 0;
+  let dateCount = 0;
+  let datetimeCount = 0;
+
+  values.forEach(val => {
+    const strVal = String(val).trim();
+
+    if (/^-?\d+$/.test(strVal)) {
+      intCount++;
+    } else if (/^-?\d+\.\d+$/.test(strVal)) {
+      decimalCount++;
+    } else if (/^(true|false|yes|no|0|1)$/i.test(strVal)) {
+      boolCount++;
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(strVal)) {
+      dateCount++;
+    } else if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}/.test(strVal)) {
+      datetimeCount++;
+    }
+  });
+
+  const total = values.length;
+  const threshold = 0.8;
+
+  if (datetimeCount / total >= threshold) return 'datetime';
+  if (dateCount / total >= threshold) return 'date';
+  if (boolCount / total >= threshold) return 'boolean';
+  if (decimalCount / total >= threshold) return 'decimal';
+  if (intCount / total >= threshold) return 'int';
+
+  return 'varchar';
+}
+
+function applySchema() {
+  if (analysisResult.value) {
+    emit('schema-generated', analysisResult.value.fields);
+    analysisResult.value = null;
+    selectedFileName.value = '';
+  }
+}
+</script>

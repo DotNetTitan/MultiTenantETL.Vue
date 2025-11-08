@@ -6,7 +6,7 @@
       <v-btn 
         color="primary" 
         prepend-icon="mdi-plus" 
-        @click="showCreateDialog = true"
+        @click="createNewDataSource"
       >
         Create Data Source
       </v-btn>
@@ -66,6 +66,19 @@
               {{ item.type }}
             </v-chip>
           </template>
+          <template v-slot:item.description="{ item }">
+            <div>
+              <div>{{ item.description || '-' }}</div>
+              <div v-if="item.schema && item.schema.fields && item.schema.fields.length > 0" class="text-caption text-grey">
+                <v-icon size="x-small" class="mr-1">mdi-table</v-icon>
+                {{ item.schema.fields.length }} field{{ item.schema.fields.length !== 1 ? 's' : '' }}
+                <span v-if="item.schema.isManual" class="ml-1">
+                  <v-icon size="x-small" color="success">mdi-pencil</v-icon>
+                  Manual
+                </span>
+              </div>
+            </div>
+          </template>
           <template v-slot:item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
@@ -109,6 +122,7 @@
       v-model="showCreateDialog"
       max-width="700px"
       persistent
+      @update:model-value="handleDialogClose"
     >
       <v-card>
         <v-card-title>
@@ -304,6 +318,22 @@
               </v-row>
             </div>
             
+            <!-- Schema Definition -->
+            <v-divider class="my-4" />
+            <div class="text-subtitle-1 mb-2">Schema Definition</div>
+            
+            <!-- Schema Preview (if fields exist) -->
+            <SchemaPreview
+              v-if="editedDataSource.schema.fields && editedDataSource.schema.fields.length > 0"
+              :fields="editedDataSource.schema.fields"
+              class="mb-4"
+            />
+            
+            <SchemaEditor
+              v-model="editedDataSource.schema.fields"
+              @validate="handleSchemaValidation"
+            />
+            
             <v-row>
               <v-col cols="12">
                 <v-textarea
@@ -401,6 +431,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Schema Change Warning Dialog -->
+    <SchemaChangeWarningDialog
+      v-model="showSchemaWarningDialog"
+      :affected-pipelines="affectedPipelines"
+      @cancel="handleSchemaWarningCancel"
+      @proceed="handleSchemaWarningProceed"
+    />
   </div>
 </template>
 
@@ -416,6 +454,10 @@ import {
   deleteDataSource as deleteDataSourceAPI, 
   testConnection as testDataSourceConnection 
 } from '@/services/dataSourceService';
+import SchemaEditor from '@/components/datasource/SchemaEditor.vue';
+import SchemaPreview from '@/components/datasource/SchemaPreview.vue';
+import SchemaChangeWarningDialog from '@/components/dialogs/SchemaChangeWarningDialog.vue';
+import { findPipelinesUsingDataSource } from '@/services/pipelineService';
 
 const route = useRoute();
 const router = useRouter();
@@ -461,12 +503,16 @@ const deletingDataSource = ref(false);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
 const showConnectionDialog = ref(false);
+const showSchemaWarningDialog = ref(false);
 const dataSourceToDelete = ref(null);
 const connectionTestSource = ref(null);
 const testingConnection = ref(false);
 const connectionTestResult = ref(false);
 const connectionTestSuccess = ref(false);
 const connectionTestMessage = ref('');
+const affectedPipelines = ref([]);
+const originalSchema = ref(null);
+const schemaHasChanged = ref(false);
 
 // Form data
 const form = ref(null);
@@ -518,8 +564,26 @@ function createEmptyDataSource() {
       password: '',
       apiKey: '',
       token: ''
+    },
+    schema: {
+      fields: [],
+      version: 1,
+      isManual: true,
+      lastModified: new Date().toISOString()
     }
   };
+}
+
+function handleSchemaValidation(validation) {
+  // Store validation result if needed
+  console.log('Schema validation:', validation);
+  
+  // Check if schema has changed
+  if (originalSchema.value && editedDataSource.value.schema) {
+    const currentSchemaStr = JSON.stringify(editedDataSource.value.schema.fields);
+    const originalSchemaStr = JSON.stringify(originalSchema.value);
+    schemaHasChanged.value = currentSchemaStr !== originalSchemaStr;
+  }
 }
 
 function editDataSource(dataSource) {
@@ -562,6 +626,20 @@ function editDataSource(dataSource) {
       dataFormat: 'JSON'
     };
   }
+  
+  // Ensure schema object exists
+  if (!clonedSource.schema) {
+    clonedSource.schema = {
+      fields: [],
+      version: 1,
+      isManual: true,
+      lastModified: new Date().toISOString()
+    };
+  }
+  
+  // Store original schema for comparison
+  originalSchema.value = clonedSource.schema.fields ? JSON.parse(JSON.stringify(clonedSource.schema.fields)) : [];
+  schemaHasChanged.value = false;
   
   editedDataSource.value = clonedSource;
   showCreateDialog.value = true;
@@ -687,6 +765,28 @@ const validateApiSchema = async (dataSource) => {
 
 async function saveDataSource() {
   try {
+    // Check if this is an edit and schema has changed
+    if (editedDataSource.value.id && schemaHasChanged.value) {
+      // Check if data source is used in any pipelines
+      const pipelines = await findPipelinesUsingDataSource(editedDataSource.value.id);
+      
+      if (pipelines.length > 0) {
+        // Show warning dialog
+        affectedPipelines.value = pipelines;
+        showSchemaWarningDialog.value = true;
+        return; // Don't save yet, wait for user confirmation
+      }
+    }
+    
+    // Proceed with save
+    await performSave();
+  } catch (error) {
+    console.error('Error saving data source:', error);
+  }
+}
+
+async function performSave() {
+  try {
     savingDataSource.value = true;
     
     const savedDataSource = await saveDataSourceAPI(editedDataSource.value);
@@ -701,10 +801,42 @@ async function saveDataSource() {
     }
     
     showCreateDialog.value = false;
+    showSchemaWarningDialog.value = false;
+    
+    // Reset form to empty state
+    editedDataSource.value = createEmptyDataSource();
+    originalSchema.value = null;
+    schemaHasChanged.value = false;
   } catch (error) {
     console.error('Error saving data source:', error);
   } finally {
     savingDataSource.value = false;
+  }
+}
+
+function handleSchemaWarningCancel() {
+  showSchemaWarningDialog.value = false;
+}
+
+function handleSchemaWarningProceed() {
+  performSave();
+}
+
+function createNewDataSource() {
+  editedDataSource.value = createEmptyDataSource();
+  originalSchema.value = null;
+  schemaHasChanged.value = false;
+  showCreateDialog.value = true;
+}
+
+function handleDialogClose(isOpen) {
+  if (!isOpen) {
+    // Dialog is closing - reset form if not saving
+    if (!savingDataSource.value) {
+      editedDataSource.value = createEmptyDataSource();
+      originalSchema.value = null;
+      schemaHasChanged.value = false;
+    }
   }
 }
 

@@ -132,6 +132,7 @@ export function usePipeline() {
       sourceId: null,
       destinationId: null,
       transformations: [],
+      fieldMappings: [], // NEW: Field mappings array
       isScheduled: false,
       schedule: {
         frequency: 'Daily',

@@ -35,7 +35,7 @@ export function usePipelineForm() {
     }
   }
 
-  // Extend createEmptyPipeline to include timezone in schedule
+  // Extend createEmptyPipeline to include timezone in schedule and field mappings
   function getEmptyPipeline() {
     const pipeline = createEmptyPipeline();
     if (pipeline.schedule) {
@@ -47,6 +47,10 @@ export function usePipelineForm() {
         cronExpression: '0 0 * * *',
         timezone: 'UTC'
       };
+    }
+    // Ensure fieldMappings array exists
+    if (!pipeline.fieldMappings) {
+      pipeline.fieldMappings = [];
     }
     return pipeline;
   }
@@ -67,6 +71,7 @@ export function usePipelineForm() {
       sourceId: source,
       destinationId: destination,
       transformations: JSON.parse(JSON.stringify(pipeline.transformations || [])), // Deep clone transformations
+      fieldMappings: JSON.parse(JSON.stringify(pipeline.fieldMappings || [])), // Deep clone field mappings
       isScheduled: pipeline.isScheduled,
       schedule: pipeline.schedule ? { 
         ...pipeline.schedule,

@@ -1,0 +1,166 @@
+<template>
+  <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="600">
+    <v-card>
+      <v-card-title>
+        {{ field?.id && field.id.startsWith('field-') && field.name ? 'Edit Field' : 'Add Field' }}
+      </v-card-title>
+
+      <v-card-text>
+        <v-form ref="formRef" @submit.prevent="handleSave">
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                v-model="localField.name"
+                label="Field Name"
+                placeholder="e.g., email, firstName, orderDate"
+                variant="outlined"
+                :rules="nameRules"
+                required
+                hint="Use letters, numbers, and underscores only"
+                persistent-hint
+              />
+            </v-col>
+
+            <v-col cols="12">
+              <v-select
+                v-model="localField.type"
+                :items="dataTypes"
+                label="Data Type"
+                variant="outlined"
+                :rules="[v => !!v || 'Data type is required']"
+                required
+              >
+                <template v-slot:item="{ item, props }">
+                  <v-list-item v-bind="props">
+                    <template v-slot:prepend>
+                      <v-icon>{{ item.raw.icon }}</v-icon>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-checkbox
+                v-model="localField.required"
+                label="Required Field"
+                hint="Field must have a value"
+                persistent-hint
+              />
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-checkbox
+                v-model="localField.nullable"
+                label="Nullable"
+                hint="Field can contain NULL values"
+                persistent-hint
+              />
+            </v-col>
+
+            <v-col cols="12">
+              <v-textarea
+                v-model="localField.description"
+                label="Description (Optional)"
+                placeholder="Describe the purpose of this field..."
+                variant="outlined"
+                rows="3"
+              />
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="$emit('update:modelValue', false)">
+          Cancel
+        </v-btn>
+        <v-btn color="primary" @click="handleSave">
+          Save Field
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue';
+
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  },
+  field: {
+    type: Object,
+    default: null
+  },
+  existingFieldNames: {
+    type: Array,
+    default: () => []
+  }
+});
+
+const emit = defineEmits(['update:modelValue', 'save']);
+
+// Data types with icons
+const dataTypes = [
+  { value: 'varchar', title: 'String', icon: 'mdi-text' },
+  { value: 'int', title: 'Integer', icon: 'mdi-numeric' },
+  { value: 'bigint', title: 'Big Integer', icon: 'mdi-numeric' },
+  { value: 'decimal', title: 'Decimal', icon: 'mdi-decimal' },
+  { value: 'boolean', title: 'Boolean', icon: 'mdi-checkbox-marked' },
+  { value: 'date', title: 'Date', icon: 'mdi-calendar' },
+  { value: 'datetime', title: 'Date Time', icon: 'mdi-calendar-clock' },
+  { value: 'timestamp', title: 'Timestamp', icon: 'mdi-clock' },
+  { value: 'json', title: 'JSON', icon: 'mdi-code-json' },
+  { value: 'text', title: 'Text (Long)', icon: 'mdi-text-long' }
+];
+
+// Local state
+const formRef = ref(null);
+const localField = ref({
+  id: '',
+  name: '',
+  type: 'varchar',
+  required: false,
+  nullable: true,
+  description: '',
+  order: 1
+});
+
+// Validation rules
+const nameRules = [
+  v => !!v || 'Field name is required',
+  v => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v) || 'Field name must start with a letter or underscore and contain only letters, numbers, and underscores',
+  v => !props.existingFieldNames.includes(v.toLowerCase()) || 'Field name already exists'
+];
+
+// Watch for field changes
+watch(() => props.field, (newField) => {
+  if (newField) {
+    localField.value = { ...newField };
+  } else {
+    localField.value = {
+      id: `field-${Date.now()}-${Math.random()}`,
+      name: '',
+      type: 'varchar',
+      required: false,
+      nullable: true,
+      description: '',
+      order: 1
+    };
+  }
+}, { immediate: true });
+
+// Methods
+async function handleSave() {
+  const { valid } = await formRef.value.validate();
+  
+  if (valid) {
+    emit('save', { ...localField.value });
+    emit('update:modelValue', false);
+  }
+}
+</script>
