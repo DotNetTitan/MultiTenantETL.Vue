@@ -24,21 +24,21 @@
           title="Basic Info"
           subtitle="Name and description"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 2"
           :value="2"
           title="Source & Destination"
           subtitle="Select data sources"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 3"
           :value="3"
           title="Field Mappings"
           subtitle="Map source to destination"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :value="4"
           title="Schedule"
@@ -50,7 +50,6 @@
         <!-- Step 1: Basic Info -->
         <v-stepper-window-item :value="1">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Pipeline Information</div>
             <v-row>
               <v-col cols="12" md="8">
                 <v-text-field
@@ -78,7 +77,6 @@
         <!-- Step 2: Source & Destination -->
         <v-stepper-window-item :value="2">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Data Sources</div>
             <v-row>
               <v-col cols="12" md="6">
                 <v-card variant="outlined" class="pa-4">
@@ -141,7 +139,6 @@
         <!-- Step 3: Field Mappings -->
         <v-stepper-window-item :value="3">
           <div class="pa-6 step-3-content">
-            <div class="text-h5 mb-4">Field Mappings</div>
             <FieldMappingEditor
               v-if="pipeline.sourceId && pipeline.destinationId"
               v-model="pipeline.fieldMappings"
@@ -159,8 +156,6 @@
         <!-- Step 4: Schedule -->
         <v-stepper-window-item :value="4">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Schedule Configuration</div>
-            
             <v-switch
               v-model="pipeline.isScheduled"
               label="Enable scheduled execution"
@@ -381,6 +376,61 @@ async function handleSave() {
 
 .wizard-stepper :deep(.v-stepper-header) {
   flex-shrink: 0;
+  padding: 24px 16px;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+/* Style stepper items */
+.wizard-stepper :deep(.v-stepper-item) {
+  padding: 12px 16px;
+}
+
+.wizard-stepper :deep(.v-stepper-item__avatar) {
+  margin-bottom: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  border: 2px solid rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-surface), 1);
+}
+
+.wizard-stepper :deep(.v-stepper-item--selected .v-stepper-item__avatar) {
+  background: rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.3);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+.wizard-stepper :deep(.v-stepper-item--complete .v-stepper-item__avatar) {
+  background: rgb(var(--v-theme-success));
+  border-color: rgb(var(--v-theme-success));
+}
+
+.wizard-stepper :deep(.v-stepper-item__title) {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.wizard-stepper :deep(.v-stepper-item--selected .v-stepper-item__title) {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+}
+
+.wizard-stepper :deep(.v-stepper-item__subtitle) {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Step arrow between items */
+.step-arrow {
+  color: rgba(var(--v-theme-primary), 0.5);
+  font-size: 28px;
+  margin: 0 16px;
+  align-self: center;
+  margin-top: 20px;
 }
 
 .stepper-window {

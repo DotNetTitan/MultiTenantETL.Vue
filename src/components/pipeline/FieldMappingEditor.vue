@@ -244,8 +244,7 @@ function addMapping() {
     id: `mapping-${Date.now()}-${Math.random()}`,
     sourceFields: [],
     destinationField: '',
-    transformationId: null,
-    transformationConfig: null,
+    transformations: [],
     order: localMappings.value.length + 1
   };
   localMappings.value.push(newMapping);
@@ -305,6 +304,19 @@ function validateMappings() {
   const completeMappings = localMappings.value.filter(m => 
     m.sourceFields && m.sourceFields.length > 0 && m.destinationField
   );
+  
+  // If there are no complete mappings at all, don't show validation errors yet
+  // This prevents showing "unmapped required fields" errors when user is just starting
+  if (completeMappings.length === 0) {
+    validationResult.value = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      unmappedRequiredFields: []
+    };
+    emit('validate', validationResult.value);
+    return;
+  }
   
   const result = validateFieldMappings(
     completeMappings,

@@ -103,65 +103,109 @@
           </v-select>
         </v-col>
 
-        <!-- Transformation -->
+        <!-- Transformations Chain -->
         <v-col cols="12">
-          <v-select
-            v-model="localMapping.transformationId"
-            :items="compatibleTransformationItems"
-            label="Transformation (Optional)"
-            clearable
-            :hint="transformationHint"
-            persistent-hint
-          >
-            <template v-slot:item="{ item, props }">
-              <v-list-item v-bind="props">
-                <template v-slot:prepend>
-                  <v-avatar :color="getTransformationColor(item.raw.type)" size="32">
-                    <v-icon color="white" size="small">
-                      {{ getTransformationIcon(item.raw.type) }}
-                    </v-icon>
-                  </v-avatar>
-                </template>
-                <template v-slot:title>
-                  {{ item.title }}
-                </template>
-                <template v-slot:subtitle>
-                  <v-chip size="x-small" class="mt-1" variant="tonal">{{ item.raw.type }}</v-chip>
-                  <span class="ml-2 text-caption">{{ item.raw.description }}</span>
-                </template>
-              </v-list-item>
-            </template>
-            <template v-if="compatibleTransformationItems.length === 0" v-slot:no-data>
-              <v-list-item>
-                <v-list-item-title class="text-caption text-grey">
-                  No compatible transformations available
-                </v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-select>
-        </v-col>
-
-        <!-- Transformation Config (if transformation selected) -->
-        <v-col v-if="selectedTransformation && hasConfigOptions" cols="12">
-          <v-card variant="tonal" color="info">
-            <v-card-title class="text-subtitle-2">
-              Transformation Configuration
-            </v-card-title>
-            <v-card-text>
-              <!-- Simple config for now - can be expanded -->
-              <v-text-field
-                v-if="selectedTransformation.type === 'Map'"
-                v-model="localMapping.transformationConfig.separator"
-                label="Separator"
-                hint="Character to use between combined fields"
-                persistent-hint
-                density="compact"
-              />
-              <p v-else class="text-caption text-grey">
-                No additional configuration needed for this transformation
-              </p>
-            </v-card-text>
-          </v-card>
+          <div class="d-flex align-center mb-2">
+            <span class="text-subtitle-2">Transformations (Optional)</span>
+            <v-spacer />
+            <v-btn
+              size="small"
+              variant="text"
+              prepend-icon="mdi-plus"
+              @click="addTransformation"
+            >
+              Add Transformation
+            </v-btn>
+          </div>
+          
+          <div v-if="!localMapping.transformations || localMapping.transformations.length === 0" class="text-caption text-grey pa-3 text-center">
+            No transformations applied. Click "Add Transformation" to modify data during mapping.
+          </div>
+          
+          <div v-else class="transformations-chain">
+            <v-card
+              v-for="(trans, tIndex) in localMapping.transformations"
+              :key="tIndex"
+              variant="outlined"
+              class="mb-2"
+            >
+              <v-card-text class="py-2">
+                <v-row dense align="center">
+                  <v-col cols="1" class="text-center">
+                    <v-chip size="small" color="primary">{{ tIndex + 1 }}</v-chip>
+                  </v-col>
+                  <v-col cols="9">
+                    <v-select
+                      v-model="trans.transformationId"
+                      :items="compatibleTransformationItems"
+                      label="Select Transformation"
+                      density="compact"
+                      hide-details
+                    >
+                      <template v-slot:item="{ item, props }">
+                        <v-list-item v-bind="props">
+                          <template v-slot:prepend>
+                            <v-avatar :color="getTransformationColor(item.raw.type)" size="28">
+                              <v-icon color="white" size="small">
+                                {{ getTransformationIcon(item.raw.type) }}
+                              </v-icon>
+                            </v-avatar>
+                          </template>
+                          <template v-slot:title>
+                            {{ item.title }}
+                          </template>
+                          <template v-slot:subtitle>
+                            <v-chip size="x-small" class="mt-1" variant="tonal">{{ item.raw.type }}</v-chip>
+                          </template>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="2" class="text-right">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="tIndex === 0"
+                      @click="moveTransformationUp(tIndex)"
+                    >
+                      <v-icon size="small">mdi-arrow-up</v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="tIndex === localMapping.transformations.length - 1"
+                      @click="moveTransformationDown(tIndex)"
+                    >
+                      <v-icon size="small">mdi-arrow-down</v-icon>
+                    </v-btn>
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      @click="removeTransformation(tIndex)"
+                    >
+                      <v-icon size="small">mdi-close</v-icon>
+                    </v-btn>
+                  </v-col>
+                  
+                  <!-- Transformation Config -->
+                  <v-col v-if="getTransformationById(trans.transformationId) && needsConfig(trans.transformationId)" cols="12">
+                    <v-text-field
+                      v-if="getTransformationById(trans.transformationId).type === 'Map'"
+                      v-model="trans.config.separator"
+                      label="Separator"
+                      hint="Character to use between combined fields"
+                      persistent-hint
+                      density="compact"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </div>
         </v-col>
 
         <!-- Validation Errors -->
@@ -284,24 +328,6 @@ const compatibleTransformationItems = computed(() => {
   }));
 });
 
-const selectedTransformation = computed(() => {
-  if (!localMapping.value.transformationId) return null;
-  return props.transformations.find(t => t.id === localMapping.value.transformationId);
-});
-
-const hasConfigOptions = computed(() => {
-  if (!selectedTransformation.value) return false;
-  // For now, only Map transformations have config
-  return selectedTransformation.value.type === 'Map';
-});
-
-const transformationHint = computed(() => {
-  if (localMapping.value.sourceFields && localMapping.value.sourceFields.length > 1) {
-    return 'Transformation required for multiple source fields';
-  }
-  return 'Optional: Apply transformation to modify data during mapping';
-});
-
 const validationErrors = computed(() => {
   const errors = [];
   
@@ -309,18 +335,73 @@ const validationErrors = computed(() => {
   const hasDestinationField = !!localMapping.value.destinationField;
   
   // Don't show ANY errors until BOTH fields have been filled at least once
-  // This prevents premature validation messages while user is still filling the form
   if (!hasSourceFields || !hasDestinationField) {
-    return []; // Still filling out the mapping
+    return [];
   }
   
-  // Only show transformation error when both fields are filled
-  if (localMapping.value.sourceFields.length > 1 && !localMapping.value.transformationId) {
-    errors.push('Multiple source fields require a transformation');
+  // Check if multiple source fields require at least one transformation
+  if (localMapping.value.sourceFields.length > 1 && 
+      (!localMapping.value.transformations || localMapping.value.transformations.length === 0)) {
+    errors.push('Multiple source fields require at least one transformation');
   }
   
   return errors;
 });
+
+// Transformation chain methods
+function addTransformation() {
+  if (!localMapping.value.transformations) {
+    localMapping.value.transformations = [];
+  }
+  localMapping.value.transformations.push({
+    transformationId: null,
+    config: {},
+    order: localMapping.value.transformations.length + 1
+  });
+}
+
+function removeTransformation(index) {
+  localMapping.value.transformations.splice(index, 1);
+  // Update order
+  localMapping.value.transformations.forEach((t, i) => {
+    t.order = i + 1;
+  });
+}
+
+function moveTransformationUp(index) {
+  if (index > 0) {
+    const temp = localMapping.value.transformations[index];
+    localMapping.value.transformations[index] = localMapping.value.transformations[index - 1];
+    localMapping.value.transformations[index - 1] = temp;
+    // Update order
+    localMapping.value.transformations.forEach((t, i) => {
+      t.order = i + 1;
+    });
+  }
+}
+
+function moveTransformationDown(index) {
+  if (index < localMapping.value.transformations.length - 1) {
+    const temp = localMapping.value.transformations[index];
+    localMapping.value.transformations[index] = localMapping.value.transformations[index + 1];
+    localMapping.value.transformations[index + 1] = temp;
+    // Update order
+    localMapping.value.transformations.forEach((t, i) => {
+      t.order = i + 1;
+    });
+  }
+}
+
+function getTransformationById(id) {
+  if (!id) return null;
+  return props.transformations.find(t => t.id === id);
+}
+
+function needsConfig(transformationId) {
+  const trans = getTransformationById(transformationId);
+  if (!trans) return false;
+  return trans.type === 'Map';
+}
 
 // Helper functions
 function getTransformationColor(type) {
@@ -345,11 +426,6 @@ function getTransformationIcon(type) {
   return icons[type] || 'mdi-cog';
 }
 
-// Initialize transformation config if needed
-if (!localMapping.value.transformationConfig) {
-  localMapping.value.transformationConfig = {};
-}
-
 // Ensure arrays are initialized
 if (!localMapping.value.sourceFields) {
   localMapping.value.sourceFields = [];
@@ -357,10 +433,20 @@ if (!localMapping.value.sourceFields) {
 if (!localMapping.value.destinationField) {
   localMapping.value.destinationField = '';
 }
+if (!localMapping.value.transformations) {
+  localMapping.value.transformations = [];
+}
 </script>
 
 <style scoped>
 .v-card-title {
   padding: 8px 16px;
+}
+
+.transformations-chain {
+  border: 1px dashed rgba(var(--v-theme-primary), 0.3);
+  border-radius: 4px;
+  padding: 8px;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
 }
 </style>
