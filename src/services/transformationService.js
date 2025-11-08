@@ -263,3 +263,15 @@ export const transformationService = {
     return filtered;
   }
 }
+
+// Named exports for consistency with other services
+export const fetchTransformations = (filters) => transformationService.getAll(filters);
+export const fetchTransformationById = (id) => transformationService.getById(id);
+export const saveTransformation = (transformation) => {
+  if (transformation.id) {
+    return transformationService.update(transformation.id, transformation);
+  }
+  return transformationService.create(transformation);
+};
+export const deleteTransformation = (id) => transformationService.delete(id);
+export const getAvailableColumns = () => transformationService.getAvailableColumns();

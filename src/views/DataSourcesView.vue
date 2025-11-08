@@ -410,6 +410,12 @@ import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
 import { useDataSource } from '@/composables/useDataSource';
+import { 
+  fetchDataSources as getDataSources, 
+  saveDataSource as saveDataSourceAPI, 
+  deleteDataSource as deleteDataSourceAPI, 
+  testConnection as testDataSourceConnection 
+} from '@/services/dataSourceService';
 
 const route = useRoute();
 const router = useRouter();
@@ -584,125 +590,13 @@ async function fetchDataSources() {
   try {
     loading.value = true;
     
-    // In a real app, these would be actual API calls
-    // For now, using simulated data
+    const filters = {
+      search: search.value,
+      type: typeFilter.value,
+      sortBy: sortBy.value
+    };
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock data
-    dataSources.value = [
-      {
-        id: '1',
-        name: 'SQL Server - Sales',
-        description: 'Main sales database',
-        type: 'Database',
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        database: {
-          provider: 'SQL Server',
-          server: 'sales-db.example.com',
-          port: '1433',
-          databaseName: 'SalesDB'
-        },
-        isSource: true,
-        isDestination: true,
-        requiresCredentials: true
-      },
-      {
-        id: '2',
-        name: 'SFTP - Customer Files',
-        description: 'SFTP server containing customer data files',
-        type: 'File',
-        createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-        file: {
-          storageType: 'SFTP',
-          path: '/customers/data',
-          fileType: 'CSV',
-          delimiter: ','
-        },
-        isSource: true,
-        isDestination: false,
-        requiresCredentials: true
-      },
-      {
-        id: '3',
-        name: 'ERP API',
-        description: 'REST API for the ERP system',
-        type: 'API',
-        createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        api: {
-          baseUrl: 'https://erp.example.com/api/v1',
-          authType: 'Bearer Token',
-          dataFormat: 'JSON'
-        },
-        isSource: true,
-        isDestination: true,
-        requiresCredentials: true
-      },
-      {
-        id: '4',
-        name: 'Analytics DB',
-        description: 'PostgreSQL database for analytics data',
-        type: 'Database',
-        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        database: {
-          provider: 'PostgreSQL',
-          server: 'analytics-db.example.com',
-          port: '5432',
-          databaseName: 'analytics'
-        },
-        isSource: true,
-        isDestination: true,
-        requiresCredentials: true
-      },
-      {
-        id: '5',
-        name: 'Data Warehouse',
-        description: 'Central data warehouse',
-        type: 'Database',
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        database: {
-          provider: 'SQL Server',
-          server: 'dw.example.com',
-          port: '1433',
-          databaseName: 'DataWarehouse'
-        },
-        isSource: true,
-        isDestination: true,
-        requiresCredentials: true
-      }
-    ];
-    
-    // Apply filters
-    if (search.value) {
-      const searchLower = search.value.toLowerCase();
-      dataSources.value = dataSources.value.filter(ds => 
-        ds.name.toLowerCase().includes(searchLower) || 
-        ds.description.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    if (typeFilter.value !== 'All') {
-      dataSources.value = dataSources.value.filter(ds => ds.type === typeFilter.value);
-    }
-    
-    // Apply sorting
-    const [field, direction] = sortBy.value.split('_');
-    dataSources.value.sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
-      
-      if (field === 'created') {
-        aVal = new Date(a.createdAt).getTime();
-        bVal = new Date(b.createdAt).getTime();
-      }
-      
-      if (direction === 'asc') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? -1 : 1;
-      }
-    });
+    dataSources.value = await getDataSources(filters);
   } catch (error) {
     console.error('Error fetching data sources:', error);
   } finally {
@@ -757,8 +651,7 @@ async function deleteDataSource() {
   try {
     deletingDataSource.value = true;
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await deleteDataSourceAPI(dataSourceToDelete.value.id);
     
     // Remove from local array
     const index = dataSources.value.findIndex(ds => ds.id === dataSourceToDelete.value.id);
@@ -796,14 +689,15 @@ async function saveDataSource() {
   try {
     savingDataSource.value = true;
     
+    const savedDataSource = await saveDataSourceAPI(editedDataSource.value);
+    
     if (editedDataSource.value.id) {
       const index = dataSources.value.findIndex(ds => ds.id === editedDataSource.value.id);
       if (index !== -1) {
-        dataSources.value[index] = { ...editedDataSource.value };
+        dataSources.value[index] = savedDataSource;
       }
     } else {
-      editedDataSource.value.id = Date.now().toString();
-      dataSources.value.push({ ...editedDataSource.value });
+      dataSources.value.push(savedDataSource);
     }
     
     showCreateDialog.value = false;

@@ -196,17 +196,14 @@
                       v-for="(transformation, index) in editedPipeline.transformations"
                       :key="index"
                       :title="transformation.name"
-                      :subtitle="`Type: ${transformation.type}`"
+                      :subtitle="`Type: ${transformation.type} • ${transformation.description || 'No description'}`"
                     >
+                      <template v-slot:prepend>
+                        <v-avatar :color="getTransformationColor(transformation.type)" size="32">
+                          <v-icon color="white" size="small">{{ getTransformationIcon(transformation.type) }}</v-icon>
+                        </v-avatar>
+                      </template>
                       <template v-slot:append>
-                        <v-btn
-                          icon
-                          variant="text"
-                          size="small"
-                          @click="editTransformation(index)"
-                        >
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
                         <v-btn
                           icon
                           variant="text"
@@ -214,7 +211,7 @@
                           color="error"
                           @click="removeTransformation(index)"
                         >
-                          <v-icon>mdi-delete</v-icon>
+                          <v-icon>mdi-close</v-icon>
                         </v-btn>
                       </template>
                     </v-list-item>
@@ -349,66 +346,21 @@
       </v-card>
     </v-dialog>
 
-    <!-- Transformation Dialog -->
-    <v-dialog
-      v-model="showTransformationDialog"
-      max-width="600px"
-    >
-      <v-card>
-        <v-card-title>
-          {{ editedTransformationIndex === -1 ? 'Add Transformation' : 'Edit Transformation' }}
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="transformationForm">
-            <v-text-field
-              v-model="editedTransformation.name"
-              label="Name"
-              :rules="[v => !!v || 'Name is required']"
-            />
-            <v-select
-              v-model="editedTransformation.type"
-              label="Type"
-              :items="transformationTypes"
-              :rules="[v => !!v || 'Type is required']"
-            />
-            <v-text-field
-              v-model="editedTransformation.executionOrder"
-              label="Execution Order"
-              type="number"
-              min="1"
-            />
-            <v-textarea
-              v-model="editedTransformation.configuration"
-              label="Configuration"
-              rows="5"
-              hint="Enter JSON configuration for the transformation"
-              persistent-hint
-            />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            @click="showTransformationDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            @click="saveTransformation"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Transformation Selector Dialog -->
+    <TransformationSelector
+      v-model="showTransformationSelector"
+      :exclude-ids="editedPipeline.transformations.map(t => t.id).filter(Boolean)"
+      @select="selectExistingTransformation"
+      @close="showTransformationSelector = false"
+    />
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import TransformationSelector from '@/components/pipeline/TransformationSelector.vue';
 import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm'; // Import the new composable
 
@@ -440,19 +392,14 @@ const {
   form, // Main form ref
   editedPipeline,
   dataSources,
-  transformationTypes,
-  showTransformationDialog,
-  transformationForm, // Transformation dialog form ref
-  editedTransformation,
-  editedTransformationIndex,
+  showTransformationSelector,
   fetchDataSources,
   prepareEditPipeline,
   resetForm,
   addTransformation,
-  editTransformation,
+  selectExistingTransformation,
   removeTransformation,
-  saveTransformation,
-  timezones // Add timezones from the composable
+  timezones
 } = usePipelineForm();
 
 // Data table headers (remain the same)
@@ -550,6 +497,29 @@ async function handleExecutePipeline(pipeline) {
 function goToCreateDataSource() {
   showCreateDialog.value = false;
   router.push('/data-sources?action=create');
+}
+
+// Helper functions for transformation display
+function getTransformationColor(type) {
+  const colors = {
+    'Filter': 'blue',
+    'Map': 'green',
+    'Aggregation': 'orange',
+    'Script': 'purple',
+    'Join': 'teal'
+  };
+  return colors[type] || 'grey';
+}
+
+function getTransformationIcon(type) {
+  const icons = {
+    'Filter': 'mdi-filter',
+    'Map': 'mdi-map',
+    'Aggregation': 'mdi-chart-bar',
+    'Script': 'mdi-code-braces',
+    'Join': 'mdi-link-variant'
+  };
+  return icons[type] || 'mdi-cog';
 }
 
 // --- Lifecycle Hook ---

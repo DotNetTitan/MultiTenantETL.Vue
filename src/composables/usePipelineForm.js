@@ -1,17 +1,6 @@
 import { ref } from 'vue';
 import { usePipeline } from './usePipeline'; // To get createEmptyPipeline
-
-// TODO: Ideally, dataSources should come from a dedicated useDataSource composable
-const mockDataSources = [
-  { id: '1', name: 'SQL Server - Sales', type: 'Database' },
-  { id: '2', name: 'SFTP - Customer Files', type: 'File' },
-  { id: '3', name: 'ERP API', type: 'API' },
-  { id: '4', name: 'Analytics DB', type: 'Database' },
-  { id: '5', name: 'Data Warehouse', type: 'Database' },
-  { id: '6', name: 'Customer Database', type: 'Database' },
-  { id: '7', name: 'E-commerce Platform', type: 'API' },
-  { id: '8', name: 'Reporting System', type: 'API' }
-];
+import { fetchDataSources as getDataSources } from '@/services/dataSourceService';
 
 // Common timezones list
 const timezonesList = [
@@ -32,28 +21,15 @@ export function usePipelineForm() {
 
   // State moved from PipelinesView
   const dataSources = ref([]);
-  const transformationTypes = ref(['Filter', 'Map', 'Join', 'Aggregate', 'Enrich', 'Custom']);
-  const showTransformationDialog = ref(false);
-  const transformationForm = ref(null); // Ref for the transformation sub-dialog form
+  const showTransformationSelector = ref(false);
   const editedPipeline = ref(createEmptyPipeline());
-  const editedTransformation = ref({
-    name: '',
-    type: 'Filter',
-    executionOrder: 1,
-    configuration: '{}'
-  });
-  const editedTransformationIndex = ref(-1);
   const form = ref(null); // Ref for the main pipeline form
   const timezones = ref(timezonesList); // Make timezones available to components
 
-  // Function to fetch data sources (currently mock)
-  // TODO: Replace with actual service call, likely via useDataSource composable
-  function fetchDataSources() {
+  // Function to fetch data sources
+  async function fetchDataSources() {
     try {
-      // Simulate API call
-      setTimeout(() => {
-        dataSources.value = mockDataSources;
-      }, 300);
+      dataSources.value = await getDataSources();
     } catch (error) {
       console.error('Error fetching data sources:', error);
     }
@@ -116,27 +92,17 @@ export function usePipelineForm() {
   // --- Transformation Management ---
 
   function addTransformation() {
-    editedTransformation.value = {
-      name: '',
-      type: 'Filter',
-      executionOrder: editedPipeline.value.transformations.length + 1,
-      configuration: '{}' // Default or based on type
-    };
-    editedTransformationIndex.value = -1;
-    showTransformationDialog.value = true;
-    if (transformationForm.value) {
-      transformationForm.value.resetValidation();
-    }
+    // NEW: Open selector instead of creation dialog
+    showTransformationSelector.value = true;
   }
 
-  function editTransformation(index) {
-    const transformation = editedPipeline.value.transformations[index];
-    editedTransformation.value = { ...transformation }; // Clone
-    editedTransformationIndex.value = index;
-    showTransformationDialog.value = true;
-    if (transformationForm.value) {
-      transformationForm.value.resetValidation();
-    }
+  function selectExistingTransformation(transformation) {
+    // Add the selected transformation to the pipeline
+    editedPipeline.value.transformations.push({
+      ...transformation,
+      executionOrder: editedPipeline.value.transformations.length + 1
+    });
+    showTransformationSelector.value = false;
   }
 
   function removeTransformation(index) {
@@ -147,46 +113,20 @@ export function usePipelineForm() {
     });
   }
 
-  async function saveTransformation() {
-    // Basic validation example (assuming transformationForm is a v-form ref)
-    if (transformationForm.value) {
-      const { valid } = await transformationForm.value.validate();
-      if (!valid) return;
-    }
-
-    if (editedTransformationIndex.value === -1) {
-      // Add new transformation
-      editedPipeline.value.transformations.push({ ...editedTransformation.value });
-    } else {
-      // Update existing transformation
-      editedPipeline.value.transformations[editedTransformationIndex.value] = { ...editedTransformation.value };
-    }
-
-    // Sort transformations by execution order
-    editedPipeline.value.transformations.sort((a, b) => a.executionOrder - b.executionOrder);
-
-    showTransformationDialog.value = false;
-  }
-
   return {
     // State
-    form, // Main form ref
+    form,
     editedPipeline,
     dataSources,
-    transformationTypes,
-    showTransformationDialog,
-    transformationForm, // Transformation dialog form ref
-    editedTransformation,
-    editedTransformationIndex,
-    timezones, // Make timezones available to components
+    showTransformationSelector,
+    timezones,
 
     // Methods
     fetchDataSources,
     prepareEditPipeline,
     resetForm,
     addTransformation,
-    editTransformation,
+    selectExistingTransformation,
     removeTransformation,
-    saveTransformation,
   };
 }

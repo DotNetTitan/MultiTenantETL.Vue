@@ -45,13 +45,14 @@
           :input-schema="sourceSchema"
           @update:schema="handleSchemaUpdate"
         />
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="showAddTransformation = true"
+        <v-btn
+          color="primary"
+          variant="outlined"
+          prepend-icon="mdi-plus"
+          @click="showTransformationSelector = true"
         >
           Add Transformation
-        </button>
+        </v-btn>
       </div>
     </div>
 
@@ -218,7 +219,16 @@
       </div>
     </div>
 
-    <!-- Add Transformation Dialog -->
+    <!-- Transformation Selector Dialog -->
+    <TransformationSelector
+      v-model="showTransformationSelector"
+      :exclude-ids="form.transformations.map(t => t.id)"
+      @select="handleSelectTransformation"
+      @create-new="handleCreateNewTransformation"
+      @close="showTransformationSelector = false"
+    />
+
+    <!-- Create New Transformation Dialog -->
     <TransformationDialog
       v-if="showAddTransformation"
       :input-schema="currentSchema"
@@ -234,6 +244,7 @@ import { usePipeline } from '@/composables/usePipeline';
 import FormInput from '@/components/form/FormInput.vue';
 import TransformationList from './TransformationList.vue';
 import TransformationDialog from './TransformationDialog.vue';
+import TransformationSelector from './TransformationSelector.vue';
 
 const props = defineProps({
   initialData: {
@@ -287,6 +298,7 @@ const form = ref({
 const errors = ref({});
 const validating = ref(false);
 const saving = ref(false);
+const showTransformationSelector = ref(false);
 const showAddTransformation = ref(false);
 const sourceSchema = ref(null);
 const currentSchema = ref(null);
@@ -397,6 +409,30 @@ watch(() => form.value.sourceId, async (newSourceId) => {
 
 const handleSchemaUpdate = (schema) => {
   currentSchema.value = schema;
+};
+
+const handleSelectTransformation = (transformation) => {
+  // Add the selected existing transformation to the pipeline
+  form.value.transformations.push({
+    ...transformation,
+    executionOrder: form.value.transformations.length + 1
+  });
+  
+  // Validate and update schema after adding transformation
+  validateTransformation(transformation, currentSchema.value)
+    .then(result => {
+      if (result.isValid) {
+        currentSchema.value = result.outputSchema;
+      }
+    })
+    .catch(error => {
+      console.error('Error validating transformation:', error);
+    });
+};
+
+const handleCreateNewTransformation = () => {
+  showTransformationSelector.value = false;
+  showAddTransformation.value = true;
 };
 
 const handleAddTransformation = (transformation) => {
