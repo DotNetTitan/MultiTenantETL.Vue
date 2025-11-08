@@ -351,15 +351,26 @@ function importSchema() {
     }
     
     // Validate and import fields
-    const importedFields = schema.fields.map((f, index) => ({
-      id: `field-${Date.now()}-${index}`,
-      name: f.name || '',
-      type: f.type || 'varchar',
-      required: f.required || false,
-      nullable: f.nullable !== false,
-      description: f.description || '',
-      order: index + 1
-    }));
+    const importedFields = schema.fields.map((f, index) => {
+      // Fix Required/Nullable conflict: if both are true, prioritize Required
+      let required = f.required || false;
+      let nullable = f.nullable !== false;
+      
+      if (required && nullable) {
+        // If both are true, make it Required and not Nullable
+        nullable = false;
+      }
+      
+      return {
+        id: `field-${Date.now()}-${index}`,
+        name: f.name || '',
+        type: f.type || 'varchar',
+        required,
+        nullable,
+        description: f.description || '',
+        order: index + 1
+      };
+    });
     
     localFields.value = importedFields;
     showImportDialog.value = false;

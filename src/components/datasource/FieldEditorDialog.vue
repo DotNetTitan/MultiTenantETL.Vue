@@ -46,6 +46,7 @@
                 label="Required Field"
                 hint="Field must have a value"
                 persistent-hint
+                @update:model-value="handleRequiredChange"
               />
             </v-col>
 
@@ -55,7 +56,16 @@
                 label="Nullable"
                 hint="Field can contain NULL values"
                 persistent-hint
+                @update:model-value="handleNullableChange"
               />
+            </v-col>
+
+            <!-- Validation Alert for Required/Nullable Conflict -->
+            <v-col v-if="localField.required && localField.nullable" cols="12">
+              <v-alert type="error" density="compact" variant="tonal">
+                <v-icon start>mdi-alert-circle</v-icon>
+                A field cannot be both Required and Nullable. Please choose one.
+              </v-alert>
             </v-col>
 
             <v-col cols="12">
@@ -155,8 +165,27 @@ watch(() => props.field, (newField) => {
 }, { immediate: true });
 
 // Methods
+function handleRequiredChange(value) {
+  // If Required is checked, uncheck Nullable
+  if (value) {
+    localField.value.nullable = false;
+  }
+}
+
+function handleNullableChange(value) {
+  // If Nullable is checked, uncheck Required
+  if (value) {
+    localField.value.required = false;
+  }
+}
+
 async function handleSave() {
   const { valid } = await formRef.value.validate();
+  
+  // Additional validation: Required and Nullable cannot both be true
+  if (localField.value.required && localField.value.nullable) {
+    return; // Don't save if both are checked
+  }
   
   if (valid) {
     emit('save', { ...localField.value });

@@ -144,6 +144,11 @@ export function validateSchema(fields) {
     if (!field.type || field.type.trim() === '') {
       errors.push(`Field ${fieldNum}: Data type is required`);
     }
+    
+    // Check Required and Nullable conflict
+    if (field.required && field.nullable) {
+      errors.push(`Field ${fieldNum} ('${field.name}'): Cannot be both Required and Nullable`);
+    }
   });
   
   return {
