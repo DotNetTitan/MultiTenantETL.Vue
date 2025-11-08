@@ -6,7 +6,7 @@
       <v-btn 
         color="primary" 
         prepend-icon="mdi-plus" 
-        @click="showCreateDialog = true"
+        @click="openCreateDialog"
       >
         Create Transformation
       </v-btn>
@@ -70,6 +70,15 @@
             {{ formatDate(item.createdAt) }}
           </template>
           <template v-slot:item.actions="{ item }">
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              @click="viewTransformationDetails(item)"
+              title="View details"
+            >
+              <v-icon>mdi-eye</v-icon>
+            </v-btn>
             <v-btn
               icon
               variant="text"
@@ -142,34 +151,37 @@
             <div v-if="editedTransformation.type === 'Filter'">
               <v-divider class="my-4" />
               <h3 class="text-subtitle-1 mb-3">Filter Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Define the filter logic. The field will be specified when applying this transformation in a pipeline.
+              </v-alert>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedTransformation.config.filterColumn"
-                    label="Column to Filter"
-                    :items="mockColumns"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
                     v-model="editedTransformation.config.operator"
-                    label="Operator"
+                    label="Filter Operator"
                     :items="[
                       { title: 'Equals', value: 'equals' },
                       { title: 'Not Equals', value: 'notEquals' },
                       { title: 'Greater Than', value: 'greaterThan' },
                       { title: 'Less Than', value: 'lessThan' },
+                      { title: 'Greater or Equal', value: 'greaterOrEqual' },
+                      { title: 'Less or Equal', value: 'lessOrEqual' },
                       { title: 'Contains', value: 'contains' },
                       { title: 'Not Contains', value: 'notContains' },
+                      { title: 'Starts With', value: 'startsWith' },
+                      { title: 'Ends With', value: 'endsWith' },
                       { title: 'Is Empty', value: 'isEmpty' },
                       { title: 'Is Not Empty', value: 'isNotEmpty' }
                     ]"
+                    required
                   />
                 </v-col>
-                <v-col cols="12" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
+                <v-col cols="12" md="6" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
                   <v-text-field
-                    v-model="editedTransformation.config.value"
-                    label="Value"
+                    v-model="editedTransformation.config.defaultValue"
+                    label="Default Value (Optional)"
+                    hint="Can be overridden when applying in pipeline"
+                    persistent-hint
                   />
                 </v-col>
               </v-row>
@@ -177,34 +189,33 @@
 
             <div v-if="editedTransformation.type === 'Map'">
               <v-divider class="my-4" />
-              <h3 class="text-subtitle-1 mb-3">Mapping Configuration</h3>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="editedTransformation.config.sourceColumn"
-                    label="Source Column"
-                    :items="mockColumns"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="editedTransformation.config.targetColumn"
-                    label="Target Column (leave empty to overwrite source)"
-                  />
-                </v-col>
-              </v-row>
+              <h3 class="text-subtitle-1 mb-3">Value Mapping Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Define value mappings that will replace values in a field. The source field will be specified when applying this transformation in a pipeline.
+              </v-alert>
+              <div class="mb-3">
+                <strong>Value Mappings:</strong>
+                <span class="text-caption text-grey ml-2">(Define how values should be transformed)</span>
+              </div>
+              <div v-if="editedTransformation.config.mappings && editedTransformation.config.mappings.length === 0" class="text-center py-4 mb-3">
+                <v-icon size="48" color="grey-lighten-1">mdi-map-marker-off</v-icon>
+                <p class="text-caption text-grey mt-2">No value mappings defined yet</p>
+              </div>
               <div v-for="(mapping, index) in editedTransformation.config.mappings" :key="index" class="d-flex align-center mb-2">
                 <v-text-field
                   v-model="mapping.from"
                   label="From Value"
                   density="compact"
                   class="mr-2"
+                  placeholder="e.g., P, 1, Active"
                 />
+                <v-icon class="mx-2">mdi-arrow-right</v-icon>
                 <v-text-field
                   v-model="mapping.to"
                   label="To Value"
                   density="compact"
                   class="mr-2"
+                  placeholder="e.g., Pending, High, Yes"
                 />
                 <v-btn
                   icon
@@ -223,23 +234,17 @@
                 size="small"
                 class="mt-2"
               >
-                Add Mapping
+                Add Value Mapping
               </v-btn>
             </div>
 
             <div v-if="editedTransformation.type === 'Aggregation'">
               <v-divider class="my-4" />
               <h3 class="text-subtitle-1 mb-3">Aggregation Configuration</h3>
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Define the aggregation type and result column name. Group by fields and aggregation column will be specified when applying in a pipeline.
+              </v-alert>
               <v-row>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="editedTransformation.config.groupByColumns"
-                    label="Group By Columns"
-                    :items="mockColumns"
-                    multiple
-                    chips
-                  />
-                </v-col>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="editedTransformation.config.aggregationType"
@@ -251,19 +256,16 @@
                       { title: 'Min', value: 'min' },
                       { title: 'Max', value: 'max' }
                     ]"
-                  />
-                </v-col>
-                <v-col cols="12" md="6" v-if="editedTransformation.config.aggregationType !== 'count'">
-                  <v-select
-                    v-model="editedTransformation.config.aggregationColumn"
-                    label="Aggregation Column"
-                    :items="mockColumns"
+                    required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedTransformation.config.resultColumn"
-                    label="Result Column Name"
+                    v-model="editedTransformation.config.resultColumnName"
+                    label="Result Column Name (Optional)"
+                    hint="Default name for the aggregated result"
+                    persistent-hint
+                    placeholder="e.g., total, count, average"
                   />
                 </v-col>
               </v-row>
@@ -272,18 +274,35 @@
             <div v-if="editedTransformation.type === 'Script'">
               <v-divider class="my-4" />
               <h3 class="text-subtitle-1 mb-3">Script Configuration</h3>
-              <v-textarea
-                v-model="editedTransformation.config.script"
-                label="Script (JS/C#)"
-                rows="10"
-                class="font-family-monospace"
-                placeholder="// Write your transformation script here
-// Example:
-// data.forEach(row => {
-//   row.fullName = row.firstName + ' ' + row.lastName;
-// });
-// return data;"
-              />
+              <v-alert type="info" variant="tonal" class="mb-4">
+                Write a script that will be applied to the data. The script receives a 'row' object with all fields.
+              </v-alert>
+              <v-row>
+                <v-col cols="12">
+                  <v-select
+                    v-model="editedTransformation.config.scriptLanguage"
+                    label="Script Language"
+                    :items="[
+                      { title: 'JavaScript', value: 'javascript' },
+                      { title: 'C#', value: 'csharp' }
+                    ]"
+                    hint="Choose the language for your transformation script"
+                    persistent-hint
+                    @update:model-value="updateScriptPlaceholder"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="editedTransformation.config.script"
+                    :label="`Transformation Script (${editedTransformation.config.scriptLanguage === 'csharp' ? 'C#' : 'JavaScript'})`"
+                    rows="12"
+                    class="font-family-monospace"
+                    :placeholder="getScriptPlaceholder(editedTransformation.config.scriptLanguage)"
+                    hint="Script will be applied to each row during pipeline execution"
+                    persistent-hint
+                  />
+                </v-col>
+              </v-row>
             </div>
           </v-form>
         </v-card-text>
@@ -336,11 +355,161 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Transformation Details Dialog -->
+    <v-dialog
+      v-model="showDetailsDialog"
+      max-width="800px"
+    >
+      <v-card v-if="selectedTransformation">
+        <v-card-title class="d-flex align-center">
+          <v-icon class="mr-2" :color="getTypeColor(selectedTransformation.type)">
+            {{ getTransformationIcon(selectedTransformation.type) }}
+          </v-icon>
+          {{ selectedTransformation.name }}
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showDetailsDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <!-- Basic Info -->
+          <v-card variant="outlined" class="mb-4">
+            <v-card-text>
+              <v-row dense>
+                <v-col cols="6">
+                  <div class="text-caption text-grey">Type</div>
+                  <v-chip :color="getTypeColor(selectedTransformation.type)" size="small" class="mt-1">
+                    {{ selectedTransformation.type }}
+                  </v-chip>
+                </v-col>
+                <v-col cols="6">
+                  <div class="text-caption text-grey">Created</div>
+                  <div class="text-body-2 mt-1">{{ formatDate(selectedTransformation.createdAt) }}</div>
+                </v-col>
+                <v-col cols="12">
+                  <div class="text-caption text-grey">Description</div>
+                  <div class="text-body-2 mt-1">{{ selectedTransformation.description || '-' }}</div>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
+          <!-- Configuration -->
+          <v-card variant="outlined">
+            <v-card-subtitle>Configuration</v-card-subtitle>
+            <v-card-text>
+              <!-- Filter Config -->
+              <div v-if="selectedTransformation.type === 'Filter'">
+                <v-row dense>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Operator</div>
+                    <v-chip size="small" class="mt-1">{{ selectedTransformation.config.operator }}</v-chip>
+                  </v-col>
+                  <v-col cols="6" v-if="selectedTransformation.config.defaultValue">
+                    <div class="text-caption text-grey">Default Value</div>
+                    <div class="text-body-1 mt-1">{{ selectedTransformation.config.defaultValue }}</div>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-alert type="info" variant="tonal" density="compact">
+                      Field will be specified when applying this transformation in a pipeline
+                    </v-alert>
+                  </v-col>
+                </v-row>
+              </div>
+
+              <!-- Map Config -->
+              <div v-else-if="selectedTransformation.type === 'Map'">
+                <div v-if="selectedTransformation.config.mappings && selectedTransformation.config.mappings.length > 0">
+                  <div class="text-caption text-grey mb-2">Value Mappings</div>
+                  <v-table density="compact">
+                    <thead>
+                      <tr>
+                        <th>From Value</th>
+                        <th>To Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(mapping, index) in selectedTransformation.config.mappings" :key="index">
+                        <td>{{ mapping.from }}</td>
+                        <td>{{ mapping.to }}</td>
+                      </tr>
+                    </tbody>
+                  </v-table>
+                </div>
+                <v-alert type="info" variant="tonal" density="compact" class="mt-3">
+                  Source field will be specified when applying this transformation in a pipeline
+                </v-alert>
+              </div>
+
+              <!-- Aggregation Config -->
+              <div v-else-if="selectedTransformation.type === 'Aggregation'">
+                <v-row dense>
+                  <v-col cols="6">
+                    <div class="text-caption text-grey">Aggregation Type</div>
+                    <v-chip size="small" class="mt-1">{{ selectedTransformation.config.aggregationType }}</v-chip>
+                  </v-col>
+                  <v-col cols="6" v-if="selectedTransformation.config.resultColumnName">
+                    <div class="text-caption text-grey">Result Column Name</div>
+                    <div class="text-body-1 mt-1">{{ selectedTransformation.config.resultColumnName }}</div>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-alert type="info" variant="tonal" density="compact">
+                      Group by fields and aggregation column will be specified when applying this transformation in a pipeline
+                    </v-alert>
+                  </v-col>
+                </v-row>
+              </div>
+
+              <!-- Script Config -->
+              <div v-else-if="selectedTransformation.type === 'Script'">
+                <v-row dense class="mb-3">
+                  <v-col cols="12">
+                    <div class="text-caption text-grey">Language</div>
+                    <v-chip size="small" class="mt-1" :color="selectedTransformation.config.scriptLanguage === 'csharp' ? 'purple' : 'blue'">
+                      <v-icon start size="small">{{ selectedTransformation.config.scriptLanguage === 'csharp' ? 'mdi-language-csharp' : 'mdi-language-javascript' }}</v-icon>
+                      {{ selectedTransformation.config.scriptLanguage === 'csharp' ? 'C#' : 'JavaScript' }}
+                    </v-chip>
+                  </v-col>
+                </v-row>
+                <div class="text-caption text-grey mb-2">Script</div>
+                <v-card variant="tonal" color="grey-darken-3">
+                  <v-card-text>
+                    <pre class="text-caption" style="white-space: pre-wrap; font-family: monospace;">{{ selectedTransformation.config.script }}</pre>
+                  </v-card-text>
+                </v-card>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="showDetailsDialog = false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            color="primary"
+            @click="editTransformation(selectedTransformation); showDetailsDialog = false"
+          >
+            Edit
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useTenantStore } from '@/stores/tenant';
 import { transformationService } from '@/services/transformationService';
 
@@ -361,7 +530,7 @@ const headers = [
   { title: 'Type', key: 'type', width: '120px' },
   { title: 'Description', key: 'description' },
   { title: 'Created', key: 'createdAt', width: '150px' },
-  { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
+  { title: 'Actions', key: 'actions', sortable: false, width: '150px', align: 'end' }
 ];
 
 // Get transformation types from service
@@ -395,11 +564,10 @@ const deletingTransformation = ref(false);
 // Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showDetailsDialog = ref(false);
 const transformationToDelete = ref(null);
+const selectedTransformation = ref(null);
 const editedTransformation = ref(createEmpty());
-
-// Mock columns for dropdowns
-const mockColumns = getAvailableColumns();
 
 async function fetchTransformations() {
   try {
@@ -417,9 +585,70 @@ async function fetchTransformations() {
   }
 }
 
+function openCreateDialog() {
+  editedTransformation.value = createEmpty();
+  showCreateDialog.value = true;
+}
+
+function viewTransformationDetails(transformation) {
+  selectedTransformation.value = transformation;
+  showDetailsDialog.value = true;
+}
+
 function editTransformation(transformation) {
   editedTransformation.value = JSON.parse(JSON.stringify(transformation));
   showCreateDialog.value = true;
+}
+
+function getTransformationIcon(type) {
+  const icons = {
+    'Filter': 'mdi-filter',
+    'Map': 'mdi-map',
+    'Aggregation': 'mdi-chart-bar',
+    'Script': 'mdi-code-braces'
+  };
+  return icons[type] || 'mdi-cog';
+}
+
+function getScriptPlaceholder(language) {
+  if (language === 'csharp') {
+    return `// Write your C# transformation script here
+// The 'row' dictionary contains all field values
+// Example - Combine fields:
+//   row["full_name"] = row["first_name"] + " " + row["last_name"];
+//
+// Example - Calculate:
+//   row["total_value"] = (decimal)row["quantity"] * (decimal)row["price"];
+//
+// Example - Format:
+//   row["phone"] = FormatPhoneNumber(row["phone"].ToString());
+//
+// Return the modified row
+return row;`;
+  }
+  
+  return `// Write your JavaScript transformation script here
+// The 'row' object contains all field values
+// Example - Combine fields:
+//   row.full_name = row.first_name + ' ' + row.last_name;
+//
+// Example - Calculate:
+//   row.total_value = row.quantity * row.price;
+//
+// Example - Format:
+//   row.phone = formatPhoneNumber(row.phone);
+//
+// Return the modified row
+return row;`;
+}
+
+function updateScriptPlaceholder() {
+  // Clear script when changing language to avoid confusion
+  if (!editedTransformation.value.config.script || 
+      editedTransformation.value.config.script.trim() === '') {
+    // Script is empty, just update placeholder
+    return;
+  }
 }
 
 async function cloneTransformation(transformation) {
@@ -496,6 +725,14 @@ async function saveTransformation() {
     savingTransformation.value = false;
   }
 }
+
+// Watch for dialog close to reset form
+watch(showCreateDialog, (newValue) => {
+  if (!newValue && !savingTransformation.value) {
+    // Dialog closed without saving, reset form
+    editedTransformation.value = createEmpty();
+  }
+});
 
 onMounted(() => {
   fetchTransformations();
