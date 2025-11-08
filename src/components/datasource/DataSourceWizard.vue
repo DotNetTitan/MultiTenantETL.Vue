@@ -24,21 +24,21 @@
           title="Basic Info"
           subtitle="Type and provider"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 2"
           :value="2"
           title="Connection"
           subtitle="Connection details"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 3"
           :value="3"
           title="Schema"
           subtitle="Define data structure"
         />
-        <v-divider />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :value="4"
           title="Test & Save"
@@ -606,6 +606,61 @@ watch(() => props.dataSource.type, (newType) => {
 
 .wizard-stepper :deep(.v-stepper-header) {
   flex-shrink: 0;
+  padding: 24px 16px;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+/* Style stepper items */
+.wizard-stepper :deep(.v-stepper-item) {
+  padding: 12px 16px;
+}
+
+.wizard-stepper :deep(.v-stepper-item__avatar) {
+  margin-bottom: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  border: 2px solid rgba(var(--v-theme-primary), 0.3);
+  background: rgba(var(--v-theme-surface), 1);
+}
+
+.wizard-stepper :deep(.v-stepper-item--selected .v-stepper-item__avatar) {
+  background: rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.3);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+.wizard-stepper :deep(.v-stepper-item--complete .v-stepper-item__avatar) {
+  background: rgb(var(--v-theme-success));
+  border-color: rgb(var(--v-theme-success));
+}
+
+.wizard-stepper :deep(.v-stepper-item__title) {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.wizard-stepper :deep(.v-stepper-item--selected .v-stepper-item__title) {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+}
+
+.wizard-stepper :deep(.v-stepper-item__subtitle) {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Step arrow between items */
+.step-arrow {
+  color: rgba(var(--v-theme-primary), 0.5);
+  font-size: 28px;
+  margin: 0 16px;
+  align-self: center;
+  margin-top: 20px;
 }
 
 .stepper-window {
