@@ -79,7 +79,7 @@
                   auto-grow
                 />
               </v-col>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="4">
                 <v-select
                   v-model="dataSource.type"
                   :items="dataSourceTypes"
@@ -98,7 +98,7 @@
                   </template>
                 </v-select>
               </v-col>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="4">
                 <v-select
                   v-model="dataSource.provider"
                   :items="providerOptions"
@@ -108,6 +108,26 @@
                   required
                   :disabled="!dataSource.type"
                 />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="dataSource.direction"
+                  :items="directionOptions"
+                  label="Direction"
+                  variant="outlined"
+                  :rules="[v => !!v || 'Direction is required']"
+                  required
+                  hint="How this data source will be used"
+                  persistent-hint
+                >
+                  <template v-slot:item="{ item, props }">
+                    <v-list-item v-bind="props">
+                      <template v-slot:prepend>
+                        <v-icon>{{ item.raw.icon }}</v-icon>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-select>
               </v-col>
             </v-row>
           </div>
@@ -238,6 +258,15 @@
                   rows="3"
                 />
               </v-col>
+
+              <!-- API Endpoints Configuration -->
+              <v-col cols="12">
+                <v-divider class="my-4" />
+                <ApiEndpointEditor
+                  v-model="dataSource.config.endpoints"
+                  :direction="dataSource.direction"
+                />
+              </v-col>
             </v-row>
 
             <!-- File Connection -->
@@ -323,6 +352,13 @@
                     <v-list-item-title>Type</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.type }} - {{ dataSource.provider }}</v-list-item-subtitle>
                   </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon>{{ getDirectionIcon(dataSource.direction) }}</v-icon>
+                    </template>
+                    <v-list-item-title>Direction</v-list-item-title>
+                    <v-list-item-subtitle>{{ getDirectionLabel(dataSource.direction) }}</v-list-item-subtitle>
+                  </v-list-item>
                   <v-list-item v-if="dataSource.type === 'Database'">
                     <template v-slot:prepend>
                       <v-icon>mdi-server</v-icon>
@@ -334,8 +370,22 @@
                     <template v-slot:prepend>
                       <v-icon>mdi-web</v-icon>
                     </template>
-                    <v-list-item-title>URL</v-list-item-title>
+                    <v-list-item-title>Base URL</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.config.url }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="dataSource.type === 'API' && dataSource.config.endpoints && dataSource.config.endpoints.length > 0">
+                    <template v-slot:prepend>
+                      <v-icon>mdi-api</v-icon>
+                    </template>
+                    <v-list-item-title>Endpoints</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <div v-for="endpoint in dataSource.config.endpoints" :key="endpoint.id" class="mt-1">
+                        <v-chip size="x-small" :color="getMethodColor(endpoint.method)" class="mr-1">
+                          {{ endpoint.method }}
+                        </v-chip>
+                        {{ endpoint.path }}
+                      </div>
+                    </v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template v-slot:prepend>
@@ -397,6 +447,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import SchemaEditor from './SchemaEditor.vue';
+import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const props = defineProps({
   dataSource: {
@@ -407,6 +458,7 @@ const props = defineProps({
       description: '',
       type: '',
       provider: '',
+      direction: 'source',
       config: {},
       schema: { fields: [] }
     })
@@ -435,14 +487,24 @@ const dataSourceTypes = [
   { title: 'File', value: 'File' }
 ];
 
+const directionOptions = [
+  { title: 'Source Only', value: 'source', icon: 'mdi-download' },
+  { title: 'Destination Only', value: 'destination', icon: 'mdi-upload' },
+  { title: 'Both (Source & Destination)', value: 'both', icon: 'mdi-swap-horizontal' }
+];
+
 const providersByType = {
   Database: ['SQL Server', 'PostgreSQL', 'MySQL', 'Oracle'],
-  API: ['REST', 'GraphQL', 'SOAP'],
+  API: ['REST'],
   File: ['Local', 'FTP', 'S3', 'Azure Blob']
 };
 
 const authTypes = ['None', 'Basic', 'Bearer', 'OAuth2'];
 const fileFormats = ['CSV', 'JSON', 'XML', 'Excel'];
+const httpMethods = {
+  source: ['GET'],
+  destination: ['POST', 'PUT', 'PATCH']
+};
 
 const providerOptions = computed(() => {
   return providersByType[props.dataSource.type] || [];
@@ -481,6 +543,35 @@ function getTypeIcon(type) {
   return icons[type] || 'mdi-help-circle';
 }
 
+function getDirectionIcon(direction) {
+  const icons = {
+    source: 'mdi-download',
+    destination: 'mdi-upload',
+    both: 'mdi-swap-horizontal'
+  };
+  return icons[direction] || 'mdi-help-circle';
+}
+
+function getDirectionLabel(direction) {
+  const labels = {
+    source: 'Source Only',
+    destination: 'Destination Only',
+    both: 'Both (Source & Destination)'
+  };
+  return labels[direction] || direction;
+}
+
+function getMethodColor(method) {
+  const colors = {
+    GET: 'blue',
+    POST: 'green',
+    PUT: 'orange',
+    PATCH: 'purple',
+    DELETE: 'red'
+  };
+  return colors[method] || 'grey';
+}
+
 function handleTypeChange() {
   props.dataSource.provider = '';
   props.dataSource.config = getDefaultConfig(props.dataSource.type);
@@ -505,7 +596,8 @@ function getDefaultConfig(type) {
         token: '',
         username: '',
         password: '',
-        headers: ''
+        headers: '',
+        endpoints: []
       };
     case 'File':
       return {
@@ -520,7 +612,7 @@ function getDefaultConfig(type) {
 }
 
 function validateConnectionConfig() {
-  const { type, config } = props.dataSource;
+  const { type, config, direction } = props.dataSource;
   
   if (type === 'Database') {
     if (config.useCustomConnectionString) {
@@ -530,7 +622,39 @@ function validateConnectionConfig() {
   }
   
   if (type === 'API') {
-    return !!config.url;
+    // Check basic config
+    if (!config.url) return false;
+    
+    // Check endpoints are configured
+    if (!config.endpoints || config.endpoints.length === 0) return false;
+    
+    // Validate direction-specific endpoint requirements
+    const hasGetEndpoint = config.endpoints.some(e => e.method === 'GET');
+    const hasWriteEndpoint = config.endpoints.some(e => ['POST', 'PUT', 'PATCH'].includes(e.method));
+    
+    if (direction === 'source' && !hasGetEndpoint) {
+      return false; // Source needs at least one GET endpoint
+    }
+    
+    if (direction === 'destination' && !hasWriteEndpoint) {
+      return false; // Destination needs at least one POST/PUT/PATCH endpoint
+    }
+    
+    if (direction === 'both' && (!hasGetEndpoint || !hasWriteEndpoint)) {
+      return false; // Both needs at least one GET and one write endpoint
+    }
+    
+    // Validate each endpoint has required fields
+    return config.endpoints.every(endpoint => {
+      const hasBasics = endpoint.method && endpoint.path && endpoint.responseDataPath;
+      
+      // For write methods, also need request configuration
+      if (['POST', 'PUT', 'PATCH'].includes(endpoint.method)) {
+        return hasBasics && endpoint.requestDataPath;
+      }
+      
+      return hasBasics;
+    });
   }
   
   if (type === 'File') {
