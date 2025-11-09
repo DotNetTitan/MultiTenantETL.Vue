@@ -120,6 +120,21 @@ export function validateSchema(fields) {
     return { isValid: false, errors };
   }
   
+  // Check for exactly one unique identifier
+  const uniqueIdentifiers = fields.filter(f => f.isPrimaryKey || f.isUnique);
+  if (uniqueIdentifiers.length === 0) {
+    errors.push('Exactly one field must be marked as a unique identifier');
+  } else if (uniqueIdentifiers.length > 1) {
+    errors.push(`Only one field can be marked as a unique identifier. Currently marked: ${uniqueIdentifiers.map(f => f.name).join(', ')}`);
+  }
+  
+  // Check that unique identifier is also required
+  uniqueIdentifiers.forEach(field => {
+    if (!field.required) {
+      errors.push(`Unique identifier '${field.name}' must be marked as required`);
+    }
+  });
+  
   // Check for duplicate field names
   const fieldNames = fields.map(f => f.name.toLowerCase());
   const duplicates = fieldNames.filter((name, index) => fieldNames.indexOf(name) !== index);
@@ -224,6 +239,31 @@ export function generateMappingSuggestions(sourceSchema, destinationSchema) {
 export function validateFieldMappings(mappings, sourceSchema, destinationSchema, transformations = []) {
   const errors = [];
   const warnings = [];
+
+  // Check that unique identifiers are mapped
+  const sourceUniqueId = sourceSchema.fields.find(f => f.isPrimaryKey);
+  const destUniqueId = destinationSchema.fields.find(f => f.isPrimaryKey);
+  
+  if (sourceUniqueId && destUniqueId) {
+    // Check if source unique identifier is mapped to destination unique identifier
+    const uniqueIdMapping = mappings.find(m => 
+      m.destinationField === destUniqueId.name && 
+      m.sourceFields.includes(sourceUniqueId.name)
+    );
+    
+    if (!uniqueIdMapping) {
+      errors.push(
+        `Unique identifier mapping required: Source '${sourceUniqueId.name}' must be mapped to destination '${destUniqueId.name}'`
+      );
+    }
+  } else {
+    if (!sourceUniqueId) {
+      errors.push('Source schema must have a unique identifier field defined');
+    }
+    if (!destUniqueId) {
+      errors.push('Destination schema must have a unique identifier field defined');
+    }
+  }
 
   // Check all required destination fields are mapped
   const mappedDestFields = mappings.map(m => m.destinationField);

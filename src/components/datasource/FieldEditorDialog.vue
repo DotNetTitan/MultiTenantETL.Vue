@@ -40,7 +40,18 @@
               </v-select>
             </v-col>
 
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="4">
+              <v-checkbox
+                v-model="localField.isPrimaryKey"
+                label="Unique Identifier"
+                hint="Uniquely identifies each record"
+                persistent-hint
+                color="primary"
+                @update:model-value="handlePrimaryKeyChange"
+              />
+            </v-col>
+
+            <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.required"
                 label="Required Field"
@@ -50,7 +61,7 @@
               />
             </v-col>
 
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.nullable"
                 label="Nullable"
@@ -134,6 +145,7 @@ const localField = ref({
   id: '',
   name: '',
   type: 'varchar',
+  isPrimaryKey: false,
   required: false,
   nullable: true,
   description: '',
@@ -156,6 +168,7 @@ watch(() => props.field, (newField) => {
       id: `field-${Date.now()}-${Math.random()}`,
       name: '',
       type: 'varchar',
+      isPrimaryKey: false,
       required: false,
       nullable: true,
       description: '',
@@ -165,17 +178,30 @@ watch(() => props.field, (newField) => {
 }, { immediate: true });
 
 // Methods
+function handlePrimaryKeyChange(value) {
+  // If Unique Identifier is checked, automatically set Required and uncheck Nullable
+  if (value) {
+    localField.value.required = true;
+    localField.value.nullable = false;
+  }
+}
+
 function handleRequiredChange(value) {
   // If Required is checked, uncheck Nullable
   if (value) {
     localField.value.nullable = false;
   }
+  // If Required is unchecked and field is Unique Identifier, uncheck it
+  if (!value && localField.value.isPrimaryKey) {
+    localField.value.isPrimaryKey = false;
+  }
 }
 
 function handleNullableChange(value) {
-  // If Nullable is checked, uncheck Required
+  // If Nullable is checked, uncheck Required and Unique Identifier
   if (value) {
     localField.value.required = false;
+    localField.value.isPrimaryKey = false;
   }
 }
 

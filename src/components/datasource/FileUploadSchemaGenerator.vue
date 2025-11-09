@@ -35,17 +35,63 @@
         Analyzing file: {{ selectedFileName }}
       </v-alert>
 
-      <v-alert v-if="analysisResult" type="success" class="mt-4" density="compact">
-        <div class="d-flex align-center">
-          <v-icon start>mdi-check-circle</v-icon>
-          <div class="flex-grow-1">
-            Found {{ analysisResult.fields.length }} fields in {{ selectedFileName }}
+      <v-card v-if="analysisResult" variant="outlined" class="mt-4">
+        <v-card-title class="d-flex align-center">
+          <v-icon start color="success">mdi-check-circle</v-icon>
+          <span>Found {{ analysisResult.fields.length }} fields in {{ selectedFileName }}</span>
+          <v-spacer />
+          <v-btn 
+            size="small" 
+            variant="text"
+            @click="showPreview = !showPreview"
+          >
+            {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+            <v-icon end>{{ showPreview ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <!-- Schema Preview -->
+        <v-expand-transition>
+          <div v-if="showPreview">
+            <v-divider />
+            <v-card-text>
+              <div class="text-subtitle-2 mb-3">Detected Fields:</div>
+              <div class="schema-preview">
+                <v-chip
+                  v-for="field in analysisResult.fields"
+                  :key="field.id"
+                  size="small"
+                  class="mr-2 mb-2"
+                  color="primary"
+                  variant="outlined"
+                >
+                  <strong>{{ field.name }}</strong>
+                  <span class="text-grey ml-1">({{ getTypeLabel(field.type) }})</span>
+                  <v-icon v-if="field.nullable" size="x-small" class="ml-1" color="grey" title="Nullable">mdi-help-circle-outline</v-icon>
+                </v-chip>
+              </div>
+              <v-divider class="my-3" />
+              <div class="text-caption text-grey">
+                <v-icon size="small" class="mr-1">mdi-information</v-icon>
+                You can edit these fields after applying the schema
+              </div>
+            </v-card-text>
           </div>
-          <v-btn size="small" variant="text" @click="applySchema">
+        </v-expand-transition>
+
+        <v-divider />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="success"
+            variant="elevated"
+            prepend-icon="mdi-check"
+            @click="applySchema"
+          >
             Apply Schema
           </v-btn>
-        </div>
-      </v-alert>
+        </v-card-actions>
+      </v-card>
 
       <v-alert v-if="error" type="error" class="mt-4" density="compact" closable @click:close="error = null">
         {{ error }}
@@ -66,8 +112,28 @@ const analyzing = ref(false);
 const selectedFileName = ref('');
 const analysisResult = ref(null);
 const error = ref(null);
+const showPreview = ref(false);
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+// Data types mapping for display
+const DATA_TYPES = [
+  { value: 'varchar', label: 'String' },
+  { value: 'int', label: 'Integer' },
+  { value: 'bigint', label: 'Big Integer' },
+  { value: 'decimal', label: 'Decimal' },
+  { value: 'boolean', label: 'Boolean' },
+  { value: 'date', label: 'Date' },
+  { value: 'datetime', label: 'Date Time' },
+  { value: 'timestamp', label: 'Timestamp' },
+  { value: 'json', label: 'JSON' },
+  { value: 'text', label: 'Text (Long)' }
+];
+
+function getTypeLabel(type) {
+  const dataType = DATA_TYPES.find(dt => dt.value === type);
+  return dataType ? dataType.label : type;
+}
 
 function handleFileSelect(event) {
   const file = event.target.files[0];
@@ -235,11 +301,16 @@ function inferFieldsFromData(fieldNames, data) {
       return val === null || val === undefined || val === '';
     });
 
+    // Auto-detect potential unique identifiers (id, _id, etc.)
+    const nameLower = String(name).toLowerCase();
+    const isPotentialPrimaryKey = nameLower === 'id' || nameLower === '_id' || nameLower.endsWith('_id');
+
     return {
       id: `field-${Date.now()}-${index}`,
       name: String(name),
       type,
-      required: false,
+      isPrimaryKey: isPotentialPrimaryKey && !hasNulls,
+      required: isPotentialPrimaryKey && !hasNulls,
       nullable: hasNulls,
       description: '',
       order: index + 1
@@ -289,6 +360,7 @@ function applySchema() {
     emit('schema-generated', analysisResult.value.fields);
     analysisResult.value = null;
     selectedFileName.value = '';
+    showPreview.value = false;
   }
 }
 </script>

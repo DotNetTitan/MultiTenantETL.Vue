@@ -14,15 +14,6 @@
 
     <!-- Main Content -->
     <div v-else class="content-wrapper">
-      <!-- Validation Summary (only show if there are errors and at least one mapping is complete) -->
-      <ValidationSummary
-        v-if="hasCompleteMappings && !validationResult.isValid"
-        :validation-errors="validationResult.errors"
-        :unmapped-required-fields="validationResult.unmappedRequiredFields"
-        :is-valid="validationResult.isValid"
-        class="mb-4"
-      />
-
       <!-- Schema Viewer (collapsible) -->
       <v-expansion-panels class="mb-4">
         <v-expansion-panel>
@@ -84,6 +75,15 @@
           />
         </div>
       </div>
+
+      <!-- Validation Summary (show below mappings, only if there are errors and at least one mapping) -->
+      <ValidationSummary
+        v-if="hasCompleteMappings && !validationResult.isValid"
+        :validation-errors="validationResult.errors"
+        :unmapped-required-fields="validationResult.unmappedRequiredFields"
+        :is-valid="validationResult.isValid"
+        class="mb-4"
+      />
     </div>
 
     <!-- Schema Conversion Dialog -->

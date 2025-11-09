@@ -40,6 +40,7 @@
           <tr>
             <th>Field Name</th>
             <th>Type</th>
+            <th>Unique ID</th>
             <th>Required</th>
             <th>Nullable</th>
             <th class="text-right">Actions</th>
@@ -48,15 +49,28 @@
         <tbody>
           <tr v-for="(field, index) in localFields" :key="field.id">
             <td>
-              <strong>{{ field.name }}</strong>
-              <div v-if="field.description" class="text-caption text-grey">
-                {{ field.description }}
+              <div class="d-flex align-center">
+                <v-icon v-if="field.isPrimaryKey" color="primary" size="small" class="mr-2">mdi-key</v-icon>
+                <div>
+                  <strong>{{ field.name }}</strong>
+                  <div v-if="field.description" class="text-caption text-grey">
+                    {{ field.description }}
+                  </div>
+                </div>
               </div>
             </td>
             <td>
               <v-chip size="small" variant="tonal">
                 {{ getTypeLabel(field.type) }}
               </v-chip>
+            </td>
+            <td>
+              <v-icon v-if="field.isPrimaryKey" color="primary" size="small">
+                mdi-check-circle
+              </v-icon>
+              <v-icon v-else color="grey" size="small">
+                mdi-circle-outline
+              </v-icon>
             </td>
             <td>
               <v-icon v-if="field.required" color="error" size="small">
@@ -139,12 +153,37 @@
     </div>
 
     <!-- Validation Errors (only show meaningful errors, not "no fields" on initial load) -->
-    <v-alert v-if="shouldShowValidationErrors" type="error" class="mt-4" density="compact">
-      <div class="text-subtitle-2 mb-2">Schema Validation Errors:</div>
-      <ul class="pl-4">
-        <li v-for="(error, idx) in validationErrors" :key="idx">{{ error }}</li>
-      </ul>
-    </v-alert>
+    <div v-if="shouldShowValidationErrors" class="mt-4">
+      <!-- Unique Identifier Validation -->
+      <v-card v-if="uniqueIdentifierErrors.length > 0" variant="outlined" color="error" class="mb-3">
+        <v-card-text class="py-3">
+          <div class="d-flex align-center">
+            <v-icon color="error" class="mr-3">mdi-key-alert</v-icon>
+            <div class="flex-grow-1">
+              <div class="text-subtitle-2 mb-1">Unique Identifier Required</div>
+              <div class="text-caption">
+                {{ uniqueIdentifierErrors[0] }}
+              </div>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+
+      <!-- Other Validation Errors -->
+      <v-card v-if="otherValidationErrors.length > 0" variant="outlined" class="mb-3">
+        <v-card-text class="py-3">
+          <div class="d-flex align-start">
+            <v-icon color="error" class="mr-3 mt-1">mdi-alert</v-icon>
+            <div class="flex-grow-1">
+              <div class="text-subtitle-2 mb-2">Schema Issues</div>
+              <div v-for="(error, idx) in otherValidationErrors" :key="idx" class="text-caption mb-1">
+                • {{ error }}
+              </div>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </div>
 
     <!-- Field Editor Dialog -->
     <FieldEditorDialog
@@ -234,6 +273,21 @@ const validationErrors = computed(() => {
   return result.errors;
 });
 
+// Separate unique identifier errors from other errors
+const uniqueIdentifierErrors = computed(() => {
+  return validationErrors.value.filter(error => 
+    error.includes('unique identifier') || 
+    error.includes('Unique identifier')
+  );
+});
+
+const otherValidationErrors = computed(() => {
+  return validationErrors.value.filter(error => 
+    !error.includes('unique identifier') && 
+    !error.includes('Unique identifier')
+  );
+});
+
 // Only show validation errors if there are fields with actual errors
 // Don't show "at least one field must be defined" on initial empty state
 const shouldShowValidationErrors = computed(() => {
@@ -264,6 +318,7 @@ function addField() {
     id: `field-${Date.now()}-${Math.random()}`,
     name: '',
     type: 'varchar',
+    isPrimaryKey: false,
     required: false,
     nullable: true,
     description: '',
@@ -280,6 +335,15 @@ function editField(index) {
 }
 
 function saveField(field) {
+  // If this field is marked as unique identifier, unmark all other fields
+  if (field.isPrimaryKey) {
+    localFields.value.forEach((f, idx) => {
+      if (idx !== editingIndex.value) {
+        f.isPrimaryKey = false;
+      }
+    });
+  }
+  
   if (editingIndex.value >= 0) {
     // Update existing field
     localFields.value[editingIndex.value] = field;
