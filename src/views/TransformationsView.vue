@@ -155,7 +155,7 @@
                 Define the filter logic. The field will be specified when applying this transformation in a pipeline.
               </v-alert>
               <v-row>
-                <v-col cols="12" md="6">
+                <v-col cols="12" md="4">
                   <v-select
                     v-model="editedTransformation.config.operator"
                     label="Filter Operator"
@@ -176,12 +176,57 @@
                     required
                   />
                 </v-col>
-                <v-col cols="12" md="6" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
-                  <v-text-field
-                    v-model="editedTransformation.config.defaultValue"
-                    label="Default Value (Optional)"
-                    hint="Can be overridden when applying in pipeline"
+                <v-col cols="12" md="4" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
+                  <v-select
+                    v-model="editedTransformation.config.valueType"
+                    label="Value Type"
+                    :items="[
+                      { title: 'String', value: 'string' },
+                      { title: 'Number', value: 'number' },
+                      { title: 'Boolean', value: 'boolean' },
+                      { title: 'Date', value: 'date' }
+                    ]"
+                    hint="Data type of the filter value"
                     persistent-hint
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="4" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
+                  <v-text-field
+                    v-if="editedTransformation.config.valueType === 'boolean'"
+                    v-model="editedTransformation.config.defaultValue"
+                    label="Filter Value"
+                    hint="Enter: true or false"
+                    persistent-hint
+                    required
+                    :rules="[validateBooleanValue]"
+                  />
+                  <v-text-field
+                    v-else-if="editedTransformation.config.valueType === 'number'"
+                    v-model="editedTransformation.config.defaultValue"
+                    label="Filter Value"
+                    type="number"
+                    hint="Enter a numeric value"
+                    persistent-hint
+                    required
+                    :rules="[validateNumberValue]"
+                  />
+                  <v-text-field
+                    v-else-if="editedTransformation.config.valueType === 'date'"
+                    v-model="editedTransformation.config.defaultValue"
+                    label="Filter Value"
+                    type="date"
+                    hint="Select a date"
+                    persistent-hint
+                    required
+                  />
+                  <v-text-field
+                    v-else
+                    v-model="editedTransformation.config.defaultValue"
+                    label="Filter Value"
+                    hint="Enter a text value"
+                    persistent-hint
+                    required
                   />
                 </v-col>
               </v-row>
@@ -236,39 +281,6 @@
               >
                 Add Value Mapping
               </v-btn>
-            </div>
-
-            <div v-if="editedTransformation.type === 'Aggregation'">
-              <v-divider class="my-4" />
-              <h3 class="text-subtitle-1 mb-3">Aggregation Configuration</h3>
-              <v-alert type="info" variant="tonal" class="mb-4">
-                Define the aggregation type and result column name. Group by fields and aggregation column will be specified when applying in a pipeline.
-              </v-alert>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="editedTransformation.config.aggregationType"
-                    label="Aggregation Type"
-                    :items="[
-                      { title: 'Sum', value: 'sum' },
-                      { title: 'Average', value: 'avg' },
-                      { title: 'Count', value: 'count' },
-                      { title: 'Min', value: 'min' },
-                      { title: 'Max', value: 'max' }
-                    ]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="editedTransformation.config.resultColumnName"
-                    label="Result Column Name (Optional)"
-                    hint="Default name for the aggregated result"
-                    persistent-hint
-                    placeholder="e.g., total, count, average"
-                  />
-                </v-col>
-              </v-row>
             </div>
 
             <div v-if="editedTransformation.type === 'Script'">
@@ -423,33 +435,7 @@
               </v-row>
             </div>
 
-            <!-- Split Transformation -->
-            <div v-if="editedTransformation.type === 'Split'">
-              <v-divider class="my-4" />
-              <h3 class="text-subtitle-1 mb-3">Split Configuration</h3>
-              <v-alert type="info" variant="tonal" class="mb-4">
-                Split text into an array using a delimiter.
-              </v-alert>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="editedTransformation.config.delimiter"
-                    label="Delimiter"
-                    hint="Character(s) to split on (e.g., comma, pipe, space)"
-                    persistent-hint
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model.number="editedTransformation.config.maxSplits"
-                    label="Maximum Splits (Optional)"
-                    type="number"
-                    hint="Leave empty for unlimited splits"
-                    persistent-hint
-                  />
-                </v-col>
-              </v-row>
-            </div>
+
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -553,12 +539,16 @@
               <!-- Filter Config -->
               <div v-if="selectedTransformation.type === 'Filter'">
                 <v-row dense>
-                  <v-col cols="6">
+                  <v-col cols="4">
                     <div class="text-caption text-grey">Operator</div>
                     <v-chip size="small" class="mt-1">{{ selectedTransformation.config.operator }}</v-chip>
                   </v-col>
-                  <v-col cols="6" v-if="selectedTransformation.config.defaultValue">
-                    <div class="text-caption text-grey">Default Value</div>
+                  <v-col cols="4" v-if="selectedTransformation.config.valueType">
+                    <div class="text-caption text-grey">Value Type</div>
+                    <v-chip size="small" class="mt-1" color="blue">{{ selectedTransformation.config.valueType }}</v-chip>
+                  </v-col>
+                  <v-col cols="4" v-if="selectedTransformation.config.defaultValue">
+                    <div class="text-caption text-grey">Filter Value</div>
                     <div class="text-body-1 mt-1">{{ selectedTransformation.config.defaultValue }}</div>
                   </v-col>
                   <v-col cols="12">
@@ -591,25 +581,6 @@
                 <v-alert type="info" variant="tonal" density="compact" class="mt-3">
                   Source field will be specified when applying this transformation in a pipeline
                 </v-alert>
-              </div>
-
-              <!-- Aggregation Config -->
-              <div v-else-if="selectedTransformation.type === 'Aggregation'">
-                <v-row dense>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">Aggregation Type</div>
-                    <v-chip size="small" class="mt-1">{{ selectedTransformation.config.aggregationType }}</v-chip>
-                  </v-col>
-                  <v-col cols="6" v-if="selectedTransformation.config.resultColumnName">
-                    <div class="text-caption text-grey">Result Column Name</div>
-                    <div class="text-body-1 mt-1">{{ selectedTransformation.config.resultColumnName }}</div>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-alert type="info" variant="tonal" density="compact">
-                      Group by fields and aggregation column will be specified when applying this transformation in a pipeline
-                    </v-alert>
-                  </v-col>
-                </v-row>
               </div>
 
               <!-- Script Config -->
@@ -750,7 +721,6 @@ function getTransformationIcon(type) {
   const icons = {
     'Filter': 'mdi-filter',
     'Map': 'mdi-map',
-    'Aggregation': 'mdi-chart-bar',
     'Script': 'mdi-code-braces'
   };
   return icons[type] || 'mdi-cog';
@@ -795,6 +765,22 @@ function updateScriptPlaceholder() {
     // Script is empty, just update placeholder
     return;
   }
+}
+
+// Validation functions for filter values
+function validateNumberValue(value) {
+  if (!value) return 'Value is required';
+  if (isNaN(value)) return 'Value must be a valid number';
+  return true;
+}
+
+function validateBooleanValue(value) {
+  if (!value) return 'Value is required';
+  const lowerValue = value.toString().toLowerCase();
+  if (lowerValue !== 'true' && lowerValue !== 'false') {
+    return 'Value must be either "true" or "false"';
+  }
+  return true;
 }
 
 async function cloneTransformation(transformation) {

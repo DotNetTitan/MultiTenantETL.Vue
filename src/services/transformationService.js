@@ -12,7 +12,7 @@ const mockColumns = [
 ]
 
 // Transformation types
-const transformationTypes = ['Filter', 'Map', 'Aggregation', 'Script', 'Trim', 'Case Convert', 'Substring', 'Replace', 'Split']
+const transformationTypes = ['Filter', 'Map', 'Script', 'Trim', 'Case Convert', 'Substring', 'Replace']
 
 // Sort functions
 const sortFunctions = {
@@ -36,6 +36,7 @@ const mockTransformations = [
     usedInPipelines: ['Sales Data ETL', 'Customer Import'],
     config: {
       operator: 'equals',
+      valueType: 'string',
       defaultValue: 'Completed'
     }
   },
@@ -50,6 +51,7 @@ const mockTransformations = [
     usedInPipelines: [],
     config: {
       operator: 'greaterThan',
+      valueType: 'number',
       defaultValue: '1000'
     }
   },
@@ -69,34 +71,6 @@ const mockTransformations = [
         { from: 'X', to: 'Cancelled' },
         { from: 'R', to: 'Refunded' }
       ]
-    }
-  },
-  {
-    id: '4',
-    name: 'Sum Aggregation',
-    type: 'Aggregation',
-    description: 'Calculates sum of values grouped by specified fields',
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
-    usedInPipelines: ['Customer Import'],
-    config: {
-      aggregationType: 'sum',
-      resultColumnName: 'total'
-    }
-  },
-  {
-    id: '5',
-    name: 'Count Aggregation',
-    type: 'Aggregation',
-    description: 'Counts rows grouped by specified fields',
-    createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
-    usedInPipelines: [],
-    config: {
-      aggregationType: 'count',
-      resultColumnName: 'count'
     }
   },
   {
@@ -343,8 +317,6 @@ export const transformationService = {
         return 'indigo';
       case 'Map':
         return 'teal';
-      case 'Aggregation':
-        return 'deep-purple';
       case 'Script':
         return 'orange';
       case 'Trim':
@@ -355,8 +327,6 @@ export const transformationService = {
         return 'pink';
       case 'Replace':
         return 'amber';
-      case 'Split':
-        return 'lime';
       default:
         return 'blue';
     }
