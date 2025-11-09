@@ -26,8 +26,8 @@
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :value="4"
-          title="Test & Save"
-          subtitle="Verify connection"
+          title="Review & Save"
+          subtitle="Review configuration"
         />
       </v-stepper-header>
 
@@ -300,14 +300,18 @@
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 4: Test & Save -->
+        <!-- Step 4: Review & Save -->
         <v-stepper-window-item :value="4">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Test Connection</div>
+            <div class="text-h5 mb-4">Review Configuration</div>
             
+            <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-information</v-icon>
+                Basic Information
+              </v-card-title>
               <v-card-text>
-                <div class="text-subtitle-1 mb-2">Connection Summary</div>
                 <v-list density="compact">
                   <v-list-item>
                     <template v-slot:prepend>
@@ -337,61 +341,165 @@
                     <v-list-item-title>Direction</v-list-item-title>
                     <v-list-item-subtitle>{{ getDirectionLabel(dataSource.direction) }}</v-list-item-subtitle>
                   </v-list-item>
-                  <v-list-item v-if="dataSource.type === 'Database'">
+                </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- Connection Details -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-connection</v-icon>
+                Connection Details
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <!-- Database Connection Details -->
+                  <template v-if="dataSource.type === 'Database'">
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-server</v-icon>
+                      </template>
+                      <v-list-item-title>Server</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.server }}{{ dataSource.config.port ? ':' + dataSource.config.port : '' }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-database</v-icon>
+                      </template>
+                      <v-list-item-title>Database</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.database }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-account</v-icon>
+                      </template>
+                      <v-list-item-title>Username</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.username }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.useCustomConnectionString">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-link-variant</v-icon>
+                      </template>
+                      <v-list-item-title>Custom Connection String</v-list-item-title>
+                      <v-list-item-subtitle class="text-truncate">{{ dataSource.config.connectionString }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+
+                  <!-- API Connection Details -->
+                  <template v-if="dataSource.type === 'API'">
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-web</v-icon>
+                      </template>
+                      <v-list-item-title>Base URL</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.url }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-shield-lock</v-icon>
+                      </template>
+                      <v-list-item-title>Authentication</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.authType }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.headers">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-code-json</v-icon>
+                      </template>
+                      <v-list-item-title>Custom Headers</v-list-item-title>
+                      <v-list-item-subtitle class="text-truncate">{{ dataSource.config.headers }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+
+                  <!-- File Connection Details -->
+                  <template v-if="dataSource.type === 'File'">
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-file-document</v-icon>
+                      </template>
+                      <v-list-item-title>Format</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.format }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-folder</v-icon>
+                      </template>
+                      <v-list-item-title>Path</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.path }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'CSV'">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-table-split-cell</v-icon>
+                      </template>
+                      <v-list-item-title>Delimiter</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.delimiter || ',' }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'CSV'">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-format-header-1</v-icon>
+                      </template>
+                      <v-list-item-title>Has Header Row</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.hasHeader ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- API Endpoints (if applicable) -->
+            <v-card v-if="dataSource.type === 'API' && dataSource.config.endpoints && dataSource.config.endpoints.length > 0" variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-api</v-icon>
+                API Endpoints ({{ dataSource.config.endpoints.length }})
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <v-list-item v-for="endpoint in dataSource.config.endpoints" :key="endpoint.id">
                     <template v-slot:prepend>
-                      <v-icon>mdi-server</v-icon>
+                      <v-chip :color="getMethodColor(endpoint.method)" size="small">
+                        {{ endpoint.method }}
+                      </v-chip>
                     </template>
-                    <v-list-item-title>Server</v-list-item-title>
-                    <v-list-item-subtitle>{{ dataSource.config.server }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item v-if="dataSource.type === 'API'">
-                    <template v-slot:prepend>
-                      <v-icon>mdi-web</v-icon>
-                    </template>
-                    <v-list-item-title>Base URL</v-list-item-title>
-                    <v-list-item-subtitle>{{ dataSource.config.url }}</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item v-if="dataSource.type === 'API' && dataSource.config.endpoints && dataSource.config.endpoints.length > 0">
-                    <template v-slot:prepend>
-                      <v-icon>mdi-api</v-icon>
-                    </template>
-                    <v-list-item-title>Endpoints</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <div v-for="endpoint in dataSource.config.endpoints" :key="endpoint.id" class="mt-1">
-                        <v-chip size="x-small" :color="getMethodColor(endpoint.method)" class="mr-1">
-                          {{ endpoint.method }}
-                        </v-chip>
-                        {{ endpoint.path }}
-                      </div>
-                    </v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <template v-slot:prepend>
-                      <v-icon>mdi-table</v-icon>
-                    </template>
-                    <v-list-item-title>Schema Fields</v-list-item-title>
-                    <v-list-item-subtitle>{{ dataSource.schema.fields.length }} fields defined</v-list-item-subtitle>
+                    <v-list-item-title>{{ endpoint.path }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-card-text>
             </v-card>
 
-            <v-btn
-              block
-              color="primary"
-              variant="outlined"
-              size="large"
-              prepend-icon="mdi-connection"
-              @click="testConnection"
-              :loading="testing"
-            >
-              Test Connection
-            </v-btn>
-
-            <v-alert v-if="testResult" :type="testResult.success ? 'success' : 'error'" class="mt-4">
-              <v-icon start>{{ testResult.success ? 'mdi-check-circle' : 'mdi-alert-circle' }}</v-icon>
-              {{ testResult.message }}
-            </v-alert>
+            <!-- Schema Fields -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-table</v-icon>
+                Schema Fields ({{ dataSource.schema.fields.length }})
+              </v-card-title>
+              <v-card-text>
+                <v-table density="compact">
+                  <thead>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Data Type</th>
+                      <th>Required</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="field in dataSource.schema.fields" :key="field.id">
+                      <td>
+                        <v-icon v-if="field.isPrimaryKey" size="small" color="primary" class="mr-1">mdi-key</v-icon>
+                        {{ field.name }}
+                      </td>
+                      <td>
+                        <v-chip size="x-small" variant="outlined">{{ field.type }}</v-chip>
+                      </td>
+                      <td>
+                        <v-icon v-if="field.required" size="small" color="error">mdi-check-circle</v-icon>
+                        <v-icon v-else size="small" color="grey">mdi-circle-outline</v-icon>
+                      </td>
+                      <td class="text-caption text-medium-emphasis">{{ field.description || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card-text>
+            </v-card>
           </div>
         </v-stepper-window-item>
       </v-stepper-window>
@@ -464,8 +572,6 @@ const emit = defineEmits(['save', 'close', 'toggle-fullscreen']);
 
 const currentStep = ref(1);
 const saving = ref(false);
-const testing = ref(false);
-const testResult = ref(null);
 const schemaValidation = ref({ isValid: true, errors: [] });
 
 const dataSourceTypes = [
@@ -653,29 +759,6 @@ function validateConnectionConfig() {
 
 function handleSchemaValidation(validation) {
   schemaValidation.value = validation;
-}
-
-async function testConnection() {
-  testing.value = true;
-  testResult.value = null;
-  
-  try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock success
-    testResult.value = {
-      success: true,
-      message: 'Connection successful! Data source is ready to use.'
-    };
-  } catch (error) {
-    testResult.value = {
-      success: false,
-      message: `Connection failed: ${error.message}`
-    };
-  } finally {
-    testing.value = false;
-  }
 }
 
 async function handleSave() {
