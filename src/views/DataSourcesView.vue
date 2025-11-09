@@ -733,62 +733,7 @@ function handleSchemaValidation(validation) {
 }
 
 function editDataSource(dataSource) {
-  // Clone the data source to avoid modifying the original directly
-  const clonedSource = JSON.parse(JSON.stringify(dataSource));
-  
-  // Ensure credentials object exists
-  if (!clonedSource.credentials) {
-    clonedSource.credentials = {
-      username: '',
-      password: '',
-      apiKey: '',
-      token: ''
-    };
-  }
-
-  // Ensure other required objects exist
-  if (!clonedSource.database) {
-    clonedSource.database = {
-      provider: 'SQL Server',
-      server: '',
-      port: '',
-      databaseName: ''
-    };
-  }
-  
-  if (!clonedSource.file) {
-    clonedSource.file = {
-      storageType: 'Local',
-      path: '',
-      fileType: 'CSV',
-      delimiter: ','
-    };
-  }
-  
-  if (!clonedSource.api) {
-    clonedSource.api = {
-      baseUrl: '',
-      authType: 'None',
-      dataFormat: 'JSON'
-    };
-  }
-  
-  // Ensure schema object exists
-  if (!clonedSource.schema) {
-    clonedSource.schema = {
-      fields: [],
-      version: 1,
-      isManual: true,
-      lastModified: new Date().toISOString()
-    };
-  }
-  
-  // Store original schema for comparison
-  originalSchema.value = clonedSource.schema.fields ? JSON.parse(JSON.stringify(clonedSource.schema.fields)) : [];
-  schemaHasChanged.value = false;
-  
-  editedDataSource.value = clonedSource;
-  showCreateDialog.value = true;
+  router.push(`/data-sources/${dataSource.id}/edit`);
 }
 
 function getTypeColor(type) {
@@ -992,10 +937,7 @@ function handleSchemaWarningProceed() {
 }
 
 function createNewDataSource() {
-  editedDataSource.value = createEmptyDataSource();
-  originalSchema.value = null;
-  schemaHasChanged.value = false;
-  showCreateDialog.value = true;
+  router.push('/data-sources/new');
 }
 
 function handleDialogClose(isOpen) {

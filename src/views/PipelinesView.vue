@@ -432,23 +432,11 @@ const pipelineMappings = ref(null);
 const mappingsError = ref(null);
 
 function openEditDialog(pipeline) {
-  fetchDataSources();
-  prepareEditPipeline(pipeline);
-  showCreateDialog.value = true;
+  router.push(`/pipelines/${pipeline.id}/edit`);
 }
 
 function openCreatePipelineDialog() {
-  fetchDataSources();
-  resetForm();
-  if (!editedPipeline.value.schedule) {
-    editedPipeline.value.schedule = {
-      frequency: 'Daily',
-      time: '00:00',
-      cronExpression: '0 0 * * *',
-      timezone: 'UTC'
-    };
-  }
-  showCreateDialog.value = true;
+  router.push('/pipelines/new');
 }
 
 function confirmDelete(pipeline) {

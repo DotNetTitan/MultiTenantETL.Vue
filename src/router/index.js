@@ -23,6 +23,18 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/pipelines/new',
+      name: 'pipeline-create',
+      component: () => import('@/views/PipelineFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/pipelines/:id/edit',
+      name: 'pipeline-edit',
+      component: () => import('@/views/PipelineFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/pipelines/:id',
       name: 'pipeline-details',
       component: () => import('@/views/PipelineDetailsView.vue'),
@@ -32,6 +44,18 @@ const router = createRouter({
       path: '/data-sources',
       name: 'data-sources',
       component: () => import('@/views/DataSourcesView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/data-sources/new',
+      name: 'data-source-create',
+      component: () => import('@/views/DataSourceFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/data-sources/:id/edit',
+      name: 'data-source-edit',
+      component: () => import('@/views/DataSourceFormView.vue'),
       meta: { requiresAuth: true }
     },
     {

@@ -1,27 +1,5 @@
 <template>
-  <v-card class="wizard-card" :class="{ 'fullscreen-mode': isFullscreen }">
-    <v-toolbar color="primary" dark flat>
-      <v-btn icon @click="$emit('close')">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-      <v-toolbar-title>
-        {{ dataSource.id ? 'Edit Data Source' : 'Create New Data Source' }}
-      </v-toolbar-title>
-      <v-spacer />
-      <v-btn icon @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'">
-        <v-icon>{{ isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
-      </v-btn>
-      <v-btn 
-        icon
-        variant="text"
-        @click="handleSave" 
-        :loading="saving" 
-        :disabled="!canSave"
-        title="Save Data Source"
-      >
-        <v-icon>mdi-content-save</v-icon>
-      </v-btn>
-    </v-toolbar>
+  <v-card class="wizard-card" elevation="0">
 
     <v-stepper v-model="currentStep" alt-labels flat class="wizard-stepper">
       <v-stepper-header>
@@ -425,20 +403,33 @@
       <v-btn
         v-if="currentStep > 1"
         variant="outlined"
+        prepend-icon="mdi-chevron-left"
         @click="currentStep--"
       >
-        <v-icon start>mdi-chevron-left</v-icon>
         Back
       </v-btn>
       <v-spacer />
       <v-btn
         v-if="currentStep < 4"
         color="primary"
+        variant="elevated"
+        append-icon="mdi-chevron-right"
         @click="currentStep++"
         :disabled="!canProceed"
       >
         Next
-        <v-icon end>mdi-chevron-right</v-icon>
+      </v-btn>
+      <v-btn
+        v-else
+        color="primary"
+        variant="elevated"
+        prepend-icon="mdi-content-save"
+        @click="handleSave"
+        :loading="saving"
+        :disabled="!canSave"
+      >
+        Save
+        <v-tooltip activator="parent" location="top">Save Data Source</v-tooltip>
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -476,10 +467,6 @@ const saving = ref(false);
 const testing = ref(false);
 const testResult = ref(null);
 const schemaValidation = ref({ isValid: true, errors: [] });
-const isFullscreen = ref(false);
-
-// Expose isFullscreen to template for styling
-defineExpose({ isFullscreen });
 
 const dataSourceTypes = [
   { title: 'Database', value: 'Database' },
@@ -691,11 +678,6 @@ async function testConnection() {
   }
 }
 
-function toggleFullscreen() {
-  isFullscreen.value = !isFullscreen.value;
-  emit('toggle-fullscreen', isFullscreen.value);
-}
-
 async function handleSave() {
   if (!canSave.value) return;
   
@@ -719,13 +701,6 @@ watch(() => props.dataSource.type, (newType) => {
 .wizard-card {
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
-  height: 100%;
-}
-
-.wizard-card.fullscreen-mode {
-  max-height: 100vh;
-  height: 100vh;
 }
 
 .wizard-stepper {
