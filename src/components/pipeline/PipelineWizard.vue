@@ -25,9 +25,16 @@
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
+          :complete="currentStep > 4"
           :value="4"
           title="Schedule"
           subtitle="Configure schedule"
+        />
+        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
+        <v-stepper-item
+          :value="5"
+          title="Review & Save"
+          subtitle="Review configuration"
         />
       </v-stepper-header>
 
@@ -77,7 +84,6 @@
                     label="Select Source"
                     variant="outlined"
                     :rules="[v => !!v || 'Source is required']"
-                    return-object
                   >
                     <template v-slot:prepend-item>
                       <v-list-item
@@ -104,7 +110,6 @@
                     label="Select Destination"
                     variant="outlined"
                     :rules="[v => !!v || 'Destination is required']"
-                    return-object
                   >
                     <template v-slot:prepend-item>
                       <v-list-item
@@ -160,7 +165,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  <v-col cols="12" md="6">
+                  <v-col cols="12" md="6" v-if="pipeline.schedule.frequency !== 'Custom'">
                     <v-text-field
                       v-model="pipeline.schedule.time"
                       label="Time"
@@ -210,6 +215,183 @@
             </v-expand-transition>
           </div>
         </v-stepper-window-item>
+
+        <!-- Step 5: Review & Save -->
+        <v-stepper-window-item :value="5">
+          <div class="pa-6">
+            <div class="text-h5 mb-4">Review Pipeline Configuration</div>
+            
+            <!-- Basic Information -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-information</v-icon>
+                Basic Information
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon>mdi-label</v-icon>
+                    </template>
+                    <v-list-item-title>Name</v-list-item-title>
+                    <v-list-item-subtitle>{{ pipeline.name }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="pipeline.description">
+                    <template v-slot:prepend>
+                      <v-icon>mdi-text</v-icon>
+                    </template>
+                    <v-list-item-title>Description</v-list-item-title>
+                    <v-list-item-subtitle>{{ pipeline.description }}</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- Data Sources -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-database-sync</v-icon>
+                Data Sources
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="blue">mdi-database-export</v-icon>
+                    </template>
+                    <v-list-item-title>Source</v-list-item-title>
+                    <v-list-item-subtitle>{{ getDataSourceName(pipeline.sourceId) }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon color="green">mdi-database-import</v-icon>
+                    </template>
+                    <v-list-item-title>Destination</v-list-item-title>
+                    <v-list-item-subtitle>{{ getDataSourceName(pipeline.destinationId) }}</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- Field Mappings -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-arrow-left-right</v-icon>
+                Field Mappings ({{ pipeline.fieldMappings?.length || 0 }})
+              </v-card-title>
+              <v-card-text>
+                <v-table v-if="pipeline.fieldMappings && pipeline.fieldMappings.length > 0" density="compact">
+                  <thead>
+                    <tr>
+                      <th>Source Field(s)</th>
+                      <th>Transformations</th>
+                      <th>Destination Field</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="mapping in pipeline.fieldMappings" :key="mapping.id">
+                      <td>
+                        <v-chip
+                          v-for="(field, idx) in mapping.sourceFields"
+                          :key="idx"
+                          size="x-small"
+                          class="mr-1"
+                          variant="tonal"
+                        >
+                          {{ field }}
+                        </v-chip>
+                        <span v-if="!mapping.sourceFields || mapping.sourceFields.length === 0" class="text-grey">-</span>
+                      </td>
+                      <td>
+                        <div v-if="mapping.transformations && mapping.transformations.length > 0" class="d-flex align-center gap-1">
+                          <v-chip
+                            v-for="(trans, idx) in mapping.transformations"
+                            :key="idx"
+                            size="x-small"
+                            variant="outlined"
+                            :color="getTransformationColor(getTransformationType(trans.transformationId))"
+                            class="mr-1"
+                          >
+                            <v-icon start size="x-small">{{ getTransformationIcon(getTransformationType(trans.transformationId)) }}</v-icon>
+                            {{ idx + 1 }}. {{ getTransformationName(trans.transformationId) }}
+                          </v-chip>
+                        </div>
+                        <span v-else class="text-grey">None</span>
+                      </td>
+                      <td>{{ mapping.destinationField || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+                <div v-else class="text-center py-4 text-grey">
+                  No field mappings configured
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <!-- Schedule -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-calendar-clock</v-icon>
+                Schedule
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <v-list-item>
+                    <template v-slot:prepend>
+                      <v-icon>{{ pipeline.isScheduled ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
+                    </template>
+                    <v-list-item-title>Scheduled Execution</v-list-item-title>
+                    <v-list-item-subtitle>{{ pipeline.isScheduled ? 'Enabled' : 'Disabled (Manual only)' }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <template v-if="pipeline.isScheduled && pipeline.schedule">
+                    <v-list-item>
+                      <template v-slot:prepend>
+                        <v-icon>mdi-clock-outline</v-icon>
+                      </template>
+                      <v-list-item-title>Frequency</v-list-item-title>
+                      <v-list-item-subtitle>{{ pipeline.schedule.frequency }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="pipeline.schedule.frequency !== 'Custom' && pipeline.schedule.time">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-clock</v-icon>
+                      </template>
+                      <v-list-item-title>Time</v-list-item-title>
+                      <v-list-item-subtitle>{{ pipeline.schedule.time }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="pipeline.schedule.frequency === 'Weekly' && pipeline.schedule.dayOfWeek">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-calendar-week</v-icon>
+                      </template>
+                      <v-list-item-title>Day of Week</v-list-item-title>
+                      <v-list-item-subtitle>{{ pipeline.schedule.dayOfWeek }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="pipeline.schedule.frequency === 'Monthly' && pipeline.schedule.dayOfMonth">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-calendar-month</v-icon>
+                      </template>
+                      <v-list-item-title>Day of Month</v-list-item-title>
+                      <v-list-item-subtitle>{{ pipeline.schedule.dayOfMonth }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="pipeline.schedule.frequency === 'Custom' && pipeline.schedule.cronExpression">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-code-braces</v-icon>
+                      </template>
+                      <v-list-item-title>Cron Expression</v-list-item-title>
+                      <v-list-item-subtitle>{{ pipeline.schedule.cronExpression }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="pipeline.schedule.timezone">
+                      <template v-slot:prepend>
+                        <v-icon>mdi-earth</v-icon>
+                      </template>
+                      <v-list-item-title>Timezone</v-list-item-title>
+                      <v-list-item-subtitle>{{ getTimezoneName(pipeline.schedule.timezone) }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-card-text>
+            </v-card>
+          </div>
+        </v-stepper-window-item>
       </v-stepper-window>
 
     </v-stepper>
@@ -227,7 +409,7 @@
       </v-btn>
       <v-spacer />
       <v-btn
-        v-if="currentStep < 4"
+        v-if="currentStep < 5"
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
@@ -308,6 +490,59 @@ function handleMappingValidation(result) {
 
 function getDataSourceId(sourceIdOrObject) {
   return typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
+}
+
+function getDataSourceName(sourceIdOrObject) {
+  const id = typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
+  const dataSource = props.dataSources.find(ds => ds.id === id);
+  return dataSource?.name || 'Unknown';
+}
+
+function getTransformationName(transformationId) {
+  const transformation = props.transformations.find(t => t.id === transformationId);
+  return transformation?.name || 'Unknown';
+}
+
+function getTransformationType(transformationId) {
+  const transformation = props.transformations.find(t => t.id === transformationId);
+  return transformation?.type || '';
+}
+
+function getTransformationColor(type) {
+  const colors = {
+    'Filter': 'blue',
+    'Map': 'green',
+    'Aggregation': 'orange',
+    'Script': 'purple',
+    'Join': 'teal',
+    'Trim': 'cyan',
+    'Case Convert': 'indigo',
+    'Substring': 'pink',
+    'Replace': 'amber',
+    'Split': 'lime'
+  };
+  return colors[type] || 'grey';
+}
+
+function getTransformationIcon(type) {
+  const icons = {
+    'Filter': 'mdi-filter',
+    'Map': 'mdi-map',
+    'Aggregation': 'mdi-chart-bar',
+    'Script': 'mdi-code-braces',
+    'Join': 'mdi-link-variant',
+    'Trim': 'mdi-content-cut',
+    'Case Convert': 'mdi-format-letter-case',
+    'Substring': 'mdi-format-text',
+    'Replace': 'mdi-find-replace',
+    'Split': 'mdi-call-split'
+  };
+  return icons[type] || 'mdi-cog';
+}
+
+function getTimezoneName(timezoneValue) {
+  const timezone = props.timezones.find(tz => tz.value === timezoneValue);
+  return timezone?.name || timezoneValue;
 }
 
 function initializeSchedule(enabled) {

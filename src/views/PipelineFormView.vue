@@ -33,6 +33,8 @@
       v-else
       :pipeline="pipeline"
       :data-sources="dataSources"
+      :transformations="transformations"
+      :timezones="timezones"
       @save="handleSave"
       @close="handleCancel"
     />
@@ -51,6 +53,14 @@ const route = useRoute();
 const loading = ref(false);
 const error = ref(null);
 const dataSources = ref([]);
+const transformations = ref([]);
+const timezones = ref([
+  { name: 'UTC', value: 'UTC' },
+  { name: 'Eastern Time (ET)', value: 'America/New_York' },
+  { name: 'Central Time (CT)', value: 'America/Chicago' },
+  { name: 'Mountain Time (MT)', value: 'America/Denver' },
+  { name: 'Pacific Time (PT)', value: 'America/Los_Angeles' }
+]);
 const pipeline = ref({
   id: null,
   name: '',
@@ -59,9 +69,9 @@ const pipeline = ref({
   destinationId: null,
   transformations: [],
   fieldMappings: [],
+  isScheduled: false,
   schedule: {
-    enabled: false,
-    frequency: 'daily',
+    frequency: 'Daily',
     time: '00:00',
     timezone: 'UTC'
   }
@@ -70,7 +80,10 @@ const pipeline = ref({
 const isEdit = computed(() => !!route.params.id);
 
 onMounted(async () => {
-  await loadDataSources();
+  await Promise.all([
+    loadDataSources(),
+    loadTransformations()
+  ]);
   if (isEdit.value) {
     loadPipeline();
   }
@@ -83,6 +96,16 @@ async function loadDataSources() {
   } catch (err) {
     console.error('Error loading data sources:', err);
     error.value = `Failed to load data sources: ${err.message}`;
+  }
+}
+
+async function loadTransformations() {
+  try {
+    const { fetchTransformations } = await import('@/services/transformationService');
+    transformations.value = await fetchTransformations();
+  } catch (err) {
+    console.error('Error loading transformations:', err);
+    // Don't set error here, transformations are optional
   }
 }
 

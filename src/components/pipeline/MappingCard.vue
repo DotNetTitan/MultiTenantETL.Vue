@@ -113,6 +113,7 @@
               variant="text"
               prepend-icon="mdi-plus"
               @click="addTransformation"
+              :disabled="!canAddTransformation"
             >
               Add Transformation
             </v-btn>
@@ -326,6 +327,12 @@ const compatibleTransformationItems = computed(() => {
     description: trans.description || '',
     raw: trans
   }));
+});
+
+const canAddTransformation = computed(() => {
+  const hasSourceFields = localMapping.value.sourceFields && localMapping.value.sourceFields.length > 0;
+  const hasDestinationField = !!localMapping.value.destinationField;
+  return hasSourceFields && hasDestinationField;
 });
 
 const validationErrors = computed(() => {

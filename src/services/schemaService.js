@@ -455,15 +455,16 @@ export function getCompatibleTransformations(
     return [];
   }
 
+  // Return all transformations for now
+  // Most transformations can work with any number of inputs
+  // Only Map type transformations specifically need multiple inputs
   return transformations.filter(trans => {
-    // Check input count
-    const expectedInputs = trans.config?.inputCount || 1;
-    if (sourceFields.length !== expectedInputs) {
+    // Map transformations work best with multiple fields
+    if (trans.type === 'Map' && sourceFields.length < 2) {
       return false;
     }
-
-    // For now, allow all transformations that match input count
-    // In the future, could add more sophisticated type checking
+    
+    // All other transformations are compatible
     return true;
   });
 }
