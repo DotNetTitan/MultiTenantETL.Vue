@@ -215,6 +215,49 @@ provide('removeNotification', removeNotification);
   background-color: #F5F5F5 !important;
 }
 
+/* Light mode error/warning cards - comprehensive selectors */
+.v-theme--light .v-card.v-card--variant-outlined.text-error,
+.v-theme--light .v-card.v-card--variant-outlined.bg-error,
+.v-theme--light .v-card[color="error"] {
+  background-color: #FFEBEE !important;
+  border-color: #EF5350 !important;
+  border-width: 2px !important;
+}
+
+.v-theme--light .v-card.v-card--variant-outlined.text-error *,
+.v-theme--light .v-card.v-card--variant-outlined.bg-error *,
+.v-theme--light .v-card[color="error"] * {
+  color: #C62828 !important;
+}
+
+.v-theme--light .v-card.v-card--variant-outlined.text-error .text-subtitle-2,
+.v-theme--light .v-card.v-card--variant-outlined.bg-error .text-subtitle-2,
+.v-theme--light .v-card[color="error"] .text-subtitle-2 {
+  color: #B71C1C !important;
+  font-weight: 600;
+}
+
+.v-theme--light .v-card.v-card--variant-outlined.text-warning,
+.v-theme--light .v-card.v-card--variant-outlined.bg-warning,
+.v-theme--light .v-card[color="warning"] {
+  background-color: #FFF3E0 !important;
+  border-color: #FFA726 !important;
+  border-width: 2px !important;
+}
+
+.v-theme--light .v-card.v-card--variant-outlined.text-warning *,
+.v-theme--light .v-card.v-card--variant-outlined.bg-warning *,
+.v-theme--light .v-card[color="warning"] * {
+  color: #E65100 !important;
+}
+
+.v-theme--light .v-card.v-card--variant-outlined.text-warning .text-subtitle-2,
+.v-theme--light .v-card.v-card--variant-outlined.bg-warning .text-subtitle-2,
+.v-theme--light .v-card[color="warning"] .text-subtitle-2 {
+  color: #E65100 !important;
+  font-weight: 600;
+}
+
 /* Light mode stepper improvements */
 .v-theme--light .v-stepper {
   background-color: #FFFFFF;
@@ -267,33 +310,51 @@ provide('removeNotification', removeNotification);
 }
 
 /* Light mode alert improvements */
-.v-theme--light .v-alert--variant-tonal {
+.v-theme--light .v-alert {
   border-width: 1px;
   border-style: solid;
 }
 
-.v-theme--light .v-alert--variant-tonal.v-alert--type-error {
+.v-theme--light .v-alert--variant-tonal.v-alert--type-error,
+.v-theme--light .v-alert--variant-outlined.v-alert--type-error,
+.v-theme--light .v-alert.text-error {
   background-color: #FFEBEE !important;
   border-color: #EF5350 !important;
   color: #C62828 !important;
 }
 
-.v-theme--light .v-alert--variant-tonal.v-alert--type-warning {
+.v-theme--light .v-alert--variant-tonal.v-alert--type-warning,
+.v-theme--light .v-alert--variant-outlined.v-alert--type-warning,
+.v-theme--light .v-alert.text-warning {
   background-color: #FFF3E0 !important;
   border-color: #FFA726 !important;
   color: #E65100 !important;
 }
 
-.v-theme--light .v-alert--variant-tonal.v-alert--type-success {
+.v-theme--light .v-alert--variant-tonal.v-alert--type-success,
+.v-theme--light .v-alert--variant-outlined.v-alert--type-success,
+.v-theme--light .v-alert.text-success {
   background-color: #E8F5E9 !important;
   border-color: #66BB6A !important;
   color: #2E7D32 !important;
 }
 
-.v-theme--light .v-alert--variant-tonal.v-alert--type-info {
+.v-theme--light .v-alert--variant-tonal.v-alert--type-info,
+.v-theme--light .v-alert--variant-outlined.v-alert--type-info,
+.v-theme--light .v-alert.text-info {
   background-color: #E3F2FD !important;
   border-color: #42A5F5 !important;
   color: #1565C0 !important;
+}
+
+/* Ensure alert text and titles are visible */
+.v-theme--light .v-alert__content {
+  color: inherit !important;
+}
+
+.v-theme--light .v-alert .v-alert-title {
+  color: inherit !important;
+  font-weight: 600;
 }
 
 /* Status chip consistency */
@@ -490,6 +551,19 @@ provide('removeNotification', removeNotification);
 
 .v-theme--light .text-grey-lighten-1 {
   color: #757575 !important;
+}
+
+/* Override text-grey inside error/warning contexts */
+.v-theme--light .v-card[color="error"] .text-grey,
+.v-theme--light .v-card.text-error .text-grey {
+  color: #C62828 !important;
+  opacity: 0.87;
+}
+
+.v-theme--light .v-card[color="warning"] .text-grey,
+.v-theme--light .v-card.text-warning .text-grey {
+  color: #E65100 !important;
+  opacity: 0.87;
 }
 
 /* Light mode heading improvements */
