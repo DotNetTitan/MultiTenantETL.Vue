@@ -253,6 +253,27 @@ onMounted(() => {
   background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
+/* Make stat numbers lighter in light mode */
+.v-theme--light .text-h2 {
+  font-weight: 400 !important;
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Soften card titles in light mode */
+.v-theme--light :deep(.v-card-title) {
+  color: rgba(0, 0, 0, 0.75) !important;
+  font-weight: 500 !important;
+}
+
+/* Softer card shadows in light mode */
+.v-theme--light :deep(.v-card) {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+.v-theme--light :deep(.v-card:hover) {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
 .status-card {
   transition: all var(--app-transition-speed) ease;
   text-align: center;
