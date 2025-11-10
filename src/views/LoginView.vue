@@ -150,30 +150,16 @@ async function handleLogin() {
   justify-content: center;
   padding: 24px 16px;
   background: linear-gradient(135deg, 
-    rgba(33, 150, 243, 0.03) 0%, 
-    rgba(33, 150, 243, 0.08) 100%);
-}
-
-.v-theme--dark .login-container {
-  background: linear-gradient(135deg, 
-    rgba(33, 150, 243, 0.02) 0%, 
-    rgba(33, 150, 243, 0.05) 100%);
+    rgba(var(--v-theme-primary), 0.03) 0%, 
+    rgba(var(--v-theme-primary), 0.08) 100%);
 }
 
 .login-card {
   border-radius: 16px !important;
   overflow: hidden;
   backdrop-filter: blur(10px);
-}
-
-.v-theme--dark .login-card {
-  background: rgba(33, 33, 33, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.v-theme--light .login-card {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(var(--v-theme-surface), 0.95) !important;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .login-header {

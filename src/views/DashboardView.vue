@@ -244,6 +244,11 @@ onMounted(() => {
   transform: var(--app-card-hover-transform);
 }
 
+.execution-row {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
 .execution-row:hover {
   background-color: rgba(var(--v-theme-primary), 0.05);
 }
@@ -265,16 +270,12 @@ onMounted(() => {
   overflow: hidden;
 }
 
-:deep(.v-theme--dark .v-table) {
+:deep(.v-table) {
   background-color: transparent !important;
-  color: rgba(255, 255, 255, 0.87) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
 }
 
-:deep(.v-theme--dark .status-card) {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-:deep(.v-theme--light .status-card) {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+:deep(.status-card) {
+  box-shadow: 0 4px 8px rgba(var(--v-theme-on-surface), 0.15);
 }
 </style>

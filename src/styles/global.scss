@@ -1,0 +1,117 @@
+// Global styles and CSS variables for the ETL Portal
+// This file centralizes common styles and ensures theme consistency
+
+// Reusable mixins for common patterns
+@mixin card-hover {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
+  }
+}
+
+@mixin glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(var(--v-theme-surface), 0.95);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+}
+
+@mixin gradient-background {
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-primary), 0.03) 0%, 
+    rgba(var(--v-theme-primary), 0.08) 100%);
+}
+
+// Common utility classes
+.hover-primary {
+  transition: background-color 0.2s ease;
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.05);
+  }
+}
+
+.glass-card {
+  @include glass-effect;
+  border-radius: 16px;
+}
+
+.gradient-bg {
+  @include gradient-background;
+}
+
+// Timeline styles (used in multiple views)
+.app-timeline-card {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-left-color: rgb(var(--v-theme-secondary));
+    box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
+  }
+}
+
+// Dark theme specific overrides
+.v-theme--dark {
+  .timeline-divider-line {
+    border-left-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  
+  .logs-container {
+    background-color: rgb(var(--v-theme-surface-variant));
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  .logs-content {
+    color: rgb(var(--v-theme-on-surface));
+  }
+}
+
+// Light theme specific overrides
+.v-theme--light {
+  .timeline-divider-line {
+    border-left-color: rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  .logs-container {
+    background-color: rgb(var(--v-theme-surface-variant));
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  
+  .logs-content {
+    color: rgb(var(--v-theme-on-surface));
+  }
+}
+
+// Status colors (consistent across the app)
+.status-completed {
+  color: rgb(var(--v-theme-success));
+}
+
+.status-running {
+  color: rgb(var(--v-theme-info));
+}
+
+.status-failed {
+  color: rgb(var(--v-theme-error));
+}
+
+.status-pending {
+  color: rgb(var(--v-theme-warning));
+}
+
+// Execution row hover effect
+.execution-row {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.05);
+  }
+}
+
+// Form view backgrounds
+.form-view {
+  padding: 24px;
+  background: rgb(var(--v-theme-background));
+  min-height: 100vh;
+}

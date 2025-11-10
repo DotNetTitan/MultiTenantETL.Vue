@@ -1063,6 +1063,11 @@ onBeforeUnmount(() => {
   background-color: rgba(var(--v-theme-primary), 0.05);
 }
 
+.execution-row {
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
 .execution-row:hover {
   background-color: rgba(var(--v-theme-primary), 0.05);
 }

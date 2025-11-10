@@ -5,7 +5,7 @@
       density="compact" 
       elevation="1"
     >
-      <v-app-bar-title class="text-truncate font-weight-medium">
+      <v-app-bar-title class="text-truncate font-weight-medium" :class="titleColor">
         ETL Portal
       </v-app-bar-title>
       
@@ -49,7 +49,34 @@ const appBarColor = computed(() =>
   isDarkTheme.value ? 'grey-darken-3' : 'primary'
 );
 
+// Ensure text is visible in both themes
+const titleColor = computed(() => 
+  isDarkTheme.value ? 'text-white' : 'text-white'
+);
+
 function toggleTheme() {
   theme.global.name.value = isDarkTheme.value ? 'light' : 'dark';
 }
 </script>
+
+<style>
+/* Override global app bar styles for guest layout - needs to be unscoped to override App.vue */
+.v-theme--light .v-layout .v-app-bar {
+  background-color: rgb(var(--v-theme-primary)) !important;
+}
+
+.v-theme--dark .v-layout .v-app-bar {
+  background-color: #424242 !important;
+}
+
+/* Ensure app bar title is visible in both themes */
+.v-layout .v-app-bar .v-app-bar-title {
+  color: white !important;
+}
+
+/* Make sun icon orange/yellow in light mode */
+.v-theme--light .v-layout .v-app-bar .v-switch .v-icon {
+  color: #FFA726 !important;
+  opacity: 1 !important;
+}
+</style>

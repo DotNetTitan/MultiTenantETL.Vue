@@ -9,6 +9,9 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// Global styles
+import './styles/global.scss'
+
 const lightTheme = {
   dark: false,
   colors: {

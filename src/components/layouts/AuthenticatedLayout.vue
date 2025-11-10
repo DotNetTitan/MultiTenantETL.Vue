@@ -133,7 +133,7 @@ const isDarkMode = computed({
 
 // Compute app bar color based on theme
 const appBarColor = computed(() => 
-  isDarkTheme.value ? 'grey-darken-3' : 'surface'
+  isDarkTheme.value ? 'grey-darken-3' : 'primary'
 );
 
 // User data computed properties
@@ -158,3 +158,16 @@ function logout() {
   authStore.logout();
 }
 </script>
+
+<style>
+/* Ensure app bar text and icons are white when using primary color in light mode */
+.v-theme--light .v-app-bar {
+  color: white !important;
+}
+
+.v-theme--light .v-app-bar .v-app-bar-title,
+.v-theme--light .v-app-bar .v-btn,
+.v-theme--light .v-app-bar .v-icon {
+  color: white !important;
+}
+</style>

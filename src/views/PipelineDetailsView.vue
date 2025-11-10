@@ -721,16 +721,16 @@ onBeforeUnmount(() => {
   border-left-width: 2px !important;
 }
 
-:deep(.v-theme--dark .v-timeline-divider__line) {
+.v-theme--dark :deep(.v-timeline-divider__line) {
   border-left-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-:deep(.v-theme--light .v-timeline-divider__line) {
+.v-theme--light :deep(.v-timeline-divider__line) {
   border-left-color: rgba(0, 0, 0, 0.12) !important;
 }
 
 :deep(.v-timeline-item__dot--filled .v-timeline-item__inner-dot) {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 :deep(.v-card) {
@@ -739,6 +739,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.v-card:hover) {
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
 }
 </style>

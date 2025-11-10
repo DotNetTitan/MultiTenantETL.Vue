@@ -772,7 +772,7 @@ async function confirmCancelExecution() {
 }
 
 .log-text {
-  color: #e0e0e0;
+  color: rgb(var(--v-theme-on-surface));
 }
 
 /* Update the execution-header styles */
@@ -822,22 +822,7 @@ async function confirmCancelExecution() {
   background-color: rgba(var(--v-theme-on-primary), 0.2) !important;
 }
 
-/* New styles */
-.status-avatar {
-  background-color: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  position: relative; /* Ensure proper stacking context */
-  z-index: 3; /* Place above other banner elements */
-}
-
-.cancel-btn {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white !important;
-  backdrop-filter: blur(5px);
-  position: relative; /* Ensure proper stacking context */
-  z-index: 3; /* Place above other banner elements */
-}
+/* Duplicate styles removed - using the ones above with CSS variables */
 
 /* Added tab styling fixes */
 .execution-tabs {
@@ -894,7 +879,7 @@ async function confirmCancelExecution() {
 }
 
 :deep(.v-timeline-item__dot--filled .v-timeline-item__inner-dot) {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 :deep(.v-timeline-divider__line) {
@@ -943,11 +928,11 @@ async function confirmCancelExecution() {
 }
 
 /* Theme-specific styling */
-:deep(.v-theme--dark .v-timeline-divider__line) {
+.v-theme--dark :deep(.v-timeline-divider__line) {
   border-left-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-:deep(.v-theme--light .v-timeline-divider__line) {
+.v-theme--light :deep(.v-timeline-divider__line) {
   border-left-color: rgba(0, 0, 0, 0.12) !important;
 }
 
@@ -969,40 +954,30 @@ async function confirmCancelExecution() {
   line-height: 1.5;
 }
 
-:deep(.v-theme--dark .logs-container) {
-  background-color: #1e1e1e;
+/* Logs styling */
+.v-theme--dark :deep(.logs-container) {
+  background-color: rgb(var(--v-theme-surface-variant));
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-:deep(.v-theme--dark .logs-content) {
-  color: #e0e0e0;
-}
-
-:deep(.v-theme--light .logs-container) {
-  background-color: #f5f5f5;
+.v-theme--light :deep(.logs-container) {
+  background-color: rgb(var(--v-theme-surface-variant));
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-:deep(.v-theme--light .logs-content) {
-  color: #333333;
+:deep(.logs-content) {
+  color: rgb(var(--v-theme-on-surface));
 }
 
-/* Ensure timeline items have better contrast in light mode */
-:deep(.v-theme--light .app-timeline-card) {
-  background-color: #f9f9f9 !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
+/* Timeline cards */
+:deep(.app-timeline-card) {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  transition: all 0.2s ease;
 }
 
-:deep(.v-theme--light .timeline-title) {
-  color: rgba(0, 0, 0, 0.87);
-}
-
-:deep(.v-theme--light .timeline-description) {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-:deep(.v-theme--dark .app-timeline-card) {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+:deep(.app-timeline-card:hover) {
+  border-left-color: rgb(var(--v-theme-secondary));
+  box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 /* Make execution dialog consistent between themes */
@@ -1022,17 +997,13 @@ async function confirmCancelExecution() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, rgba(0,0,0,0.2), rgba(0,0,0,0));
+  background: linear-gradient(45deg, rgba(var(--v-theme-on-surface), 0.1), transparent);
   pointer-events: none;
 }
 
-/* Fix tab colors for light mode */
-:deep(.v-theme--light .v-tabs) {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-:deep(.v-theme--dark .v-tabs) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+/* Fix tab colors for both themes */
+:deep(.v-tabs) {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 :deep(.v-tab) {
