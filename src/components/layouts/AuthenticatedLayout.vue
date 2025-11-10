@@ -133,7 +133,7 @@ const isDarkMode = computed({
 
 // Compute app bar color based on theme
 const appBarColor = computed(() => 
-  isDarkTheme.value ? 'grey-darken-3' : 'primary'
+  isDarkTheme.value ? 'grey-darken-3' : 'surface'
 );
 
 // User data computed properties

@@ -434,6 +434,14 @@ provide('removeNotification', removeNotification);
   color: #424242;
 }
 
+.v-theme--light .v-navigation-drawer .v-list-item-title {
+  color: #424242 !important;
+}
+
+.v-theme--light .v-navigation-drawer .v-list-item-subtitle {
+  color: #757575 !important;
+}
+
 .v-theme--light .v-navigation-drawer .v-list-item:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
@@ -441,6 +449,19 @@ provide('removeNotification', removeNotification);
 .v-theme--light .v-navigation-drawer .v-list-item--active {
   background-color: rgba(21, 101, 192, 0.08);
   color: var(--v-theme-primary);
+}
+
+.v-theme--light .v-navigation-drawer .v-list-item--active .v-list-item-title {
+  color: var(--v-theme-primary) !important;
+}
+
+.v-theme--light .v-navigation-drawer .v-list-subheader {
+  color: #757575 !important;
+  opacity: 1;
+}
+
+.v-theme--light .v-navigation-drawer .text-disabled {
+  color: #9E9E9E !important;
 }
 
 /* Light mode app bar improvements */
