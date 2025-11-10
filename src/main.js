@@ -12,18 +12,21 @@ import * as directives from 'vuetify/directives'
 const lightTheme = {
   dark: false,
   colors: {
-    primary: '#1976D2',
+    primary: '#1565C0',
     secondary: '#424242',
-    accent: '#82B1FF',
-    error: '#FF5252',
-    info: '#2196F3',
-    success: '#4CAF50',
-    warning: '#FFC107',
+    accent: '#0277BD',
+    error: '#D32F2F',
+    info: '#0288D1',
+    success: '#388E3C',
+    warning: '#F57C00',
     surface: '#FFFFFF',
-    'surface-variant': '#f2f2f2',
+    'surface-variant': '#E8E8E8',
+    'on-surface': '#1A1A1A',
     'on-surface-variant': '#424242',
-    background: '#F5F5F5',
-    'on-background': '#212121'
+    background: '#FAFAFA',
+    'on-background': '#1A1A1A',
+    outline: '#BDBDBD',
+    'outline-variant': '#E0E0E0'
   }
 }
 
