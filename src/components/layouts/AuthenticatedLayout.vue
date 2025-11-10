@@ -170,4 +170,13 @@ function logout() {
 .v-theme--light .v-app-bar .v-icon {
   color: white !important;
 }
+
+/* Softer user avatar in light mode */
+.v-theme--light .v-navigation-drawer .v-avatar {
+  background-color: rgba(var(--v-theme-primary), 0.12) !important;
+}
+
+.v-theme--light .v-navigation-drawer .v-avatar .text-h6 {
+  color: rgb(var(--v-theme-primary)) !important;
+}
 </style>
