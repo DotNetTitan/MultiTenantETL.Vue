@@ -216,6 +216,14 @@
           >
             {{ selectedExecution.status }}
           </v-chip>
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showExecutionDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-row>

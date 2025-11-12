@@ -108,52 +108,44 @@
       max-width="950px"
     >
       <v-card v-if="selectedExecution">
-        <!-- Header with status banner - UPDATED COLORS -->
-        <v-banner
-          :color="getStatusColor(selectedExecution.status)"
-          class="execution-header pa-4 pb-6"
-          elevation="1"
-        >
-          <template v-slot:prepend>
-            <v-avatar
-              class="mr-3 status-avatar"
-              size="42"
-            >
-              <v-icon :icon="getStatusIcon(selectedExecution.status)" color="white" size="28"></v-icon>
-            </v-avatar>
-          </template>
-          
-          <div>
-            <h2 class="text-h5 font-weight-bold text-white mb-1">{{ selectedExecution.pipelineName }}</h2>
-            <div class="d-flex align-center">
-              <span class="text-white text-subtitle-2">Execution ID: {{ selectedExecution.id }}</span>
-              <v-chip
-                size="small"
-                class="ml-4"
-                :color="getStatusChipColor(selectedExecution.status)"
-                text-color="white"
-              >
-                {{ selectedExecution.status }}
-              </v-chip>
-            </div>
+        <!-- Clean professional header -->
+        <v-card-title class="d-flex align-center">
+          <v-icon :icon="getStatusIcon(selectedExecution.status)" :color="getStatusColor(selectedExecution.status)" class="mr-2" size="large"></v-icon>
+          <div class="flex-grow-1">
+            <div class="text-h6">{{ selectedExecution.pipelineName }}</div>
+            <div class="text-caption text-medium-emphasis">Execution ID: {{ selectedExecution.id }}</div>
           </div>
-          
-          <template v-slot:actions>
-            <v-btn
-              v-if="selectedExecution.status === 'Running'"
-              :color="getStatusColor(selectedExecution.status)"
-              variant="tonal"
-              @click="cancelExecution(selectedExecution)"
-              class="cancel-btn"
-            >
-              <v-icon start>mdi-stop</v-icon>
-              Cancel Execution
-            </v-btn>
-          </template>
-        </v-banner>
+          <v-chip
+            size="small"
+            :color="getStatusColor(selectedExecution.status)"
+            text-color="white"
+            class="mr-2"
+          >
+            {{ selectedExecution.status }}
+          </v-chip>
+          <v-btn
+            v-if="selectedExecution.status === 'Running'"
+            color="error"
+            variant="tonal"
+            size="small"
+            @click="cancelExecution(selectedExecution)"
+          >
+            <v-icon start>mdi-stop</v-icon>
+            Cancel
+          </v-btn>
+          <v-btn
+            icon
+            variant="text"
+            @click="showDetailsDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
 
-        <!-- Content with tabs - KEEP AS IS -->
-        <v-tabs v-model="activeTab" :bg-color="theme.global.current.value.dark ? 'grey-darken-3' : 'grey-lighten-4'" class="execution-tabs">
+        <v-divider></v-divider>
+
+        <!-- Content with tabs -->
+        <v-tabs v-model="activeTab" class="execution-tabs">
           <v-tab value="overview" class="px-6">Overview</v-tab>
           <v-tab value="logs" class="px-6">Logs</v-tab>
           <v-tab value="timeline" class="px-6">Timeline</v-tab>
@@ -342,11 +334,11 @@
         </v-window>
 
         <v-divider></v-divider>
-        
+
         <v-card-actions>
           <v-spacer />
           <v-btn
-            variant="text"
+            color="primary"
             @click="showDetailsDialog = false"
           >
             Close
@@ -503,23 +495,6 @@ function copyLogs() {
       .catch(err => {
         console.error('Failed to copy logs: ', err);
       });
-  }
-}
-
-// Status color helper that returns a more appropriate chip color based on status
-function getStatusChipColor(status) {
-  // Use slightly different colors for better contrast on the banner
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return 'green-darken-1';
-    case 'running':
-      return 'blue-darken-1';
-    case 'failed':
-      return 'red-darken-1';
-    case 'cancelled':
-      return 'amber-darken-1';
-    default:
-      return 'grey-darken-1';
   }
 }
 
@@ -775,88 +750,23 @@ async function confirmCancelExecution() {
   color: rgb(var(--v-theme-on-surface));
 }
 
-/* Update the execution-header styles */
-.execution-header {
-  position: relative;
-  overflow: hidden;
-  z-index: 2;
-  margin-bottom: -8px;
-  border-radius: var(--app-border-radius) var(--app-border-radius) 0 0;
-}
-
-/* Remove the custom gradient overlay */
-.execution-header::before {
-  content: none;
-}
-
-/* Ensure text is visible in both themes */
-:deep(.execution-header) {
-  background: rgb(var(--v-theme-primary));
-}
-
-:deep(.execution-header .v-banner__text),
-:deep(.execution-header .text-subtitle-2),
-:deep(.execution-header .text-h5) {
-  color: rgb(var(--v-theme-on-primary)) !important;
-}
-
-/* Update status avatar styles for better contrast */
-.status-avatar {
-  background-color: rgba(var(--v-theme-on-primary), 0.1);
-  backdrop-filter: blur(5px);
-  border: 2px solid rgba(var(--v-theme-on-primary), 0.2);
-  position: relative;
-  z-index: 3;
-}
-
-/* Update cancel button styles to match theme */
-.cancel-btn {
-  background-color: rgba(var(--v-theme-on-primary), 0.1) !important;
-  color: rgb(var(--v-theme-on-primary)) !important;
-  backdrop-filter: blur(5px);
-  position: relative;
-  z-index: 3;
-}
-
-.cancel-btn:hover {
-  background-color: rgba(var(--v-theme-on-primary), 0.2) !important;
-}
-
-/* Duplicate styles removed - using the ones above with CSS variables */
-
-/* Added tab styling fixes */
+/* Tab styling */
 .execution-tabs {
-  position: relative;
-  z-index: 1; /* Place below the banner */
-  margin-top: 0;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
-/* Fix for tabs text getting cut off */
 :deep(.v-tab) {
   min-height: 48px;
   padding: 0 16px;
-  display: flex;
-  align-items: center;
+  opacity: 0.7;
 }
 
-:deep(.v-tabs-bar) {
-  height: auto !important;
-  min-height: 48px;
+:deep(.v-tab--selected) {
+  opacity: 1;
 }
 
-:deep(.v-tab__content) {
-  line-height: normal;
-  white-space: nowrap;
-}
-
-/* Ensure the tabs container has enough height */
-:deep(.v-tabs) {
-  min-height: 48px;
-}
-
-/* Adjust height of the tabs content to prevent text clipping */
-:deep(.v-tab .v-tab__slider) {
-  margin-bottom: 0;
+:deep(.v-theme--light .v-tab--selected) {
+  color: var(--v-theme-primary);
 }
 
 /* Timeline specific styles */
@@ -984,41 +894,5 @@ async function confirmCancelExecution() {
 :deep(.v-dialog > .v-card) {
   border-radius: var(--app-border-radius);
   overflow: hidden;
-}
-
-:deep(.v-banner) {
-  position: relative;
-}
-
-:deep(.v-banner::before) {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(var(--v-theme-on-surface), 0.1), transparent);
-  pointer-events: none;
-}
-
-/* Fix tab colors for both themes */
-:deep(.v-tabs) {
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-}
-
-:deep(.v-tab) {
-  opacity: 0.7;
-}
-
-:deep(.v-tab--selected) {
-  opacity: 1;
-}
-
-:deep(.v-theme--light .v-tab--selected) {
-  color: var(--v-theme-primary);
-}
-
-:deep(.v-window-item) {
-  padding-top: 16px;
 }
 </style>

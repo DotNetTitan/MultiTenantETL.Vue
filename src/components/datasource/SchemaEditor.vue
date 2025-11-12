@@ -196,7 +196,17 @@
     <!-- Import Dialog -->
     <v-dialog v-model="showImportDialog" max-width="500">
       <v-card>
-        <v-card-title>Import Schema</v-card-title>
+        <v-card-title class="d-flex align-center">
+          Import Schema
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showImportDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <v-textarea
             v-model="importJson"
@@ -208,7 +218,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="showImportDialog = false">Cancel</v-btn>
+          <v-btn @click="showImportDialog = false">Close</v-btn>
           <v-btn color="primary" @click="importSchema">Import</v-btn>
         </v-card-actions>
       </v-card>

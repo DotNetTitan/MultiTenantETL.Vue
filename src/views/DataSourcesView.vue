@@ -424,8 +424,17 @@
       max-width="400px"
     >
       <v-card>
-        <v-card-title>
+        <v-card-title class="d-flex align-center">
           Testing Connection
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showConnectionDialog = false"
+            :disabled="testingConnection"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <div v-if="testingConnection" class="d-flex flex-column align-center py-4">

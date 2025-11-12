@@ -92,7 +92,18 @@
     <!-- Tenant Form Dialog -->
     <v-dialog v-model="showCreateDialog" max-width="600">
       <v-card>
-        <v-card-title>{{ isEditing ? 'Edit' : 'Create' }} Tenant</v-card-title>
+        <v-card-title class="d-flex align-center">
+          {{ isEditing ? 'Edit' : 'Create' }} Tenant
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="closeDialog"
+            :disabled="loading"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <tenant-form
             :tenant="editedTenant"
@@ -104,11 +115,10 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            variant="text"
             @click="closeDialog"
             :disabled="loading"
           >
-            Cancel
+            Close
           </v-btn>
           <v-btn
             color="primary"

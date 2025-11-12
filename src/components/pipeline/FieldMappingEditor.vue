@@ -89,7 +89,18 @@
     <!-- Schema Conversion Dialog -->
     <v-dialog v-model="showConversionDialog" max-width="600">
       <v-card>
-        <v-card-title>Convert to Manual Schema</v-card-title>
+        <v-card-title class="d-flex align-center">
+          Convert to Manual Schema
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showConversionDialog = false"
+            :disabled="convertingSchema"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
         <v-card-text>
           <p class="mb-4">
             This will convert the auto-detected schema to a manual schema definition that you can edit and maintain.
@@ -111,8 +122,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="showConversionDialog = false" :disabled="convertingSchema">
-            Cancel
+          <v-btn @click="showConversionDialog = false" :disabled="convertingSchema">
+            Close
           </v-btn>
           <v-btn color="primary" @click="convertToManualSchema" :loading="convertingSchema">
             Convert Schema

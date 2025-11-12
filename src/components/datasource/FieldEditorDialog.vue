@@ -1,8 +1,16 @@
 <template>
   <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="600">
     <v-card>
-      <v-card-title>
+      <v-card-title class="d-flex align-center">
         {{ field?.id && field.id.startsWith('field-') && field.name ? 'Edit Field' : 'Add Field' }}
+        <v-spacer />
+        <v-btn
+          icon
+          variant="text"
+          @click="$emit('update:modelValue', false)"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
 
       <v-card-text>
@@ -94,8 +102,8 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="$emit('update:modelValue', false)">
-          Cancel
+        <v-btn @click="$emit('update:modelValue', false)">
+          Close
         </v-btn>
         <v-btn color="primary" @click="handleSave">
           Save Field

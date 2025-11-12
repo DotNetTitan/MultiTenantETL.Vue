@@ -111,8 +111,17 @@
       persistent
     >
       <v-card>
-        <v-card-title class="text-h5 pa-4">
+        <v-card-title class="text-h5 pa-4 d-flex align-center">
           {{ editedUser.id ? 'Edit User' : 'Create User' }}
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="closeCreateDialog"
+            :disabled="savingUser"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text class="pa-4">
           <UserForm
@@ -124,11 +133,10 @@
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
-            variant="text"
             @click="closeCreateDialog"
             :disabled="savingUser"
           >
-            Cancel
+            Close
           </v-btn>
           <v-btn
             color="primary"

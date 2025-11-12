@@ -119,8 +119,16 @@
       persistent
     >
       <v-card>
-        <v-card-title>
+        <v-card-title class="d-flex align-center">
           {{ editedTransformation.id ? 'Edit Transformation' : 'Create Transformation' }}
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showCreateDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-form ref="form" @submit.prevent="saveTransformation">
