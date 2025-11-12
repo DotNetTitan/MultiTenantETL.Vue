@@ -3,7 +3,7 @@
     <!-- Source Schema -->
     <v-col cols="12" md="6">
       <v-card>
-        <v-card-title class="bg-blue-darken-4">
+        <v-card-title>
           <v-icon start color="blue">mdi-database-export</v-icon>
           Source Fields
         </v-card-title>
@@ -17,12 +17,13 @@
             clearable
             class="ma-2"
           />
-          <v-list density="compact">
-            <v-list-item
-              v-for="field in filteredSourceFields"
-              :key="field.name"
-              :class="{ 'mapped-field': isSourceFieldMapped(field.name) }"
-            >
+          <div class="field-list-container">
+            <v-list density="compact">
+              <v-list-item
+                v-for="field in filteredSourceFields"
+                :key="field.name"
+                :class="{ 'mapped-field': isSourceFieldMapped(field.name) }"
+              >
               <template v-slot:prepend>
                 <v-icon v-if="isSourceFieldMapped(field.name)" color="success">
                   mdi-check-circle
@@ -50,12 +51,13 @@
                 </v-chip>
               </v-list-item-subtitle>
             </v-list-item>
-            <v-list-item v-if="filteredSourceFields.length === 0">
-              <v-list-item-title class="text-grey text-center">
-                No fields found
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
+              <v-list-item v-if="filteredSourceFields.length === 0">
+                <v-list-item-title class="text-grey text-center">
+                  No fields found
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-chip size="small" color="success">
@@ -68,7 +70,7 @@
     <!-- Destination Schema -->
     <v-col cols="12" md="6">
       <v-card>
-        <v-card-title class="bg-green-darken-4">
+        <v-card-title>
           <v-icon start color="green">mdi-database-import</v-icon>
           Destination Fields
         </v-card-title>
@@ -82,12 +84,13 @@
             clearable
             class="ma-2"
           />
-          <v-list density="compact">
-            <v-list-item
-              v-for="field in filteredDestinationFields"
-              :key="field.name"
-              :class="getDestinationFieldClass(field)"
-            >
+          <div class="field-list-container">
+            <v-list density="compact">
+              <v-list-item
+                v-for="field in filteredDestinationFields"
+                :key="field.name"
+                :class="getDestinationFieldClass(field)"
+              >
               <template v-slot:prepend>
                 <v-icon v-if="isDestinationFieldMapped(field.name)" color="success">
                   mdi-check-circle
@@ -117,12 +120,13 @@
                 </v-chip>
               </v-list-item-subtitle>
             </v-list-item>
-            <v-list-item v-if="filteredDestinationFields.length === 0">
-              <v-list-item-title class="text-grey text-center">
-                No fields found
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
+              <v-list-item v-if="filteredDestinationFields.length === 0">
+                <v-list-item-title class="text-grey text-center">
+                  No fields found
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-chip size="small" color="success">
@@ -235,6 +239,11 @@ function getDestinationFieldClass(field) {
 </script>
 
 <style scoped>
+.field-list-container {
+  max-height: 25vh;
+  overflow-y: auto;
+}
+
 .v-list-item {
   transition: background-color 0.2s;
 }
