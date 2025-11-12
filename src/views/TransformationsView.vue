@@ -596,8 +596,8 @@
                 </v-row>
                 <div class="text-caption text-grey mb-2">Script</div>
                 <v-card variant="outlined" class="script-display">
-                  <v-card-text>
-                    <pre class="text-body-2" style="white-space: pre-wrap; font-family: 'Courier New', monospace; color: var(--v-theme-on-surface);">{{ selectedTransformation.config.script }}</pre>
+                  <v-card-text class="pa-0">
+                    <pre class="language-code"><code :class="`language-${selectedTransformation.config.scriptLanguage === 'csharp' ? 'csharp' : 'javascript'}`" v-html="highlightedScript"></code></pre>
                   </v-card-text>
                 </v-card>
               </div>
@@ -626,9 +626,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useTenantStore } from '@/stores/tenant';
 import { transformationService } from '@/services/transformationService';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-csharp';
 
 // Destructure methods from service
 const { 
@@ -685,6 +689,18 @@ const showDetailsDialog = ref(false);
 const transformationToDelete = ref(null);
 const selectedTransformation = ref(null);
 const editedTransformation = ref(createEmpty());
+
+// Computed property for syntax-highlighted script
+const highlightedScript = computed(() => {
+  if (!selectedTransformation.value?.config?.script) return '';
+  
+  const language = selectedTransformation.value.config.scriptLanguage === 'csharp' ? 'csharp' : 'javascript';
+  return Prism.highlight(
+    selectedTransformation.value.config.script,
+    Prism.languages[language],
+    language
+  );
+});
 
 async function fetchTransformations() {
   try {
@@ -880,19 +896,54 @@ onMounted(() => {
 
 <style scoped>
 .script-display {
-  background-color: rgba(var(--v-theme-surface-variant), 0.3);
-}
-
-.v-theme--dark .script-display {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-.v-theme--light .script-display {
-  background-color: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .script-display pre {
   margin: 0;
-  line-height: 1.5;
+  padding: 16px;
+  overflow-x: auto;
+  background-color: #2d2d2d !important;
+  border-radius: 0;
+}
+
+.script-display code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  text-shadow: none;
+}
+
+/* Light theme override */
+.v-theme--light .script-display pre {
+  background-color: #f5f5f5 !important;
+}
+
+.v-theme--light .script-display :deep(.token.comment),
+.v-theme--light .script-display :deep(.token.prolog),
+.v-theme--light .script-display :deep(.token.doctype),
+.v-theme--light .script-display :deep(.token.cdata) {
+  color: #708090;
+}
+
+.v-theme--light .script-display :deep(.token.keyword),
+.v-theme--light .script-display :deep(.token.operator) {
+  color: #0000ff;
+}
+
+.v-theme--light .script-display :deep(.token.string) {
+  color: #a31515;
+}
+
+.v-theme--light .script-display :deep(.token.function) {
+  color: #795e26;
+}
+
+.v-theme--light .script-display :deep(.token.number) {
+  color: #098658;
+}
+
+.v-theme--light .script-display :deep(.token.class-name) {
+  color: #267f99;
 }
 </style>
