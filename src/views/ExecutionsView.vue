@@ -5,11 +5,11 @@
       <v-spacer />
       <v-btn 
         color="primary" 
-        prepend-icon="mdi-refresh" 
         @click="fetchExecutions"
         :loading="loading"
       >
-        Refresh
+        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-refresh</v-icon>
+        <span>Refresh</span>
       </v-btn>
     </div>
 

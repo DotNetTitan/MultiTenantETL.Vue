@@ -5,12 +5,11 @@
       <v-spacer />
       <v-btn 
         color="primary" 
-        prepend-icon="mdi-plus" 
         @click="openCreatePipelineDialog"
-        :text="$vuetify.display.smAndUp ? 'Create Pipeline' : undefined"
-        :icon="$vuetify.display.xs ? 'mdi-plus' : undefined"
       >
-        <span v-if="$vuetify.display.smAndUp">Create Pipeline</span>
+        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+        <span v-if="$vuetify.display.xs">Create</span>
+        <span v-else>Create Pipeline</span>
       </v-btn>
     </div>
 

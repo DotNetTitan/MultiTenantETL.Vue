@@ -5,10 +5,11 @@
       <v-spacer />
       <v-btn
         color="primary"
-        prepend-icon="mdi-plus"
         @click="openCreateDialog"
       >
-        Add Tenant
+        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+        <span v-if="$vuetify.display.xs">Add</span>
+        <span v-else>Add Tenant</span>
       </v-btn>
     </div>
 

@@ -5,10 +5,11 @@
       <v-spacer />
       <v-btn 
         color="primary" 
-        prepend-icon="mdi-plus" 
         @click="openCreateDialog"
       >
-        Create Transformation
+        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+        <span v-if="$vuetify.display.xs">Create</span>
+        <span v-else>Create Transformation</span>
       </v-btn>
     </div>
 
