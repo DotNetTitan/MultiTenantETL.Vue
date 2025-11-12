@@ -11,8 +11,8 @@
         
         <v-spacer />
         
-        <div class="d-flex align-center">
-          <tenant-selector class="mr-2" />
+        <div class="d-flex align-center ga-1">
+          <tenant-selector class="d-none d-sm-flex" />
           
           <v-switch
             v-model="isDarkMode"
@@ -20,7 +20,7 @@
             inset
             density="compact"
             color="purple"
-            class="mt-1 mr-3"
+            class="flex-shrink-0"
             true-icon="mdi-weather-night"
             false-icon="mdi-weather-sunny"
             @update:model-value="toggleTheme"
@@ -28,7 +28,7 @@
           
           <v-btn 
             icon 
-            class="mr-1" 
+            class="flex-shrink-0"
             @click="logout"
           >
             <v-icon>mdi-logout</v-icon>
@@ -39,7 +39,8 @@
 
     <v-navigation-drawer
       v-model="drawer"
-      permanent
+      :permanent="!isMobile"
+      :temporary="isMobile"
       :theme="theme.global.name.value"
       class="sidebar-drawer"
     >
@@ -116,13 +117,16 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useTheme } from 'vuetify';
+import { useTheme, useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/auth';
 import TenantSelector from '@/components/TenantSelector.vue';
 
 const theme = useTheme();
+const { mobile } = useDisplay();
 const drawer = ref(true);
 const authStore = useAuthStore();
+
+const isMobile = computed(() => mobile.value);
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
 const isAdmin = computed(() => authStore.isAdmin);

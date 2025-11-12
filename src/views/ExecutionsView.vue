@@ -837,6 +837,17 @@ async function confirmCancelExecution() {
   border-radius: var(--app-border-radius);
 }
 
+/* Mobile responsive adjustments */
+@media (max-width: 600px) {
+  .timeline-scrollable-container {
+    max-height: 300px;
+  }
+  
+  :deep(.v-timeline-item__opposite) {
+    display: none !important;
+  }
+}
+
 /* Theme-specific styling */
 .v-theme--dark :deep(.v-timeline-divider__line) {
   border-left-color: rgba(255, 255, 255, 0.12) !important;

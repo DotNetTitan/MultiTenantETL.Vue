@@ -1,18 +1,16 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
-        <div class="d-flex align-center mb-4">
-          <h1 class="text-h4">Tenants</h1>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-plus"
-            @click="openCreateDialog"
-          >
-            Add Tenant
-          </v-btn>
-        </div>
+  <div>
+    <div class="d-flex align-center mb-4">
+      <h1 class="text-h4">Tenants</h1>
+      <v-spacer />
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-plus"
+        @click="openCreateDialog"
+      >
+        Add Tenant
+      </v-btn>
+    </div>
 
         <v-card>
           <v-card-text>
@@ -86,8 +84,6 @@
             </v-table>
           </v-card-text>
         </v-card>
-      </v-col>
-    </v-row>
 
     <!-- Tenant Form Dialog -->
     <v-dialog v-model="showCreateDialog" max-width="600">
@@ -138,7 +134,7 @@
       :message="'Are you sure you want to delete this tenant? This action cannot be undone.'"
       @confirm="deleteTenant"
     />
-  </v-container>
+  </div>
 </template>
 
 <script setup>

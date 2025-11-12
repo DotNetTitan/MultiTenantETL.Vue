@@ -70,43 +70,45 @@
             {{ formatDate(item.createdAt) }}
           </template>
           <template v-slot:item.actions="{ item }">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              @click="viewTransformationDetails(item)"
-              title="View details"
-            >
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              @click="editTransformation(item)"
-              title="Edit transformation"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              @click="cloneTransformation(item)"
-              title="Clone transformation"
-            >
-              <v-icon>mdi-content-copy</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              @click="confirmDelete(item)"
-              title="Delete transformation"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <div class="d-flex flex-nowrap">
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                @click="viewTransformationDetails(item)"
+                title="View details"
+              >
+                <v-icon>mdi-eye</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                @click="editTransformation(item)"
+                title="Edit transformation"
+              >
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                @click="cloneTransformation(item)"
+                title="Clone transformation"
+              >
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                color="error"
+                @click="confirmDelete(item)"
+                title="Delete transformation"
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
           </template>
         </v-data-table>
       </v-card-text>

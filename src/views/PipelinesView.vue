@@ -7,8 +7,10 @@
         color="primary" 
         prepend-icon="mdi-plus" 
         @click="openCreatePipelineDialog"
+        :text="$vuetify.display.smAndUp ? 'Create Pipeline' : undefined"
+        :icon="$vuetify.display.xs ? 'mdi-plus' : undefined"
       >
-        Create Pipeline
+        <span v-if="$vuetify.display.smAndUp">Create Pipeline</span>
       </v-btn>
     </div>
 

@@ -2,11 +2,23 @@
   <div>
     <h1 class="text-h4 mb-6">Settings</h1>
 
-    <v-tabs v-model="activeTab" class="mb-6">
-      <v-tab value="profile">User Profile</v-tab>
-      <v-tab value="preferences">Preferences</v-tab>
-      <v-tab value="apiKeys">API Keys</v-tab>
-      <v-tab value="notifications">Notifications</v-tab>
+    <v-tabs v-model="activeTab" class="mb-6" :show-arrows="$vuetify.display.xs">
+      <v-tab value="profile">
+        <v-icon v-if="$vuetify.display.xs" start>mdi-account</v-icon>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">User Profile</span>
+      </v-tab>
+      <v-tab value="preferences">
+        <v-icon v-if="$vuetify.display.xs" start>mdi-cog</v-icon>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">Preferences</span>
+      </v-tab>
+      <v-tab value="apiKeys">
+        <v-icon v-if="$vuetify.display.xs" start>mdi-key</v-icon>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">API Keys</span>
+      </v-tab>
+      <v-tab value="notifications">
+        <v-icon v-if="$vuetify.display.xs" start>mdi-bell</v-icon>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">Notifications</span>
+      </v-tab>
     </v-tabs>
 
     <v-window v-model="activeTab">
