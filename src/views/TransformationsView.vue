@@ -604,12 +604,24 @@
                     </v-chip>
                   </v-col>
                 </v-row>
-                <div class="text-caption text-grey mb-2">Script</div>
-                <v-card variant="outlined" class="script-display">
-                  <v-card-text class="pa-0">
-                    <pre class="language-code"><code :class="`language-${selectedTransformation.config.scriptLanguage === 'csharp' ? 'csharp' : 'javascript'}`" v-html="highlightedScript"></code></pre>
-                  </v-card-text>
-                </v-card>
+                
+                <v-expansion-panels>
+                  <v-expansion-panel>
+                    <v-expansion-panel-title>
+                      <div class="d-flex align-center">
+                        <v-icon class="mr-2">mdi-code-braces</v-icon>
+                        <span>View Script</span>
+                      </div>
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <v-card variant="outlined" class="script-display">
+                        <v-card-text class="pa-0">
+                          <pre class="language-code"><code :class="`language-${selectedTransformation.config.scriptLanguage === 'csharp' ? 'csharp' : 'javascript'}`" v-html="highlightedScript"></code></pre>
+                        </v-card-text>
+                      </v-card>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                </v-expansion-panels>
               </div>
             </v-card-text>
           </v-card>
