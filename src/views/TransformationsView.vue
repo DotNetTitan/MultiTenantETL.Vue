@@ -595,9 +595,9 @@
                   </v-col>
                 </v-row>
                 <div class="text-caption text-grey mb-2">Script</div>
-                <v-card variant="tonal" color="grey-darken-3">
+                <v-card variant="outlined" class="script-display">
                   <v-card-text>
-                    <pre class="text-caption" style="white-space: pre-wrap; font-family: monospace;">{{ selectedTransformation.config.script }}</pre>
+                    <pre class="text-body-2" style="white-space: pre-wrap; font-family: 'Courier New', monospace; color: var(--v-theme-on-surface);">{{ selectedTransformation.config.script }}</pre>
                   </v-card-text>
                 </v-card>
               </div>
@@ -877,3 +877,22 @@ onMounted(() => {
   });
 });
 </script>
+
+<style scoped>
+.script-display {
+  background-color: rgba(var(--v-theme-surface-variant), 0.3);
+}
+
+.v-theme--dark .script-display {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.v-theme--light .script-display {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.script-display pre {
+  margin: 0;
+  line-height: 1.5;
+}
+</style>
