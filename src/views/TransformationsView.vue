@@ -929,31 +929,56 @@ onMounted(() => {
   background-color: #f5f5f5 !important;
 }
 
+/* Light theme - base text color */
+.v-theme--light .script-display :deep(code) {
+  color: #000000 !important;
+}
+
 .v-theme--light .script-display :deep(.token.comment),
 .v-theme--light .script-display :deep(.token.prolog),
 .v-theme--light .script-display :deep(.token.doctype),
 .v-theme--light .script-display :deep(.token.cdata) {
-  color: #708090;
+  color: #008000 !important;
 }
 
 .v-theme--light .script-display :deep(.token.keyword),
-.v-theme--light .script-display :deep(.token.operator) {
-  color: #0000ff;
+.v-theme--light .script-display :deep(.token.control),
+.v-theme--light .script-display :deep(.token.directive) {
+  color: #0000ff !important;
 }
 
-.v-theme--light .script-display :deep(.token.string) {
-  color: #a31515;
+.v-theme--light .script-display :deep(.token.operator),
+.v-theme--light .script-display :deep(.token.punctuation) {
+  color: #000000 !important;
 }
 
-.v-theme--light .script-display :deep(.token.function) {
-  color: #795e26;
+.v-theme--light .script-display :deep(.token.string),
+.v-theme--light .script-display :deep(.token.char) {
+  color: #a31515 !important;
 }
 
-.v-theme--light .script-display :deep(.token.number) {
-  color: #098658;
+.v-theme--light .script-display :deep(.token.function),
+.v-theme--light .script-display :deep(.token.method) {
+  color: #795e26 !important;
 }
 
-.v-theme--light .script-display :deep(.token.class-name) {
-  color: #267f99;
+.v-theme--light .script-display :deep(.token.number),
+.v-theme--light .script-display :deep(.token.boolean) {
+  color: #098658 !important;
+}
+
+.v-theme--light .script-display :deep(.token.class-name),
+.v-theme--light .script-display :deep(.token.type-class-name) {
+  color: #267f99 !important;
+}
+
+.v-theme--light .script-display :deep(.token.variable),
+.v-theme--light .script-display :deep(.token.parameter) {
+  color: #001080 !important;
+}
+
+.v-theme--light .script-display :deep(.token.property),
+.v-theme--light .script-display :deep(.token.property-access) {
+  color: #001080 !important;
 }
 </style>
