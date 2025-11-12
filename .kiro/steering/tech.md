@@ -9,6 +9,12 @@
 - **Pinia** for state management
 - **Axios** for HTTP requests
 
+## Additional Libraries
+
+- **Prism.js** for syntax highlighting (JavaScript/C# code in transformations)
+- **PapaParse** for CSV file parsing
+- **XLSX** for Excel file processing
+
 ## Development Tools
 
 - **ESLint** for code linting with Vue plugin

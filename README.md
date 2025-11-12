@@ -4,29 +4,34 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 
 ## Features
 
-- 📊 **Real-time Dashboard**: Monitor pipeline status, data sources, and recent executions
-- 🔄 **ETL Pipeline Management**: Create, configure, and monitor data pipelines
-- 🔌 **Data Source Integration**: Support for multiple data source types (Databases, Files, APIs)
-- 🔍 **Transformation Management**: Built-in transformation templates and custom scripting support
-- 👥 **Multi-tenant Architecture**: Secure data isolation between different organizations
+- 📊 **Real-time Dashboard**: Monitor pipeline status, data sources, and recent executions with interactive cards
+- 🔄 **ETL Pipeline Management**: Create, configure, and monitor data pipelines with visual field mapping
+- 🔌 **Data Source Integration**: Support for multiple data source types (Databases, CSV, Excel, JSON, REST APIs)
+- 🔍 **Transformation Management**: Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace) and custom JavaScript/C# scripting
+- 👥 **Multi-tenant Architecture**: Secure data isolation between different organizations with tenant switching
 - 👤 **User Management**: Role-based access control with admin and user roles
-- 🎨 **Modern UI**: Responsive design with dark/light theme support
+- 🎨 **Modern UI**: Responsive design with dark/light theme support and Material Design components
 - 📱 **Mobile-Friendly**: Works seamlessly across desktop and mobile devices
+- 🔍 **Schema Management**: Auto-detection and manual schema definition with versioning
+- 📈 **Execution Monitoring**: Detailed execution logs, timeline view, and progress tracking
+- 🔐 **API Key Management**: Generate and manage API keys for programmatic access
 
 ## Tech Stack
 
-- **Frontend Framework**: Vue 3 with Composition API
-- **UI Framework**: Vuetify 3
+- **Frontend Framework**: Vue 3 with Composition API (script setup syntax)
+- **UI Framework**: Vuetify 3 (Material Design)
 - **State Management**: Pinia
-- **Router**: Vue Router
+- **Router**: Vue Router with route guards
 - **Build Tool**: Vite
 - **HTTP Client**: Axios
 - **Styling**: SASS
+- **Code Highlighting**: Prism.js
+- **File Processing**: PapaParse (CSV), XLSX (Excel)
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- npm or yarn
+- Node.js (v16 or higher recommended)
+- npm (comes with Node.js)
 
 ## Installation
 
@@ -48,76 +53,161 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
+## Configuration
+
+### API Backend
+
+The frontend expects a REST API backend. Configure the API URL in `.env.production`:
+
+```
+VITE_API_URL=https://your-api-url.com
+```
+
+For development, the default API URL is `http://localhost:5000/api` (configured in `src/config/api.js`).
+
+See `api-specification.md` for the complete API contract.
+
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Lint and fix files
+- `npm run dev` - Start development server (http://localhost:5173)
+- `npm run build` - Build for production (outputs to dist/)
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Lint and fix files with ESLint
 
 ## Project Structure
 
 ```
 src/
-├── App.vue                # Root component
-├── main.js               # Application entry point
-├── components/           # Reusable components
-│   ├── dialogs/         # Dialog components
-│   ├── form/            # Form components
-│   ├── notifications/   # Notification components
-│   └── table/           # Table components
-├── composables/         # Composable functions
-├── router/              # Route configurations
-├── stores/              # Pinia stores
-│   ├── auth.js         # Authentication store
-│   └── tenant.js       # Tenant management store
-└── views/              # Page components
+├── App.vue                 # Root component with layouts and global notifications
+├── main.js                 # Application entry point, Vuetify and Pinia setup
+├── components/             # Reusable UI components
+│   ├── dashboard/          # Dashboard-specific components
+│   ├── datasource/         # Data source components
+│   ├── dialogs/            # Modal dialogs
+│   ├── executions/         # Pipeline execution components
+│   ├── form/               # Form input components
+│   ├── layouts/            # Layout components (Authenticated, Guest)
+│   ├── notifications/      # Notification components
+│   ├── pipeline/           # Pipeline-specific components
+│   ├── settings/           # Settings page components
+│   ├── table/              # Table components
+│   ├── tenants/            # Tenant management components
+│   ├── transformation/     # Transformation components
+│   └── users/              # User management components
+├── composables/            # Reusable composition functions
+│   ├── useDashboard.js
+│   ├── useDataSource.js
+│   ├── useFormValidation.js
+│   ├── usePipeline.js
+│   ├── usePipelineForm.js
+│   └── useTransformation.js
+├── config/                 # Configuration files
+│   └── api.js              # API base URL configuration
+├── router/                 # Vue Router configuration
+│   └── index.js            # Route definitions and navigation guards
+├── services/               # API service layer
+│   ├── api.js              # Axios instance and interceptors
+│   ├── authService.js      # Authentication API calls
+│   ├── dashboardService.js # Dashboard data API calls
+│   ├── dataSourceService.js # Data source CRUD operations
+│   ├── pipelineService.js  # Pipeline CRUD operations
+│   ├── schemaService.js    # Schema management
+│   ├── tenantService.js    # Tenant management API calls
+│   ├── transformationService.js # Transformation operations
+│   └── userService.js      # User management API calls
+├── stores/                 # Pinia state stores
+│   ├── auth.js             # Authentication state
+│   └── tenant.js           # Tenant context state
+├── styles/                 # Global styles
+│   └── global.scss         # Global SCSS styles
+└── views/                  # Page-level components (route targets)
     ├── DashboardView.vue
-    ├── PipelinesView.vue
+    ├── DataSourceFormView.vue
     ├── DataSourcesView.vue
-    └── ...
+    ├── ExecutionsView.vue
+    ├── LoginView.vue
+    ├── PipelineDetailsView.vue
+    ├── PipelineFormView.vue
+    ├── PipelinesView.vue
+    ├── SettingsView.vue
+    ├── TenantsView.vue
+    ├── TransformationsView.vue
+    └── UsersView.vue
 ```
+
+## Architecture
+
+### Component Organization
+- **Views**: Page-level components mapped to routes
+- **Components**: Organized by feature domain (dashboard, pipeline, datasource, etc.)
+- **Layouts**: AuthenticatedLayout (with sidebar) and GuestLayout (login page)
+
+### State Management
+- **Pinia stores** for global state (authentication, tenant context)
+- **Composables** for reusable business logic and API interactions
+- **Provide/inject** for global notification system
+
+### Service Layer
+- All API calls go through service modules in `src/services/`
+- Services use a centralized Axios instance with interceptors
+- Consistent error handling and response formatting
+
+### Routing
+- Route guards enforce authentication and admin role requirements
+- Lazy-loaded route components for better performance
+- Meta fields: `requiresAuth`, `requiresAdmin`, `guest`
 
 ## Features in Detail
 
 ### Pipeline Management
-- Create and configure data pipelines
+- Create and configure data pipelines with visual field mapping
 - Schedule automated pipeline runs
-- Monitor pipeline execution status
-- View detailed execution logs
+- Monitor pipeline execution status with real-time progress
+- View detailed execution logs and timeline
 - Configure pipeline steps (Extract, Transform, Load)
+- Field mapping editor with validation
+- Schema auto-detection and manual schema management
+- Pipeline cloning and duplication
 
 ### Data Sources
 - Support for multiple data source types:
-  - Databases (SQL Server, PostgreSQL, etc.)
-  - File Systems (Local, SFTP)
-  - APIs (REST, GraphQL)
+  - Databases (SQL Server, PostgreSQL, MySQL, etc.)
+  - File Systems (CSV, Excel, JSON)
+  - APIs (REST)
 - Connection testing and validation
 - Secure credential management
+- Schema management (auto-detection and manual definition)
+- Schema versioning and change tracking
+- File preview and data validation
 
 ### Transformations
-- Built-in transformation templates
+- Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace)
 - Custom JavaScript/C# transformation scripts
-- Data mapping and filtering
-- Aggregation functions
-- Field validation and formatting
+- Data mapping and value transformations
+- Field filtering with multiple operators
+- Text manipulation (trim, case conversion, substring extraction, find & replace)
+- Syntax highlighting for custom scripts
 
 ### Multi-tenant Support
 - Secure data isolation between tenants
 - Tenant-specific configurations
 - Easy tenant management for administrators
+- Tenant switching with context preservation
+- Tenant identifier validation and uniqueness checking
 
 ### User Management
-- Role-based access control
-- User activity monitoring
-- Profile customization
-- API key management
+- Role-based access control (Admin and User roles)
+- User activation/deactivation
+- Profile customization (name, email, password)
+- API key generation and management
+- User filtering and search
 
 ### Theme Support
-- Light and dark mode
-- Customizable color schemes
-- Responsive design
-- Mobile-friendly interface
+- Light and dark mode with smooth transitions
+- Customizable color schemes (configurable in src/main.js)
+- CSS custom properties for consistent styling
+- Responsive design with Vuetify breakpoints
+- Mobile-friendly interface with touch-optimized controls
 
 ## Contributing
 

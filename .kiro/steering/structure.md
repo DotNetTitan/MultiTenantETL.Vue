@@ -35,19 +35,25 @@ src/
 │   ├── api.js              # Axios instance and interceptors
 │   ├── authService.js      # Authentication API calls
 │   ├── dashboardService.js # Dashboard data API calls
+│   ├── dataSourceService.js # Data source CRUD operations
 │   ├── pipelineService.js  # Pipeline CRUD operations
+│   ├── schemaService.js    # Schema management and versioning
 │   ├── tenantService.js    # Tenant management API calls
-│   ├── transformationService.js
+│   ├── transformationService.js # Transformation operations
 │   └── userService.js      # User management API calls
+├── styles/                 # Global styles
+│   └── global.scss         # Global SCSS styles
 ├── stores/                 # Pinia state stores
 │   ├── auth.js             # Authentication state
 │   └── tenant.js           # Tenant context state
 └── views/                  # Page-level components (route targets)
     ├── DashboardView.vue
+    ├── DataSourceFormView.vue
     ├── DataSourcesView.vue
     ├── ExecutionsView.vue
     ├── LoginView.vue
     ├── PipelineDetailsView.vue
+    ├── PipelineFormView.vue
     ├── PipelinesView.vue
     ├── SettingsView.vue
     ├── TenantsView.vue
