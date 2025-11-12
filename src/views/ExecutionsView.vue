@@ -109,7 +109,7 @@
     >
       <v-card v-if="selectedExecution">
         <!-- Clean professional header -->
-        <v-card-title class="d-flex align-center">
+        <v-card-title class="d-flex align-center flex-shrink-0">
           <v-icon :icon="getStatusIcon(selectedExecution.status)" :color="getStatusColor(selectedExecution.status)" class="mr-2" size="large"></v-icon>
           <div class="flex-grow-1">
             <div class="text-h6">{{ selectedExecution.pipelineName }}</div>
@@ -145,28 +145,31 @@
         <v-divider></v-divider>
 
         <!-- Content with tabs -->
-        <v-tabs v-model="activeTab" class="execution-tabs">
-          <v-tab value="overview" class="px-6">Overview</v-tab>
-          <v-tab value="logs" class="px-6">Logs</v-tab>
-          <v-tab value="timeline" class="px-6">Timeline</v-tab>
+        <v-tabs v-model="activeTab" class="execution-tabs flex-shrink-0" grow>
+          <v-tab value="overview">Overview</v-tab>
+          <v-tab value="logs">Logs</v-tab>
+          <v-tab value="timeline">Timeline</v-tab>
         </v-tabs>
 
-        <v-window v-model="activeTab">
+        <v-divider></v-divider>
+
+        <v-card-text class="pa-0" style="max-height: 60vh; overflow-y: auto;">
+          <v-window v-model="activeTab">
           <!-- Overview Tab - KEEP AS IS -->
           <v-window-item value="overview">
             <v-card-text>
               <v-row>
                 <v-col cols="12" lg="6">
                   <v-card variant="outlined" class="mb-4">
-                    <v-card-title class="text-subtitle-1 bg-grey-lighten-4">
-                      <v-icon start>mdi-information-outline</v-icon>
-                      Basic Information
+                    <v-card-title class="text-subtitle-1 d-flex align-center">
+                      <v-icon class="mr-2">mdi-information-outline</v-icon>
+                      <span>Basic Information</span>
                     </v-card-title>
                     <v-card-text>
                       <v-list density="compact" lines="two">
                         <v-list-item>
                           <template v-slot:prepend>
-                            <v-icon class="mr-2">mdi-pipeline</v-icon>
+                            <v-icon class="mr-2">mdi-pipe</v-icon>
                           </template>
                           <v-list-item-title>Pipeline</v-list-item-title>
                           <v-list-item-subtitle>{{ selectedExecution.pipelineName }}</v-list-item-subtitle>
@@ -208,9 +211,9 @@
                 
                 <v-col cols="12" lg="6">
                   <v-card variant="outlined" class="mb-4">
-                    <v-card-title class="text-subtitle-1 bg-grey-lighten-4">
-                      <v-icon start>mdi-chart-bar</v-icon>
-                      Performance Metrics
+                    <v-card-title class="text-subtitle-1 d-flex align-center">
+                      <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                      <span>Performance Metrics</span>
                     </v-card-title>
                     <v-card-text>
                       <div class="my-3">
@@ -331,11 +334,12 @@
               </div>
             </v-card-text>
           </v-window-item>
-        </v-window>
+          </v-window>
+        </v-card-text>
 
         <v-divider></v-divider>
 
-        <v-card-actions>
+        <v-card-actions class="flex-shrink-0">
           <v-spacer />
           <v-btn
             color="primary"
@@ -757,7 +761,6 @@ async function confirmCancelExecution() {
 
 :deep(.v-tab) {
   min-height: 48px;
-  padding: 0 16px;
   opacity: 0.7;
 }
 
@@ -767,6 +770,33 @@ async function confirmCancelExecution() {
 
 :deep(.v-theme--light .v-tab--selected) {
   color: var(--v-theme-primary);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 600px) {
+  :deep(.v-dialog .v-card) {
+    max-height: 90vh !important;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  :deep(.v-card-title) {
+    font-size: 0.875rem !important;
+    padding: 12px !important;
+  }
+  
+  :deep(.v-list-item-title) {
+    font-size: 0.75rem !important;
+  }
+  
+  :deep(.v-list-item-subtitle) {
+    font-size: 0.75rem !important;
+  }
+  
+  :deep(.v-tab) {
+    font-size: 0.75rem !important;
+    min-width: 80px !important;
+  }
 }
 
 /* Timeline specific styles */
