@@ -303,21 +303,21 @@ export function validateFieldMappings(mappings, sourceSchema, destinationSchema,
       return;
     }
 
-    // Validate transformation if present
-    if (mapping.transformationId) {
-      const trans = transformations.find(t => t.id === mapping.transformationId);
-      if (!trans) {
-        errors.push(`Mapping ${mappingNum}: Transformation not found`);
-      } else {
-        // Check input count matches (if transformation specifies)
-        const expectedInputs = trans.config?.inputCount || 1;
-        if (mapping.sourceFields.length !== expectedInputs) {
-          errors.push(
-            `Mapping ${mappingNum}: Transformation '${trans.name}' expects ${expectedInputs} input(s), ` +
-            `got ${mapping.sourceFields.length}`
-          );
+    // Validate transformations if present
+    const hasValidTransformations = mapping.transformations && 
+      mapping.transformations.length > 0 && 
+      mapping.transformations.some(t => t.transformationId);
+    
+    if (hasValidTransformations) {
+      // Validate each transformation in the chain
+      mapping.transformations.forEach((transMapping, tIndex) => {
+        if (transMapping.transformationId) {
+          const trans = transformations.find(t => t.id === transMapping.transformationId);
+          if (!trans) {
+            errors.push(`Mapping ${mappingNum}: Transformation ${tIndex + 1} not found`);
+          }
         }
-      }
+      });
     } else {
       // No transformation - check constraints
       if (mapping.sourceFields.length > 1) {

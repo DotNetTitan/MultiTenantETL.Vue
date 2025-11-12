@@ -209,14 +209,7 @@
           </div>
         </v-col>
 
-        <!-- Validation Errors -->
-        <v-col v-if="validationErrors.length > 0" cols="12">
-          <v-alert type="error" density="compact">
-            <ul class="pl-4">
-              <li v-for="(error, idx) in validationErrors" :key="idx">{{ error }}</li>
-            </ul>
-          </v-alert>
-        </v-col>
+
       </v-row>
     </v-card-text>
   </v-card>
@@ -346,10 +339,14 @@ const validationErrors = computed(() => {
     return [];
   }
   
-  // Check if multiple source fields require at least one transformation
-  if (localMapping.value.sourceFields.length > 1 && 
-      (!localMapping.value.transformations || localMapping.value.transformations.length === 0)) {
-    errors.push('Multiple source fields require at least one transformation');
+  // Check if multiple source fields require at least one transformation with a valid selection
+  if (localMapping.value.sourceFields.length > 1) {
+    const hasValidTransformation = localMapping.value.transformations && 
+      localMapping.value.transformations.some(t => t.transformationId);
+    
+    if (!hasValidTransformation) {
+      errors.push('Multiple source fields require at least one transformation');
+    }
   }
   
   return errors;
