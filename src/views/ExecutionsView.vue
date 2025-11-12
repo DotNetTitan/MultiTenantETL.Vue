@@ -113,25 +113,17 @@
           <v-icon :icon="getStatusIcon(selectedExecution.status)" :color="getStatusColor(selectedExecution.status)" class="mr-2" size="large"></v-icon>
           <div class="flex-grow-1">
             <div class="text-h6">{{ selectedExecution.pipelineName }}</div>
-            <div class="text-caption text-medium-emphasis">Execution ID: {{ selectedExecution.id }}</div>
           </div>
-          <v-chip
-            size="small"
-            :color="getStatusColor(selectedExecution.status)"
-            text-color="white"
-            class="mr-2"
-          >
-            {{ selectedExecution.status }}
-          </v-chip>
           <v-btn
             v-if="selectedExecution.status === 'Running'"
             color="error"
             variant="tonal"
             size="small"
             @click="cancelExecution(selectedExecution)"
+            class="mr-2"
           >
             <v-icon start>mdi-stop</v-icon>
-            Cancel
+            <span class="d-none d-sm-inline">Cancel</span>
           </v-btn>
           <v-btn
             icon
