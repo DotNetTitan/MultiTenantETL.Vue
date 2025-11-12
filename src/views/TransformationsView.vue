@@ -618,16 +618,10 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            variant="text"
+            color="primary"
             @click="showDetailsDialog = false"
           >
             Close
-          </v-btn>
-          <v-btn
-            color="primary"
-            @click="editTransformation(selectedTransformation); showDetailsDialog = false"
-          >
-            Edit
           </v-btn>
         </v-card-actions>
       </v-card>
