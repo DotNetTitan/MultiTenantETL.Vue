@@ -104,8 +104,11 @@
 import { ref } from 'vue';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import { useGlobalState } from '@/composables/useGlobalState';
 
 const emit = defineEmits(['schema-generated']);
+
+const { showGlobalLoading, hideGlobalLoading, showError: showErrorNotification } = useGlobalState();
 
 const fileInput = ref(null);
 const analyzing = ref(false);
@@ -144,6 +147,7 @@ function handleFileSelect(event) {
 
   if (file.size > MAX_FILE_SIZE) {
     error.value = 'File size exceeds 10MB limit. Please use a smaller file.';
+    showErrorNotification?.('File size exceeds 10MB limit. Please use a smaller file.');
     return;
   }
 
@@ -152,21 +156,26 @@ function handleFileSelect(event) {
 
   const extension = file.name.split('.').pop().toLowerCase();
 
-  try {
-    if (extension === 'csv') {
-      analyzeCSV(file);
-    } else if (extension === 'json') {
-      analyzeJSON(file);
-    } else if (extension === 'xlsx' || extension === 'xls') {
-      analyzeExcel(file);
-    } else {
-      error.value = 'Unsupported file format';
+  // Small delay to allow UI to update
+  setTimeout(() => {
+    try {
+      if (extension === 'csv') {
+        analyzeCSV(file);
+      } else if (extension === 'json') {
+        analyzeJSON(file);
+      } else if (extension === 'xlsx' || extension === 'xls') {
+        analyzeExcel(file);
+      } else {
+        error.value = 'Unsupported file format';
+        showErrorNotification?.('Unsupported file format. Please use CSV, JSON, or Excel files.');
+        analyzing.value = false;
+      }
+    } catch (err) {
+      error.value = `Error analyzing file: ${err.message}`;
+      showErrorNotification?.(`Error analyzing file: ${err.message}`);
       analyzing.value = false;
     }
-  } catch (err) {
-    error.value = `Error analyzing file: ${err.message}`;
-    analyzing.value = false;
-  }
+  }, 50);
 
   event.target.value = '';
 }
@@ -175,10 +184,12 @@ function analyzeCSV(file) {
   Papa.parse(file, {
     header: true,
     preview: 1000,
+    worker: true, // Use web worker for better performance
     complete: (results) => {
       try {
         if (!results.data || results.data.length === 0) {
           error.value = 'CSV file is empty or invalid';
+          showErrorNotification?.('CSV file is empty or invalid');
           analyzing.value = false;
           return;
         }
@@ -188,11 +199,13 @@ function analyzeCSV(file) {
         analyzing.value = false;
       } catch (err) {
         error.value = `Error parsing CSV: ${err.message}`;
+        showErrorNotification?.(`Error parsing CSV: ${err.message}`);
         analyzing.value = false;
       }
     },
     error: (err) => {
       error.value = `CSV parsing error: ${err.message}`;
+      showErrorNotification?.(`CSV parsing error: ${err.message}`);
       analyzing.value = false;
     }
   });
@@ -216,6 +229,7 @@ function analyzeJSON(file) {
 
       if (data.length === 0) {
         error.value = 'JSON file contains no data';
+        showErrorNotification?.('JSON file contains no data');
         analyzing.value = false;
         return;
       }
@@ -228,12 +242,14 @@ function analyzeJSON(file) {
       analyzing.value = false;
     } catch (err) {
       error.value = `Error parsing JSON: ${err.message}`;
+      showErrorNotification?.(`Error parsing JSON: ${err.message}`);
       analyzing.value = false;
     }
   };
 
   reader.onerror = () => {
     error.value = 'Error reading file';
+    showErrorNotification?.('Error reading file');
     analyzing.value = false;
   };
 
@@ -255,6 +271,7 @@ function analyzeExcel(file) {
 
       if (jsonData.length < 2) {
         error.value = 'Excel file must have at least a header row and one data row';
+        showErrorNotification?.('Excel file must have at least a header row and one data row');
         analyzing.value = false;
         return;
       }
@@ -275,12 +292,14 @@ function analyzeExcel(file) {
       analyzing.value = false;
     } catch (err) {
       error.value = `Error parsing Excel: ${err.message}`;
+      showErrorNotification?.(`Error parsing Excel: ${err.message}`);
       analyzing.value = false;
     }
   };
 
   reader.onerror = () => {
     error.value = 'Error reading file';
+    showErrorNotification?.('Error reading file');
     analyzing.value = false;
   };
 

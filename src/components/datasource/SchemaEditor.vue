@@ -170,7 +170,7 @@
       </v-card>
 
       <!-- Other Validation Errors -->
-      <v-card v-if="otherValidationErrors.length > 0" variant="outlined" class="mb-3">
+      <v-card v-if="otherValidationErrors.length > 0" variant="outlined" color="error" class="mb-3">
         <v-card-text class="py-3">
           <div class="d-flex align-start">
             <v-icon color="error" class="mr-3 mt-1">mdi-alert</v-icon>
