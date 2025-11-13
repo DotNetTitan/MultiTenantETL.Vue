@@ -115,17 +115,6 @@
             <div class="text-h6">{{ selectedExecution.pipelineName }}</div>
           </div>
           <v-btn
-            v-if="selectedExecution.status === 'Running'"
-            color="error"
-            variant="tonal"
-            size="small"
-            class="mr-2"
-            @click="cancelExecution(selectedExecution)"
-          >
-            <v-icon start>mdi-stop</v-icon>
-            <span class="d-none d-sm-inline">Cancel</span>
-          </v-btn>
-          <v-btn
             icon
             variant="text"
             @click="showDetailsDialog = false"
@@ -196,6 +185,16 @@
                             <v-list-item-title>Duration</v-list-item-title>
                             <v-list-item-subtitle>{{ formatDuration(selectedExecution.duration) }}</v-list-item-subtitle>
                           </v-list-item>
+                        
+                          <v-divider></v-divider>
+                        
+                          <v-list-item>
+                            <template #prepend>
+                              <v-icon class="mr-2">mdi-identifier</v-icon>
+                            </template>
+                            <v-list-item-title>Execution ID</v-list-item-title>
+                            <v-list-item-subtitle>{{ selectedExecution.id }}</v-list-item-subtitle>
+                          </v-list-item>
                         </v-list>
                       </v-card-text>
                     </v-card>
@@ -234,18 +233,27 @@
                       
                         <v-divider class="my-4"></v-divider>
                       
-                        <div class="d-flex align-center justify-space-between mt-3">
-                          <v-chip
-                            size="small"
-                            :color="getStatusColor(selectedExecution.status)"
-                            text-color="white"
-                          >
-                            {{ selectedExecution.status }}
-                          </v-chip>
-                        
-                          <span class="text-caption">
-                            ID: {{ selectedExecution.id }}
-                          </span>
+                        <div class="d-flex align-center mb-2">
+                          <v-icon class="mr-2">mdi-information-outline</v-icon>
+                          <div class="d-flex align-center" style="gap: 12px;">
+                            <span class="text-subtitle-2 font-weight-bold">Status</span>
+                            <v-chip
+                              :color="getStatusColor(selectedExecution.status)"
+                              text-color="white"
+                            >
+                              {{ selectedExecution.status }}
+                            </v-chip>
+                            <v-btn
+                              v-if="selectedExecution.status === 'Running'"
+                              color="error"
+                              variant="tonal"
+                              size="small"
+                              @click="cancelExecution(selectedExecution)"
+                            >
+                              <v-icon start size="small">mdi-stop</v-icon>
+                              Cancel
+                            </v-btn>
+                          </div>
                         </div>
                       </v-card-text>
                     </v-card>

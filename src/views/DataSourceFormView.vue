@@ -74,7 +74,11 @@ async function loadDataSource() {
     loading.value = true;
     error.value = null;
     const data = await fetchDataSourceById(route.params.id);
-    dataSource.value = data;
+    // Ensure schema property exists
+    dataSource.value = {
+      ...data,
+      schema: data.schema || { fields: [] }
+    };
   } catch (err) {
     error.value = `Failed to load data source: ${err.message}`;
   } finally {

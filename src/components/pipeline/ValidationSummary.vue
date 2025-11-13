@@ -9,7 +9,7 @@
       All required destination fields are mapped correctly!
     </v-alert>
 
-    <!-- Error State - Separate Cards -->
+    <!-- Error State - Separate Cards Like Data Source Page -->
     <div v-else>
       <!-- Unique Identifier Validation -->
       <v-card v-if="uniqueIdentifierErrors.length > 0" variant="outlined" color="error" class="mb-3">
@@ -18,32 +18,9 @@
             <v-icon color="error" class="mr-3">mdi-key-alert</v-icon>
             <div class="flex-grow-1">
               <div class="text-subtitle-2 mb-1">Unique Identifier Mapping Required</div>
-              <div class="text-caption text-grey">
+              <div class="text-caption">
                 {{ uniqueIdentifierErrors[0] }}
               </div>
-            </div>
-          </div>
-        </v-card-text>
-      </v-card>
-
-      <!-- Unmapped Required Fields -->
-      <v-card v-if="unmappedRequiredFields && unmappedRequiredFields.length > 0" variant="outlined" color="warning" class="mb-3">
-        <v-card-text class="py-3">
-          <div class="d-flex align-center">
-            <v-icon color="warning" class="mr-3">mdi-alert-circle</v-icon>
-            <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-2">Unmapped Required Fields</div>
-              <v-chip-group>
-                <v-chip
-                  v-for="field in unmappedRequiredFields"
-                  :key="field"
-                  color="warning"
-                  size="small"
-                  variant="outlined"
-                >
-                  {{ field }}
-                </v-chip>
-              </v-chip-group>
             </div>
           </div>
         </v-card-text>
@@ -53,10 +30,10 @@
       <v-card v-if="otherErrors.length > 0" variant="outlined" color="error" class="mb-3">
         <v-card-text class="py-3">
           <div class="d-flex align-start">
-            <div class="mr-3" style="width: 24px;"></div>
+            <v-icon color="error" class="mr-3 mt-1">mdi-alert</v-icon>
             <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-2">Validation Issues</div>
-              <div v-for="(error, index) in otherErrors" :key="index" class="text-caption text-grey mb-1">
+              <div class="text-subtitle-2 mb-2">Mapping Issues</div>
+              <div v-for="(error, index) in otherErrors" :key="index" class="text-caption mb-1">
                 • {{ error }}
               </div>
             </div>
@@ -99,6 +76,8 @@ const otherErrors = computed(() => {
     !error.includes('Unique identifier')
   );
 });
+
+
 </script>
 
 <style scoped>

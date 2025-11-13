@@ -97,15 +97,30 @@ router.beforeEach((to, from, next) => {
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
   const isGuestRoute = to.matched.some(record => record.meta.guest)
 
+  // Show loading indicator for route changes (only if navigating from another route)
+  if (from.name) {
+    window.dispatchEvent(new CustomEvent('route-loading-start'))
+  }
+
+  // Authentication checks
   if (requiresAuth && !authStore.isAuthenticated) {
+    window.dispatchEvent(new CustomEvent('route-loading-end'))
     next('/login')
   } else if (requiresAdmin && !authStore.isAdmin) {
+    window.dispatchEvent(new CustomEvent('route-loading-end'))
     next('/')
   } else if (isGuestRoute && authStore.isAuthenticated) {
+    window.dispatchEvent(new CustomEvent('route-loading-end'))
     next('/')
   } else {
     next()
   }
+})
+
+router.afterEach(() => {
+  // Hide loading indicator after navigation completes
+  // Use nextTick to ensure DOM has updated
+  window.dispatchEvent(new CustomEvent('route-loading-end'))
 })
 
 export default router

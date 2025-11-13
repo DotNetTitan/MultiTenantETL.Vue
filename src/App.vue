@@ -1,7 +1,68 @@
 <template>
   <v-app>
-    <authenticated-layout v-if="isAuthenticated" />
-    <guest-layout v-else />
+    <!-- Global Loading Overlay -->
+    <v-overlay
+      v-model="isGlobalLoading"
+      class="align-center justify-center"
+      persistent
+      :z-index="10000"
+      :scrim="true"
+      opacity="0.7"
+    >
+      <v-fade-transition mode="out-in">
+        <v-card v-if="isGlobalLoading" class="pa-8 text-center loading-card" elevation="12">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+            width="6"
+          />
+          <div class="mt-4 text-h6">{{ loadingMessage }}</div>
+          <div class="mt-2 text-caption text-grey">Please wait...</div>
+        </v-card>
+      </v-fade-transition>
+    </v-overlay>
+
+    <!-- Error Boundary -->
+    <div v-if="hasGlobalError" class="error-boundary">
+      <v-container class="fill-height">
+        <v-row align="center" justify="center">
+          <v-col cols="12" md="6">
+            <v-card class="pa-6 text-center">
+              <v-icon size="64" color="error" class="mb-4">
+                mdi-alert-circle-outline
+              </v-icon>
+              <h2 class="text-h5 mb-4">Something went wrong</h2>
+              <p class="text-body-1 mb-4">
+                {{ globalErrorMessage }}
+              </p>
+              <v-btn
+                color="primary"
+                size="large"
+                @click="reloadApp"
+              >
+                Reload Application
+              </v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </div>
+
+    <!-- Main Application -->
+    <template v-else>
+      <!-- Route Loading Bar -->
+      <v-progress-linear
+        v-if="isRouteLoading"
+        indeterminate
+        color="primary"
+        height="3"
+        style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999;"
+      />
+      
+      <authenticated-layout v-if="isAuthenticated" />
+      <guest-layout v-else />
+    </template>
 
     <!-- Global Notifications -->
     <div class="notifications-container">
@@ -23,16 +84,30 @@
 </template>
 
 <script setup>
-import { computed, ref, onBeforeUnmount, provide } from 'vue';
+import { computed, ref, onBeforeUnmount, onMounted, provide, onErrorCaptured } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 import AuthenticatedLayout from '@/components/layouts/AuthenticatedLayout.vue';
 import GuestLayout from '@/components/layouts/GuestLayout.vue';
 
 const authStore = useAuthStore();
+const router = useRouter();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 
+// Notification system
 const notifications = ref([]);
 const notificationTimeout = ref(null);
+
+// Global loading state
+const isGlobalLoading = ref(false);
+const loadingMessage = ref('Loading...');
+const isRouteLoading = ref(false);
+
+// Error boundary state
+const hasGlobalError = ref(false);
+const globalErrorMessage = ref('An unexpected error occurred. Please reload the application.');
+const errorCount = ref(0);
+const maxErrorsBeforeBoundary = 3;
 
 const showNotification = (message, type = 'info', timeout = 5000) => {
   const id = Date.now();
@@ -53,34 +128,117 @@ const removeNotification = (id) => {
   notifications.value = notifications.value.filter(n => n.id !== id);
 };
 
-// Global error handler
+const showGlobalLoading = (message = 'Loading...') => {
+  loadingMessage.value = message;
+  isGlobalLoading.value = true;
+};
+
+const hideGlobalLoading = () => {
+  isGlobalLoading.value = false;
+};
+
+const handleError = (error, context = '') => {
+  console.error(`Error ${context}:`, error);
+  
+  errorCount.value++;
+  
+  // If too many errors occur, show error boundary
+  if (errorCount.value >= maxErrorsBeforeBoundary) {
+    hasGlobalError.value = true;
+    globalErrorMessage.value = 'Multiple errors occurred. The application needs to be reloaded.';
+    return;
+  }
+  
+  // Show user-friendly error message
+  const message = error.userMessage || error.message || 'An unexpected error occurred.';
+  showNotification(message, 'error', 7000);
+};
+
+const reloadApp = () => {
+  window.location.reload();
+};
+
+// Vue error handler - catches errors in components
+onErrorCaptured((error, instance, info) => {
+  console.error('Component error:', { error, info });
+  handleError(error, `in component (${info})`);
+  // Return false to prevent error from propagating
+  return false;
+});
+
+// Global JavaScript error handler
 window.onerror = (message, source, lineno, colno, error) => {
   console.error('Global error:', { message, source, lineno, colno, error });
-  showNotification(
-    'An unexpected error occurred. Please try again.',
-    'error'
-  );
+  handleError(error || new Error(message), 'in global handler');
+  return true; // Prevent default browser error handling
 };
 
 // Handle unhandled promise rejections
 window.onunhandledrejection = (event) => {
   console.error('Unhandled promise rejection:', event.reason);
-  showNotification(
-    'An unexpected error occurred. Please try again.',
-    'error'
-  );
+  handleError(event.reason, 'in promise');
+  event.preventDefault(); // Prevent default browser error handling
 };
+
+// Router error handling
+router.onError((error) => {
+  console.error('Router error:', error);
+  handleError(error, 'in router');
+});
+
+// Reset error count periodically (errors might be transient)
+const errorResetInterval = setInterval(() => {
+  if (errorCount.value > 0 && !hasGlobalError.value) {
+    errorCount.value = Math.max(0, errorCount.value - 1);
+  }
+}, 30000); // Decrease error count every 30 seconds
+
+// Route loading handlers
+let loadingStartTime = 0;
+const MIN_LOADING_TIME = 200; // Minimum time to show loading bar (ms)
+
+const handleRouteLoadingStart = () => {
+  loadingStartTime = Date.now();
+  isRouteLoading.value = true;
+};
+
+const handleRouteLoadingEnd = () => {
+  const elapsed = Date.now() - loadingStartTime;
+  const remaining = MIN_LOADING_TIME - elapsed;
+  
+  if (remaining > 0) {
+    // Keep loading bar visible for minimum time
+    setTimeout(() => {
+      isRouteLoading.value = false;
+    }, remaining);
+  } else {
+    // Enough time has passed, hide immediately
+    isRouteLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  // Listen for route loading events
+  window.addEventListener('route-loading-start', handleRouteLoadingStart);
+  window.addEventListener('route-loading-end', handleRouteLoadingEnd);
+});
 
 // Clean up on component unmount
 onBeforeUnmount(() => {
   if (notificationTimeout.value) {
     clearTimeout(notificationTimeout.value);
   }
+  clearInterval(errorResetInterval);
+  window.removeEventListener('route-loading-start', handleRouteLoadingStart);
+  window.removeEventListener('route-loading-end', handleRouteLoadingEnd);
 });
 
-// Provide the notification functions to child components
+// Provide functions to child components
 provide('showNotification', showNotification);
 provide('removeNotification', removeNotification);
+provide('showGlobalLoading', showGlobalLoading);
+provide('hideGlobalLoading', hideGlobalLoading);
+provide('handleError', handleError);
 </script>
 
 <style>
@@ -683,5 +841,34 @@ provide('removeNotification', removeNotification);
 .notification-leave-to {
   opacity: 0;
   transform: translateX(30px);
+}
+
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--v-theme-background);
+}
+
+.loading-card {
+  min-width: 320px;
+  animation: fadeInScale 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Smooth fade out */
+.v-overlay--active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

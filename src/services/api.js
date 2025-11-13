@@ -33,10 +33,47 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      const authStore = useAuthStore()
-      await authStore.logout()
+    const authStore = useAuthStore()
+    
+    // Handle different error scenarios
+    if (error.response) {
+      // Server responded with error status
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - token expired or invalid
+          await authStore.logout()
+          window.location.href = '/login'
+          break
+        case 403:
+          // Forbidden - user doesn't have permission
+          error.userMessage = 'You do not have permission to perform this action.'
+          break
+        case 404:
+          // Not found
+          error.userMessage = 'The requested resource was not found.'
+          break
+        case 422:
+          // Validation error
+          error.userMessage = error.response.data?.message || 'Validation failed. Please check your input.'
+          break
+        case 500:
+        case 502:
+        case 503:
+          // Server errors
+          error.userMessage = 'A server error occurred. Please try again later.'
+          break
+        default:
+          error.userMessage = error.response.data?.message || 'An error occurred. Please try again.'
+      }
+    } else if (error.request) {
+      // Request made but no response received (network error)
+      error.userMessage = 'Network error. Please check your internet connection.'
+      error.isNetworkError = true
+    } else {
+      // Something else happened
+      error.userMessage = 'An unexpected error occurred.'
     }
+    
     return Promise.reject(error)
   }
 )
