@@ -13,7 +13,7 @@
       :error-messages="tenantStore.error"
       @update:model-value="changeTenant"
     >
-      <template v-slot:prepend>
+      <template #prepend>
         <v-icon>mdi-office-building</v-icon>
       </template>
     </v-select>

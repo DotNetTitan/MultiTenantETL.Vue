@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="600">
+  <v-dialog :model-value="modelValue" max-width="600" @update:model-value="$emit('update:modelValue', $event)">
     <v-card>
       <v-card-title class="d-flex align-center">
         {{ field?.id && field.id.startsWith('field-') && field.name ? 'Edit Field' : 'Add Field' }}
@@ -38,9 +38,9 @@
                 :rules="[v => !!v || 'Data type is required']"
                 required
               >
-                <template v-slot:item="{ item, props }">
+                <template #item="{ item, props }">
                   <v-list-item v-bind="props">
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>{{ item.raw.icon }}</v-icon>
                     </template>
                   </v-list-item>

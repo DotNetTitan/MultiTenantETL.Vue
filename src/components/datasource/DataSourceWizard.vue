@@ -1,6 +1,5 @@
 <template>
   <v-card class="wizard-card" elevation="0">
-
     <v-stepper v-model="currentStep" alt-labels flat class="wizard-stepper">
       <v-stepper-header>
         <v-stepper-item
@@ -67,9 +66,9 @@
                   required
                   @update:model-value="handleTypeChange"
                 >
-                  <template v-slot:item="{ item, props }">
+                  <template #item="{ item, props }">
                     <v-list-item v-bind="props">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
                       </template>
                     </v-list-item>
@@ -98,9 +97,9 @@
                   hint="How this data source will be used"
                   persistent-hint
                 >
-                  <template v-slot:item="{ item, props }">
+                  <template #item="{ item, props }">
                     <v-list-item v-bind="props">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>{{ item.raw.icon }}</v-icon>
                       </template>
                     </v-list-item>
@@ -231,7 +230,7 @@
                 <v-textarea
                   v-model="dataSource.config.headers"
                   label="Custom Headers (JSON)"
-                  placeholder='{"Content-Type": "application/json"}'
+                  placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
                   variant="outlined"
                   rows="3"
                 />
@@ -314,28 +313,28 @@
               <v-card-text>
                 <v-list density="compact">
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>mdi-label</v-icon>
                     </template>
                     <v-list-item-title>Name</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.name }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item v-if="dataSource.description">
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>mdi-text</v-icon>
                     </template>
                     <v-list-item-title>Description</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.description }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>{{ getTypeIcon(dataSource.type) }}</v-icon>
                     </template>
                     <v-list-item-title>Type</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.type }} - {{ dataSource.provider }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>{{ getDirectionIcon(dataSource.direction) }}</v-icon>
                     </template>
                     <v-list-item-title>Direction</v-list-item-title>
@@ -356,28 +355,28 @@
                   <!-- Database Connection Details -->
                   <template v-if="dataSource.type === 'Database'">
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-server</v-icon>
                       </template>
                       <v-list-item-title>Server</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.server }}{{ dataSource.config.port ? ':' + dataSource.config.port : '' }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-database</v-icon>
                       </template>
                       <v-list-item-title>Database</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.database }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-account</v-icon>
                       </template>
                       <v-list-item-title>Username</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.username }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.useCustomConnectionString">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-link-variant</v-icon>
                       </template>
                       <v-list-item-title>Custom Connection String</v-list-item-title>
@@ -388,21 +387,21 @@
                   <!-- API Connection Details -->
                   <template v-if="dataSource.type === 'API'">
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-web</v-icon>
                       </template>
                       <v-list-item-title>Base URL</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.url }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-shield-lock</v-icon>
                       </template>
                       <v-list-item-title>Authentication</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.authType }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.headers">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-code-json</v-icon>
                       </template>
                       <v-list-item-title>Custom Headers</v-list-item-title>
@@ -413,28 +412,28 @@
                   <!-- File Connection Details -->
                   <template v-if="dataSource.type === 'File'">
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-file-document</v-icon>
                       </template>
                       <v-list-item-title>Format</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.format }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-folder</v-icon>
                       </template>
                       <v-list-item-title>Path</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.path }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV'">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-table-split-cell</v-icon>
                       </template>
                       <v-list-item-title>Delimiter</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.delimiter || ',' }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV'">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-format-header-1</v-icon>
                       </template>
                       <v-list-item-title>Has Header Row</v-list-item-title>
@@ -454,7 +453,7 @@
               <v-card-text>
                 <v-list density="compact">
                   <v-list-item v-for="endpoint in dataSource.config.endpoints" :key="endpoint.id">
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-chip :color="getMethodColor(endpoint.method)" size="small">
                         {{ endpoint.method }}
                       </v-chip>
@@ -522,8 +521,8 @@
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
-        @click="currentStep++"
         :disabled="!canProceed"
+        @click="currentStep++"
       >
         Next
       </v-btn>
@@ -532,9 +531,9 @@
         color="primary"
         variant="elevated"
         prepend-icon="mdi-content-save"
-        @click="handleSave"
         :loading="saving"
         :disabled="!canSave"
+        @click="handleSave"
       >
         Save
         <v-tooltip activator="parent" location="top">Save Data Source</v-tooltip>

@@ -16,8 +16,8 @@
     <v-card>
       <v-card-text>
         <TableFilters
-          search-label="Search Users"
           v-model:search="search"
+          search-label="Search Users"
           :filters="[{
             key: 'status',
             label: 'Status',
@@ -36,7 +36,7 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template v-slot:item.status="{ item }">
+          <template #item.status="{ item }">
             <v-chip
               :color="item.isActive ? 'success' : 'error'"
               text-color="white"
@@ -45,7 +45,7 @@
               {{ item.isActive ? 'Active' : 'Inactive' }}
             </v-chip>
           </template>
-          <template v-slot:item.role="{ item }">
+          <template #item.role="{ item }">
             <v-chip
               :color="getRoleColor(item.role)"
               text-color="white"
@@ -54,16 +54,16 @@
               {{ item.role }}
             </v-chip>
           </template>
-          <template v-slot:item.createdAt="{ item }">
+          <template #item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template #item.actions="{ item }">
             <v-btn
               icon
               variant="text"
               size="small"
-              @click="editUser(item)"
               title="Edit user"
+              @click="editUser(item)"
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -73,8 +73,8 @@
               variant="text"
               size="small"
               color="success"
-              @click="toggleUserStatus(item)"
               title="Activate user"
+              @click="toggleUserStatus(item)"
             >
               <v-icon>mdi-check</v-icon>
             </v-btn>
@@ -84,8 +84,8 @@
               variant="text"
               size="small"
               color="warning"
-              @click="toggleUserStatus(item)"
               title="Deactivate user"
+              @click="toggleUserStatus(item)"
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
@@ -94,9 +94,9 @@
               variant="text"
               size="small"
               color="error"
-              @click="confirmDelete(item)"
               title="Delete user"
               :disabled="item.isActive"
+              @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
             </v-btn>
@@ -118,8 +118,8 @@
           <v-btn
             icon
             variant="text"
-            @click="closeCreateDialog"
             :disabled="savingUser"
+            @click="closeCreateDialog"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -134,15 +134,15 @@
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
-            @click="closeCreateDialog"
             :disabled="savingUser"
+            @click="closeCreateDialog"
           >
             Close
           </v-btn>
           <v-btn
             color="primary"
-            @click="saveUser"
             :loading="savingUser"
+            @click="saveUser"
           >
             Save
           </v-btn>

@@ -7,7 +7,7 @@
   >
     {{ text }}
 
-    <template v-slot:actions>
+    <template #actions>
       <v-btn
         variant="text"
         @click="show = false"

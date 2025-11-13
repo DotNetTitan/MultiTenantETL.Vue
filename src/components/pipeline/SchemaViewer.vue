@@ -24,33 +24,33 @@
                 :key="field.name"
                 :class="{ 'mapped-field': isSourceFieldMapped(field.name) }"
               >
-              <template v-slot:prepend>
-                <v-icon v-if="isSourceFieldMapped(field.name)" color="success">
-                  mdi-check-circle
-                </v-icon>
-                <v-icon v-else color="grey-lighten-1">
-                  mdi-circle-outline
-                </v-icon>
-              </template>
-              <v-list-item-title>
-                {{ field.name }}
-                <v-chip
-                  v-if="field.required"
-                  size="x-small"
-                  color="info"
-                  variant="tonal"
-                  class="ml-2"
-                >
-                  Required
-                </v-chip>
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
-                <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                  Nullable
-                </v-chip>
-              </v-list-item-subtitle>
-            </v-list-item>
+                <template #prepend>
+                  <v-icon v-if="isSourceFieldMapped(field.name)" color="success">
+                    mdi-check-circle
+                  </v-icon>
+                  <v-icon v-else color="grey-lighten-1">
+                    mdi-circle-outline
+                  </v-icon>
+                </template>
+                <v-list-item-title>
+                  {{ field.name }}
+                  <v-chip
+                    v-if="field.required"
+                    size="x-small"
+                    color="info"
+                    variant="tonal"
+                    class="ml-2"
+                  >
+                    Required
+                  </v-chip>
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
+                  <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
+                    Nullable
+                  </v-chip>
+                </v-list-item-subtitle>
+              </v-list-item>
               <v-list-item v-if="filteredSourceFields.length === 0">
                 <v-list-item-title class="text-grey text-center">
                   No fields found
@@ -91,35 +91,35 @@
                 :key="field.name"
                 :class="getDestinationFieldClass(field)"
               >
-              <template v-slot:prepend>
-                <v-icon v-if="isDestinationFieldMapped(field.name)" color="success">
-                  mdi-check-circle
-                </v-icon>
-                <v-icon v-else-if="field.required" color="error">
-                  mdi-alert-circle
-                </v-icon>
-                <v-icon v-else color="grey-lighten-1">
-                  mdi-circle-outline
-                </v-icon>
-              </template>
-              <v-list-item-title>
-                {{ field.name }}
-                <v-chip
-                  v-if="field.required"
-                  size="x-small"
-                  color="error"
-                  class="ml-2"
-                >
-                  Required
-                </v-chip>
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
-                <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                  Nullable
-                </v-chip>
-              </v-list-item-subtitle>
-            </v-list-item>
+                <template #prepend>
+                  <v-icon v-if="isDestinationFieldMapped(field.name)" color="success">
+                    mdi-check-circle
+                  </v-icon>
+                  <v-icon v-else-if="field.required" color="error">
+                    mdi-alert-circle
+                  </v-icon>
+                  <v-icon v-else color="grey-lighten-1">
+                    mdi-circle-outline
+                  </v-icon>
+                </template>
+                <v-list-item-title>
+                  {{ field.name }}
+                  <v-chip
+                    v-if="field.required"
+                    size="x-small"
+                    color="error"
+                    class="ml-2"
+                  >
+                    Required
+                  </v-chip>
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
+                  <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
+                    Nullable
+                  </v-chip>
+                </v-list-item-subtitle>
+              </v-list-item>
               <v-list-item v-if="filteredDestinationFields.length === 0">
                 <v-list-item-title class="text-grey text-center">
                   No fields found

@@ -19,7 +19,7 @@
 
         <div class="sm:flex sm:items-start">
           <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+            <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">
               {{ isEditing ? 'Edit' : 'Add' }} Transformation
             </h3>
             
@@ -75,7 +75,7 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'close']);
 
-const { validateTransformation } = useTransformation();
+const { validateTransformation: validateTransformationSchema } = useTransformation();
 
 const isEditing = computed(() => !!props.transformation);
 
@@ -86,11 +86,10 @@ const form = ref(props.transformation ? { ...props.transformation } : {
   config: {}
 });
 
-const errors = ref({});
 const isValid = ref(false);
 const saving = ref(false);
 
-const { errors: validationErrors, validateField, validateForm, clearErrors } = useFormValidation();
+const { errors, validateField, validateForm, clearErrors } = useFormValidation();
 const transformationErrors = ref([]);
 
 const validateTransformation = async () => {
@@ -106,7 +105,7 @@ const validateTransformation = async () => {
         value: form.value.config.filterColumn,
         rules: [
           v => !!v || 'Filter column is required',
-          v => inputSchema.value.columns.includes(v) || 'Column does not exist in input schema'
+          v => props.inputSchema.columns.includes(v) || 'Column does not exist in input schema'
         ]
       };
       validationFields['operator'] = {
@@ -126,7 +125,7 @@ const validateTransformation = async () => {
         value: form.value.config.sourceColumn,
         rules: [
           v => !!v || 'Source column is required',
-          v => inputSchema.value.columns.includes(v) || 'Column does not exist in input schema'
+          v => props.inputSchema.columns.includes(v) || 'Column does not exist in input schema'
         ]
       };
       validationFields['targetColumn'] = {
@@ -158,7 +157,7 @@ const validateTransformation = async () => {
         value: form.value.config.groupByColumns,
         rules: [
           v => Array.isArray(v) && v.length > 0 || 'At least one group by column is required',
-          v => v.every(col => inputSchema.value.columns.includes(col)) || 'All columns must exist in input schema'
+          v => v.every(col => props.inputSchema.columns.includes(col)) || 'All columns must exist in input schema'
         ]
       };
       validationFields['aggregations'] = {
@@ -191,7 +190,7 @@ const validateTransformation = async () => {
 
   // Validate schema impact
   try {
-    const outputSchema = await validateSchemaImpact(form.value, inputSchema.value);
+    const outputSchema = await validateSchemaImpact(form.value, props.inputSchema);
     if (!outputSchema.isValid) {
       transformationErrors.value = outputSchema.errors;
       return false;
@@ -280,7 +279,7 @@ const handleSave = async () => {
   errors.value = {};
 
   try {
-    const validationResult = await validateTransformation(form.value, props.inputSchema);
+    const validationResult = await validateTransformationSchema(form.value, props.inputSchema);
     
     if (validationResult.isValid) {
       emit('save', {

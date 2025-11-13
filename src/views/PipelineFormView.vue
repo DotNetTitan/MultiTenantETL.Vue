@@ -5,8 +5,8 @@
       <v-btn
         icon
         variant="text"
-        @click="handleCancel"
         class="mr-2"
+        @click="handleCancel"
       >
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>

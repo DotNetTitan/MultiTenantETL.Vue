@@ -90,7 +90,7 @@
                 <v-textarea
                   v-model="endpoint.requestSchema"
                   label="Request Schema (JSON)"
-                  placeholder='{"customer": {"name": "", "email": ""}}'
+                  placeholder="{&quot;customer&quot;: {&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}}"
                   variant="outlined"
                   rows="4"
                   hint="Full request body structure"
@@ -117,7 +117,7 @@
                 <v-textarea
                   v-model="endpoint.responseSchema"
                   label="Response Schema (JSON)"
-                  placeholder='{"status": "success", "data": {"customer": {...}}}'
+                  placeholder="{&quot;status&quot;: &quot;success&quot;, &quot;data&quot;: {&quot;customer&quot;: {...}}}"
                   variant="outlined"
                   rows="4"
                   hint="Full response structure"

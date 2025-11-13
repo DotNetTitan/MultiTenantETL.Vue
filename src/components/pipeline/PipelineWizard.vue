@@ -1,6 +1,5 @@
 <template>
   <v-card class="wizard-card" elevation="0">
-
     <v-stepper v-model="currentStep" alt-labels flat class="wizard-stepper">
       <v-stepper-header>
         <v-stepper-item
@@ -85,7 +84,7 @@
                     variant="outlined"
                     :rules="[v => !!v || 'Source is required']"
                   >
-                    <template v-slot:prepend-item>
+                    <template #prepend-item>
                       <v-list-item
                         title="Create New Source..."
                         prepend-icon="mdi-plus"
@@ -111,7 +110,7 @@
                     variant="outlined"
                     :rules="[v => !!v || 'Destination is required']"
                   >
-                    <template v-slot:prepend-item>
+                    <template #prepend-item>
                       <v-list-item
                         title="Create New Destination..."
                         prepend-icon="mdi-plus"
@@ -165,7 +164,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  <v-col cols="12" md="6" v-if="pipeline.schedule.frequency !== 'Custom'">
+                  <v-col v-if="pipeline.schedule.frequency !== 'Custom'" cols="12" md="6">
                     <v-text-field
                       v-model="pipeline.schedule.time"
                       label="Time"
@@ -175,7 +174,7 @@
                       persistent-hint
                     />
                   </v-col>
-                  <v-col cols="12" md="6" v-if="pipeline.schedule.frequency === 'Weekly'">
+                  <v-col v-if="pipeline.schedule.frequency === 'Weekly'" cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.dayOfWeek"
                       label="Day of Week"
@@ -183,7 +182,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  <v-col cols="12" md="6" v-if="pipeline.schedule.frequency === 'Monthly'">
+                  <v-col v-if="pipeline.schedule.frequency === 'Monthly'" cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.dayOfMonth"
                       label="Day of Month"
@@ -191,7 +190,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  <v-col cols="12" v-if="pipeline.schedule.frequency === 'Custom'">
+                  <v-col v-if="pipeline.schedule.frequency === 'Custom'" cols="12">
                     <v-text-field
                       v-model="pipeline.schedule.cronExpression"
                       label="Cron Expression"
@@ -230,14 +229,14 @@
               <v-card-text>
                 <v-list density="compact">
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>mdi-label</v-icon>
                     </template>
                     <v-list-item-title>Name</v-list-item-title>
                     <v-list-item-subtitle>{{ pipeline.name }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item v-if="pipeline.description">
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>mdi-text</v-icon>
                     </template>
                     <v-list-item-title>Description</v-list-item-title>
@@ -256,14 +255,14 @@
               <v-card-text>
                 <v-list density="compact">
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon color="blue">mdi-database-export</v-icon>
                     </template>
                     <v-list-item-title>Source</v-list-item-title>
                     <v-list-item-subtitle>{{ getDataSourceName(pipeline.sourceId) }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon color="green">mdi-database-import</v-icon>
                     </template>
                     <v-list-item-title>Destination</v-list-item-title>
@@ -337,7 +336,7 @@
               <v-card-text>
                 <v-list density="compact">
                   <v-list-item>
-                    <template v-slot:prepend>
+                    <template #prepend>
                       <v-icon>{{ pipeline.isScheduled ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
                     </template>
                     <v-list-item-title>Scheduled Execution</v-list-item-title>
@@ -345,42 +344,42 @@
                   </v-list-item>
                   <template v-if="pipeline.isScheduled && pipeline.schedule">
                     <v-list-item>
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-clock-outline</v-icon>
                       </template>
                       <v-list-item-title>Frequency</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.frequency }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency !== 'Custom' && pipeline.schedule.time">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-clock</v-icon>
                       </template>
                       <v-list-item-title>Time</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.time }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Weekly' && pipeline.schedule.dayOfWeek">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-calendar-week</v-icon>
                       </template>
                       <v-list-item-title>Day of Week</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.dayOfWeek }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Monthly' && pipeline.schedule.dayOfMonth">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-calendar-month</v-icon>
                       </template>
                       <v-list-item-title>Day of Month</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.dayOfMonth }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Custom' && pipeline.schedule.cronExpression">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-code-braces</v-icon>
                       </template>
                       <v-list-item-title>Cron Expression</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.cronExpression }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.timezone">
-                      <template v-slot:prepend>
+                      <template #prepend>
                         <v-icon>mdi-earth</v-icon>
                       </template>
                       <v-list-item-title>Timezone</v-list-item-title>
@@ -393,7 +392,6 @@
           </div>
         </v-stepper-window-item>
       </v-stepper-window>
-
     </v-stepper>
 
     <v-divider />
@@ -413,8 +411,8 @@
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
-        @click="currentStep++"
         :disabled="!canProceed"
+        @click="currentStep++"
       >
         Next
       </v-btn>
@@ -423,9 +421,9 @@
         color="primary"
         variant="elevated"
         prepend-icon="mdi-content-save"
-        @click="handleSave"
         :loading="saving"
         :disabled="!canSave"
+        @click="handleSave"
       >
         Save
         <v-tooltip activator="parent" location="top">Save Pipeline</v-tooltip>

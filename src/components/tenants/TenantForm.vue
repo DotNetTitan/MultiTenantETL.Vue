@@ -6,8 +6,8 @@
           v-model="form.name"
           label="Tenant Name"
           prepend-icon="mdi-domain"
-          @update:model-value="updateField('name', $event)"
           :error-messages="errors.name"
+          @update:model-value="updateField('name', $event)"
         />
       </v-col>
       <v-col cols="12">
@@ -15,10 +15,10 @@
           v-model="form.identifier"
           label="Identifier"
           prepend-icon="mdi-identifier"
-          @update:model-value="updateField('identifier', $event)"
           :error-messages="errors.identifier"
           hint="Used as subdomain and in API requests"
           persistent-hint
+          @update:model-value="updateField('identifier', $event)"
         />
       </v-col>
       <v-col cols="12">
@@ -44,8 +44,8 @@
           v-model="form.contactEmail"
           label="Contact Email"
           prepend-icon="mdi-email"
-          @update:model-value="updateField('contactEmail', $event)"
           :error-messages="errors.contactEmail"
+          @update:model-value="updateField('contactEmail', $event)"
         />
       </v-col>
       <v-col cols="12">

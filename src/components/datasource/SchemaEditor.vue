@@ -213,7 +213,7 @@
             label="Paste JSON Schema"
             rows="10"
             variant="outlined"
-            placeholder='{"fields": [{"name": "id", "type": "int", ...}]}'
+            placeholder="{&quot;fields&quot;: [{&quot;name&quot;: &quot;id&quot;, &quot;type&quot;: &quot;int&quot;, ...}]}"
           />
         </v-card-text>
         <v-card-actions>

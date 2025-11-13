@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-6">
+  <form class="space-y-6" @submit.prevent="handleSubmit">
     <div class="grid grid-cols-2 gap-4">
       <FormInput
         v-model="form.name"
@@ -195,8 +195,8 @@
       <button
         type="button"
         class="btn btn-secondary"
-        @click="handleValidatePipeline"
         :disabled="!isFormValid || validating"
+        @click="handleValidatePipeline"
       >
         {{ validating ? 'Validating...' : 'Validate Pipeline' }}
       </button>
@@ -418,16 +418,7 @@ const handleSelectTransformation = (transformation) => {
     executionOrder: form.value.transformations.length + 1
   });
   
-  // Validate and update schema after adding transformation
-  validateTransformation(transformation, currentSchema.value)
-    .then(result => {
-      if (result.isValid) {
-        currentSchema.value = result.outputSchema;
-      }
-    })
-    .catch(error => {
-      console.error('Error validating transformation:', error);
-    });
+  // Schema will be updated by TransformationList component
 };
 
 const handleCreateNewTransformation = () => {
@@ -439,20 +430,7 @@ const handleAddTransformation = (transformation) => {
   form.value.transformations.push(transformation);
   showAddTransformation.value = false;
   
-  // Validate and update schema after adding transformation
-  validateTransformation(transformation, currentSchema.value)
-    .then(result => {
-      if (!result.isValid) {
-        emit('notify', {
-          type: 'warning',
-          message: 'Added transformation may have validation issues. Please review.'
-        });
-      }
-      currentSchema.value = getOutputSchema(transformation, currentSchema.value);
-    })
-    .catch(error => {
-      console.error('Error validating transformation:', error);
-    });
+  // Schema will be updated by TransformationList component
 };
 
 const handleValidatePipeline = async () => {

@@ -19,8 +19,8 @@
         <v-btn
           color="primary"
           prepend-icon="mdi-file-upload"
-          @click="fileInput.click()"
           :loading="analyzing"
+          @click="fileInput.click()"
         >
           Choose File
         </v-btn>

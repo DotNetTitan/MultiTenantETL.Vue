@@ -45,10 +45,10 @@
             v-for="transformation in filteredTransformations"
             :key="transformation.id"
             :value="transformation.id"
-            @click="selectTransformation(transformation)"
             class="transformation-item"
+            @click="selectTransformation(transformation)"
           >
-            <template v-slot:prepend>
+            <template #prepend>
               <v-avatar :color="getTypeColor(transformation.type)">
                 <v-icon color="white">{{ getTypeIcon(transformation.type) }}</v-icon>
               </v-avatar>
@@ -60,7 +60,7 @@
               {{ transformation.description }}
             </v-list-item-subtitle>
 
-            <template v-slot:append>
+            <template #append>
               <v-btn
                 icon
                 variant="text"

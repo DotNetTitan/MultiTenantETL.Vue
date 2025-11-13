@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4">
+  <form class="space-y-4" @submit.prevent="handleSubmit">
     <FormInput
       v-model="form.name"
       label="Name"
@@ -177,8 +177,8 @@
       <button
         type="button"
         class="btn btn-secondary"
-        @click="handleTestConnection"
         :disabled="!isFormValid || testing"
+        @click="handleTestConnection"
       >
         {{ testing ? 'Testing...' : 'Test Connection' }}
       </button>

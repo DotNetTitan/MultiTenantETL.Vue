@@ -3,7 +3,6 @@
     <v-card 
       v-bind="props" 
       class="mb-4" 
-      elevation="2" 
       :elevation="isHovering ? 5 : 2"
       :class="{'on-hover': isHovering}"
       @click="$router.push(to)"

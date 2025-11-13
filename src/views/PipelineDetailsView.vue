@@ -22,10 +22,10 @@
       <v-btn 
         color="primary" 
         prepend-icon="mdi-play" 
-        @click="runPipeline"
         :loading="running"
         :disabled="pipeline?.status === 'Running'"
         class="mr-2"
+        @click="runPipeline"
       >
         Run
       </v-btn>
@@ -33,8 +33,8 @@
         color="primary" 
         variant="outlined"
         prepend-icon="mdi-pencil" 
-        @click="editPipeline"
         class="mr-2"
+        @click="editPipeline"
       >
         Edit
       </v-btn>
@@ -88,7 +88,7 @@
                   :prepend-icon="getDataSourceIcon(source.type)"
                   :ripple="false"
                 >
-                  <template v-slot:append>
+                  <template #append>
                     <v-chip
                       :color="source.isConnected ? 'success' : 'error'"
                       size="x-small"
@@ -176,8 +176,8 @@
                         icon
                         variant="text"
                         size="small"
-                        @click="viewExecutionDetails(execution)"
                         title="View details"
+                        @click="viewExecutionDetails(execution)"
                       >
                         <v-icon>mdi-eye</v-icon>
                       </v-btn>
@@ -248,24 +248,24 @@
               <div class="text-subtitle-1 font-weight-bold mb-2">Progress</div>
               <v-progress-linear
                 v-if="selectedExecution.status === 'Running'"
-                :modelValue="selectedExecution.progressPercent || 0"
+                :model-value="selectedExecution.progressPercent || 0"
                 color="primary"
                 height="20"
                 rounded
                 striped
               >
-                <template v-slot:default>
+                <template #default>
                   {{ Math.round(selectedExecution.progressPercent || 0) }}%
                 </template>
               </v-progress-linear>
               <v-progress-linear
                 v-else
-                :modelValue="100"
+                :model-value="100"
                 :color="getStatusColor(selectedExecution.status)"
                 height="20"
                 rounded
               >
-                <template v-slot:default>
+                <template #default>
                   {{ selectedExecution.status }}
                 </template>
               </v-progress-linear>
@@ -353,8 +353,8 @@
           </v-btn>
           <v-btn
             color="primary"
-            @click="confirmRunPipeline"
             :loading="running"
+            @click="confirmRunPipeline"
           >
             Run Now
           </v-btn>

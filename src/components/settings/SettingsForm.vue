@@ -6,8 +6,8 @@
           v-model="form.appName"
           label="Application Name"
           prepend-icon="mdi-application"
-          @update:model-value="updateField('appName', $event)"
           :error-messages="errors.appName"
+          @update:model-value="updateField('appName', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">

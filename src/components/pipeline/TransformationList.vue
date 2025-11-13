@@ -23,8 +23,8 @@
               type="button"
               class="btn btn-icon"
               :disabled="index === 0"
-              @click="moveTransformation(index, 'up')"
               title="Move Up"
+              @click="moveTransformation(index, 'up')"
             >
               ↑
             </button>
@@ -32,24 +32,24 @@
               type="button"
               class="btn btn-icon"
               :disabled="index === modelValue.length - 1"
-              @click="moveTransformation(index, 'down')"
               title="Move Down"
+              @click="moveTransformation(index, 'down')"
             >
               ↓
             </button>
             <button
               type="button"
               class="btn btn-icon"
-              @click="editTransformation(index)"
               title="Edit"
+              @click="editTransformation(index)"
             >
               ✎
             </button>
             <button
               type="button"
               class="btn btn-icon btn-danger"
-              @click="removeTransformation(index)"
               title="Remove"
+              @click="removeTransformation(index)"
             >
               ×
             </button>

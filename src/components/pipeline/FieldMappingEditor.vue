@@ -95,8 +95,8 @@
           <v-btn
             icon
             variant="text"
-            @click="showConversionDialog = false"
             :disabled="convertingSchema"
+            @click="showConversionDialog = false"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -122,10 +122,10 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showConversionDialog = false" :disabled="convertingSchema">
+          <v-btn :disabled="convertingSchema" @click="showConversionDialog = false">
             Close
           </v-btn>
-          <v-btn color="primary" @click="convertToManualSchema" :loading="convertingSchema">
+          <v-btn color="primary" :loading="convertingSchema" @click="convertToManualSchema">
             Convert Schema
           </v-btn>
         </v-card-actions>

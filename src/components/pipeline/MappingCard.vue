@@ -44,22 +44,22 @@
             chips
             closable-chips
           >
-            <template v-slot:chip="{ item, props }">
+            <template #chip="{ item, props }">
               <v-chip v-bind="props" size="small">
                 {{ item.title }}
               </v-chip>
             </template>
-            <template v-slot:item="{ item, props }">
+            <template #item="{ item, props }">
               <v-list-item v-bind="props">
-                <template v-slot:title>
+                <template #title>
                   {{ item.title }}
                 </template>
-                <template v-slot:subtitle>
+                <template #subtitle>
                   <v-chip size="x-small" class="mt-1">{{ item.raw.type }}</v-chip>
                 </template>
               </v-list-item>
             </template>
-            <template v-slot:append-item>
+            <template #append-item>
               <v-divider class="mt-2" />
               <v-list-item>
                 <v-list-item-subtitle class="text-caption">
@@ -82,9 +82,9 @@
             :items="destinationFieldItems"
             label="Destination Field"
           >
-            <template v-slot:item="{ item, props }">
+            <template #item="{ item, props }">
               <v-list-item v-bind="props">
-                <template v-slot:title>
+                <template #title>
                   {{ item.title }}
                   <v-chip
                     v-if="item.raw.required"
@@ -95,7 +95,7 @@
                     Required
                   </v-chip>
                 </template>
-                <template v-slot:subtitle>
+                <template #subtitle>
                   <v-chip size="x-small" class="mt-1">{{ item.raw.type }}</v-chip>
                 </template>
               </v-list-item>
@@ -112,8 +112,8 @@
               size="small"
               variant="text"
               prepend-icon="mdi-plus"
-              @click="addTransformation"
               :disabled="!canAddTransformation"
+              @click="addTransformation"
             >
               Add Transformation
             </v-btn>
@@ -143,19 +143,19 @@
                       density="compact"
                       hide-details
                     >
-                      <template v-slot:item="{ item, props }">
+                      <template #item="{ item, props }">
                         <v-list-item v-bind="props">
-                          <template v-slot:prepend>
+                          <template #prepend>
                             <v-avatar :color="getTransformationColor(item.raw.type)" size="28">
                               <v-icon color="white" size="small">
                                 {{ getTransformationIcon(item.raw.type) }}
                               </v-icon>
                             </v-avatar>
                           </template>
-                          <template v-slot:title>
+                          <template #title>
                             {{ item.title }}
                           </template>
-                          <template v-slot:subtitle>
+                          <template #subtitle>
                             <v-chip size="x-small" class="mt-1" variant="tonal">{{ item.raw.type }}</v-chip>
                           </template>
                         </v-list-item>
@@ -208,8 +208,6 @@
             </v-card>
           </div>
         </v-col>
-
-
       </v-row>
     </v-card-text>
   </v-card>

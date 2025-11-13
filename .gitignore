@@ -16,6 +16,7 @@ out/
 .env
 .env.local
 .env.*.local
+# Keep .env.development and .env.production in repo for reference
 
 # IDE
 .vscode/

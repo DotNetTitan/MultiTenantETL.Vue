@@ -58,7 +58,7 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template v-slot:item.type="{ item }">
+          <template #item.type="{ item }">
             <v-chip
               :color="getTypeColor(item.type)"
               text-color="white"
@@ -67,7 +67,7 @@
               {{ item.type }}
             </v-chip>
           </template>
-          <template v-slot:item.description="{ item }">
+          <template #item.description="{ item }">
             <div>
               <div>{{ item.description || '-' }}</div>
               <div v-if="item.schema && item.schema.fields && item.schema.fields.length > 0" class="text-caption text-grey">
@@ -76,16 +76,16 @@
               </div>
             </div>
           </template>
-          <template v-slot:item.createdAt="{ item }">
+          <template #item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template #item.actions="{ item }">
             <v-btn
               icon
               variant="text"
               size="small"
-              @click="editDataSource(item)"
               title="Edit data source"
+              @click="editDataSource(item)"
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -94,8 +94,8 @@
               variant="text"
               size="small"
               color="info"
-              @click="viewSchema(item)"
               title="View schema"
+              @click="viewSchema(item)"
             >
               <v-icon>mdi-table-eye</v-icon>
             </v-btn>
@@ -104,8 +104,8 @@
               variant="text"
               size="small"
               color="success"
-              @click="testConnection(item)"
               title="Test connection"
+              @click="testConnection(item)"
             >
               <v-icon>mdi-connection</v-icon>
             </v-btn>
@@ -114,8 +114,8 @@
               variant="text"
               size="small"
               color="error"
-              @click="confirmDelete(item)"
               title="Delete data source"
+              @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
             </v-btn>
@@ -264,7 +264,7 @@
                     :rules="[v => !!v || 'File type is required']"
                   />
                 </v-col>
-                <v-col cols="12" md="6" v-if="editedDataSource.file.fileType === 'CSV'">
+                <v-col v-if="editedDataSource.file.fileType === 'CSV'" cols="12" md="6">
                   <v-text-field
                     v-model="editedDataSource.file.delimiter"
                     label="Delimiter"
@@ -324,7 +324,7 @@
                   />
                 </v-col>
                 
-                <v-col cols="12" v-if="editedDataSource.api?.authType === 'API Key'">
+                <v-col v-if="editedDataSource.api?.authType === 'API Key'" cols="12">
                   <v-text-field
                     v-model="editedDataSource.credentials.apiKey"
                     label="API Key"
@@ -332,7 +332,7 @@
                   />
                 </v-col>
                 
-                <v-col cols="12" v-if="editedDataSource.api?.authType === 'Bearer Token'">
+                <v-col v-if="editedDataSource.api?.authType === 'Bearer Token'" cols="12">
                   <v-text-field
                     v-model="editedDataSource.credentials.token"
                     label="Bearer Token"
@@ -379,8 +379,8 @@
           </v-btn>
           <v-btn
             color="primary"
-            @click="saveDataSource"
             :loading="savingDataSource"
+            @click="saveDataSource"
           >
             Save
           </v-btn>
@@ -410,8 +410,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="deleteDataSource"
             :loading="deletingDataSource"
+            @click="deleteDataSource"
           >
             Delete
           </v-btn>
@@ -431,8 +431,8 @@
           <v-btn
             icon
             variant="text"
-            @click="showConnectionDialog = false"
             :disabled="testingConnection"
+            @click="showConnectionDialog = false"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -456,8 +456,8 @@
           <v-spacer />
           <v-btn
             variant="text"
-            @click="showConnectionDialog = false"
             :disabled="testingConnection"
+            @click="showConnectionDialog = false"
           >
             Close
           </v-btn>
@@ -516,7 +516,7 @@
                     <div class="text-caption text-grey">Schema Version</div>
                     <div class="text-h6">{{ dataSourceSchema.version || 1 }}</div>
                   </v-col>
-                  <v-col cols="12" v-if="dataSourceSchema.lastModified">
+                  <v-col v-if="dataSourceSchema.lastModified" cols="12">
                     <div class="text-caption text-grey">Last Modified</div>
                     <div class="text-body-2">{{ formatDate(dataSourceSchema.lastModified) }}</div>
                   </v-col>

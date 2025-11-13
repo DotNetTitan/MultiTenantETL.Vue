@@ -5,8 +5,8 @@
       <v-spacer />
       <v-btn 
         color="primary" 
-        @click="fetchExecutions"
         :loading="loading"
+        @click="fetchExecutions"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-refresh</v-icon>
         <span>Refresh</span>
@@ -58,7 +58,7 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template v-slot:item.status="{ item }">
+          <template #item.status="{ item }">
             <v-chip
               :color="getStatusColor(item.status)"
               text-color="white"
@@ -67,22 +67,22 @@
               {{ item.status }}
             </v-chip>
           </template>
-          <template v-slot:item.startTime="{ item }">
+          <template #item.startTime="{ item }">
             {{ formatDate(item.startTime) }}
           </template>
-          <template v-slot:item.endTime="{ item }">
+          <template #item.endTime="{ item }">
             {{ item.endTime ? formatDate(item.endTime) : '-' }}
           </template>
-          <template v-slot:item.duration="{ item }">
+          <template #item.duration="{ item }">
             {{ formatDuration(item.duration) }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template #item.actions="{ item }">
             <v-btn
               icon
               variant="text"
               size="small"
-              @click="viewExecutionDetails(item)"
               title="View details"
+              @click="viewExecutionDetails(item)"
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
@@ -92,8 +92,8 @@
               variant="text"
               size="small"
               color="error"
-              @click="cancelExecution(item)"
               title="Cancel execution"
+              @click="cancelExecution(item)"
             >
               <v-icon>mdi-stop</v-icon>
             </v-btn>
@@ -119,8 +119,8 @@
             color="error"
             variant="tonal"
             size="small"
-            @click="cancelExecution(selectedExecution)"
             class="mr-2"
+            @click="cancelExecution(selectedExecution)"
           >
             <v-icon start>mdi-stop</v-icon>
             <span class="d-none d-sm-inline">Cancel</span>
@@ -147,185 +147,185 @@
 
         <v-card-text class="pa-0" style="max-height: 60vh; overflow-y: auto;">
           <v-window v-model="activeTab">
-          <!-- Overview Tab - KEEP AS IS -->
-          <v-window-item value="overview">
-            <v-card-text>
-              <v-row>
-                <v-col cols="12" lg="6">
-                  <v-card variant="outlined" class="mb-4">
-                    <v-card-title class="text-subtitle-1 d-flex align-center">
-                      <v-icon class="mr-2">mdi-information-outline</v-icon>
-                      <span>Basic Information</span>
-                    </v-card-title>
-                    <v-card-text>
-                      <v-list density="compact" lines="two">
-                        <v-list-item>
-                          <template v-slot:prepend>
-                            <v-icon class="mr-2">mdi-pipe</v-icon>
-                          </template>
-                          <v-list-item-title>Pipeline</v-list-item-title>
-                          <v-list-item-subtitle>{{ selectedExecution.pipelineName }}</v-list-item-subtitle>
-                        </v-list-item>
-                        
-                        <v-divider></v-divider>
-                        
-                        <v-list-item>
-                          <template v-slot:prepend>
-                            <v-icon class="mr-2">mdi-calendar-clock</v-icon>
-                          </template>
-                          <v-list-item-title>Start Time</v-list-item-title>
-                          <v-list-item-subtitle>{{ formatDate(selectedExecution.startTime, true) }}</v-list-item-subtitle>
-                        </v-list-item>
-                        
-                        <v-divider></v-divider>
-                        
-                        <v-list-item>
-                          <template v-slot:prepend>
-                            <v-icon class="mr-2">mdi-calendar-check</v-icon>
-                          </template>
-                          <v-list-item-title>End Time</v-list-item-title>
-                          <v-list-item-subtitle>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</v-list-item-subtitle>
-                        </v-list-item>
-                        
-                        <v-divider></v-divider>
-                        
-                        <v-list-item>
-                          <template v-slot:prepend>
-                            <v-icon class="mr-2">mdi-timer-outline</v-icon>
-                          </template>
-                          <v-list-item-title>Duration</v-list-item-title>
-                          <v-list-item-subtitle>{{ formatDuration(selectedExecution.duration) }}</v-list-item-subtitle>
-                        </v-list-item>
-                      </v-list>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-                
-                <v-col cols="12" lg="6">
-                  <v-card variant="outlined" class="mb-4">
-                    <v-card-title class="text-subtitle-1 d-flex align-center">
-                      <v-icon class="mr-2">mdi-chart-bar</v-icon>
-                      <span>Performance Metrics</span>
-                    </v-card-title>
-                    <v-card-text>
-                      <div class="my-3">
-                        <div class="d-flex justify-space-between mb-1">
-                          <span class="text-body-2 font-weight-medium">Progress</span>
-                          <span class="text-body-2">{{ Math.round(selectedExecution.progressPercent || 0) }}%</span>
-                        </div>
-                        <v-progress-linear
-                          :model-value="selectedExecution.status === 'Running' ? (selectedExecution.progressPercent || 0) : 100"
-                          :color="getStatusColor(selectedExecution.status)"
-                          height="10"
-                          rounded
-                          :striped="selectedExecution.status === 'Running'"
-                        ></v-progress-linear>
-                      </div>
-                      
-                      <v-divider class="my-4"></v-divider>
-                      
-                      <div class="d-flex align-center mb-2">
-                        <v-icon class="mr-2">mdi-database</v-icon>
-                        <span class="text-subtitle-2 font-weight-bold">Rows Processed</span>
-                      </div>
-                      <div class="text-h4 ml-8">
-                        {{ selectedExecution.rowsProcessed?.toLocaleString() || '0' }}
-                      </div>
-                      
-                      <v-divider class="my-4"></v-divider>
-                      
-                      <div class="d-flex align-center justify-space-between mt-3">
-                        <v-chip
-                          size="small"
-                          :color="getStatusColor(selectedExecution.status)"
-                          text-color="white"
-                        >
-                          {{ selectedExecution.status }}
-                        </v-chip>
-                        
-                        <span class="text-caption">
-                          ID: {{ selectedExecution.id }}
-                        </span>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-window-item>
-          
-          <!-- Logs Tab -->
-          <v-window-item value="logs">
-            <v-card-text>
-              <div class="d-flex align-center mb-3">
-                <v-icon class="mr-2">mdi-text-box-outline</v-icon>
-                <div class="text-subtitle-1 font-weight-bold">Execution Logs</div>
-                <v-spacer></v-spacer>
-                <v-btn
-                  density="compact"
-                  variant="text"
-                  size="small"
-                  prepend-icon="mdi-content-copy"
-                  @click="copyLogs"
-                >
-                  Copy
-                </v-btn>
-              </div>
-              
-              <v-card
-                variant="outlined"
-                class="logs-container custom-scrollbar"
-              >
-                <pre class="logs-content">{{ selectedExecution.logs || 'No logs available' }}</pre>
-              </v-card>
-            </v-card-text>
-          </v-window-item>
-          
-          <!-- Timeline Tab - IMPROVED WITH SCROLLING -->
-          <v-window-item value="timeline">
-            <v-card-text>
-              <div class="d-flex align-center mb-3">
-                <v-icon class="mr-2">mdi-timeline</v-icon>
-                <div class="text-subtitle-1 font-weight-bold">Execution Timeline</div>
-              </div>
-              
-              <div v-if="!getExecutionSteps().length" class="text-center pa-4">
-                <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-timeline-clock</v-icon>
-                <div class="text-body-1 text-grey">No timeline events available</div>
-              </div>
-              
-              <!-- Added scrollable container -->
-              <div v-else class="timeline-scrollable-container custom-scrollbar">
-                <v-timeline side="end" line-color="grey-lighten-1" class="timeline-container">
-                  <v-timeline-item
-                    v-for="(step, index) in getExecutionSteps()"
-                    :key="index"
-                    :dot-color="step.color"
-                    :size="step.important ? 'x-small' : 'x-small'"
-                    :icon="step.important ? step.icon : undefined"
-                    :icon-color="step.important ? 'white' : undefined"
-                    class="app-timeline-item"
-                  >
-                    <template v-slot:opposite>
-                      <div class="text-caption text-grey timeline-time">{{ formatTimelineTime(step.time) }}</div>
-                    </template>
-                    
-                    <v-card variant="outlined" :color="step.color + '-lighten-5'" class="app-timeline-card" density="compact">
-                      <v-card-title class="text-subtitle-2 pb-1 pt-2 px-3 d-flex align-center">
-                        <v-icon :color="step.color" size="small" class="mr-2">
-                          {{ step.icon }}
-                        </v-icon>
-                        <span class="timeline-title">{{ step.title }}</span>
+            <!-- Overview Tab - KEEP AS IS -->
+            <v-window-item value="overview">
+              <v-card-text>
+                <v-row>
+                  <v-col cols="12" lg="6">
+                    <v-card variant="outlined" class="mb-4">
+                      <v-card-title class="text-subtitle-1 d-flex align-center">
+                        <v-icon class="mr-2">mdi-information-outline</v-icon>
+                        <span>Basic Information</span>
                       </v-card-title>
-                      <v-card-text v-if="step.description" class="pt-0 pb-2 px-3">
-                        <p class="text-body-2 timeline-description">{{ step.description }}</p>
+                      <v-card-text>
+                        <v-list density="compact" lines="two">
+                          <v-list-item>
+                            <template #prepend>
+                              <v-icon class="mr-2">mdi-pipe</v-icon>
+                            </template>
+                            <v-list-item-title>Pipeline</v-list-item-title>
+                            <v-list-item-subtitle>{{ selectedExecution.pipelineName }}</v-list-item-subtitle>
+                          </v-list-item>
+                        
+                          <v-divider></v-divider>
+                        
+                          <v-list-item>
+                            <template #prepend>
+                              <v-icon class="mr-2">mdi-calendar-clock</v-icon>
+                            </template>
+                            <v-list-item-title>Start Time</v-list-item-title>
+                            <v-list-item-subtitle>{{ formatDate(selectedExecution.startTime, true) }}</v-list-item-subtitle>
+                          </v-list-item>
+                        
+                          <v-divider></v-divider>
+                        
+                          <v-list-item>
+                            <template #prepend>
+                              <v-icon class="mr-2">mdi-calendar-check</v-icon>
+                            </template>
+                            <v-list-item-title>End Time</v-list-item-title>
+                            <v-list-item-subtitle>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</v-list-item-subtitle>
+                          </v-list-item>
+                        
+                          <v-divider></v-divider>
+                        
+                          <v-list-item>
+                            <template #prepend>
+                              <v-icon class="mr-2">mdi-timer-outline</v-icon>
+                            </template>
+                            <v-list-item-title>Duration</v-list-item-title>
+                            <v-list-item-subtitle>{{ formatDuration(selectedExecution.duration) }}</v-list-item-subtitle>
+                          </v-list-item>
+                        </v-list>
                       </v-card-text>
                     </v-card>
-                  </v-timeline-item>
-                </v-timeline>
-              </div>
-            </v-card-text>
-          </v-window-item>
+                  </v-col>
+                
+                  <v-col cols="12" lg="6">
+                    <v-card variant="outlined" class="mb-4">
+                      <v-card-title class="text-subtitle-1 d-flex align-center">
+                        <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                        <span>Performance Metrics</span>
+                      </v-card-title>
+                      <v-card-text>
+                        <div class="my-3">
+                          <div class="d-flex justify-space-between mb-1">
+                            <span class="text-body-2 font-weight-medium">Progress</span>
+                            <span class="text-body-2">{{ Math.round(selectedExecution.progressPercent || 0) }}%</span>
+                          </div>
+                          <v-progress-linear
+                            :model-value="selectedExecution.status === 'Running' ? (selectedExecution.progressPercent || 0) : 100"
+                            :color="getStatusColor(selectedExecution.status)"
+                            height="10"
+                            rounded
+                            :striped="selectedExecution.status === 'Running'"
+                          ></v-progress-linear>
+                        </div>
+                      
+                        <v-divider class="my-4"></v-divider>
+                      
+                        <div class="d-flex align-center mb-2">
+                          <v-icon class="mr-2">mdi-database</v-icon>
+                          <span class="text-subtitle-2 font-weight-bold">Rows Processed</span>
+                        </div>
+                        <div class="text-h4 ml-8">
+                          {{ selectedExecution.rowsProcessed?.toLocaleString() || '0' }}
+                        </div>
+                      
+                        <v-divider class="my-4"></v-divider>
+                      
+                        <div class="d-flex align-center justify-space-between mt-3">
+                          <v-chip
+                            size="small"
+                            :color="getStatusColor(selectedExecution.status)"
+                            text-color="white"
+                          >
+                            {{ selectedExecution.status }}
+                          </v-chip>
+                        
+                          <span class="text-caption">
+                            ID: {{ selectedExecution.id }}
+                          </span>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-window-item>
+          
+            <!-- Logs Tab -->
+            <v-window-item value="logs">
+              <v-card-text>
+                <div class="d-flex align-center mb-3">
+                  <v-icon class="mr-2">mdi-text-box-outline</v-icon>
+                  <div class="text-subtitle-1 font-weight-bold">Execution Logs</div>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    density="compact"
+                    variant="text"
+                    size="small"
+                    prepend-icon="mdi-content-copy"
+                    @click="copyLogs"
+                  >
+                    Copy
+                  </v-btn>
+                </div>
+              
+                <v-card
+                  variant="outlined"
+                  class="logs-container custom-scrollbar"
+                >
+                  <pre class="logs-content">{{ selectedExecution.logs || 'No logs available' }}</pre>
+                </v-card>
+              </v-card-text>
+            </v-window-item>
+          
+            <!-- Timeline Tab - IMPROVED WITH SCROLLING -->
+            <v-window-item value="timeline">
+              <v-card-text>
+                <div class="d-flex align-center mb-3">
+                  <v-icon class="mr-2">mdi-timeline</v-icon>
+                  <div class="text-subtitle-1 font-weight-bold">Execution Timeline</div>
+                </div>
+              
+                <div v-if="!getExecutionSteps().length" class="text-center pa-4">
+                  <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-timeline-clock</v-icon>
+                  <div class="text-body-1 text-grey">No timeline events available</div>
+                </div>
+              
+                <!-- Added scrollable container -->
+                <div v-else class="timeline-scrollable-container custom-scrollbar">
+                  <v-timeline side="end" line-color="grey-lighten-1" class="timeline-container">
+                    <v-timeline-item
+                      v-for="(step, index) in getExecutionSteps()"
+                      :key="index"
+                      :dot-color="step.color"
+                      :size="step.important ? 'x-small' : 'x-small'"
+                      :icon="step.important ? step.icon : undefined"
+                      :icon-color="step.important ? 'white' : undefined"
+                      class="app-timeline-item"
+                    >
+                      <template #opposite>
+                        <div class="text-caption text-grey timeline-time">{{ formatTimelineTime(step.time) }}</div>
+                      </template>
+                    
+                      <v-card variant="outlined" :color="step.color + '-lighten-5'" class="app-timeline-card" density="compact">
+                        <v-card-title class="text-subtitle-2 pb-1 pt-2 px-3 d-flex align-center">
+                          <v-icon :color="step.color" size="small" class="mr-2">
+                            {{ step.icon }}
+                          </v-icon>
+                          <span class="timeline-title">{{ step.title }}</span>
+                        </v-card-title>
+                        <v-card-text v-if="step.description" class="pt-0 pb-2 px-3">
+                          <p class="text-body-2 timeline-description">{{ step.description }}</p>
+                        </v-card-text>
+                      </v-card>
+                    </v-timeline-item>
+                  </v-timeline>
+                </div>
+              </v-card-text>
+            </v-window-item>
           </v-window>
         </v-card-text>
 
@@ -365,8 +365,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="confirmCancelExecution"
             :loading="cancelling"
+            @click="confirmCancelExecution"
           >
             Yes, Cancel
           </v-btn>
@@ -674,7 +674,7 @@ async function fetchExecutions() {
   } finally {
     loading.value = false;
   }
-};
+}
 
 onMounted(async () => {
   await fetchExecutions();

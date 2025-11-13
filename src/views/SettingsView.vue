@@ -227,8 +227,8 @@
             <v-btn 
               color="primary" 
               prepend-icon="mdi-plus" 
-              @click="createApiKey"
               :loading="creatingApiKey"
+              @click="createApiKey"
             >
               Create API Key
             </v-btn>
@@ -260,20 +260,20 @@
               :items="apiKeys"
               :loading="loadingApiKeys"
             >
-              <template v-slot:item.createdAt="{ item }">
+              <template #item.createdAt="{ item }">
                 {{ formatDate(item.createdAt) }}
               </template>
-              <template v-slot:item.lastUsed="{ item }">
+              <template #item.lastUsed="{ item }">
                 {{ item.lastUsed ? formatDate(item.lastUsed) : 'Never' }}
               </template>
-              <template v-slot:item.actions="{ item }">
+              <template #item.actions="{ item }">
                 <v-btn
                   icon
                   variant="text"
                   size="small"
                   color="error"
-                  @click="revokeApiKey(item)"
                   title="Revoke key"
+                  @click="revokeApiKey(item)"
                 >
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
@@ -409,8 +409,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="confirmRevokeApiKey"
             :loading="revokingApiKey"
+            @click="confirmRevokeApiKey"
           >
             Revoke
           </v-btn>

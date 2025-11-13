@@ -13,78 +13,78 @@
       </v-btn>
     </div>
 
-        <v-card>
-          <v-card-text>
-            <table-filters
-              :filters="availableFilters"
-              :sort-options="sortOptions"
-              @filter="handleFilter"
-              @sort="handleSort"
-            />
+    <v-card>
+      <v-card-text>
+        <table-filters
+          :filters="availableFilters"
+          :sort-options="sortOptions"
+          @filter="handleFilter"
+          @sort="handleSort"
+        />
 
-            <v-table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Identifier</th>
-                  <th>Contact</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loading" class="text-center">
-                  <td colspan="6">
-                    <v-progress-circular indeterminate class="ma-4" />
-                  </td>
-                </tr>
-                <tr v-else-if="!tenants.length">
-                  <td colspan="6" class="text-center">No tenants found</td>
-                </tr>
-                <tr v-for="tenant in tenants" :key="tenant.id">
-                  <td>{{ tenant.name }}</td>
-                  <td>{{ tenant.identifier }}</td>
-                  <td>
-                    <div>{{ tenant.contactName }}</div>
-                    <div class="text-caption">{{ tenant.contactEmail }}</div>
-                  </td>
-                  <td>
-                    <v-chip
-                      :color="tenant.isActive ? 'success' : 'error'"
-                      size="small"
-                    >
-                      {{ tenant.isActive ? 'Active' : 'Inactive' }}
-                    </v-chip>
-                  </td>
-                  <td>{{ tenantService.formatDate(tenant.createdAt) }}</td>
-                  <td>
-                    <v-btn
-                      icon="mdi-pencil"
-                      size="small"
-                      variant="text"
-                      @click="openEditDialog(tenant)"
-                    />
-                    <v-btn
-                      icon="mdi-delete"
-                      size="small"
-                      variant="text"
-                      color="error"
-                      @click="confirmDelete(tenant)"
-                    />
-                    <v-btn
-                      :icon="tenant.isActive ? 'mdi-close' : 'mdi-check'"
-                      size="small"
-                      variant="text"
-                      :color="tenant.isActive ? 'error' : 'success'"
-                      @click="toggleTenantStatus(tenant)"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-card-text>
-        </v-card>
+        <v-table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Identifier</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="loading" class="text-center">
+              <td colspan="6">
+                <v-progress-circular indeterminate class="ma-4" />
+              </td>
+            </tr>
+            <tr v-else-if="!tenants.length">
+              <td colspan="6" class="text-center">No tenants found</td>
+            </tr>
+            <tr v-for="tenant in tenants" :key="tenant.id">
+              <td>{{ tenant.name }}</td>
+              <td>{{ tenant.identifier }}</td>
+              <td>
+                <div>{{ tenant.contactName }}</div>
+                <div class="text-caption">{{ tenant.contactEmail }}</div>
+              </td>
+              <td>
+                <v-chip
+                  :color="tenant.isActive ? 'success' : 'error'"
+                  size="small"
+                >
+                  {{ tenant.isActive ? 'Active' : 'Inactive' }}
+                </v-chip>
+              </td>
+              <td>{{ tenantService.formatDate(tenant.createdAt) }}</td>
+              <td>
+                <v-btn
+                  icon="mdi-pencil"
+                  size="small"
+                  variant="text"
+                  @click="openEditDialog(tenant)"
+                />
+                <v-btn
+                  icon="mdi-delete"
+                  size="small"
+                  variant="text"
+                  color="error"
+                  @click="confirmDelete(tenant)"
+                />
+                <v-btn
+                  :icon="tenant.isActive ? 'mdi-close' : 'mdi-check'"
+                  size="small"
+                  variant="text"
+                  :color="tenant.isActive ? 'error' : 'success'"
+                  @click="toggleTenantStatus(tenant)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card-text>
+    </v-card>
 
     <!-- Tenant Form Dialog -->
     <v-dialog v-model="showCreateDialog" max-width="600">
@@ -95,8 +95,8 @@
           <v-btn
             icon
             variant="text"
-            @click="closeDialog"
             :disabled="loading"
+            @click="closeDialog"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -104,16 +104,16 @@
         <v-card-text>
           <tenant-form
             :tenant="editedTenant"
-            @update:tenant="editedTenant = $event"
             :loading="loading"
             :error="error"
+            @update:tenant="editedTenant = $event"
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
-            @click="closeDialog"
             :disabled="loading"
+            @click="closeDialog"
           >
             Close
           </v-btn>

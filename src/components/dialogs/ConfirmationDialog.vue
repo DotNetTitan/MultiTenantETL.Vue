@@ -1,8 +1,8 @@
 <template>
   <v-dialog
     :model-value="show"
-    @update:model-value="$emit('update:show', $event)"
     :max-width="width"
+    @update:model-value="$emit('update:show', $event)"
   >
     <v-card>
       <v-card-title :class="titleClass">
@@ -15,15 +15,15 @@
         <v-spacer />
         <v-btn
           variant="text"
-          @click="$emit('update:show', false)"
           :disabled="loading"
+          @click="$emit('update:show', false)"
         >
           {{ cancelText }}
         </v-btn>
         <v-btn
           :color="confirmColor"
-          @click="$emit('confirm')"
           :loading="loading"
+          @click="$emit('confirm')"
         >
           {{ confirmText }}
         </v-btn>

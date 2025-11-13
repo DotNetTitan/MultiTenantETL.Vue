@@ -16,15 +16,15 @@
 
           <!-- Form Section -->
           <v-card-text class="px-8 pb-8">
-            <v-form @submit.prevent="handleLogin" :disabled="authStore.loading">
+            <v-form :disabled="authStore.loading" @submit.prevent="handleLogin">
               <FormInput
                 v-model="username"
                 label="Username"
                 prepend-inner-icon="mdi-account"
                 variant="outlined"
                 :error-messages="errors.username"
-                @update:model-value="validateField('username', $event, [required])"
                 class="mb-4"
+                @update:model-value="validateField('username', $event, [required])"
               />
               <FormInput
                 v-model="password"
@@ -33,8 +33,8 @@
                 prepend-inner-icon="mdi-lock"
                 variant="outlined"
                 :error-messages="errors.password"
-                @update:model-value="validateField('password', $event, [required, minLength(6)])"
                 class="mb-2"
+                @update:model-value="validateField('password', $event, [required, minLength(6)])"
               />
               <v-checkbox
                 v-model="rememberMe"
@@ -79,11 +79,11 @@
                 color="primary"
                 size="large"
                 block
-                @click="handleLogin"
                 :loading="authStore.loading"
                 :disabled="authStore.loading"
                 class="text-none font-weight-bold"
                 elevation="2"
+                @click="handleLogin"
               >
                 Sign In
               </v-btn>

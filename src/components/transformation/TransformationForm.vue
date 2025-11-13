@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4">
+  <form class="space-y-4" @submit.prevent="handleSubmit">
     <FormInput
       v-model="form.name"
       label="Name"
@@ -294,8 +294,8 @@ row => ({
       <div class="flex items-center space-x-4">
         <label class="flex items-center">
           <input
-            type="checkbox"
             v-model="form.config.useRegex"
+            type="checkbox"
             class="mr-2"
           />
           Use Regular Expression
@@ -303,8 +303,8 @@ row => ({
 
         <label v-if="form.config.useRegex" class="flex items-center">
           <input
-            type="checkbox"
             v-model="form.config.caseSensitive"
+            type="checkbox"
             class="mr-2"
           />
           Case Sensitive
@@ -312,8 +312,8 @@ row => ({
 
         <label class="flex items-center">
           <input
-            type="checkbox"
             v-model="form.config.replaceAll"
+            type="checkbox"
             class="mr-2"
           />
           Replace All Occurrences
@@ -358,8 +358,8 @@ row => ({
       <button
         type="button"
         class="btn btn-secondary"
-        @click="handleValidateTransformation"
         :disabled="!isFormValid || validating"
+        @click="handleValidateTransformation"
       >
         {{ validating ? 'Validating...' : 'Validate' }}
       </button>
@@ -478,7 +478,6 @@ const transformationRules = {
   }
 };
 
-const errors = ref({});
 const validating = ref(false);
 const saving = ref(false);
 

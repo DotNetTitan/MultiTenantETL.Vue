@@ -6,8 +6,8 @@
           v-model="form.firstName"
           label="First Name"
           prepend-icon="mdi-account"
-          @update:model-value="updateField('firstName', $event)"
           :error-messages="errors.firstName"
+          @update:model-value="updateField('firstName', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">
@@ -15,8 +15,8 @@
           v-model="form.lastName"
           label="Last Name"
           prepend-icon="mdi-account"
-          @update:model-value="updateField('lastName', $event)"
           :error-messages="errors.lastName"
+          @update:model-value="updateField('lastName', $event)"
         />
       </v-col>
       <v-col cols="12">
@@ -25,8 +25,8 @@
           label="Email"
           type="email"
           prepend-icon="mdi-email"
-          @update:model-value="updateField('email', $event)"
           :error-messages="errors.email"
+          @update:model-value="updateField('email', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">
@@ -36,8 +36,8 @@
           label="Role"
           prepend-icon="mdi-shield-account"
           variant="outlined"
-          @update:model-value="updateField('role', $event)"
           :error-messages="errors.role"
+          @update:model-value="updateField('role', $event)"
         />
       </v-col>
       <v-col cols="12" md="6">

@@ -58,7 +58,7 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template v-slot:item.status="{ item }">
+          <template #item.status="{ item }">
             <v-chip
               :color="getStatusColor(item.status)"
               text-color="white"
@@ -67,10 +67,10 @@
               {{ item.status }}
             </v-chip>
           </template>
-          <template v-slot:item.lastRunAt="{ item }">
+          <template #item.lastRunAt="{ item }">
             {{ item.lastRunAt ? formatDate(item.lastRunAt) : 'Never' }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template #item.actions="{ item }">
             <v-btn
               icon
               variant="text"
@@ -84,8 +84,8 @@
               icon
               variant="text"
               size="small"
-              @click="openEditDialog(item)"
               title="Edit pipeline"
+              @click="openEditDialog(item)"
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -94,8 +94,8 @@
               variant="text"
               size="small"
               color="info"
-              @click="viewMappings(item)"
               title="View field mappings"
+              @click="viewMappings(item)"
             >
               <v-icon>mdi-map-marker-path</v-icon>
             </v-btn>
@@ -104,9 +104,9 @@
               variant="text"
               size="small"
               color="success"
-              @click="handleExecutePipeline(item)"
               :disabled="item.status === 'Running'"
               title="Execute pipeline"
+              @click="handleExecutePipeline(item)"
             >
               <v-icon>mdi-play</v-icon>
             </v-btn>
@@ -115,8 +115,8 @@
               variant="text"
               size="small"
               color="error"
-              @click="confirmDelete(item)"
               title="Delete pipeline"
+              @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
             </v-btn>
@@ -168,8 +168,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="handleDeletePipeline"
             :loading="deletingPipeline"
+            @click="handleDeletePipeline"
           >
             Delete
           </v-btn>

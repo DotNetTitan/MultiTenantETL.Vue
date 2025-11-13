@@ -58,7 +58,7 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template v-slot:item.type="{ item }">
+          <template #item.type="{ item }">
             <v-chip
               :color="getTypeColor(item.type)"
               text-color="white"
@@ -67,17 +67,17 @@
               {{ item.type }}
             </v-chip>
           </template>
-          <template v-slot:item.createdAt="{ item }">
+          <template #item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template #item.actions="{ item }">
             <div class="d-flex flex-nowrap">
               <v-btn
                 icon
                 variant="text"
                 size="small"
-                @click="viewTransformationDetails(item)"
                 title="View details"
+                @click="viewTransformationDetails(item)"
               >
                 <v-icon>mdi-eye</v-icon>
               </v-btn>
@@ -85,8 +85,8 @@
                 icon
                 variant="text"
                 size="small"
-                @click="editTransformation(item)"
                 title="Edit transformation"
+                @click="editTransformation(item)"
               >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
@@ -94,8 +94,8 @@
                 icon
                 variant="text"
                 size="small"
-                @click="cloneTransformation(item)"
                 title="Clone transformation"
+                @click="cloneTransformation(item)"
               >
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
@@ -104,8 +104,8 @@
                 variant="text"
                 size="small"
                 color="error"
-                @click="confirmDelete(item)"
                 title="Delete transformation"
+                @click="confirmDelete(item)"
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
@@ -187,7 +187,7 @@
                     required
                   />
                 </v-col>
-                <v-col cols="12" md="4" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
+                <v-col v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)" cols="12" md="4">
                   <v-select
                     v-model="editedTransformation.config.valueType"
                     label="Value Type"
@@ -202,7 +202,7 @@
                     required
                   />
                 </v-col>
-                <v-col cols="12" md="4" v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)">
+                <v-col v-if="!['isEmpty', 'isNotEmpty'].includes(editedTransformation.config.operator)" cols="12" md="4">
                   <v-text-field
                     v-if="editedTransformation.config.valueType === 'boolean'"
                     v-model="editedTransformation.config.defaultValue"
@@ -286,9 +286,9 @@
               <v-btn
                 prepend-icon="mdi-plus"
                 variant="text"
-                @click="addMapping"
                 size="small"
                 class="mt-2"
+                @click="addMapping"
               >
                 Add Value Mapping
               </v-btn>
@@ -445,8 +445,6 @@
                 </v-col>
               </v-row>
             </div>
-
-
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -459,8 +457,8 @@
           </v-btn>
           <v-btn
             color="primary"
-            @click="saveTransformation"
             :loading="savingTransformation"
+            @click="saveTransformation"
           >
             Save
           </v-btn>
@@ -490,8 +488,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="deleteTransformation"
             :loading="deletingTransformation"
+            @click="deleteTransformation"
           >
             Delete
           </v-btn>
@@ -554,11 +552,11 @@
                     <div class="text-caption text-grey">Operator</div>
                     <v-chip size="small" class="mt-1">{{ selectedTransformation.config.operator }}</v-chip>
                   </v-col>
-                  <v-col cols="4" v-if="selectedTransformation.config.valueType">
+                  <v-col v-if="selectedTransformation.config.valueType" cols="4">
                     <div class="text-caption text-grey">Value Type</div>
                     <v-chip size="small" class="mt-1" color="blue">{{ selectedTransformation.config.valueType }}</v-chip>
                   </v-col>
-                  <v-col cols="4" v-if="selectedTransformation.config.defaultValue">
+                  <v-col v-if="selectedTransformation.config.defaultValue" cols="4">
                     <div class="text-caption text-grey">Filter Value</div>
                     <div class="text-body-1 mt-1">{{ selectedTransformation.config.defaultValue }}</div>
                   </v-col>

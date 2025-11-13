@@ -1,16 +1,16 @@
 <template>
   <v-text-field
     :model-value="modelValue"
-    @update:model-value="handleInput"
-    @blur="handleBlur"
     :label="label"
     :type="showPassword ? 'text' : type"
     :error-messages="errorMessages"
     :prepend-icon="prependIcon"
     :append-inner-icon="passwordToggleIcon"
     variant="outlined"
-    @click:append-inner="togglePasswordVisibility"
     v-bind="$attrs"
+    @update:model-value="handleInput"
+    @blur="handleBlur"
+    @click:append-inner="togglePasswordVisibility"
   />
 </template>
 
@@ -87,9 +87,6 @@ const validateInput = async () => {
   if (!props.rules?.length && !props.asyncValidation) return true;
   
   const rules = [...(props.rules || [])];
-  if (props.asyncValidation) {
-    rules.push(createAsyncValidator(props.asyncValidation));
-  }
 
   for (const rule of rules) {
     try {
