@@ -2,7 +2,7 @@
   <v-dialog :model-value="modelValue" max-width="600" @update:model-value="$emit('update:modelValue', $event)">
     <v-card>
       <v-card-title class="d-flex align-center">
-        {{ field?.id && field.id.startsWith('field-') && field.name ? 'Edit Field' : 'Add Field' }}
+        {{ field?.id && field.id.startsWith('field-') && field.name ? $t('schema.editField') : $t('schema.addField') }}
         <v-spacer />
         <v-btn
           icon
@@ -19,8 +19,8 @@
             <v-col cols="12">
               <v-text-field
                 v-model="localField.name"
-                label="Field Name"
-                placeholder="e.g., email, firstName, orderDate"
+                :label="$t('schema.fieldNameLabel')"
+                :placeholder="$t('schema.fieldNamePlaceholder')"
                 variant="outlined"
                 :rules="nameRules"
                 required
@@ -33,7 +33,7 @@
               <v-select
                 v-model="localField.type"
                 :items="dataTypes"
-                label="Data Type"
+                :label="$t('schema.dataType')"
                 variant="outlined"
                 :rules="[v => !!v || 'Data type is required']"
                 required
@@ -51,8 +51,8 @@
             <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.isPrimaryKey"
-                label="Unique Identifier"
-                hint="Uniquely identifies each record"
+                :label="$t('schema.uniqueIdentifier')"
+                :hint="$t('schema.uniqueIdentifierHint')"
                 persistent-hint
                 color="primary"
                 @update:model-value="handlePrimaryKeyChange"
@@ -62,8 +62,8 @@
             <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.required"
-                label="Required Field"
-                hint="Field must have a value"
+                :label="$t('schema.requiredField')"
+                :hint="$t('schema.requiredFieldHint')"
                 persistent-hint
                 @update:model-value="handleRequiredChange"
               />
@@ -72,8 +72,8 @@
             <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.nullable"
-                label="Nullable"
-                hint="Field can contain NULL values"
+                :label="$t('dataSources.nullable')"
+                :hint="$t('schema.nullableHint')"
                 persistent-hint
                 @update:model-value="handleNullableChange"
               />
@@ -83,15 +83,15 @@
             <v-col v-if="localField.required && localField.nullable" cols="12">
               <v-alert type="error" density="compact" variant="tonal">
                 <v-icon start>mdi-alert-circle</v-icon>
-                A field cannot be both Required and Nullable. Please choose one.
+                {{ $t('schema.requiredAndNullableConflict') }}
               </v-alert>
             </v-col>
 
             <v-col cols="12">
               <v-textarea
                 v-model="localField.description"
-                label="Description (Optional)"
-                placeholder="Describe the purpose of this field..."
+                :label="$t('schema.descriptionOptional')"
+                :placeholder="$t('schema.descriptionPlaceholder')"
                 variant="outlined"
                 rows="3"
               />
@@ -103,10 +103,10 @@
       <v-card-actions>
         <v-spacer />
         <v-btn @click="$emit('update:modelValue', false)">
-          Close
+          {{ $t('common.close') }}
         </v-btn>
         <v-btn color="primary" @click="handleSave">
-          Save Field
+          {{ $t('schema.saveField') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -115,6 +115,9 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: {
@@ -135,16 +138,16 @@ const emit = defineEmits(['update:modelValue', 'save']);
 
 // Data types with icons
 const dataTypes = [
-  { value: 'varchar', title: 'String', icon: 'mdi-text' },
-  { value: 'int', title: 'Integer', icon: 'mdi-numeric' },
-  { value: 'bigint', title: 'Big Integer', icon: 'mdi-numeric' },
-  { value: 'decimal', title: 'Decimal', icon: 'mdi-decimal' },
-  { value: 'boolean', title: 'Boolean', icon: 'mdi-checkbox-marked' },
-  { value: 'date', title: 'Date', icon: 'mdi-calendar' },
-  { value: 'datetime', title: 'Date Time', icon: 'mdi-calendar-clock' },
-  { value: 'timestamp', title: 'Timestamp', icon: 'mdi-clock' },
-  { value: 'json', title: 'JSON', icon: 'mdi-code-json' },
-  { value: 'text', title: 'Text (Long)', icon: 'mdi-text-long' }
+  { value: 'varchar', title: t('schema.dataTypes.string'), icon: 'mdi-text' },
+  { value: 'int', title: t('schema.dataTypes.integer'), icon: 'mdi-numeric' },
+  { value: 'bigint', title: t('schema.dataTypes.bigInteger'), icon: 'mdi-numeric' },
+  { value: 'decimal', title: t('schema.dataTypes.decimal'), icon: 'mdi-decimal' },
+  { value: 'boolean', title: t('schema.dataTypes.boolean'), icon: 'mdi-checkbox-marked' },
+  { value: 'date', title: t('schema.dataTypes.date'), icon: 'mdi-calendar' },
+  { value: 'datetime', title: t('schema.dataTypes.dateTime'), icon: 'mdi-calendar-clock' },
+  { value: 'timestamp', title: t('schema.dataTypes.timestamp'), icon: 'mdi-clock' },
+  { value: 'json', title: t('schema.dataTypes.json'), icon: 'mdi-code-json' },
+  { value: 'text', title: t('schema.dataTypes.textLong'), icon: 'mdi-text-long' }
 ];
 
 // Local state

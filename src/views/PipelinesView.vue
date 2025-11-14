@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Pipelines</h1>
+      <h1 class="text-h4 mr-4">{{ $t('pipelines.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
         @click="openCreatePipelineDialog"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">Create</span>
-        <span v-else>Create Pipeline</span>
+        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+        <span v-else>{{ $t('pipelines.createPipeline') }}</span>
       </v-btn>
     </div>
 
@@ -19,7 +19,7 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              label="Search Pipelines"
+              :label="$t('pipelines.searchPipelines')"
               prepend-inner-icon="mdi-magnify"
               density="compact"
               hide-details
@@ -30,7 +30,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="statusFilter"
-              label="Status"
+              :label="$t('common.status')"
               :items="statusOptions"
               density="compact"
               hide-details
@@ -41,7 +41,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="sortBy"
-              label="Sort By"
+              :label="$t('filters.sortBy')"
               :items="sortOptions"
               density="compact"
               hide-details
@@ -64,7 +64,7 @@
               text-color="white"
               size="small"
             >
-              {{ item.status }}
+              {{ getStatusLabel(item.status) }}
             </v-chip>
           </template>
           <template #item.lastRunAt="{ item }">
@@ -76,7 +76,7 @@
               variant="text"
               size="small"
               :to="`/pipelines/${item.id}`"
-              title="View details"
+              :title="$t('pipelines.viewDetails')"
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
@@ -84,7 +84,7 @@
               icon
               variant="text"
               size="small"
-              title="Edit pipeline"
+              :title="$t('common.edit')"
               @click="openEditDialog(item)"
             >
               <v-icon>mdi-pencil</v-icon>
@@ -94,7 +94,7 @@
               variant="text"
               size="small"
               color="info"
-              title="View field mappings"
+              :title="$t('pipelines.viewMappings')"
               @click="viewMappings(item)"
             >
               <v-icon>mdi-map-marker-path</v-icon>
@@ -105,7 +105,7 @@
               size="small"
               color="success"
               :disabled="item.status === 'Running'"
-              title="Execute pipeline"
+              :title="$t('pipelines.executePipeline')"
               @click="handleExecutePipeline(item)"
             >
               <v-icon>mdi-play</v-icon>
@@ -115,7 +115,7 @@
               variant="text"
               size="small"
               color="error"
-              title="Delete pipeline"
+              :title="$t('common.delete')"
               @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
@@ -153,10 +153,10 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          Delete Pipeline
+          {{ $t('pipelines.deletePipeline') }}
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete the pipeline "{{ pipelineToDelete?.name }}"? This action cannot be undone.
+          {{ $t('pipelines.deleteConfirm', { name: pipelineToDelete?.name }) }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -164,14 +164,14 @@
             variant="text"
             @click="showDeleteDialog = false"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
             color="error"
             :loading="deletingPipeline"
             @click="handleDeletePipeline"
           >
-            Delete
+            {{ $t('common.delete') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -193,7 +193,7 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="mr-2">mdi-map-marker-path</v-icon>
-          {{ selectedPipeline?.name }} - Field Mappings
+          {{ selectedPipeline?.name }} - {{ $t('pipelines.fieldMappings') }}
           <v-spacer />
           <v-btn
             icon
@@ -207,7 +207,7 @@
         <v-card-text>
           <div v-if="loadingMappings" class="text-center py-8">
             <v-progress-circular indeterminate color="primary" size="64" />
-            <div class="mt-4">Loading mappings...</div>
+            <div class="mt-4">{{ $t('pipelines.loadingMappings') }}</div>
           </div>
           
           <div v-else-if="mappingsError" class="text-center py-8">
@@ -221,21 +221,21 @@
               <v-card-text>
                 <v-row dense>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">Source</div>
+                    <div class="text-caption text-grey">{{ $t('pipelines.source') }}</div>
                     <div class="text-body-1">
                       <v-icon size="small" class="mr-1">mdi-database</v-icon>
                       {{ selectedPipeline?.sourceName }}
                     </div>
                   </v-col>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">Destination</div>
+                    <div class="text-caption text-grey">{{ $t('pipelines.destination') }}</div>
                     <div class="text-body-1">
                       <v-icon size="small" class="mr-1">mdi-database</v-icon>
                       {{ selectedPipeline?.destinationName }}
                     </div>
                   </v-col>
                   <v-col cols="12">
-                    <div class="text-caption text-grey">Total Mappings</div>
+                    <div class="text-caption text-grey">{{ $t('pipelines.totalMappings') }}</div>
                     <div class="text-h6">{{ pipelineMappings.length }}</div>
                   </v-col>
                 </v-row>
@@ -245,7 +245,7 @@
             <!-- Mappings List -->
             <div v-if="pipelineMappings.length === 0" class="text-center py-8">
               <v-icon size="64" color="grey">mdi-map-marker-off</v-icon>
-              <div class="mt-4 text-grey">No field mappings defined</div>
+              <div class="mt-4 text-grey">{{ $t('pipelines.noMappingsDefine') }}</div>
             </div>
             
             <v-expansion-panels v-else>
@@ -276,7 +276,7 @@
                   <v-row dense>
                     <v-col cols="12" md="5">
                       <v-card variant="outlined">
-                        <v-card-subtitle>Source Field</v-card-subtitle>
+                        <v-card-subtitle>{{ $t('pipelines.sourceField') }}</v-card-subtitle>
                         <v-card-text>
                           <div class="mb-2">
                             <strong>{{ mapping.sourceField }}</strong>
@@ -294,7 +294,7 @@
                     
                     <v-col cols="12" md="5">
                       <v-card variant="outlined">
-                        <v-card-subtitle>Destination Field</v-card-subtitle>
+                        <v-card-subtitle>{{ $t('pipelines.destinationField') }}</v-card-subtitle>
                         <v-card-text>
                           <div class="mb-2">
                             <strong>{{ mapping.destinationField }}</strong>
@@ -310,7 +310,7 @@
                       <v-card variant="outlined" color="info">
                         <v-card-subtitle>
                           <v-icon start>{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                          Transformation Applied
+                          {{ $t('pipelines.transformationApplied') }}
                         </v-card-subtitle>
                         <v-card-text>
                           <div class="mb-2">
@@ -342,8 +342,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import TransformationSelector from '@/components/pipeline/TransformationSelector.vue';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
@@ -352,6 +353,7 @@ import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
 
 const router = useRouter();
+const { t } = useI18n();
 
 // Get functionality from main pipeline composable
 const {
@@ -411,15 +413,15 @@ function getDataSourceId(sourceIdOrObject) {
 }
 
 // Data table headers
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Source', key: 'sourceName' },
-  { title: 'Destination', key: 'destinationName' },
-  { title: 'Status', key: 'status', width: '120px' },
-  { title: 'Last Run', key: 'lastRunAt', width: '150px' },
-  { title: 'Scheduled', key: 'isScheduled', width: '100px' },
-  { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
-];
+const headers = computed(() => [
+  { title: t('common.name'), key: 'name' },
+  { title: t('pipelines.source'), key: 'sourceName' },
+  { title: t('pipelines.destination'), key: 'destinationName' },
+  { title: t('common.status'), key: 'status', width: '120px' },
+  { title: t('pipelines.lastRun'), key: 'lastRunAt', width: '150px' },
+  { title: t('pipelines.scheduled'), key: 'isScheduled', width: '100px' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+]);
 
 // Dialog controls
 const showCreateDialog = ref(false);
@@ -486,6 +488,17 @@ async function handleExecutePipeline(pipeline) {
 function goToCreateDataSource() {
   showCreateDialog.value = false;
   router.push('/data-sources?action=create');
+}
+
+function getStatusLabel(status) {
+  const statusMap = {
+    'Running': t('executions.running'),
+    'Completed': t('executions.completed'),
+    'Failed': t('executions.failed'),
+    'Cancelled': t('executions.cancelled'),
+    'Idle': t('executions.idle')
+  };
+  return statusMap[status] || status;
 }
 
 function getTransformationColor(type) {

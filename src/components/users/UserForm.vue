@@ -4,7 +4,7 @@
       <v-col cols="12" md="6">
         <FormInput
           v-model="form.firstName"
-          label="First Name"
+          :label="$t('forms.firstName')"
           prepend-icon="mdi-account"
           :error-messages="errors.firstName"
           @update:model-value="updateField('firstName', $event)"
@@ -13,7 +13,7 @@
       <v-col cols="12" md="6">
         <FormInput
           v-model="form.lastName"
-          label="Last Name"
+          :label="$t('forms.lastName')"
           prepend-icon="mdi-account"
           :error-messages="errors.lastName"
           @update:model-value="updateField('lastName', $event)"
@@ -22,7 +22,7 @@
       <v-col cols="12">
         <FormInput
           v-model="form.email"
-          label="Email"
+          :label="$t('forms.email')"
           type="email"
           prepend-icon="mdi-email"
           :error-messages="errors.email"
@@ -33,7 +33,7 @@
         <v-select
           v-model="form.role"
           :items="roles"
-          label="Role"
+          :label="$t('forms.role')"
           prepend-icon="mdi-shield-account"
           variant="outlined"
           :error-messages="errors.role"
@@ -43,7 +43,7 @@
       <v-col cols="12" md="6">
         <v-switch
           v-model="form.isActive"
-          label="Active"
+          :label="$t('forms.active')"
           color="success"
           hide-details
           @update:model-value="updateField('isActive', $event)"
@@ -55,8 +55,11 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation } from '@/composables/useFormValidation';
+
+const { t } = useI18n();
 
 const props = defineProps({
   user: {

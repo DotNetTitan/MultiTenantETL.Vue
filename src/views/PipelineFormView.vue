@@ -11,8 +11,8 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <div>
-        <h1 class="text-h4">{{ isEdit ? 'Edit Pipeline' : 'Create New Pipeline' }}</h1>
-        <p class="text-caption text-grey">{{ isEdit ? 'Update pipeline configuration' : 'Configure a new ETL pipeline' }}</p>
+        <h1 class="text-h4">{{ isEdit ? $t('pipelines.editPipeline') : $t('pipelines.createNewPipeline') }}</h1>
+        <p class="text-caption text-grey">{{ isEdit ? $t('pipelines.updateConfiguration') : $t('pipelines.configureNewPipeline') }}</p>
       </div>
     </div>
 

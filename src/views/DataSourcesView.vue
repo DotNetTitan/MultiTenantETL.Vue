@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Data Sources</h1>
+      <h1 class="text-h4 mr-4">{{ $t('dataSources.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
         @click="createNewDataSource"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">Create</span>
-        <span v-else>Create Data Source</span>
+        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+        <span v-else>{{ $t('dataSources.createDataSource') }}</span>
       </v-btn>
     </div>
 
@@ -19,7 +19,7 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              label="Search Data Sources"
+              :label="$t('dataSources.searchDataSources')"
               prepend-inner-icon="mdi-magnify"
               density="compact"
               hide-details
@@ -30,7 +30,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="typeFilter"
-              label="Type"
+              :label="$t('common.type')"
               :items="typeOptions"
               density="compact"
               hide-details
@@ -41,7 +41,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="sortBy"
-              label="Sort By"
+              :label="$t('filters.sortBy')"
               :items="sortOptions"
               density="compact"
               hide-details
@@ -84,7 +84,7 @@
               icon
               variant="text"
               size="small"
-              title="Edit data source"
+              :title="$t('dataSources.editDataSource')"
               @click="editDataSource(item)"
             >
               <v-icon>mdi-pencil</v-icon>
@@ -94,7 +94,7 @@
               variant="text"
               size="small"
               color="info"
-              title="View schema"
+              :title="$t('dataSources.viewSchema')"
               @click="viewSchema(item)"
             >
               <v-icon>mdi-table-eye</v-icon>
@@ -104,7 +104,7 @@
               variant="text"
               size="small"
               color="success"
-              title="Test connection"
+              :title="$t('dataSources.testConnection')"
               @click="testConnection(item)"
             >
               <v-icon>mdi-connection</v-icon>
@@ -114,7 +114,7 @@
               variant="text"
               size="small"
               color="error"
-              title="Delete data source"
+              :title="$t('common.delete')"
               @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
@@ -395,10 +395,10 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          Delete Data Source
+          {{ $t('dataSources.deleteDataSource') }}
         </v-card-title>
         <v-card-text>
-          Are you sure you want to delete the data source "{{ dataSourceToDelete?.name }}"? This action cannot be undone.
+          {{ $t('dataSources.deleteConfirm', { name: dataSourceToDelete?.name }) }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -406,14 +406,14 @@
             variant="text"
             @click="showDeleteDialog = false"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
             color="error"
             :loading="deletingDataSource"
             @click="deleteDataSource"
           >
-            Delete
+            {{ $t('common.delete') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -426,7 +426,7 @@
     >
       <v-card>
         <v-card-title class="d-flex align-center">
-          Testing Connection
+          {{ $t('dataSources.testingConnection') }}
           <v-spacer />
           <v-btn
             icon
@@ -440,14 +440,14 @@
         <v-card-text>
           <div v-if="testingConnection" class="d-flex flex-column align-center py-4">
             <v-progress-circular indeterminate size="64" width="4" />
-            <div class="mt-4">Testing connection to {{ connectionTestSource?.name }}...</div>
+            <div class="mt-4">{{ $t('dataSources.testingConnectionTo', { name: connectionTestSource?.name }) }}</div>
           </div>
           <div v-else-if="connectionTestResult" class="text-center py-4">
             <v-icon :color="connectionTestSuccess ? 'success' : 'error'" size="64">
               {{ connectionTestSuccess ? 'mdi-check-circle' : 'mdi-alert-circle' }}
             </v-icon>
             <div class="mt-4 text-h6">
-              {{ connectionTestSuccess ? 'Connection Successful' : 'Connection Failed' }}
+              {{ connectionTestSuccess ? $t('dataSources.connectionSuccessful') : $t('dataSources.connectionFailed') }}
             </div>
             <div class="mt-2">{{ connectionTestMessage }}</div>
           </div>
@@ -495,7 +495,7 @@
         <v-card-text>
           <div v-if="loadingSchema" class="text-center py-8">
             <v-progress-circular indeterminate color="primary" size="64" />
-            <div class="mt-4">Loading schema...</div>
+            <div class="mt-4">{{ $t('dataSources.loadingSchema') }}</div>
           </div>
           
           <div v-else-if="schemaError" class="text-center py-8">
@@ -509,11 +509,11 @@
               <v-card-text>
                 <v-row dense>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">Total Fields</div>
+                    <div class="text-caption text-grey">{{ $t('dataSources.totalFields') }}</div>
                     <div class="text-h6">{{ dataSourceSchema.fields.length }}</div>
                   </v-col>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">Schema Version</div>
+                    <div class="text-caption text-grey">{{ $t('dataSources.schemaVersion') }}</div>
                     <div class="text-h6">{{ dataSourceSchema.version || 1 }}</div>
                   </v-col>
                   <v-col v-if="dataSourceSchema.lastModified" cols="12">
@@ -591,6 +591,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
 import { useDataSource } from '@/composables/useDataSource';
@@ -610,17 +611,18 @@ import { findPipelinesUsingDataSource } from '@/services/pipelineService';
 const route = useRoute();
 const router = useRouter();
 const tenantStore = useTenantStore();
+const { t } = useI18n();
 
 const { validateConnection } = useDataSource();
 
 // Data table
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Type', key: 'type', width: '120px' },
-  { title: 'Description', key: 'description' },
-  { title: 'Created', key: 'createdAt', width: '150px' },
-  { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
-];
+const headers = computed(() => [
+  { title: t('common.name'), key: 'name' },
+  { title: t('common.type'), key: 'type', width: '120px' },
+  { title: t('common.description'), key: 'description' },
+  { title: t('common.created'), key: 'createdAt', width: '150px' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+]);
 
 // Filters and sorting
 const search = ref('');

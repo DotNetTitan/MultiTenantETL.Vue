@@ -1,7 +1,7 @@
 <template>
   <v-card variant="outlined">
     <v-card-title class="d-flex align-center">
-      <span class="text-subtitle-1">Mapping {{ index + 1 }}</span>
+      <span class="text-subtitle-1">{{ $t('pipeline.mapping', { number: index + 1 }) }}</span>
       <v-spacer />
       <v-btn
         icon
@@ -39,7 +39,7 @@
           <v-select
             v-model="localMapping.sourceFields"
             :items="sourceFieldItems"
-            label="Source Field(s)"
+            :label="$t('pipeline.sourceFields')"
             multiple
             chips
             closable-chips
@@ -63,7 +63,7 @@
               <v-divider class="mt-2" />
               <v-list-item>
                 <v-list-item-subtitle class="text-caption">
-                  Select multiple fields to combine them with a transformation
+                  {{ $t('pipeline.selectMultipleFields') }}
                 </v-list-item-subtitle>
               </v-list-item>
             </template>
@@ -80,7 +80,7 @@
           <v-select
             v-model="localMapping.destinationField"
             :items="destinationFieldItems"
-            label="Destination Field"
+            :label="$t('pipeline.destinationField')"
           >
             <template #item="{ item, props }">
               <v-list-item v-bind="props">
@@ -92,7 +92,7 @@
                     color="error"
                     class="ml-2"
                   >
-                    Required
+                    {{ $t('common.required') }}
                   </v-chip>
                 </template>
                 <template #subtitle>
@@ -106,7 +106,7 @@
         <!-- Transformations Chain -->
         <v-col cols="12">
           <div class="d-flex align-center mb-2">
-            <span class="text-subtitle-2">Transformations (Optional)</span>
+            <span class="text-subtitle-2">{{ $t('pipeline.transformationsOptional') }}</span>
             <v-spacer />
             <v-btn
               size="small"
@@ -115,12 +115,12 @@
               :disabled="!canAddTransformation"
               @click="addTransformation"
             >
-              Add Transformation
+              {{ $t('pipeline.addTransformation') }}
             </v-btn>
           </div>
           
           <div v-if="!localMapping.transformations || localMapping.transformations.length === 0" class="text-caption text-grey pa-3 text-center">
-            No transformations applied. Click "Add Transformation" to modify data during mapping.
+            {{ $t('pipeline.noTransformations') }}
           </div>
           
           <div v-else class="transformations-chain">
@@ -139,7 +139,7 @@
                     <v-select
                       v-model="trans.transformationId"
                       :items="compatibleTransformationItems"
-                      label="Select Transformation"
+                      :label="$t('pipeline.selectTransformation')"
                       density="compact"
                       hide-details
                     >
@@ -197,8 +197,8 @@
                     <v-text-field
                       v-if="getTransformationById(trans.transformationId).type === 'Map'"
                       v-model="trans.config.separator"
-                      label="Separator"
-                      hint="Character to use between combined fields"
+                      :label="$t('pipeline.separator')"
+                      :hint="$t('pipeline.separatorHint')"
                       persistent-hint
                       density="compact"
                     />
@@ -215,7 +215,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getCompatibleTransformations } from '@/services/schemaService';
+
+const { t } = useI18n();
 
 const props = defineProps({
   mapping: {

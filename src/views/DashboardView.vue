@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-6">Dashboard</h1>
+    <h1 class="text-h4 mb-6">{{ $t('dashboard.title') }}</h1>
     
     <v-row>
       <v-col cols="12" md="6" lg="3">
@@ -15,7 +15,7 @@
             <v-card-item>
               <v-card-title class="d-flex align-center">
                 <v-icon icon="mdi-pipe" size="x-large" class="mr-2" color="primary" />
-                Total Pipelines
+                {{ $t('dashboard.totalPipelines') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
                 {{ stats.totalPipelines }}
@@ -23,7 +23,7 @@
               </div>
             </v-card-item>
             <v-card-actions>
-              <v-btn variant="tonal" block to="/pipelines">View Pipelines</v-btn>
+              <v-btn variant="tonal" block to="/pipelines">{{ $t('dashboard.viewPipelines') }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-hover>
@@ -41,7 +41,7 @@
             <v-card-item>
               <v-card-title class="d-flex align-center">
                 <v-icon icon="mdi-play-circle" size="x-large" class="mr-2" color="success" />
-                Active Pipelines
+                {{ $t('dashboard.activePipelines') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
                 {{ stats.activePipelines }}
@@ -49,7 +49,7 @@
               </div>
             </v-card-item>
             <v-card-actions>
-              <v-btn variant="tonal" color="success" block to="/pipelines?status=active">View Active</v-btn>
+              <v-btn variant="tonal" color="success" block to="/pipelines?status=active">{{ $t('dashboard.viewActive') }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-hover>
@@ -67,7 +67,7 @@
             <v-card-item>
               <v-card-title class="d-flex align-center">
                 <v-icon icon="mdi-database" size="x-large" class="mr-2" color="info" />
-                Data Sources
+                {{ $t('dashboard.dataSources') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
                 {{ stats.dataSources }}
@@ -75,7 +75,7 @@
               </div>
             </v-card-item>
             <v-card-actions>
-              <v-btn variant="tonal" color="info" block to="/data-sources">View Sources</v-btn>
+              <v-btn variant="tonal" color="info" block to="/data-sources">{{ $t('dashboard.viewSources') }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-hover>
@@ -93,7 +93,7 @@
             <v-card-item>
               <v-card-title class="d-flex align-center">
                 <v-icon icon="mdi-history" size="x-large" class="mr-2" color="purple" />
-                Recent Executions
+                {{ $t('dashboard.recentExecutions') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
                 {{ stats.recentExecutions }}
@@ -101,7 +101,7 @@
               </div>
             </v-card-item>
             <v-card-actions>
-              <v-btn variant="tonal" color="purple" block to="/executions">View Executions</v-btn>
+              <v-btn variant="tonal" color="purple" block to="/executions">{{ $t('dashboard.viewExecutions') }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-hover>
@@ -113,10 +113,10 @@
         <v-card elevation="2" class="fill-height">
           <v-card-title class="d-flex align-center">
             <v-icon icon="mdi-history" class="mr-2" />
-            Recent Pipeline Executions
+            {{ $t('dashboard.recentPipelineExecutions') }}
             <v-spacer />
             <v-btn size="small" variant="outlined" to="/executions" prepend-icon="mdi-eye">
-              View All
+              {{ $t('dashboard.viewAll') }}
             </v-btn>
           </v-card-title>
           <v-divider />
@@ -124,11 +124,11 @@
             <v-table hover>
               <thead>
                 <tr>
-                  <th>Pipeline</th>
-                  <th>Start Time</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                  <th>Rows Processed</th>
+                  <th>{{ $t('dashboard.pipeline') }}</th>
+                  <th>{{ $t('dashboard.startTime') }}</th>
+                  <th>{{ $t('dashboard.duration') }}</th>
+                  <th>{{ $t('dashboard.status') }}</th>
+                  <th>{{ $t('dashboard.rowsProcessed') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,7 +139,7 @@
                 </tr>
                 <tr v-else-if="recentExecutions.length === 0">
                   <td colspan="5" class="text-center py-4">
-                    No recent executions found
+                    {{ $t('dashboard.noRecentExecutions') }}
                   </td>
                 </tr>
                 <template v-else>
@@ -175,7 +175,7 @@
         <v-card elevation="2" class="fill-height">
           <v-card-title class="d-flex align-center">
             <v-icon icon="mdi-chart-pie" class="mr-2" />
-            Pipeline Status
+            {{ $t('dashboard.pipelineStatus') }}
           </v-card-title>
           <v-divider />
           <v-card-text>
@@ -185,7 +185,7 @@
             <v-sheet v-else height="250" class="d-flex align-center justify-center">
               <!-- Chart placeholder - In a real app, this would be a chart component -->
               <div class="text-center w-100">
-                <div class="text-subtitle-1 mb-4">Pipeline Status Distribution</div>
+                <div class="text-subtitle-1 mb-4">{{ $t('dashboard.pipelineStatusDistribution') }}</div>
                 <v-row>
                   <v-col v-for="(status, index) in statusDistribution" :key="index">
                     <v-hover v-slot="{ isHovering, props }">

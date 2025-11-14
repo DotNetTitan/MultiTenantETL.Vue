@@ -423,16 +423,24 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
   }
 }
 
-export async function getChatResponse(message, currentPage, conversationHistory = []) {
+export async function getChatResponse(message, currentPage, conversationHistory = [], userLanguage = 'en') {
   return retryWithBackoff(async () => {
     // Use gemini-2.5-flash (stable, fast, and widely supported)
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash'
     });
     
+    // Language instruction based on user's locale
+    const languageInstructions = {
+      'en': 'Respond in English.',
+      'es': 'Responde en español (Spanish).',
+      'fr': 'Répondez en français (French).'
+    };
+    const languageInstruction = languageInstructions[userLanguage] || languageInstructions['en'];
+    
     // Build context-aware system prompt
     const pageContext = pageContexts[currentPage] || pageContexts.dashboard;
-    const systemPrompt = `You are Maeve, a helpful AI assistant for the Multi-Tenant ETL Platform application. 
+    const systemPrompt = `You are Maeve, a helpful AI assistant for the Multi-Tenant ETL Platform application. ${languageInstruction} 
 The user is currently on the ${pageContext.title} page.
 
 === CURRENT PAGE CONTEXT ===

@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Transformations</h1>
+      <h1 class="text-h4 mr-4">{{ $t('transformations.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
         @click="openCreateDialog"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">Create</span>
-        <span v-else>Create Transformation</span>
+        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+        <span v-else>{{ $t('transformations.createTransformation') }}</span>
       </v-btn>
     </div>
 

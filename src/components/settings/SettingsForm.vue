@@ -4,7 +4,7 @@
       <v-col cols="12" md="6">
         <FormInput
           v-model="form.appName"
-          label="Application Name"
+          :label="$t('forms.applicationName')"
           prepend-icon="mdi-application"
           :error-messages="errors.appName"
           @update:model-value="updateField('appName', $event)"
@@ -14,7 +14,7 @@
         <v-select
           v-model="form.defaultTheme"
           :items="themeOptions"
-          label="Default Theme"
+          :label="$t('forms.defaultTheme')"
           prepend-icon="mdi-theme-light-dark"
           variant="outlined"
           @update:model-value="updateField('defaultTheme', $event)"
@@ -23,7 +23,7 @@
       <v-col cols="12">
         <v-switch
           v-model="form.enableNotifications"
-          label="Enable Notifications"
+          :label="$t('forms.enableNotifications')"
           color="primary"
           inset
           density="compact"
@@ -37,8 +37,11 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation } from '@/composables/useFormValidation';
+
+const { t } = useI18n();
 
 const props = defineProps({
   settings: {
@@ -52,9 +55,9 @@ const { errors, validateField, validateForm, clearErrors } = useFormValidation()
 const form = ref({ ...props.settings });
 
 const themeOptions = [
-  { title: 'Light', value: 'light' },
-  { title: 'Dark', value: 'dark' },
-  { title: 'System', value: 'system' }
+  { title: t('forms.light'), value: 'light' },
+  { title: t('forms.dark'), value: 'dark' },
+  { title: t('forms.system'), value: 'system' }
 ];
 
 // Clear errors when form changes

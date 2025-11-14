@@ -19,7 +19,7 @@
             <v-form :disabled="authStore.loading" @submit.prevent="handleLogin">
               <FormInput
                 v-model="username"
-                label="Username"
+                :label="$t('auth.username')"
                 prepend-inner-icon="mdi-account"
                 variant="outlined"
                 :error-messages="errors.username"
@@ -28,7 +28,7 @@
               />
               <FormInput
                 v-model="password"
-                label="Password"
+                :label="$t('auth.password')"
                 type="password"
                 prepend-inner-icon="mdi-lock"
                 variant="outlined"
@@ -38,7 +38,7 @@
               />
               <v-checkbox
                 v-model="rememberMe"
-                label="Remember me"
+                :label="$t('auth.rememberMe')"
                 color="primary"
                 hide-details
                 class="mb-4"
@@ -61,17 +61,17 @@
                 type="warning"
                 variant="tonal"
                 icon="mdi-connection"
-                title="Connection Error"
+                :title="$t('auth.connectionError')"
                 class="mb-4"
               >
-                <p>Unable to connect to the API server. Please ensure that:</p>
+                <p>{{ $t('auth.apiOfflineMessage') }}</p>
                 <ul class="ml-4 mt-2">
-                  <li>The backend server is running</li>
-                  <li>The API URL is configured correctly</li>
-                  <li>Your network connection is working</li>
+                  <li>{{ $t('auth.apiOfflineReason1') }}</li>
+                  <li>{{ $t('auth.apiOfflineReason2') }}</li>
+                  <li>{{ $t('auth.apiOfflineReason3') }}</li>
                 </ul>
                 <p class="mt-2 text-caption">
-                  Current API URL: {{ apiUrl }}
+                  {{ $t('auth.currentApiUrl') }}: {{ apiUrl }}
                 </p>
               </v-alert>
 
@@ -85,7 +85,7 @@
                 elevation="2"
                 @click="handleLogin"
               >
-                Sign In
+                {{ $t('auth.login') }}
               </v-btn>
             </v-form>
           </v-card-text>
@@ -94,7 +94,7 @@
         <!-- Footer Info -->
         <div class="text-center mt-6">
           <p class="text-caption text-medium-emphasis">
-            Secure multi-tenant data pipeline management
+            {{ $t('auth.secureMessage') }}
           </p>
         </div>
       </v-col>

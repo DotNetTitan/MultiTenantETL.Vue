@@ -3,13 +3,13 @@
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <v-progress-circular indeterminate color="primary" />
-      <p class="mt-4">Loading schemas...</p>
+      <p class="mt-4">{{ $t('pipeline.loadingSchemas') }}</p>
     </div>
 
     <!-- Error State -->
     <v-alert v-else-if="error" type="error" class="mb-4">
       {{ error }}
-      <v-btn variant="text" @click="fetchSchemas">Retry</v-btn>
+      <v-btn variant="text" @click="fetchSchemas">{{ $t('common.retry') }}</v-btn>
     </v-alert>
 
     <!-- Main Content -->
@@ -20,7 +20,7 @@
           <v-expansion-panel-title>
             <div class="d-flex align-center">
               <v-icon class="mr-2">mdi-table-eye</v-icon>
-              <span>View Source & Destination Fields</span>
+              <span>{{ $t('pipeline.viewSourceDestFields') }}</span>
             </div>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -37,8 +37,8 @@
       <div class="mb-4">
         <div class="d-flex align-center mb-3">
           <div>
-            <h3 class="text-h6">Field Mappings</h3>
-            <p class="text-caption text-grey">Map source fields to destination fields</p>
+            <h3 class="text-h6">{{ $t('pipeline.fieldMappings') }}</h3>
+            <p class="text-caption text-grey">{{ $t('pipeline.mapSourceToDestination') }}</p>
           </div>
           <v-spacer />
           <v-btn
@@ -46,14 +46,14 @@
             prepend-icon="mdi-plus"
             @click="addMapping"
           >
-            Add Mapping
+            {{ $t('pipeline.addMapping') }}
           </v-btn>
         </div>
 
         <div v-if="localMappings.length === 0" class="text-center py-12">
           <v-icon size="80" color="grey-lighten-2">mdi-map-marker-path</v-icon>
-          <p class="mt-4 text-h6 text-grey">No field mappings yet</p>
-          <p class="text-caption text-grey">Click "Add Mapping" to start mapping fields</p>
+          <p class="mt-4 text-h6 text-grey">{{ $t('pipeline.noFieldMappings') }}</p>
+          <p class="text-caption text-grey">{{ $t('pipeline.clickAddMapping') }}</p>
         </div>
 
         <div v-else class="mappings-list">
@@ -90,7 +90,7 @@
     <v-dialog v-model="showConversionDialog" max-width="600">
       <v-card>
         <v-card-title class="d-flex align-center">
-          Convert to Manual Schema
+          {{ $t('pipeline.convertToManualSchema') }}
           <v-spacer />
           <v-btn
             icon
@@ -103,30 +103,30 @@
         </v-card-title>
         <v-card-text>
           <p class="mb-4">
-            This will convert the auto-detected schema to a manual schema definition that you can edit and maintain.
+            {{ $t('pipeline.convertDescription') }}
           </p>
 
           <v-alert type="info" variant="tonal" class="mb-4">
-            <div class="text-subtitle-2 mb-2">What will happen:</div>
+            <div class="text-subtitle-2 mb-2">{{ $t('pipeline.whatWillHappen') }}</div>
             <ul class="pl-4">
-              <li v-if="autoDetectedSourceId">Source schema will be saved as a manual definition</li>
-              <li v-if="autoDetectedDestinationId">Destination schema will be saved as a manual definition</li>
-              <li>You can edit the schema later in the Data Sources page</li>
-              <li>Field mappings will remain unchanged</li>
+              <li v-if="autoDetectedSourceId">{{ $t('pipeline.sourceSchemaWillBeSaved') }}</li>
+              <li v-if="autoDetectedDestinationId">{{ $t('pipeline.destinationSchemaWillBeSaved') }}</li>
+              <li>{{ $t('pipeline.canEditSchemaLater') }}</li>
+              <li>{{ $t('pipeline.fieldMappingsRemainUnchanged') }}</li>
             </ul>
           </v-alert>
 
           <p class="text-caption text-grey">
-            After conversion, you can modify field properties, add descriptions, and maintain the schema independently of the data source structure.
+            {{ $t('pipeline.afterConversionNote') }}
           </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn :disabled="convertingSchema" @click="showConversionDialog = false">
-            Close
+            {{ $t('common.close') }}
           </v-btn>
           <v-btn color="primary" :loading="convertingSchema" @click="convertToManualSchema">
-            Convert Schema
+            {{ $t('pipeline.convertSchema') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -136,6 +136,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { 
   fetchSchema, 
   validateFieldMappings 
@@ -145,6 +146,8 @@ import { detectSchema } from '@/services/dataSourceService';
 import MappingCard from './MappingCard.vue';
 import SchemaViewer from './SchemaViewer.vue';
 import ValidationSummary from './ValidationSummary.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   sourceId: {

@@ -5,12 +5,12 @@
       <v-card>
         <v-card-title>
           <v-icon start color="blue">mdi-database-export</v-icon>
-          Source Fields
+          {{ $t('pipeline.sourceFields') }}
         </v-card-title>
         <v-card-text class="pa-0">
           <v-text-field
             v-model="sourceSearch"
-            label="Search source fields"
+            :label="$t('pipeline.searchSourceFields')"
             prepend-inner-icon="mdi-magnify"
             density="compact"
             hide-details
@@ -41,19 +41,19 @@
                     variant="tonal"
                     class="ml-2"
                   >
-                    Required
+                    {{ $t('common.required') }}
                   </v-chip>
                 </v-list-item-title>
                 <v-list-item-subtitle>
                   <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
                   <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                    Nullable
+                    {{ $t('dataSources.nullable') }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item v-if="filteredSourceFields.length === 0">
                 <v-list-item-title class="text-grey text-center">
-                  No fields found
+                  {{ $t('pipeline.noFieldsFound') }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -61,7 +61,7 @@
         </v-card-text>
         <v-card-actions>
           <v-chip size="small" color="success">
-            {{ mappedSourceFieldsCount }} / {{ sourceSchema.fields.length }} mapped
+            {{ $t('pipeline.mapped', { count: mappedSourceFieldsCount, total: sourceSchema.fields.length }) }}
           </v-chip>
         </v-card-actions>
       </v-card>
@@ -72,12 +72,12 @@
       <v-card>
         <v-card-title>
           <v-icon start color="green">mdi-database-import</v-icon>
-          Destination Fields
+          {{ $t('pipeline.destinationFields') }}
         </v-card-title>
         <v-card-text class="pa-0">
           <v-text-field
             v-model="destinationSearch"
-            label="Search destination fields"
+            :label="$t('pipeline.searchDestinationFields')"
             prepend-inner-icon="mdi-magnify"
             density="compact"
             hide-details
@@ -110,19 +110,19 @@
                     color="error"
                     class="ml-2"
                   >
-                    Required
+                    {{ $t('common.required') }}
                   </v-chip>
                 </v-list-item-title>
                 <v-list-item-subtitle>
                   <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
                   <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                    Nullable
+                    {{ $t('dataSources.nullable') }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item v-if="filteredDestinationFields.length === 0">
                 <v-list-item-title class="text-grey text-center">
-                  No fields found
+                  {{ $t('pipeline.noFieldsFound') }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -130,7 +130,7 @@
         </v-card-text>
         <v-card-actions>
           <v-chip size="small" color="success">
-            {{ mappedDestinationFieldsCount }} / {{ destinationSchema.fields.length }} mapped
+            {{ $t('pipeline.mapped', { count: mappedDestinationFieldsCount, total: destinationSchema.fields.length }) }}
           </v-chip>
           <v-spacer />
           <v-chip
@@ -138,7 +138,7 @@
             size="small"
             color="error"
           >
-            {{ unmappedRequiredFieldsCount }} required unmapped
+            {{ $t('pipeline.requiredUnmapped', { count: unmappedRequiredFieldsCount }) }}
           </v-chip>
         </v-card-actions>
       </v-card>
@@ -148,6 +148,9 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   sourceSchema: {

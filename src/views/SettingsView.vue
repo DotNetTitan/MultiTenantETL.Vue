@@ -1,23 +1,23 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-6">Settings</h1>
+    <h1 class="text-h4 mb-6">{{ $t('settings.title') }}</h1>
 
     <v-tabs v-model="activeTab" class="mb-6" :show-arrows="$vuetify.display.xs">
       <v-tab value="profile">
         <v-icon v-if="$vuetify.display.xs" start>mdi-account</v-icon>
-        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">User Profile</span>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">{{ $t('settings.userProfile') }}</span>
       </v-tab>
       <v-tab value="preferences">
         <v-icon v-if="$vuetify.display.xs" start>mdi-cog</v-icon>
-        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">Preferences</span>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">{{ $t('settings.preferences') }}</span>
       </v-tab>
       <v-tab value="apiKeys">
         <v-icon v-if="$vuetify.display.xs" start>mdi-key</v-icon>
-        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">API Keys</span>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">{{ $t('settings.apiKeys') }}</span>
       </v-tab>
       <v-tab value="notifications">
         <v-icon v-if="$vuetify.display.xs" start>mdi-bell</v-icon>
-        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">Notifications</span>
+        <span :class="{ 'd-none d-sm-inline': $vuetify.display.xs }">{{ $t('settings.notifications') }}</span>
       </v-tab>
     </v-tabs>
 

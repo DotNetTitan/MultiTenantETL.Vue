@@ -4,7 +4,7 @@
       <v-col cols="12">
         <FormInput
           v-model="form.name"
-          label="Tenant Name"
+          :label="$t('forms.tenantName')"
           prepend-icon="mdi-domain"
           :error-messages="errors.name"
           @update:model-value="updateField('name', $event)"
@@ -13,10 +13,10 @@
       <v-col cols="12">
         <FormInput
           v-model="form.identifier"
-          label="Identifier"
+          :label="$t('forms.identifier')"
           prepend-icon="mdi-identifier"
           :error-messages="errors.identifier"
-          hint="Used as subdomain and in API requests"
+          :hint="$t('forms.identifierHint')"
           persistent-hint
           @update:model-value="updateField('identifier', $event)"
         />
@@ -24,7 +24,7 @@
       <v-col cols="12">
         <FormInput
           v-model="form.description"
-          label="Description"
+          :label="$t('common.description')"
           type="textarea"
           rows="2"
           prepend-icon="mdi-text"
@@ -34,7 +34,7 @@
       <v-col cols="12" md="6">
         <FormInput
           v-model="form.contactName"
-          label="Contact Name"
+          :label="$t('forms.contactName')"
           prepend-icon="mdi-account"
           @update:model-value="updateField('contactName', $event)"
         />
@@ -42,7 +42,7 @@
       <v-col cols="12" md="6">
         <FormInput
           v-model="form.contactEmail"
-          label="Contact Email"
+          :label="$t('forms.contactEmail')"
           prepend-icon="mdi-email"
           :error-messages="errors.contactEmail"
           @update:model-value="updateField('contactEmail', $event)"
@@ -51,7 +51,7 @@
       <v-col cols="12">
         <v-switch
           v-model="form.isActive"
-          label="Active"
+          :label="$t('forms.active')"
           color="success"
           hide-details
           @update:model-value="updateField('isActive', $event)"
@@ -63,8 +63,11 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation, required } from '@/composables/useFormValidation';
+
+const { t } = useI18n();
 
 const props = defineProps({
   tenant: {

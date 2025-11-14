@@ -9,6 +9,10 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// Vue I18n
+import { createI18n } from 'vue-i18n'
+import { messages, defaultLocale, fallbackLocale } from './locales'
+
 // Motion
 import { MotionPlugin } from '@vueuse/motion'
 
@@ -54,6 +58,20 @@ const darkTheme = {
   }
 }
 
+// Get saved locale from localStorage or use default
+const savedLocale = localStorage.getItem('user-locale') || defaultLocale
+
+// Create i18n instance
+const i18n = createI18n({
+  legacy: false, // Use Composition API mode
+  locale: savedLocale,
+  fallbackLocale: fallbackLocale,
+  messages,
+  globalInjection: true,
+  missingWarn: false,
+  fallbackWarn: false
+})
+
 const vuetify = createVuetify({
   components,
   directives,
@@ -69,8 +87,12 @@ const vuetify = createVuetify({
 const app = createApp(App)
 
 app.use(createPinia())
+app.use(i18n)
 app.use(router)
 app.use(vuetify)
 app.use(MotionPlugin)
+
+// Set initial HTML lang attribute
+document.documentElement.setAttribute('lang', savedLocale)
 
 app.mount('#app')

@@ -5,35 +5,35 @@
         <v-stepper-item
           :complete="currentStep > 1"
           :value="1"
-          title="Basic Info"
-          subtitle="Name and description"
+          :title="$t('common.basicInfo')"
+          :subtitle="$t('pipelines.nameAndDescription')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 2"
           :value="2"
-          title="Source & Destination"
-          subtitle="Select data sources"
+          :title="$t('pipelines.sourceAndDestination')"
+          :subtitle="$t('pipelines.selectDataSources')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 3"
           :value="3"
-          title="Field Mappings"
-          subtitle="Map source to destination"
+          :title="$t('pipelines.fieldMappings')"
+          :subtitle="$t('pipeline.mapSourceToDestination')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 4"
           :value="4"
-          title="Schedule"
-          subtitle="Configure schedule"
+          :title="$t('pipelines.schedule')"
+          :subtitle="$t('pipelines.configureSchedule')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :value="5"
-          title="Review & Save"
-          subtitle="Review configuration"
+          :title="$t('common.reviewAndSave')"
+          :subtitle="$t('common.reviewConfiguration')"
         />
       </v-stepper-header>
 
@@ -45,18 +45,18 @@
               <v-col cols="12" md="8">
                 <v-text-field
                   v-model="pipeline.name"
-                  label="Pipeline Name"
-                  placeholder="e.g., Customer Data Migration"
+                  :label="$t('pipelines.pipelineName')"
+                  :placeholder="$t('pipelines.pipelineNamePlaceholder')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Name is required']"
+                  :rules="[v => !!v || $t('validation.required', { field: $t('common.name') })]"
                   required
                 />
               </v-col>
               <v-col cols="12">
                 <v-textarea
                   v-model="pipeline.description"
-                  label="Description"
-                  placeholder="Describe what this pipeline does..."
+                  :label="$t('common.description')"
+                  :placeholder="$t('pipelines.descriptionPlaceholder')"
                   variant="outlined"
                   rows="3"
                 />
@@ -73,20 +73,20 @@
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
                     <v-icon color="blue" class="mr-2">mdi-database-export</v-icon>
-                    <span class="text-h6">Source</span>
+                    <span class="text-h6">{{ $t('pipelines.source') }}</span>
                   </div>
                   <v-select
                     v-model="pipeline.sourceId"
                     :items="dataSources"
                     item-title="name"
                     item-value="id"
-                    label="Select Source"
+                    :label="$t('pipelines.selectSource')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Source is required']"
+                    :rules="[v => !!v || $t('pipelines.sourceRequired')]"
                   >
                     <template #prepend-item>
                       <v-list-item
-                        title="Create New Source..."
+                        :title="$t('pipelines.createNewSource')"
                         prepend-icon="mdi-plus"
                         @click="$emit('create-datasource')"
                       />
@@ -99,20 +99,20 @@
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
                     <v-icon color="green" class="mr-2">mdi-database-import</v-icon>
-                    <span class="text-h6">Destination</span>
+                    <span class="text-h6">{{ $t('pipelines.destination') }}</span>
                   </div>
                   <v-select
                     v-model="pipeline.destinationId"
                     :items="dataSources"
                     item-title="name"
                     item-value="id"
-                    label="Select Destination"
+                    :label="$t('pipelines.selectDestination')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Destination is required']"
+                    :rules="[v => !!v || $t('pipelines.destinationRequired')]"
                   >
                     <template #prepend-item>
                       <v-list-item
-                        title="Create New Destination..."
+                        :title="$t('pipelines.createNewDestination')"
                         prepend-icon="mdi-plus"
                         @click="$emit('create-datasource')"
                       />
@@ -137,7 +137,7 @@
               @validate="handleMappingValidation"
             />
             <v-alert v-else type="info" variant="tonal">
-              Please select source and destination in the previous step
+              {{ $t('pipelines.selectSourceDestinationFirst') }}
             </v-alert>
           </div>
         </v-stepper-window-item>
@@ -147,7 +147,7 @@
           <div class="pa-6">
             <v-switch
               v-model="pipeline.isScheduled"
-              label="Enable scheduled execution"
+              :label="$t('pipelines.enableScheduledExecution')"
               color="primary"
               class="mb-4"
               @update:model-value="initializeSchedule"
@@ -159,33 +159,33 @@
                   <v-col cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.frequency"
-                      label="Frequency"
-                      :items="['Daily', 'Weekly', 'Monthly', 'Custom']"
+                      :label="$t('pipelines.frequency')"
+                      :items="frequencyOptions"
                       variant="outlined"
                     />
                   </v-col>
                   <v-col v-if="pipeline.schedule.frequency !== 'Custom'" cols="12" md="6">
                     <v-text-field
                       v-model="pipeline.schedule.time"
-                      label="Time"
+                      :label="$t('pipelines.time')"
                       type="time"
                       variant="outlined"
-                      hint="24-hour format"
+                      :hint="$t('pipelines.timeFormat24h')"
                       persistent-hint
                     />
                   </v-col>
                   <v-col v-if="pipeline.schedule.frequency === 'Weekly'" cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.dayOfWeek"
-                      label="Day of Week"
-                      :items="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']"
+                      :label="$t('pipelines.dayOfWeek')"
+                      :items="dayOfWeekOptions"
                       variant="outlined"
                     />
                   </v-col>
                   <v-col v-if="pipeline.schedule.frequency === 'Monthly'" cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.dayOfMonth"
-                      label="Day of Month"
+                      :label="$t('pipelines.dayOfMonth')"
                       :items="Array.from({length: 31}, (_, i) => i + 1)"
                       variant="outlined"
                     />
@@ -193,16 +193,16 @@
                   <v-col v-if="pipeline.schedule.frequency === 'Custom'" cols="12">
                     <v-text-field
                       v-model="pipeline.schedule.cronExpression"
-                      label="Cron Expression"
+                      :label="$t('pipelines.cronExpression')"
                       variant="outlined"
-                      hint="e.g. 0 0 * * * (runs at midnight every day)"
+                      :hint="$t('pipelines.cronExpressionHint')"
                       persistent-hint
                     />
                   </v-col>
                   <v-col cols="12" md="6">
                     <v-select
                       v-model="pipeline.schedule.timezone"
-                      label="Timezone"
+                      :label="$t('pipelines.timezone')"
                       :items="timezones"
                       item-title="name"
                       item-value="value"
@@ -218,13 +218,13 @@
         <!-- Step 5: Review & Save -->
         <v-stepper-window-item :value="5">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Review Pipeline Configuration</div>
+            <div class="text-h5 mb-4">{{ $t('pipelines.reviewPipelineConfiguration') }}</div>
             
             <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-information</v-icon>
-                Basic Information
+                {{ $t('executions.basicInformation') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -232,14 +232,14 @@
                     <template #prepend>
                       <v-icon>mdi-label</v-icon>
                     </template>
-                    <v-list-item-title>Name</v-list-item-title>
+                    <v-list-item-title>{{ $t('common.name') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ pipeline.name }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item v-if="pipeline.description">
                     <template #prepend>
                       <v-icon>mdi-text</v-icon>
                     </template>
-                    <v-list-item-title>Description</v-list-item-title>
+                    <v-list-item-title>{{ $t('common.description') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ pipeline.description }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
@@ -250,7 +250,7 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-database-sync</v-icon>
-                Data Sources
+                {{ $t('dashboard.dataSources') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -258,14 +258,14 @@
                     <template #prepend>
                       <v-icon color="blue">mdi-database-export</v-icon>
                     </template>
-                    <v-list-item-title>Source</v-list-item-title>
+                    <v-list-item-title>{{ $t('pipelines.source') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ getDataSourceName(pipeline.sourceId) }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template #prepend>
                       <v-icon color="green">mdi-database-import</v-icon>
                     </template>
-                    <v-list-item-title>Destination</v-list-item-title>
+                    <v-list-item-title>{{ $t('pipelines.destination') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ getDataSourceName(pipeline.destinationId) }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
@@ -276,15 +276,15 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-arrow-left-right</v-icon>
-                Field Mappings ({{ pipeline.fieldMappings?.length || 0 }})
+                {{ $t('pipelines.fieldMappings') }} ({{ pipeline.fieldMappings?.length || 0 }})
               </v-card-title>
               <v-card-text>
                 <v-table v-if="pipeline.fieldMappings && pipeline.fieldMappings.length > 0" density="compact">
                   <thead>
                     <tr>
-                      <th>Source Field(s)</th>
-                      <th>Transformations</th>
-                      <th>Destination Field</th>
+                      <th>{{ $t('pipelines.sourceFieldsPlural') }}</th>
+                      <th>{{ $t('transformations.title') }}</th>
+                      <th>{{ $t('pipelines.destinationField') }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -315,14 +315,14 @@
                             {{ idx + 1 }}. {{ getTransformationName(trans.transformationId) }}
                           </v-chip>
                         </div>
-                        <span v-else class="text-grey">None</span>
+                        <span v-else class="text-grey">{{ $t('common.none') }}</span>
                       </td>
                       <td>{{ mapping.destinationField || '-' }}</td>
                     </tr>
                   </tbody>
                 </v-table>
                 <div v-else class="text-center py-4 text-grey">
-                  No field mappings configured
+                  {{ $t('pipelines.noFieldMappingsConfigured') }}
                 </div>
               </v-card-text>
             </v-card>
@@ -331,7 +331,7 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-calendar-clock</v-icon>
-                Schedule
+                {{ $t('pipelines.schedule') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -339,50 +339,50 @@
                     <template #prepend>
                       <v-icon>{{ pipeline.isScheduled ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
                     </template>
-                    <v-list-item-title>Scheduled Execution</v-list-item-title>
-                    <v-list-item-subtitle>{{ pipeline.isScheduled ? 'Enabled' : 'Disabled (Manual only)' }}</v-list-item-subtitle>
+                    <v-list-item-title>{{ $t('pipelines.scheduledExecution') }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ pipeline.isScheduled ? $t('pipelines.enabled') : $t('pipelines.disabledManualOnly') }}</v-list-item-subtitle>
                   </v-list-item>
                   <template v-if="pipeline.isScheduled && pipeline.schedule">
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-clock-outline</v-icon>
                       </template>
-                      <v-list-item-title>Frequency</v-list-item-title>
-                      <v-list-item-subtitle>{{ pipeline.schedule.frequency }}</v-list-item-subtitle>
+                      <v-list-item-title>{{ $t('pipelines.frequency') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ getFrequencyLabel(pipeline.schedule.frequency) }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency !== 'Custom' && pipeline.schedule.time">
                       <template #prepend>
                         <v-icon>mdi-clock</v-icon>
                       </template>
-                      <v-list-item-title>Time</v-list-item-title>
+                      <v-list-item-title>{{ $t('pipelines.time') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.time }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Weekly' && pipeline.schedule.dayOfWeek">
                       <template #prepend>
                         <v-icon>mdi-calendar-week</v-icon>
                       </template>
-                      <v-list-item-title>Day of Week</v-list-item-title>
-                      <v-list-item-subtitle>{{ pipeline.schedule.dayOfWeek }}</v-list-item-subtitle>
+                      <v-list-item-title>{{ $t('pipelines.dayOfWeek') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ getDayOfWeekLabel(pipeline.schedule.dayOfWeek) }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Monthly' && pipeline.schedule.dayOfMonth">
                       <template #prepend>
                         <v-icon>mdi-calendar-month</v-icon>
                       </template>
-                      <v-list-item-title>Day of Month</v-list-item-title>
+                      <v-list-item-title>{{ $t('pipelines.dayOfMonth') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.dayOfMonth }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.frequency === 'Custom' && pipeline.schedule.cronExpression">
                       <template #prepend>
                         <v-icon>mdi-code-braces</v-icon>
                       </template>
-                      <v-list-item-title>Cron Expression</v-list-item-title>
+                      <v-list-item-title>{{ $t('pipelines.cronExpression') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ pipeline.schedule.cronExpression }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="pipeline.schedule.timezone">
                       <template #prepend>
                         <v-icon>mdi-earth</v-icon>
                       </template>
-                      <v-list-item-title>Timezone</v-list-item-title>
+                      <v-list-item-title>{{ $t('pipelines.timezone') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ getTimezoneName(pipeline.schedule.timezone) }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
@@ -403,7 +403,7 @@
         prepend-icon="mdi-chevron-left"
         @click="currentStep--"
       >
-        Previous
+        {{ $t('common.previous') }}
       </v-btn>
       <v-spacer />
       <v-btn
@@ -414,7 +414,7 @@
         :disabled="!canProceed"
         @click="currentStep++"
       >
-        Next
+        {{ $t('common.next') }}
       </v-btn>
       <v-btn
         v-else
@@ -425,8 +425,8 @@
         :disabled="!canSave"
         @click="handleSave"
       >
-        Save
-        <v-tooltip activator="parent" location="top">Save Pipeline</v-tooltip>
+        {{ $t('common.save') }}
+        <v-tooltip activator="parent" location="top">{{ $t('pipelines.savePipeline') }}</v-tooltip>
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -434,7 +434,10 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FieldMappingEditor from './FieldMappingEditor.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   pipeline: {
@@ -460,6 +463,24 @@ const emit = defineEmits(['save', 'close', 'create-datasource', 'add-transformat
 const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
+
+// Computed options for schedule dropdowns
+const frequencyOptions = computed(() => [
+  { title: t('pipelines.daily'), value: 'Daily' },
+  { title: t('pipelines.weekly'), value: 'Weekly' },
+  { title: t('pipelines.monthly'), value: 'Monthly' },
+  { title: t('pipelines.custom'), value: 'Custom' }
+]);
+
+const dayOfWeekOptions = computed(() => [
+  { title: t('pipelines.monday'), value: 'Monday' },
+  { title: t('pipelines.tuesday'), value: 'Tuesday' },
+  { title: t('pipelines.wednesday'), value: 'Wednesday' },
+  { title: t('pipelines.thursday'), value: 'Thursday' },
+  { title: t('pipelines.friday'), value: 'Friday' },
+  { title: t('pipelines.saturday'), value: 'Saturday' },
+  { title: t('pipelines.sunday'), value: 'Sunday' }
+]);
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
@@ -541,6 +562,29 @@ function getTransformationIcon(type) {
 function getTimezoneName(timezoneValue) {
   const timezone = props.timezones.find(tz => tz.value === timezoneValue);
   return timezone?.name || timezoneValue;
+}
+
+function getFrequencyLabel(frequency) {
+  const frequencyMap = {
+    'Daily': t('pipelines.daily'),
+    'Weekly': t('pipelines.weekly'),
+    'Monthly': t('pipelines.monthly'),
+    'Custom': t('pipelines.custom')
+  };
+  return frequencyMap[frequency] || frequency;
+}
+
+function getDayOfWeekLabel(day) {
+  const dayMap = {
+    'Monday': t('pipelines.monday'),
+    'Tuesday': t('pipelines.tuesday'),
+    'Wednesday': t('pipelines.wednesday'),
+    'Thursday': t('pipelines.thursday'),
+    'Friday': t('pipelines.friday'),
+    'Saturday': t('pipelines.saturday'),
+    'Sunday': t('pipelines.sunday')
+  };
+  return dayMap[day] || day;
 }
 
 function initializeSchedule(enabled) {

@@ -4,9 +4,9 @@
     <v-alert v-if="isValid" type="success" variant="tonal" prominent>
       <v-alert-title>
         <v-icon start>mdi-check-circle</v-icon>
-        All Field Mappings Valid
+        {{ $t('pipeline.allFieldMappingsValid') }}
       </v-alert-title>
-      All required destination fields are mapped correctly!
+      {{ $t('pipeline.allRequiredFieldsMapped') }}
     </v-alert>
 
     <!-- Error State - Separate Cards Like Data Source Page -->
@@ -17,7 +17,7 @@
           <div class="d-flex align-center">
             <v-icon color="error" class="mr-3">mdi-key-alert</v-icon>
             <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-1">Unique Identifier Mapping Required</div>
+              <div class="text-subtitle-2 mb-1">{{ $t('pipeline.uniqueIdentifierMappingRequired') }}</div>
               <div class="text-caption">
                 {{ uniqueIdentifierErrors[0] }}
               </div>
@@ -32,7 +32,7 @@
           <div class="d-flex align-start">
             <v-icon color="error" class="mr-3 mt-1">mdi-alert</v-icon>
             <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-2">Mapping Issues</div>
+              <div class="text-subtitle-2 mb-2">{{ $t('pipeline.mappingIssues') }}</div>
               <div v-for="(error, index) in otherErrors" :key="index" class="text-caption mb-1">
                 • {{ error }}
               </div>
@@ -46,6 +46,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   validationErrors: {

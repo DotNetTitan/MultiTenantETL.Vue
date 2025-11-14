@@ -50,7 +50,7 @@
       >
         <div class="hint-content">
           <v-icon size="small" class="mr-1">mdi-help-circle</v-icon>
-          <span>Need help? Ask Maeve!</span>
+          <span>{{ $t('chatbot.needHelp') }}</span>
         </div>
         <v-btn
           icon
@@ -334,7 +334,9 @@ const sendMessage = async () => {
 
   try {
     const currentPage = getCurrentPage();
-    const response = await getChatResponse(message, currentPage, messages.value);
+    // Get user's current language from localStorage
+    const userLanguage = localStorage.getItem('user-locale') || 'en';
+    const response = await getChatResponse(message, currentPage, messages.value, userLanguage);
 
     // Add assistant response
     messages.value.push({

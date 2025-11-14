@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Users</h1>
+      <h1 class="text-h4 mr-4">{{ $t('users.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
         @click="showCreateDialog = true"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">Create</span>
-        <span v-else>Create User</span>
+        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+        <span v-else>{{ $t('users.createUser') }}</span>
       </v-btn>
     </div>
 

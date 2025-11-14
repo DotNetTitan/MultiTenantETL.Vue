@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">Pipeline Executions</h1>
+      <h1 class="text-h4 mr-4">{{ $t('executions.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
@@ -9,7 +9,7 @@
         @click="fetchExecutions"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-refresh</v-icon>
-        <span>Refresh</span>
+        <span>{{ $t('common.refresh') }}</span>
       </v-btn>
     </div>
 
@@ -19,7 +19,7 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              label="Search Executions"
+              :label="$t('executions.searchExecutions')"
               prepend-inner-icon="mdi-magnify"
               density="compact"
               hide-details
@@ -30,7 +30,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="statusFilter"
-              label="Status"
+              :label="$t('common.status')"
               :items="statusOptions"
               density="compact"
               hide-details
@@ -41,7 +41,7 @@
           <v-col cols="12" md="3">
             <v-select
               v-model="timeRangeFilter"
-              label="Time Range"
+              :label="$t('executions.timeRange')"
               :items="timeRangeOptions"
               density="compact"
               hide-details
@@ -64,7 +64,7 @@
               text-color="white"
               size="small"
             >
-              {{ item.status }}
+              {{ getStatusLabel(item.status) }}
             </v-chip>
           </template>
           <template #item.startTime="{ item }">
@@ -127,9 +127,9 @@
 
         <!-- Content with tabs -->
         <v-tabs v-model="activeTab" class="execution-tabs flex-shrink-0" grow>
-          <v-tab value="overview">Overview</v-tab>
-          <v-tab value="logs">Logs</v-tab>
-          <v-tab value="timeline">Timeline</v-tab>
+          <v-tab value="overview">{{ $t('executions.overview') }}</v-tab>
+          <v-tab value="logs">{{ $t('executions.logs') }}</v-tab>
+          <v-tab value="timeline">{{ $t('executions.timeline') }}</v-tab>
         </v-tabs>
 
         <v-divider></v-divider>
@@ -144,7 +144,7 @@
                     <v-card variant="outlined" class="mb-4">
                       <v-card-title class="text-subtitle-1 d-flex align-center">
                         <v-icon class="mr-2">mdi-information-outline</v-icon>
-                        <span>Basic Information</span>
+                        <span>{{ $t('executions.basicInformation') }}</span>
                       </v-card-title>
                       <v-card-text>
                         <v-list density="compact" lines="two">
@@ -152,7 +152,7 @@
                             <template #prepend>
                               <v-icon class="mr-2">mdi-pipe</v-icon>
                             </template>
-                            <v-list-item-title>Pipeline</v-list-item-title>
+                            <v-list-item-title>{{ $t('dashboard.pipeline') }}</v-list-item-title>
                             <v-list-item-subtitle>{{ selectedExecution.pipelineName }}</v-list-item-subtitle>
                           </v-list-item>
                         
@@ -162,7 +162,7 @@
                             <template #prepend>
                               <v-icon class="mr-2">mdi-calendar-clock</v-icon>
                             </template>
-                            <v-list-item-title>Start Time</v-list-item-title>
+                            <v-list-item-title>{{ $t('dashboard.startTime') }}</v-list-item-title>
                             <v-list-item-subtitle>{{ formatDate(selectedExecution.startTime, true) }}</v-list-item-subtitle>
                           </v-list-item>
                         
@@ -172,8 +172,8 @@
                             <template #prepend>
                               <v-icon class="mr-2">mdi-calendar-check</v-icon>
                             </template>
-                            <v-list-item-title>End Time</v-list-item-title>
-                            <v-list-item-subtitle>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</v-list-item-subtitle>
+                            <v-list-item-title>{{ $t('executions.endTime') }}</v-list-item-title>
+                            <v-list-item-subtitle>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : $t('executions.running') }}</v-list-item-subtitle>
                           </v-list-item>
                         
                           <v-divider></v-divider>
@@ -182,7 +182,7 @@
                             <template #prepend>
                               <v-icon class="mr-2">mdi-timer-outline</v-icon>
                             </template>
-                            <v-list-item-title>Duration</v-list-item-title>
+                            <v-list-item-title>{{ $t('dashboard.duration') }}</v-list-item-title>
                             <v-list-item-subtitle>{{ formatDuration(selectedExecution.duration) }}</v-list-item-subtitle>
                           </v-list-item>
                         
@@ -192,7 +192,7 @@
                             <template #prepend>
                               <v-icon class="mr-2">mdi-identifier</v-icon>
                             </template>
-                            <v-list-item-title>Execution ID</v-list-item-title>
+                            <v-list-item-title>{{ $t('executions.executionId') }}</v-list-item-title>
                             <v-list-item-subtitle>{{ selectedExecution.id }}</v-list-item-subtitle>
                           </v-list-item>
                         </v-list>
@@ -204,12 +204,12 @@
                     <v-card variant="outlined" class="mb-4">
                       <v-card-title class="text-subtitle-1 d-flex align-center">
                         <v-icon class="mr-2">mdi-chart-bar</v-icon>
-                        <span>Performance Metrics</span>
+                        <span>{{ $t('executions.performanceMetrics') }}</span>
                       </v-card-title>
                       <v-card-text>
                         <div class="my-3">
                           <div class="d-flex justify-space-between mb-1">
-                            <span class="text-body-2 font-weight-medium">Progress</span>
+                            <span class="text-body-2 font-weight-medium">{{ $t('executions.progress') }}</span>
                             <span class="text-body-2">{{ Math.round(selectedExecution.progressPercent || 0) }}%</span>
                           </div>
                           <v-progress-linear
@@ -225,7 +225,7 @@
                       
                         <div class="d-flex align-center mb-2">
                           <v-icon class="mr-2">mdi-database</v-icon>
-                          <span class="text-subtitle-2 font-weight-bold">Rows Processed</span>
+                          <span class="text-subtitle-2 font-weight-bold">{{ $t('dashboard.rowsProcessed') }}</span>
                         </div>
                         <div class="text-h4 ml-8">
                           {{ selectedExecution.rowsProcessed?.toLocaleString() || '0' }}
@@ -236,12 +236,12 @@
                         <div class="d-flex align-center mb-2">
                           <v-icon class="mr-2">mdi-information-outline</v-icon>
                           <div class="d-flex align-center" style="gap: 12px;">
-                            <span class="text-subtitle-2 font-weight-bold">Status</span>
+                            <span class="text-subtitle-2 font-weight-bold">{{ $t('common.status') }}</span>
                             <v-chip
                               :color="getStatusColor(selectedExecution.status)"
                               text-color="white"
                             >
-                              {{ selectedExecution.status }}
+                              {{ getStatusLabel(selectedExecution.status) }}
                             </v-chip>
                             <v-btn
                               v-if="selectedExecution.status === 'Running'"
@@ -251,7 +251,7 @@
                               @click="cancelExecution(selectedExecution)"
                             >
                               <v-icon start size="small">mdi-stop</v-icon>
-                              Cancel
+                              {{ $t('common.cancel') }}
                             </v-btn>
                           </div>
                         </div>
@@ -267,7 +267,7 @@
               <v-card-text>
                 <div class="d-flex align-center mb-3">
                   <v-icon class="mr-2">mdi-text-box-outline</v-icon>
-                  <div class="text-subtitle-1 font-weight-bold">Execution Logs</div>
+                  <div class="text-subtitle-1 font-weight-bold">{{ $t('executions.executionLogs') }}</div>
                   <v-spacer></v-spacer>
                   <v-btn
                     density="compact"
@@ -276,7 +276,7 @@
                     prepend-icon="mdi-content-copy"
                     @click="copyLogs"
                   >
-                    Copy
+                    {{ $t('common.copy') }}
                   </v-btn>
                 </div>
               
@@ -284,7 +284,7 @@
                   variant="outlined"
                   class="logs-container custom-scrollbar"
                 >
-                  <pre class="logs-content">{{ selectedExecution.logs || 'No logs available' }}</pre>
+                  <pre class="logs-content">{{ selectedExecution.logs || $t('executions.noLogsAvailable') }}</pre>
                 </v-card>
               </v-card-text>
             </v-window-item>
@@ -294,12 +294,12 @@
               <v-card-text>
                 <div class="d-flex align-center mb-3">
                   <v-icon class="mr-2">mdi-timeline</v-icon>
-                  <div class="text-subtitle-1 font-weight-bold">Execution Timeline</div>
+                  <div class="text-subtitle-1 font-weight-bold">{{ $t('executions.executionTimeline') }}</div>
                 </div>
               
                 <div v-if="!getExecutionSteps().length" class="text-center pa-4">
                   <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-timeline-clock</v-icon>
-                  <div class="text-body-1 text-grey">No timeline events available</div>
+                  <div class="text-body-1 text-grey">{{ $t('executions.noTimelineEvents') }}</div>
                 </div>
               
                 <!-- Added scrollable container -->
@@ -345,7 +345,7 @@
             color="primary"
             @click="showDetailsDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -385,10 +385,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
+
+const { t } = useI18n();
 
 const tenantStore = useTenantStore();
 const theme = useTheme();
@@ -445,19 +448,29 @@ const headers = [
 const search = ref('');
 const statusFilter = ref('All');
 const timeRangeFilter = ref('24h');
-const statusOptions = ref([
-  { title: 'All Statuses', value: 'All' },
-  { title: 'Running', value: 'Running' },
-  { title: 'Completed', value: 'Completed' },
-  { title: 'Failed', value: 'Failed' },
-  { title: 'Cancelled', value: 'Cancelled' }
+const statusOptions = computed(() => [
+  { title: t('filters.allStatuses'), value: 'All' },
+  { title: t('executions.running'), value: 'Running' },
+  { title: t('executions.completed'), value: 'Completed' },
+  { title: t('executions.failed'), value: 'Failed' },
+  { title: t('executions.cancelled'), value: 'Cancelled' }
 ]);
-const timeRangeOptions = ref([
-  { title: 'Last 24 Hours', value: '24h' },
-  { title: 'Last 7 Days', value: '7d' },
-  { title: 'Last 30 Days', value: '30d' },
-  { title: 'All Time', value: 'all' }
+const timeRangeOptions = computed(() => [
+  { title: t('executions.last24Hours'), value: '24h' },
+  { title: t('executions.last7Days'), value: '7d' },
+  { title: t('executions.last30Days'), value: '30d' },
+  { title: t('executions.allTime'), value: 'all' }
 ]);
+
+function getStatusLabel(status) {
+  const statusMap = {
+    'Running': t('executions.running'),
+    'Completed': t('executions.completed'),
+    'Failed': t('executions.failed'),
+    'Cancelled': t('executions.cancelled')
+  };
+  return statusMap[status] || status;
+}
 
 // Execution data
 const executions = ref([]);

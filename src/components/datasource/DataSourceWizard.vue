@@ -5,36 +5,36 @@
         <v-stepper-item
           :complete="currentStep > 1"
           :value="1"
-          title="Basic Info"
-          subtitle="Type and provider"
+          :title="t('common.basicInfo')"
+          :subtitle="t('common.typeAndProvider')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 2"
           :value="2"
-          title="Connection"
-          subtitle="Connection details"
+          :title="t('common.connection')"
+          :subtitle="t('common.connectionDetails')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :complete="currentStep > 3"
           :value="3"
-          title="Schema"
-          subtitle="Define data structure"
+          :title="t('common.schema')"
+          :subtitle="t('common.defineDataStructure')"
         />
         <v-icon v-if="showWriteConfigStep" class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           v-if="showWriteConfigStep"
           :complete="currentStep > 4"
           :value="4"
-          title="Write Config"
-          subtitle="Destination settings"
+          :title="t('common.writeConfig')"
+          :subtitle="t('common.destinationSettings')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
           :value="showWriteConfigStep ? 5 : 4"
-          title="Review & Save"
-          subtitle="Review configuration"
+          :title="t('common.reviewAndSave')"
+          :subtitle="t('common.reviewConfiguration')"
         />
       </v-stepper-header>
 
@@ -42,22 +42,22 @@
         <!-- Step 1: Basic Info -->
         <v-stepper-window-item :value="1">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Data Source Information</div>
+            <div class="text-h5 mb-4">{{ t('dataSources.dataSourceName') }}</div>
             <v-row>
               <v-col cols="12" md="8">
                 <v-text-field
                   v-model="dataSource.name"
-                  label="Data Source Name"
+                  :label="t('dataSources.dataSourceName')"
                   placeholder="e.g., Customer Database, Sales API"
                   variant="outlined"
-                  :rules="[v => !!v || 'Name is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('common.name') })]"
                   required
                 />
               </v-col>
               <v-col cols="12">
                 <v-textarea
                   v-model="dataSource.description"
-                  label="Description"
+                  :label="t('common.description')"
                   placeholder="Brief description of this data source"
                   variant="outlined"
                   rows="2"
@@ -68,9 +68,9 @@
                 <v-select
                   v-model="dataSource.type"
                   :items="dataSourceTypes"
-                  label="Type"
+                  :label="t('dataSources.type')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Type is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.type') })]"
                   required
                   @update:model-value="handleTypeChange"
                 >
@@ -87,9 +87,9 @@
                 <v-select
                   v-model="dataSource.provider"
                   :items="providerOptions"
-                  label="Provider"
+                  :label="t('dataSources.provider')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Provider is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.provider') })]"
                   required
                   :disabled="!dataSource.type"
                 />
@@ -98,11 +98,11 @@
                 <v-select
                   v-model="dataSource.direction"
                   :items="directionOptions"
-                  label="Direction"
+                  :label="t('dataSources.direction')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Direction is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.direction') })]"
                   required
-                  hint="How this data source will be used"
+                  :hint="t('common.howDataSourceUsed')"
                   persistent-hint
                 >
                   <template #item="{ item, props }">
@@ -128,24 +128,24 @@
               <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span>
             </div>
             
-            <div class="text-h5 mb-4">Connection Configuration</div>
+            <div class="text-h5 mb-4">{{ t('common.connectionConfiguration') }}</div>
             
             <!-- Database Connection -->
             <v-row v-if="dataSource.type === 'Database'">
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.server"
-                  label="Server"
+                  :label="t('dataSources.server')"
                   placeholder="localhost or server.example.com"
                   variant="outlined"
-                  :rules="[v => !!v || 'Server is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.server') })]"
                   required
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.port"
-                  label="Port"
+                  :label="t('dataSources.port')"
                   placeholder="Default port"
                   variant="outlined"
                   type="number"
@@ -154,35 +154,35 @@
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.database"
-                  label="Database Name"
+                  :label="t('dataSources.databaseName')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Database is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.databaseName') })]"
                   required
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.username"
-                  label="Username"
+                  :label="t('dataSources.username')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Username is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.username') })]"
                   required
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.password"
-                  label="Password"
+                  :label="t('dataSources.password')"
                   type="password"
                   variant="outlined"
-                  :rules="[v => !!v || 'Password is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.password') })]"
                   required
                 />
               </v-col>
               <v-col cols="12">
                 <v-switch
                   v-model="dataSource.config.useCustomConnectionString"
-                  label="Use Custom Connection String"
+                  :label="t('dataSources.useCustomConnectionString')"
                   color="primary"
                   hide-details
                 />
@@ -190,10 +190,10 @@
               <v-col v-if="dataSource.config.useCustomConnectionString" cols="12">
                 <v-textarea
                   v-model="dataSource.config.connectionString"
-                  label="Connection String"
+                  :label="t('dataSources.connectionString')"
                   variant="outlined"
                   rows="3"
-                  :rules="[v => !!v || 'Connection string is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.connectionString') })]"
                 />
               </v-col>
             </v-row>
@@ -203,10 +203,10 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="dataSource.config.url"
-                  label="API URL"
+                  :label="t('dataSources.apiUrl')"
                   placeholder="https://api.example.com"
                   variant="outlined"
-                  :rules="[v => !!v || 'URL is required']"
+                  :rules="[v => !!v || t('validation.required', { field: 'URL' })]"
                   required
                 />
               </v-col>
@@ -214,14 +214,14 @@
                 <v-select
                   v-model="dataSource.config.authType"
                   :items="authTypes"
-                  label="Authentication Type"
+                  :label="t('dataSources.authenticationType')"
                   variant="outlined"
                 />
               </v-col>
               <v-col v-if="dataSource.config.authType === 'Bearer'" cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.token"
-                  label="Bearer Token"
+                  :label="t('dataSources.bearerToken')"
                   type="password"
                   variant="outlined"
                 />
@@ -229,14 +229,14 @@
               <v-col v-if="dataSource.config.authType === 'Basic'" cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.username"
-                  label="Username"
+                  :label="t('dataSources.username')"
                   variant="outlined"
                 />
               </v-col>
               <v-col v-if="dataSource.config.authType === 'Basic'" cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.password"
-                  label="Password"
+                  :label="t('dataSources.password')"
                   type="password"
                   variant="outlined"
                 />
@@ -244,7 +244,7 @@
               <v-col cols="12">
                 <v-textarea
                   v-model="dataSource.config.headers"
-                  label="Custom Headers (JSON)"
+                  :label="t('dataSources.customHeaders')"
                   placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
                   variant="outlined"
                   rows="3"
@@ -267,9 +267,9 @@
                 <v-select
                   v-model="dataSource.config.format"
                   :items="fileFormats"
-                  label="File Format"
+                  :label="t('dataSources.fileFormat')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Format is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.fileFormat') })]"
                   required
                 />
               </v-col>
@@ -279,10 +279,10 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="dataSource.config.path"
-                    label="File Path"
+                    :label="t('dataSources.filePath')"
                     placeholder="C:\data\file.csv or /data/file.csv"
                     variant="outlined"
-                    :rules="[v => !!v || 'Path is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.filePath') })]"
                     required
                   />
                 </v-col>
@@ -293,17 +293,17 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.ftpHost"
-                    label="FTP Host"
+                    :label="t('dataSources.ftpHost')"
                     placeholder="ftp.example.com"
                     variant="outlined"
-                    :rules="[v => !!v || 'Host is required']"
+                    :rules="[v => !!v || t('validation.required', { field: 'Host' })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.ftpPort"
-                    label="Port"
+                    :label="t('dataSources.port')"
                     placeholder="21"
                     type="number"
                     variant="outlined"
@@ -312,9 +312,9 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.ftpUsername"
-                    label="Username"
+                    :label="t('dataSources.username')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Username is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.username') })]"
                     required
                   />
                 </v-col>
@@ -441,7 +441,7 @@
               <v-col v-if="dataSource.config.format === 'CSV'" cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.delimiter"
-                  label="Delimiter"
+                  :label="t('common.delimiter')"
                   placeholder=","
                   variant="outlined"
                 />
@@ -449,7 +449,7 @@
               <v-col v-if="dataSource.config.format === 'CSV'" cols="12" md="6">
                 <v-switch
                   v-model="dataSource.config.hasHeader"
-                  label="Has Header Row"
+                  :label="t('common.hasHeaderRow')"
                   color="primary"
                   hide-details
                 />
@@ -1153,7 +1153,7 @@
         prepend-icon="mdi-chevron-left"
         @click="currentStep--"
       >
-        Back
+        {{ t('common.back') }}
       </v-btn>
       <v-spacer />
       <v-btn
@@ -1164,7 +1164,7 @@
         :disabled="!canProceed"
         @click="currentStep++"
       >
-        Next
+        {{ t('common.next') }}
       </v-btn>
       <v-btn
         v-else
@@ -1175,8 +1175,8 @@
         :disabled="!canSave"
         @click="handleSave"
       >
-        Save
-        <v-tooltip activator="parent" location="top">Save Data Source</v-tooltip>
+        {{ t('common.save') }}
+        <v-tooltip activator="parent" location="top">{{ t('common.saveDataSource') }}</v-tooltip>
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -1184,7 +1184,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import SchemaEditor from './SchemaEditor.vue';
+
+const { t } = useI18n();
 import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const props = defineProps({

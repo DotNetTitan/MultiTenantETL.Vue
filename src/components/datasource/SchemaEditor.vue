@@ -2,7 +2,7 @@
   <div class="schema-editor">
     <div class="d-flex align-center mb-4">
       <div class="flex-grow-1">
-        <p class="text-body-2 text-medium-emphasis">Define the structure of your data</p>
+        <p class="text-body-2 text-medium-emphasis">{{ $t('schema.defineStructure') }}</p>
       </div>
       <v-btn
         variant="text"
@@ -10,7 +10,7 @@
         size="small"
         @click="exportSchema"
       >
-        Export
+        {{ $t('schema.export') }}
       </v-btn>
       <v-btn
         variant="text"
@@ -18,7 +18,7 @@
         size="small"
         @click="showImportDialog = true"
       >
-        Import
+        {{ $t('schema.import') }}
       </v-btn>
     </div>
 
@@ -37,12 +37,12 @@
       <v-table v-if="localFields.length > 0">
         <thead>
           <tr>
-            <th>Field Name</th>
-            <th>Type</th>
-            <th>Unique ID</th>
-            <th>Required</th>
-            <th>Nullable</th>
-            <th class="text-right">Actions</th>
+            <th>{{ $t('schema.fieldName') }}</th>
+            <th>{{ $t('common.type') }}</th>
+            <th>{{ $t('schema.uniqueId') }}</th>
+            <th>{{ $t('common.required') }}</th>
+            <th>{{ $t('dataSources.nullable') }}</th>
+            <th class="text-right">{{ $t('common.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -130,8 +130,8 @@
 
       <div v-else class="text-center py-8">
         <v-icon size="64" color="grey-lighten-2">mdi-table-off</v-icon>
-        <p class="mt-2 text-grey">No fields defined yet</p>
-        <p class="text-caption text-grey">Add fields manually or upload a sample file</p>
+        <p class="mt-2 text-grey">{{ $t('schema.noFieldsDefined') }}</p>
+        <p class="text-caption text-grey">{{ $t('schema.addFieldsManually') }}</p>
       </div>
     </v-card>
 
@@ -142,13 +142,13 @@
       prepend-icon="mdi-plus"
       @click="addField"
     >
-      Add Field
+      {{ $t('schema.addField') }}
     </v-btn>
 
     <!-- Summary -->
     <div v-if="localFields.length > 0" class="mt-4 text-caption text-grey">
-      Summary: {{ localFields.length }} field{{ localFields.length !== 1 ? 's' : '' }} defined
-      ({{ requiredFieldsCount }} required)
+      {{ $t('schema.summary', { count: localFields.length }) }}
+      ({{ $t('schema.requiredCount', { count: requiredFieldsCount }) }})
     </div>
 
     <!-- Validation Errors (only show meaningful errors, not "no fields" on initial load) -->
@@ -159,7 +159,7 @@
           <div class="d-flex align-center">
             <v-icon color="error" class="mr-3">mdi-key-alert</v-icon>
             <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-1">Unique Identifier Required</div>
+              <div class="text-subtitle-2 mb-1">{{ $t('schema.uniqueIdentifierRequired') }}</div>
               <div class="text-caption">
                 {{ uniqueIdentifierErrors[0] }}
               </div>
@@ -174,7 +174,7 @@
           <div class="d-flex align-start">
             <v-icon color="error" class="mr-3 mt-1">mdi-alert</v-icon>
             <div class="flex-grow-1">
-              <div class="text-subtitle-2 mb-2">Schema Issues</div>
+              <div class="text-subtitle-2 mb-2">{{ $t('schema.schemaIssues') }}</div>
               <div v-for="(error, idx) in otherValidationErrors" :key="idx" class="text-caption mb-1">
                 • {{ error }}
               </div>
@@ -196,7 +196,7 @@
     <v-dialog v-model="showImportDialog" max-width="500">
       <v-card>
         <v-card-title class="d-flex align-center">
-          Import Schema
+          {{ $t('schema.importSchema') }}
           <v-spacer />
           <v-btn
             icon
@@ -209,7 +209,7 @@
         <v-card-text>
           <v-textarea
             v-model="importJson"
-            label="Paste JSON Schema"
+            :label="$t('schema.pasteJsonSchema')"
             rows="10"
             variant="outlined"
             placeholder="{&quot;fields&quot;: [{&quot;name&quot;: &quot;id&quot;, &quot;type&quot;: &quot;int&quot;, ...}]}"
@@ -217,8 +217,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showImportDialog = false">Close</v-btn>
-          <v-btn color="primary" @click="importSchema">Import</v-btn>
+          <v-btn @click="showImportDialog = false">{{ $t('common.close') }}</v-btn>
+          <v-btn color="primary" @click="importSchema">{{ $t('schema.import') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -227,9 +227,12 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { validateSchema } from '@/services/schemaService';
 import FieldEditorDialog from './FieldEditorDialog.vue';
 import FileUploadSchemaGenerator from './FileUploadSchemaGenerator.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   modelValue: {

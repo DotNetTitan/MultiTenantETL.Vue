@@ -3,9 +3,9 @@
     <v-card-text>
       <div class="text-center">
         <v-icon size="48" color="primary" class="mb-2">mdi-file-upload</v-icon>
-        <h4 class="text-h6 mb-2">Upload Sample File to Generate Schema</h4>
+        <h4 class="text-h6 mb-2">{{ $t('schema.uploadSampleFile') }}</h4>
         <p class="text-caption text-grey mb-4">
-          Upload a CSV, JSON, or Excel file to automatically detect field definitions
+          {{ $t('schema.uploadDescription') }}
         </p>
 
         <input
@@ -22,30 +22,30 @@
           :loading="analyzing"
           @click="fileInput.click()"
         >
-          Choose File
+          {{ $t('schema.chooseFile') }}
         </v-btn>
 
         <div class="mt-2 text-caption text-grey">
-          Supported formats: CSV, JSON, Excel (.xlsx, .xls)
+          {{ $t('schema.supportedFormats') }}
         </div>
       </div>
 
       <v-alert v-if="analyzing" type="info" class="mt-4" density="compact">
         <v-progress-linear indeterminate class="mb-2" />
-        Analyzing file: {{ selectedFileName }}
+        {{ $t('schema.analyzingFile', { filename: selectedFileName }) }}
       </v-alert>
 
       <v-card v-if="analysisResult" variant="outlined" class="mt-4">
         <v-card-title class="d-flex align-center">
           <v-icon start color="success">mdi-check-circle</v-icon>
-          <span>Found {{ analysisResult.fields.length }} fields in {{ selectedFileName }}</span>
+          <span>{{ $t('schema.foundFields', { count: analysisResult.fields.length, filename: selectedFileName }) }}</span>
           <v-spacer />
           <v-btn 
             size="small" 
             variant="text"
             @click="showPreview = !showPreview"
           >
-            {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+            {{ showPreview ? $t('schema.hidePreview') : $t('schema.showPreview') }}
             <v-icon end>{{ showPreview ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
           </v-btn>
         </v-card-title>
@@ -55,7 +55,7 @@
           <div v-if="showPreview">
             <v-divider />
             <v-card-text>
-              <div class="text-subtitle-2 mb-3">Detected Fields:</div>
+              <div class="text-subtitle-2 mb-3">{{ $t('schema.detectedFields') }}</div>
               <div class="schema-preview">
                 <v-chip
                   v-for="field in analysisResult.fields"
@@ -67,13 +67,13 @@
                 >
                   <strong>{{ field.name }}</strong>
                   <span class="text-grey ml-1">({{ getTypeLabel(field.type) }})</span>
-                  <v-icon v-if="field.nullable" size="x-small" class="ml-1" color="grey" title="Nullable">mdi-help-circle-outline</v-icon>
+                  <v-icon v-if="field.nullable" size="x-small" class="ml-1" color="grey" :title="$t('dataSources.nullable')">mdi-help-circle-outline</v-icon>
                 </v-chip>
               </div>
               <v-divider class="my-3" />
               <div class="text-caption text-grey">
                 <v-icon size="small" class="mr-1">mdi-information</v-icon>
-                You can edit these fields after applying the schema
+                {{ $t('schema.editAfterApply') }}
               </div>
             </v-card-text>
           </div>
@@ -88,7 +88,7 @@
             prepend-icon="mdi-check"
             @click="applySchema"
           >
-            Apply Schema
+            {{ $t('schema.applySchema') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -102,9 +102,12 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { useGlobalState } from '@/composables/useGlobalState';
+
+const { t } = useI18n();
 
 const emit = defineEmits(['schema-generated']);
 

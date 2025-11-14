@@ -1,10 +1,12 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTransformation } from './useTransformation';
 import { useDataSource } from './useDataSource';
 import { fetchPipelines, fetchPipelineById, savePipeline as apiSavePipeline, deletePipeline as apiDeletePipeline, executePipeline as apiExecutePipeline } from '@/services/pipelineService';
 import { useTenantStore } from '@/stores/tenant';
 
 export function usePipeline() {
+  const { t } = useI18n();
   const { validateTransformation, getOutputSchema } = useTransformation();
   const { detectSchema } = useDataSource();
   const tenantStore = useTenantStore();
@@ -21,20 +23,20 @@ export function usePipeline() {
   const statusFilter = ref('All');
   const sortBy = ref('name_asc');
   
-  // Status and sort options for UI
-  const statusOptions = [
-    { title: 'All Statuses', value: 'All' },
-    { title: 'Idle', value: 'Idle' },
-    { title: 'Running', value: 'Running' },
-    { title: 'Failed', value: 'Failed' }
-  ];
+  // Status and sort options for UI - computed to support i18n
+  const statusOptions = computed(() => [
+    { title: t('filters.allStatuses'), value: 'All' },
+    { title: t('executions.idle'), value: 'Idle' },
+    { title: t('executions.running'), value: 'Running' },
+    { title: t('executions.failed'), value: 'Failed' }
+  ]);
   
-  const sortOptions = [
-    { title: 'Name (A-Z)', value: 'name_asc' },
-    { title: 'Name (Z-A)', value: 'name_desc' },
-    { title: 'Last Run (Newest)', value: 'lastRun_desc' },
-    { title: 'Last Run (Oldest)', value: 'lastRun_asc' }
-  ];
+  const sortOptions = computed(() => [
+    { title: t('filters.nameAsc'), value: 'name_asc' },
+    { title: t('filters.nameDesc'), value: 'name_desc' },
+    { title: t('filters.lastRunNewest'), value: 'lastRun_desc' },
+    { title: t('filters.lastRunOldest'), value: 'lastRun_asc' }
+  ]);
   
   // Fetch pipeline list with optional filters
   const loadPipelines = async () => {
