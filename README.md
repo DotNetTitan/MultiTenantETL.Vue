@@ -15,6 +15,7 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 - 🔍 **Schema Management**: Auto-detection and manual schema definition with versioning
 - 📈 **Execution Monitoring**: Detailed execution logs, timeline view, and progress tracking
 - 🔐 **API Key Management**: Generate and manage API keys for programmatic access
+- 🤖 **AI Assistant**: Context-aware chatbot powered by Google Gemini AI to help users navigate and use the platform
 
 ## Tech Stack
 

@@ -62,6 +62,9 @@
       
       <authenticated-layout v-if="isAuthenticated" />
       <guest-layout v-else />
+      
+      <!-- AI Chatbot -->
+      <ai-chatbot v-if="isAuthenticated" />
     </template>
 
     <!-- Global Notifications -->
@@ -89,6 +92,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import AuthenticatedLayout from '@/components/layouts/AuthenticatedLayout.vue';
 import GuestLayout from '@/components/layouts/GuestLayout.vue';
+import AiChatbot from '@/components/AiChatbot.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
