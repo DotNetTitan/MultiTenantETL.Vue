@@ -1,17 +1,68 @@
 <template>
   <div class="ai-chatbot">
-    <!-- Floating Chat Button -->
-    <v-btn
-      v-if="!isOpen"
-      icon
-      size="large"
-      color="primary"
-      class="chat-fab"
-      elevation="8"
-      @click="toggleChat"
-    >
-      <v-icon>mdi-robot</v-icon>
-    </v-btn>
+    <!-- Floating Chat Button with Hint -->
+    <div v-if="!isOpen" class="chat-fab-container">
+      <v-btn
+        icon
+        size="large"
+        color="primary"
+        class="chat-fab"
+        elevation="8"
+        @click="toggleChat"
+      >
+        <v-icon>mdi-robot</v-icon>
+      </v-btn>
+      
+      <!-- Help Hint Tooltip -->
+      <div
+        v-if="showHint"
+        v-motion
+        :initial="{ opacity: 0, x: 20, scale: 0.9 }"
+        :enter="{ 
+          opacity: 1, 
+          x: 0, 
+          scale: 1,
+          transition: { 
+            type: 'spring',
+            stiffness: 200,
+            damping: 20
+          }
+        }"
+        :leave="{ 
+          opacity: 0, 
+          x: 30, 
+          scale: 0.7,
+          transition: { 
+            duration: 400,
+            ease: [0.4, 0, 0.2, 1]
+          }
+        }"
+        :visible="{ 
+          scale: [1, 1.02, 1],
+          transition: { 
+            duration: 2000,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }
+        }"
+        class="help-hint"
+        @click="toggleChat"
+      >
+        <div class="hint-content">
+          <v-icon size="small" class="mr-1">mdi-help-circle</v-icon>
+          <span>Need help? Ask Maeve!</span>
+        </div>
+        <v-btn
+          icon
+          size="x-small"
+          variant="text"
+          class="hint-close"
+          @click.stop="dismissHint"
+        >
+          <v-icon size="small">mdi-close</v-icon>
+        </v-btn>
+      </div>
+    </div>
 
     <!-- Chat Window -->
     <v-card
@@ -21,7 +72,7 @@
     >
       <v-card-title class="d-flex align-center pa-3 primary chat-header">
         <v-icon class="mr-2 text-white">mdi-robot</v-icon>
-        <span class="text-white">AI Assistant</span>
+        <span class="text-white">Maeve</span>
         <v-spacer />
         <v-btn
           icon
@@ -43,7 +94,7 @@
       >
         <div v-if="messages.length === 0" class="text-center text-medium-emphasis py-8">
           <v-icon size="48" class="mb-2">mdi-chat-question</v-icon>
-          <p>Hi! I'm your AI assistant. Ask me anything about this page or the ETL platform.</p>
+          <p>Hi! I'm Maeve, your AI assistant. Ask me anything about this page or the ETL platform.</p>
         </div>
 
         <div
@@ -57,7 +108,7 @@
               <v-icon size="small" class="mr-1">
                 {{ msg.role === 'user' ? 'mdi-account' : 'mdi-robot' }}
               </v-icon>
-              <span class="text-caption">{{ msg.role === 'user' ? 'You' : 'AI Assistant' }}</span>
+              <span class="text-caption">{{ msg.role === 'user' ? 'You' : 'Maeve' }}</span>
             </div>
             <div class="message-text">{{ msg.content }}</div>
           </div>
@@ -67,7 +118,7 @@
           <div class="message-content">
             <div class="message-header mb-1">
               <v-icon size="small" class="mr-1">mdi-robot</v-icon>
-              <span class="text-caption">AI Assistant</span>
+              <span class="text-caption">Maeve</span>
             </div>
             <div class="message-text">
               <v-progress-circular
@@ -111,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { getChatResponse } from '@/services/geminiService';
 
@@ -121,6 +172,9 @@ const userInput = ref('');
 const messages = ref([]);
 const isLoading = ref(false);
 const messagesContainer = ref(null);
+const showHint = ref(false);
+const hintTimer = ref(null);
+const hintDismissed = ref(false);
 
 // Get current page context from route
 const getCurrentPage = () => {
@@ -130,6 +184,9 @@ const getCurrentPage = () => {
 
 const toggleChat = () => {
   isOpen.value = !isOpen.value;
+  if (isOpen.value) {
+    dismissHint();
+  }
 };
 
 const scrollToBottom = () => {
@@ -176,9 +233,80 @@ const sendMessage = async () => {
   }
 };
 
+// Inactivity hint logic
+const startHintTimer = () => {
+  clearHintTimer();
+  if (!hintDismissed.value && !isOpen.value) {
+    hintTimer.value = setTimeout(() => {
+      showHint.value = true;
+    }, 5000); // Show after 5 seconds of inactivity
+  }
+};
+
+const clearHintTimer = () => {
+  if (hintTimer.value) {
+    clearTimeout(hintTimer.value);
+    hintTimer.value = null;
+  }
+};
+
+const dismissHint = () => {
+  showHint.value = false;
+  hintDismissed.value = true;
+  clearHintTimer();
+};
+
+const resetHintTimer = () => {
+  // Only reset if hint is not currently showing
+  if (!showHint.value) {
+    clearHintTimer();
+    startHintTimer();
+  }
+};
+
+// Track user activity (but not when hint is visible)
+const handleUserActivity = () => {
+  if (!isOpen.value && !showHint.value) {
+    resetHintTimer();
+  }
+};
+
 // Clear messages when route changes
 watch(() => route.path, () => {
   messages.value = [];
+  hintDismissed.value = false; // Reset hint dismissal on page change
+  resetHintTimer();
+});
+
+// Watch chat open state
+watch(isOpen, (newValue) => {
+  if (newValue) {
+    clearHintTimer();
+    showHint.value = false;
+  } else {
+    startHintTimer();
+  }
+});
+
+onMounted(() => {
+  // Start hint timer on mount
+  startHintTimer();
+  
+  // Listen for user activity
+  window.addEventListener('mousemove', handleUserActivity);
+  window.addEventListener('keydown', handleUserActivity);
+  window.addEventListener('click', handleUserActivity);
+  window.addEventListener('scroll', handleUserActivity);
+});
+
+onUnmounted(() => {
+  clearHintTimer();
+  
+  // Clean up event listeners
+  window.removeEventListener('mousemove', handleUserActivity);
+  window.removeEventListener('keydown', handleUserActivity);
+  window.removeEventListener('click', handleUserActivity);
+  window.removeEventListener('scroll', handleUserActivity);
 });
 </script>
 
@@ -294,6 +422,76 @@ watch(() => route.path, () => {
 /* Light mode input border */
 .v-theme--light .v-card-actions {
   border-top: 1px solid #E0E0E0;
+}
+
+/* Chat FAB Container */
+.chat-fab-container {
+  position: relative;
+}
+
+/* Help Hint Tooltip */
+.help-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 76px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-primary), 0.5);
+  color: rgb(var(--v-theme-on-surface));
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 999;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.help-hint:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.hint-content {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--v-theme-primary));
+}
+
+.hint-content .v-icon {
+  color: rgb(var(--v-theme-primary));
+}
+
+.hint-close {
+  opacity: 0.6;
+  margin-left: 4px;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.hint-close:hover {
+  opacity: 1;
+  background: rgba(var(--v-theme-on-surface), 0.1);
+}
+
+/* Light mode hint */
+.v-theme--light .help-hint {
+  background: #FFFFFF;
+  border: 1px solid #2196F3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.v-theme--light .help-hint:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode hint */
+.v-theme--dark .help-hint {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-primary), 0.6);
 }
 
 /* Hide chatbot completely on mobile and tablet */

@@ -9,6 +9,9 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+// Motion
+import { MotionPlugin } from '@vueuse/motion'
+
 // Global styles
 import './styles/global.scss'
 
@@ -68,5 +71,6 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(vuetify)
+app.use(MotionPlugin)
 
 app.mount('#app')
