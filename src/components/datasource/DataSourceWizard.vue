@@ -465,7 +465,8 @@
             <div class="text-caption text-medium-emphasis mb-2">
               Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
               <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
-              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template>
+              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span>
             </div>
             
             <div class="text-h5 mb-4">Schema Definition</div>
@@ -485,6 +486,7 @@
               Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
               <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
               <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span> · 
               <span class="font-weight-medium">{{ dataSource.schema.fields.length }} field{{ dataSource.schema.fields.length !== 1 ? 's' : '' }}</span>
             </div>
             
@@ -796,7 +798,14 @@
                         <v-icon>mdi-server</v-icon>
                       </template>
                       <v-list-item-title>Server</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.server }}{{ dataSource.config.port ? ':' + dataSource.config.port : '' }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>{{ dataSource.config.server }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.port">
+                      <template #prepend>
+                        <v-icon>mdi-network</v-icon>
+                      </template>
+                      <v-list-item-title>Port</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.port }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
@@ -857,32 +866,70 @@
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
-                        <v-icon>mdi-cloud</v-icon>
+                        <v-icon v-if="dataSource.provider === 'Local'">mdi-folder</v-icon>
+                        <v-icon v-else-if="dataSource.provider === 'FTP'">mdi-server-network</v-icon>
+                        <v-icon v-else-if="dataSource.provider === 'S3'">mdi-aws</v-icon>
+                        <v-icon v-else-if="dataSource.provider === 'Azure Blob'">mdi-microsoft-azure</v-icon>
+                        <v-icon v-else>mdi-cloud</v-icon>
                       </template>
                       <v-list-item-title>Storage Provider</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.provider }}</v-list-item-subtitle>
                     </v-list-item>
-                    <v-list-item v-if="dataSource.provider === 'FTP'">
-                      <template #prepend>
-                        <v-icon>mdi-server</v-icon>
-                      </template>
-                      <v-list-item-title>FTP Host</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.ftpHost }}:{{ dataSource.config.ftpPort || '21' }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="dataSource.provider === 'S3'">
-                      <template #prepend>
-                        <v-icon>mdi-aws</v-icon>
-                      </template>
-                      <v-list-item-title>S3 Bucket</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.s3Bucket }} ({{ dataSource.config.s3Region }})</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="dataSource.provider === 'Azure Blob'">
-                      <template #prepend>
-                        <v-icon>mdi-microsoft-azure</v-icon>
-                      </template>
-                      <v-list-item-title>Azure Storage</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.azureAccountName }}/{{ dataSource.config.azureContainer }}</v-list-item-subtitle>
-                    </v-list-item>
+                    <template v-if="dataSource.provider === 'FTP'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-server</v-icon>
+                        </template>
+                        <v-list-item-title>FTP Host</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.ftpHost }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-network</v-icon>
+                        </template>
+                        <v-list-item-title>Port</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.ftpPort || '21' }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-account</v-icon>
+                        </template>
+                        <v-list-item-title>Username</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.ftpUsername }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-if="dataSource.provider === 'S3'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-bucket</v-icon>
+                        </template>
+                        <v-list-item-title>S3 Bucket</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.s3Bucket }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-earth</v-icon>
+                        </template>
+                        <v-list-item-title>Region</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.s3Region }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-if="dataSource.provider === 'Azure Blob'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-table-large</v-icon>
+                        </template>
+                        <v-list-item-title>Storage Account</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.azureAccountName }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-package-variant</v-icon>
+                        </template>
+                        <v-list-item-title>Container</v-list-item-title>
+                        <v-list-item-subtitle>{{ dataSource.config.azureContainer }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-folder</v-icon>
