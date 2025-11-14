@@ -2,8 +2,7 @@
   <div class="schema-editor">
     <div class="d-flex align-center mb-4">
       <div class="flex-grow-1">
-        <h3 class="text-h6">Schema Definition</h3>
-        <p class="text-caption text-grey">Define the structure of your data</p>
+        <p class="text-body-2 text-medium-emphasis">Define the structure of your data</p>
       </div>
       <v-btn
         variant="text"

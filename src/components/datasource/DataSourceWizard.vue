@@ -121,6 +121,13 @@
         <!-- Step 2: Connection Details -->
         <v-stepper-window-item :value="2">
           <div class="pa-6">
+            <!-- Context Summary -->
+            <div class="text-caption text-medium-emphasis mb-2">
+              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              <span class="font-weight-medium">{{ dataSource.provider }}</span> · 
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span>
+            </div>
+            
             <div class="text-h5 mb-4">Connection Configuration</div>
             
             <!-- Database Connection -->
@@ -454,7 +461,15 @@
         <!-- Step 3: Schema Definition -->
         <v-stepper-window-item :value="3">
           <div class="pa-6">
+            <!-- Context Summary -->
+            <div class="text-caption text-medium-emphasis mb-2">
+              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
+              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template>
+            </div>
+            
             <div class="text-h5 mb-4">Schema Definition</div>
+            
             <SchemaEditor
               v-model="dataSource.schema.fields"
               @validate="handleSchemaValidation"
@@ -465,7 +480,16 @@
         <!-- Step 4: Write Configuration (only for destinations) -->
         <v-stepper-window-item v-if="showWriteConfigStep" :value="4">
           <div class="pa-6">
+            <!-- Context Summary -->
+            <div class="text-caption text-medium-emphasis mb-2">
+              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
+              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
+              <span class="font-weight-medium">{{ dataSource.schema.fields.length }} field{{ dataSource.schema.fields.length !== 1 ? 's' : '' }}</span>
+            </div>
+            
             <div class="text-h5 mb-4">Write Configuration</div>
+            
             <p class="text-body-2 text-medium-emphasis mb-6">
               Configure how data will be written to this destination
             </p>
