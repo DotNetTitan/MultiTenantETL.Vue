@@ -514,6 +514,17 @@ onUnmounted(() => {
   color: #ccc;
 }
 
+/* Light mode code blocks */
+.v-theme--light .message-text :deep(pre) {
+  background: #f8f8f8 !important;
+  border: 1px solid #d0d0d0;
+}
+
+.v-theme--light .message-text :deep(pre code) {
+  color: #2c3e50 !important;
+  background: transparent !important;
+}
+
 
 
 .message-text :deep(a) {
