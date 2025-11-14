@@ -171,27 +171,52 @@
 
       <v-divider />
 
-      <!-- Input Area -->
-      <v-card-actions class="pa-3">
-        <v-text-field
-          v-model="userInput"
-          placeholder="Ask me anything..."
-          variant="outlined"
-          density="compact"
-          hide-details
-          @keyup.enter="sendMessage"
+      <!-- Quick Suggestions -->
+      <div v-if="messages.length === 0" class="quick-suggestions pa-2">
+        <v-chip
+          v-for="suggestion in quickSuggestions"
+          :key="suggestion"
+          size="small"
+          class="ma-1"
+          @click="userInput = suggestion"
         >
-          <template #append-inner>
+          {{ suggestion }}
+        </v-chip>
+      </div>
+
+      <v-divider v-if="messages.length === 0" />
+
+      <!-- Input Area -->
+      <v-card-actions class="pa-3 input-area">
+        <div class="input-wrapper">
+          <v-textarea
+            v-model="userInput"
+            placeholder="Ask me anything... (Shift+Enter for new line, Enter to send)"
+            variant="outlined"
+            rows="2"
+            auto-grow
+            max-rows="5"
+            hide-details
+            class="chat-input"
+            @keydown.enter.exact.prevent="sendMessage"
+            @keydown.shift.enter.exact="userInput += '\n'"
+          />
+          <div class="input-controls">
+            <span v-if="userInput.length > 0" class="text-caption char-counter" :class="{ 'text-error': userInput.length > 500 }">
+              {{ userInput.length }}/500
+            </span>
+            <v-spacer />
             <v-btn
               icon
               size="small"
-              :disabled="!userInput.trim() || isLoading"
+              color="primary"
+              :disabled="!userInput.trim() || isLoading || userInput.length > 500"
               @click="sendMessage"
             >
               <v-icon>mdi-send</v-icon>
             </v-btn>
-          </template>
-        </v-text-field>
+          </div>
+        </div>
       </v-card-actions>
     </v-card>
   </div>
@@ -213,6 +238,14 @@ const showHint = ref(false);
 const hintTimer = ref(null);
 const hintDismissed = ref(false);
 const isExpanded = ref(false);
+
+// Quick suggestions based on current page
+const quickSuggestions = ref([
+  'Explain this page',
+  'How do I create a pipeline?',
+  'Show me an example',
+  'What can I do here?'
+]);
 
 // Configure marked for basic rendering
 marked.setOptions({
@@ -281,6 +314,11 @@ const scrollToBottom = (smooth = false) => {
 
 const sendMessage = async () => {
   if (!userInput.value.trim() || isLoading.value) return;
+  
+  // Check character limit
+  if (userInput.value.length > 500) {
+    return;
+  }
 
   const message = userInput.value.trim();
   userInput.value = '';
@@ -469,6 +507,7 @@ onUnmounted(() => {
   max-width: 80%;
   padding: 8px 12px;
   border-radius: 12px;
+  overflow: hidden;
 }
 
 .message.user .message-content {
@@ -499,6 +538,16 @@ onUnmounted(() => {
 
 .message-text :deep(p:last-child) {
   margin-bottom: 0;
+}
+
+.message-text :deep(ul),
+.message-text :deep(ol) {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.message-text :deep(li) {
+  margin: 4px 0;
 }
 
 .message-text :deep(strong) {
@@ -647,6 +696,69 @@ onUnmounted(() => {
 /* Light mode input border */
 .v-theme--light .v-card-actions {
   border-top: 1px solid #E0E0E0;
+}
+
+/* Quick suggestions */
+.quick-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: rgba(var(--v-theme-surface), 0.3);
+}
+
+.quick-suggestions .v-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-suggestions .v-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Input area improvements */
+.input-area {
+  background: rgba(var(--v-theme-surface), 0.5);
+  display: block;
+}
+
+.input-wrapper {
+  width: 100%;
+}
+
+.chat-input {
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.chat-input :deep(.v-field) {
+  border-radius: 12px;
+  background: rgb(var(--v-theme-surface));
+}
+
+.chat-input :deep(.v-field--focused) {
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.3);
+}
+
+.input-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.char-counter {
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.v-theme--light .quick-suggestions {
+  background: #f5f5f5;
+}
+
+.v-theme--light .input-area {
+  background: #fafafa;
 }
 
 /* Chat FAB Container */
