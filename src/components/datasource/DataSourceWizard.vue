@@ -48,7 +48,7 @@
                 <v-text-field
                   v-model="dataSource.name"
                   :label="t('dataSources.dataSourceName')"
-                  placeholder="e.g., Customer Database, Sales API"
+                  :placeholder="t('dataSources.namePlaceholder')"
                   variant="outlined"
                   :rules="[v => !!v || t('validation.required', { field: t('common.name') })]"
                   required
@@ -58,7 +58,7 @@
                 <v-textarea
                   v-model="dataSource.description"
                   :label="t('common.description')"
-                  placeholder="Brief description of this data source"
+                  :placeholder="t('dataSources.descriptionPlaceholder')"
                   variant="outlined"
                   rows="2"
                   auto-grow
@@ -123,9 +123,9 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
               <span class="font-weight-medium">{{ dataSource.provider }}</span> · 
-              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span>
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? $t('dataSources.source') : dataSource.direction === 'destination' ? $t('dataSources.destination') : $t('dataSources.sourceAndDestination') }}</span>
             </div>
             
             <div class="text-h5 mb-4">{{ t('common.connectionConfiguration') }}</div>
@@ -136,7 +136,7 @@
                 <v-text-field
                   v-model="dataSource.config.server"
                   :label="t('dataSources.server')"
-                  placeholder="localhost or server.example.com"
+                  :placeholder="t('dataSources.serverPlaceholder')"
                   variant="outlined"
                   :rules="[v => !!v || t('validation.required', { field: t('dataSources.server') })]"
                   required
@@ -146,7 +146,7 @@
                 <v-text-field
                   v-model="dataSource.config.port"
                   :label="t('dataSources.port')"
-                  placeholder="Default port"
+                  :placeholder="t('dataSources.defaultPort')"
                   variant="outlined"
                   type="number"
                 />
@@ -204,7 +204,7 @@
                 <v-text-field
                   v-model="dataSource.config.url"
                   :label="t('dataSources.apiUrl')"
-                  placeholder="https://api.example.com"
+                  :placeholder="t('dataSources.apiUrlPlaceholder')"
                   variant="outlined"
                   :rules="[v => !!v || t('validation.required', { field: 'URL' })]"
                   required
@@ -245,7 +245,7 @@
                 <v-textarea
                   v-model="dataSource.config.headers"
                   :label="t('dataSources.customHeaders')"
-                  placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
+                  :placeholder="t('dataSources.customHeadersPlaceholder')"
                   variant="outlined"
                   rows="3"
                 />
@@ -280,7 +280,7 @@
                   <v-text-field
                     v-model="dataSource.config.path"
                     :label="t('dataSources.filePath')"
-                    placeholder="C:\data\file.csv or /data/file.csv"
+                    :placeholder="t('dataSources.filePathPlaceholder')"
                     variant="outlined"
                     :rules="[v => !!v || t('validation.required', { field: t('dataSources.filePath') })]"
                     required
@@ -294,7 +294,7 @@
                   <v-text-field
                     v-model="dataSource.config.ftpHost"
                     :label="t('dataSources.ftpHost')"
-                    placeholder="ftp.example.com"
+                    :placeholder="t('dataSources.ftpHostPlaceholder')"
                     variant="outlined"
                     :rules="[v => !!v || t('validation.required', { field: 'Host' })]"
                     required
@@ -321,20 +321,20 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.ftpPassword"
-                    label="Password"
+                    :label="t('dataSources.password')"
                     type="password"
                     variant="outlined"
-                    :rules="[v => !!v || 'Password is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.password') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="dataSource.config.path"
-                    label="File Path"
-                    placeholder="/remote/path/file.csv"
+                    :label="t('dataSources.filePath')"
+                    :placeholder="t('dataSources.remotePathPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Path is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.filePath') })]"
                     required
                   />
                 </v-col>
@@ -345,49 +345,49 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.s3Bucket"
-                    label="Bucket Name"
-                    placeholder="my-bucket"
+                    :label="t('dataSources.bucketName')"
+                    :placeholder="t('dataSources.bucketPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Bucket is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.bucketName') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.s3Region"
-                    label="Region"
-                    placeholder="us-east-1"
+                    :label="t('dataSources.region')"
+                    :placeholder="t('dataSources.regionPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Region is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.region') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.s3AccessKey"
-                    label="Access Key ID"
+                    :label="t('dataSources.accessKeyId')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Access key is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.accessKeyId') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.s3SecretKey"
-                    label="Secret Access Key"
+                    :label="t('dataSources.secretAccessKey')"
                     type="password"
                     variant="outlined"
-                    :rules="[v => !!v || 'Secret key is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.secretAccessKey') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="dataSource.config.path"
-                    label="Object Key (File Path)"
-                    placeholder="folder/file.csv"
+                    :label="t('dataSources.objectKey')"
+                    :placeholder="t('dataSources.objectKeyPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Path is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.objectKey') })]"
                     required
                   />
                 </v-col>
@@ -398,40 +398,40 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.azureAccountName"
-                    label="Storage Account Name"
-                    placeholder="mystorageaccount"
+                    :label="t('dataSources.storageAccountName')"
+                    :placeholder="t('dataSources.storageAccountPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Account name is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.storageAccountName') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.azureContainer"
-                    label="Container Name"
-                    placeholder="mycontainer"
+                    :label="t('dataSources.containerName')"
+                    :placeholder="t('dataSources.containerPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Container is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.containerName') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="dataSource.config.azureAccountKey"
-                    label="Account Key"
+                    :label="t('dataSources.accountKey')"
                     type="password"
                     variant="outlined"
-                    :rules="[v => !!v || 'Account key is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.accountKey') })]"
                     required
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="dataSource.config.path"
-                    label="Blob Path"
-                    placeholder="folder/file.csv"
+                    :label="t('dataSources.blobPath')"
+                    :placeholder="t('dataSources.blobPathPlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Path is required']"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.blobPath') })]"
                     required
                   />
                 </v-col>
@@ -463,13 +463,13 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
               <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
               <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
-              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span>
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? $t('dataSources.source') : dataSource.direction === 'destination' ? $t('dataSources.destination') : $t('dataSources.sourceAndDestination') }}</span>
             </div>
             
-            <div class="text-h5 mb-4">Schema Definition</div>
+            <div class="text-h5 mb-4">{{ t('dataSources.schemaDefinition') }}</div>
             
             <SchemaEditor
               v-model="dataSource.schema.fields"
@@ -483,17 +483,17 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              Configuring: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
               <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
               <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
-              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? 'Source' : dataSource.direction === 'destination' ? 'Destination' : 'Source & Destination' }}</span> · 
-              <span class="font-weight-medium">{{ dataSource.schema.fields.length }} field{{ dataSource.schema.fields.length !== 1 ? 's' : '' }}</span>
+              <span class="font-weight-medium">{{ dataSource.direction === 'source' ? $t('dataSources.source') : dataSource.direction === 'destination' ? $t('dataSources.destination') : $t('dataSources.sourceAndDestination') }}</span> · 
+              <span class="font-weight-medium">{{ dataSource.schema.fields.length }} {{ $t('dataSources.fields', dataSource.schema.fields.length) }}</span>
             </div>
             
-            <div class="text-h5 mb-4">Write Configuration</div>
+            <div class="text-h5 mb-4">{{ $t('common.writeConfiguration') }}</div>
             
             <p class="text-body-2 text-medium-emphasis mb-6">
-              Configure how data will be written to this destination
+              {{ $t('dataSources.writeConfigDescription') }}
             </p>
 
             <!-- Database Write Config -->
@@ -501,12 +501,12 @@
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.writeConfig.tableName"
-                  label="Table Name"
-                  placeholder="e.g., Orders, Customers"
+                  :label="t('dataSources.tableName')"
+                  :placeholder="t('dataSources.tableNamePlaceholder')"
                   variant="outlined"
-                  :rules="[v => !!v || 'Table name is required']"
+                  :rules="[v => !!v || t('validation.required', { field: t('dataSources.tableName') })]"
                   required
-                  hint="The table where data will be written"
+                  :hint="t('dataSources.tableNameHint')"
                   persistent-hint
                 />
               </v-col>
@@ -514,18 +514,18 @@
                 <v-select
                   v-model="dataSource.config.writeConfig.operation"
                   :items="['INSERT', 'UPDATE', 'UPSERT', 'BULK_INSERT']"
-                  label="Write Operation"
+                  :label="t('dataSources.writeOperation')"
                   variant="outlined"
-                  hint="How records should be written"
+                  :hint="t('dataSources.writeOperationHint')"
                   persistent-hint
                 >
                   <template #item="{ item, props }">
                     <v-list-item v-bind="props">
                       <template #subtitle>
-                        <span v-if="item.value === 'INSERT'">Add new records only</span>
-                        <span v-else-if="item.value === 'UPDATE'">Update existing records</span>
-                        <span v-else-if="item.value === 'UPSERT'">Insert or update based on key</span>
-                        <span v-else-if="item.value === 'BULK_INSERT'">Batch insert for performance</span>
+                        <span v-if="item.value === 'INSERT'">{{ $t('dataSources.insertDescription') }}</span>
+                        <span v-else-if="item.value === 'UPDATE'">{{ $t('dataSources.updateDescription') }}</span>
+                        <span v-else-if="item.value === 'UPSERT'">{{ $t('dataSources.upsertDescription') }}</span>
+                        <span v-else-if="item.value === 'BULK_INSERT'">{{ $t('dataSources.bulkInsertDescription') }}</span>
                       </template>
                     </v-list-item>
                   </template>
@@ -535,23 +535,23 @@
                 <v-combobox
                   v-model="dataSource.config.writeConfig.primaryKeys"
                   :items="dataSource.schema.fields.map(f => f.name)"
-                  label="Primary Key Fields"
+                  :label="t('dataSources.primaryKeyFields')"
                   variant="outlined"
                   multiple
                   chips
                   closable-chips
-                  :rules="[v => (v && v.length > 0) || 'At least one primary key is required for UPDATE/UPSERT']"
-                  hint="Fields used to match existing records"
+                  :rules="[v => (v && v.length > 0) || t('dataSources.primaryKeyRequired')]"
+                  :hint="t('dataSources.primaryKeyHint')"
                   persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model.number="dataSource.config.writeConfig.batchSize"
-                  label="Batch Size"
+                  :label="t('dataSources.batchSize')"
                   type="number"
                   variant="outlined"
-                  hint="Number of records per batch"
+                  :hint="t('dataSources.batchSizeHint')"
                   persistent-hint
                   :min="1"
                   :max="10000"
@@ -565,38 +565,38 @@
                 <v-select
                   v-model="dataSource.config.writeConfig.requestFormat"
                   :items="['JSON', 'XML', 'Form Data']"
-                  label="Request Format"
+                  :label="t('dataSources.requestFormat')"
                   variant="outlined"
-                  hint="Format for the request body"
+                  :hint="t('dataSources.requestFormatHint')"
                   persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-switch
                   v-model="dataSource.config.writeConfig.wrapInArray"
-                  label="Wrap Data in Array"
+                  :label="t('dataSources.wrapDataInArray')"
                   color="primary"
-                  hint="Send data as array even for single records"
+                  :hint="t('dataSources.wrapDataHint')"
                   persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.writeConfig.rootKey"
-                  label="Root Key (Optional)"
-                  placeholder="e.g., data, items"
+                  :label="t('dataSources.rootKeyOptional')"
+                  :placeholder="t('dataSources.rootKeyPlaceholder')"
                   variant="outlined"
-                  hint="Wrap payload under this key"
+                  :hint="t('dataSources.rootKeyHint')"
                   persistent-hint
                 />
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model.number="dataSource.config.writeConfig.batchSize"
-                  label="Batch Size"
+                  :label="t('dataSources.batchSize')"
                   type="number"
                   variant="outlined"
-                  hint="Records per API request"
+                  :hint="t('dataSources.recordsPerRequest')"
                   persistent-hint
                   :min="1"
                   :max="1000"
@@ -609,44 +609,44 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="dataSource.config.writeConfig.filenamePattern"
-                  label="Filename Pattern"
+                  :label="t('dataSources.filenamePattern')"
                   variant="outlined"
-                  placeholder="output_{date}_{time}"
-                  :hint="`File extension will be added automatically based on format (${dataSource.config.format}). Use {date}, {time}, {timestamp}, {pipeline}, {executionId} as placeholders`"
+                  :placeholder="t('dataSources.filenamePatternPlaceholder')"
+                  :hint="t('dataSources.filenamePatternHint', { format: dataSource.config.format })"
                   persistent-hint
                 />
               </v-col>
               <v-col cols="12">
                 <div class="text-caption text-medium-emphasis mb-2">
-                  Available placeholders:
+                  {{ $t('dataSources.availablePlaceholders') }}:
                 </div>
-                <v-tooltip text="Format: YYYY-MM-DD (e.g., 2024-11-14)" location="top">
+                <v-tooltip :text="$t('dataSources.dateFormatTooltip')" location="top">
                   <template #activator="{ props }">
                     <v-chip size="small" class="mr-2 mb-2" v-bind="props">{date}</v-chip>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="Format: HH-MM-SS (e.g., 14-30-45)" location="top">
+                <v-tooltip :text="$t('dataSources.timeFormatTooltip')" location="top">
                   <template #activator="{ props }">
                     <v-chip size="small" class="mr-2 mb-2" v-bind="props">{time}</v-chip>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="Unix timestamp (e.g., 1699974645)" location="top">
+                <v-tooltip :text="$t('dataSources.timestampTooltip')" location="top">
                   <template #activator="{ props }">
                     <v-chip size="small" class="mr-2 mb-2" v-bind="props">{timestamp}</v-chip>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="Pipeline name (e.g., sales_pipeline)" location="top">
+                <v-tooltip :text="$t('dataSources.pipelineTooltip')" location="top">
                   <template #activator="{ props }">
                     <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipeline}</v-chip>
                   </template>
                 </v-tooltip>
-                <v-tooltip text="Execution ID (e.g., 12345)" location="top">
+                <v-tooltip :text="$t('dataSources.executionIdTooltip')" location="top">
                   <template #activator="{ props }">
                     <v-chip size="small" class="mr-2 mb-2" v-bind="props">{executionId}</v-chip>
                   </template>
                 </v-tooltip>
                 <div class="text-caption text-medium-emphasis mt-2">
-                  Example: data_{pipeline}_{date}_{time} → data_sales_pipeline_2024-11-14_14-30-45.csv
+                  {{ $t('dataSources.filenameExample') }}
                 </div>
               </v-col>
 
@@ -655,9 +655,9 @@
                 <v-col cols="12" md="6">
                   <v-switch
                     v-model="dataSource.config.writeConfig.includeHeaders"
-                    label="Include Header Row"
+                    :label="t('dataSources.includeHeaderRow')"
                     color="primary"
-                    hint="Write column names as first row"
+                    :hint="t('dataSources.includeHeaderHint')"
                     persistent-hint
                   />
                 </v-col>
@@ -665,12 +665,12 @@
                   <v-combobox
                     v-model="dataSource.config.writeConfig.columnOrder"
                     :items="dataSource.schema.fields.map(f => f.name)"
-                    label="Column Order"
+                    :label="t('dataSources.columnOrder')"
                     variant="outlined"
                     multiple
                     chips
                     closable-chips
-                    hint="Select columns in the order they should appear, or leave empty to use schema order"
+                    :hint="t('dataSources.columnOrderHint')"
                     persistent-hint
                   />
                 </v-col>
@@ -681,21 +681,21 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.writeConfig.sheetName"
-                    label="Sheet Name"
-                    placeholder="Sheet1"
+                    :label="t('dataSources.sheetName')"
+                    :placeholder="t('dataSources.sheetNamePlaceholder')"
                     variant="outlined"
-                    :rules="[v => !!v || 'Sheet name is required']"
-                    hint="Name of the Excel sheet"
+                    :rules="[v => !!v || t('validation.required', { field: t('dataSources.sheetName') })]"
+                    :hint="t('dataSources.sheetNameHint')"
                     persistent-hint
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.writeConfig.startCell"
-                    label="Start Cell"
-                    placeholder="A1"
+                    :label="t('dataSources.startCell')"
+                    :placeholder="t('dataSources.startCellPlaceholder')"
                     variant="outlined"
-                    hint="Cell where data starts (e.g., A1, B2)"
+                    :hint="t('dataSources.startCellHint')"
                     persistent-hint
                   />
                 </v-col>
@@ -707,17 +707,17 @@
                   <v-select
                     v-model="dataSource.config.writeConfig.structure"
                     :items="['array', 'object', 'nested']"
-                    label="JSON Structure"
+                    :label="t('dataSources.jsonStructure')"
                     variant="outlined"
-                    hint="How to structure the JSON output"
+                    :hint="t('dataSources.jsonStructureHint')"
                     persistent-hint
                   >
                     <template #item="{ item, props }">
                       <v-list-item v-bind="props">
                         <template #subtitle>
-                          <span v-if="item.value === 'array'">Array of objects</span>
-                          <span v-else-if="item.value === 'object'">Single object</span>
-                          <span v-else>Nested structure</span>
+                          <span v-if="item.value === 'array'">{{ $t('dataSources.arrayOfObjects') }}</span>
+                          <span v-else-if="item.value === 'object'">{{ $t('dataSources.singleObject') }}</span>
+                          <span v-else>{{ $t('dataSources.nestedStructure') }}</span>
                         </template>
                       </v-list-item>
                     </template>
@@ -726,10 +726,10 @@
                 <v-col v-if="dataSource.config.writeConfig.structure === 'nested'" cols="12" md="6">
                   <v-text-field
                     v-model="dataSource.config.writeConfig.rootKey"
-                    label="Root Key"
-                    placeholder="e.g., data, records"
+                    :label="t('dataSources.rootKey')"
+                    :placeholder="t('dataSources.rootKeyPlaceholder')"
                     variant="outlined"
-                    hint="Top-level key for nested structure"
+                    :hint="t('dataSources.rootKeyNestedHint')"
                     persistent-hint
                   />
                 </v-col>
@@ -741,13 +741,13 @@
         <!-- Step 4/5: Review & Save -->
         <v-stepper-window-item :value="showWriteConfigStep ? 5 : 4">
           <div class="pa-6">
-            <div class="text-h5 mb-4">Review Configuration</div>
+            <div class="text-h5 mb-4">{{ t('common.reviewConfiguration') }}</div>
             
             <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-information</v-icon>
-                Basic Information
+                {{ t('executions.basicInformation') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -755,28 +755,28 @@
                     <template #prepend>
                       <v-icon>mdi-label</v-icon>
                     </template>
-                    <v-list-item-title>Name</v-list-item-title>
+                    <v-list-item-title>{{ t('common.name') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.name }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item v-if="dataSource.description">
                     <template #prepend>
                       <v-icon>mdi-text</v-icon>
                     </template>
-                    <v-list-item-title>Description</v-list-item-title>
+                    <v-list-item-title>{{ t('common.description') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.description }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template #prepend>
                       <v-icon>{{ getTypeIcon(dataSource.type) }}</v-icon>
                     </template>
-                    <v-list-item-title>Type</v-list-item-title>
+                    <v-list-item-title>{{ t('common.type') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ dataSource.type }} - {{ dataSource.provider }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template #prepend>
                       <v-icon>{{ getDirectionIcon(dataSource.direction) }}</v-icon>
                     </template>
-                    <v-list-item-title>Direction</v-list-item-title>
+                    <v-list-item-title>{{ t('dataSources.direction') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ getDirectionLabel(dataSource.direction) }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
@@ -787,7 +787,7 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-connection</v-icon>
-                Connection Details
+                {{ t('common.connectionDetails') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -797,35 +797,35 @@
                       <template #prepend>
                         <v-icon>mdi-server</v-icon>
                       </template>
-                      <v-list-item-title>Server</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.server') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.server }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.port">
                       <template #prepend>
                         <v-icon>mdi-network</v-icon>
                       </template>
-                      <v-list-item-title>Port</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.port') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.port }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-database</v-icon>
                       </template>
-                      <v-list-item-title>Database</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.database') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.database }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-account</v-icon>
                       </template>
-                      <v-list-item-title>Username</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.username') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.username }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.useCustomConnectionString">
                       <template #prepend>
                         <v-icon>mdi-link-variant</v-icon>
                       </template>
-                      <v-list-item-title>Custom Connection String</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.customConnectionString') }}</v-list-item-title>
                       <v-list-item-subtitle class="text-truncate">{{ dataSource.config.connectionString }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
@@ -836,21 +836,21 @@
                       <template #prepend>
                         <v-icon>mdi-web</v-icon>
                       </template>
-                      <v-list-item-title>Base URL</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.baseUrl') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.url }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-shield-lock</v-icon>
                       </template>
-                      <v-list-item-title>Authentication</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.authentication') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.authType }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.headers">
                       <template #prepend>
                         <v-icon>mdi-code-json</v-icon>
                       </template>
-                      <v-list-item-title>Custom Headers</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.customHeaders') }}</v-list-item-title>
                       <v-list-item-subtitle class="text-truncate">{{ dataSource.config.headers }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
@@ -861,7 +861,7 @@
                       <template #prepend>
                         <v-icon>mdi-file-document</v-icon>
                       </template>
-                      <v-list-item-title>Format</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.format') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.format }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
@@ -872,7 +872,7 @@
                         <v-icon v-else-if="dataSource.provider === 'Azure Blob'">mdi-microsoft-azure</v-icon>
                         <v-icon v-else>mdi-cloud</v-icon>
                       </template>
-                      <v-list-item-title>Storage Provider</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.storageProvider') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.provider }}</v-list-item-subtitle>
                     </v-list-item>
                     <template v-if="dataSource.provider === 'FTP'">
@@ -880,21 +880,21 @@
                         <template #prepend>
                           <v-icon>mdi-server</v-icon>
                         </template>
-                        <v-list-item-title>FTP Host</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.ftpHost') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.ftpHost }}</v-list-item-subtitle>
                       </v-list-item>
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-network</v-icon>
                         </template>
-                        <v-list-item-title>Port</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.port') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.ftpPort || '21' }}</v-list-item-subtitle>
                       </v-list-item>
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-account</v-icon>
                         </template>
-                        <v-list-item-title>Username</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.username') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.ftpUsername }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
@@ -903,14 +903,14 @@
                         <template #prepend>
                           <v-icon>mdi-bucket</v-icon>
                         </template>
-                        <v-list-item-title>S3 Bucket</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.s3Bucket') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.s3Bucket }}</v-list-item-subtitle>
                       </v-list-item>
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-earth</v-icon>
                         </template>
-                        <v-list-item-title>Region</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.region') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.s3Region }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
@@ -919,14 +919,14 @@
                         <template #prepend>
                           <v-icon>mdi-table-large</v-icon>
                         </template>
-                        <v-list-item-title>Storage Account</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.storageAccount') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.azureAccountName }}</v-list-item-subtitle>
                       </v-list-item>
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-package-variant</v-icon>
                         </template>
-                        <v-list-item-title>Container</v-list-item-title>
+                        <v-list-item-title>{{ t('dataSources.container') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ dataSource.config.azureContainer }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
@@ -934,22 +934,22 @@
                       <template #prepend>
                         <v-icon>mdi-folder</v-icon>
                       </template>
-                      <v-list-item-title>Path</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.path') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.path }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV'">
                       <template #prepend>
                         <v-icon>mdi-table-split-cell</v-icon>
                       </template>
-                      <v-list-item-title>Delimiter</v-list-item-title>
+                      <v-list-item-title>{{ t('common.delimiter') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.delimiter || ',' }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV'">
                       <template #prepend>
                         <v-icon>mdi-format-header-1</v-icon>
                       </template>
-                      <v-list-item-title>Has Header Row</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.hasHeader ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                      <v-list-item-title>{{ t('common.hasHeaderRow') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.hasHeader ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
                 </v-list>
@@ -960,7 +960,7 @@
             <v-card v-if="dataSource.type === 'API' && dataSource.config.endpoints && dataSource.config.endpoints.length > 0" variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-api</v-icon>
-                API Endpoints ({{ dataSource.config.endpoints.length }})
+                {{ t('dataSources.apiEndpoints') }} ({{ dataSource.config.endpoints.length }})
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -980,16 +980,16 @@
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-table</v-icon>
-                Schema Fields ({{ dataSource.schema.fields.length }})
+                {{ t('dataSources.schemaFields') }} ({{ dataSource.schema.fields.length }})
               </v-card-title>
               <v-card-text>
                 <v-table density="compact">
                   <thead>
                     <tr>
-                      <th>Field Name</th>
-                      <th>Data Type</th>
-                      <th>Required</th>
-                      <th>Description</th>
+                      <th>{{ t('dataSources.fieldName') }}</th>
+                      <th>{{ t('dataSources.dataType') }}</th>
+                      <th>{{ t('common.required') }}</th>
+                      <th>{{ t('common.description') }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1016,7 +1016,7 @@
             <v-card v-if="showWriteConfigStep && dataSource.config.writeConfig" variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-pencil</v-icon>
-                Write Configuration
+                {{ t('common.writeConfiguration') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -1026,29 +1026,29 @@
                       <template #prepend>
                         <v-icon>mdi-table</v-icon>
                       </template>
-                      <v-list-item-title>Table Name</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.tableName') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.tableName }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-database-edit</v-icon>
                       </template>
-                      <v-list-item-title>Operation</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.operation') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.operation }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.writeConfig.primaryKeys && dataSource.config.writeConfig.primaryKeys.length > 0">
                       <template #prepend>
                         <v-icon>mdi-key</v-icon>
                       </template>
-                      <v-list-item-title>Primary Keys</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.primaryKeys') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.primaryKeys.join(', ') }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-package-variant</v-icon>
                       </template>
-                      <v-list-item-title>Batch Size</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} records</v-list-item-subtitle>
+                      <v-list-item-title>{{ t('dataSources.batchSize') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} {{ t('dataSources.records') }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
@@ -1058,29 +1058,29 @@
                       <template #prepend>
                         <v-icon>mdi-code-json</v-icon>
                       </template>
-                      <v-list-item-title>Request Format</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.requestFormat') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.requestFormat }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-format-list-bulleted</v-icon>
                       </template>
-                      <v-list-item-title>Wrap in Array</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.wrapInArray ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                      <v-list-item-title>{{ t('dataSources.wrapInArray') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.wrapInArray ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.writeConfig.rootKey">
                       <template #prepend>
                         <v-icon>mdi-key-variant</v-icon>
                       </template>
-                      <v-list-item-title>Root Key</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.rootKey') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.rootKey }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
                         <v-icon>mdi-package-variant</v-icon>
                       </template>
-                      <v-list-item-title>Batch Size</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} records</v-list-item-subtitle>
+                      <v-list-item-title>{{ t('dataSources.batchSize') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} {{ t('dataSources.records') }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
@@ -1090,49 +1090,49 @@
                       <template #prepend>
                         <v-icon>mdi-file-outline</v-icon>
                       </template>
-                      <v-list-item-title>Filename Pattern</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.filenamePattern') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.filenamePattern }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV'">
                       <template #prepend>
                         <v-icon>mdi-format-header-1</v-icon>
                       </template>
-                      <v-list-item-title>Include Headers</v-list-item-title>
-                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.includeHeaders ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                      <v-list-item-title>{{ t('dataSources.includeHeaders') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.includeHeaders ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'CSV' && dataSource.config.writeConfig.columnOrder && dataSource.config.writeConfig.columnOrder.length > 0">
                       <template #prepend>
                         <v-icon>mdi-sort</v-icon>
                       </template>
-                      <v-list-item-title>Column Order</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.columnOrder') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.columnOrder.join(', ') }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'Excel'">
                       <template #prepend>
                         <v-icon>mdi-file-excel</v-icon>
                       </template>
-                      <v-list-item-title>Sheet Name</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.sheetName') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.sheetName }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'Excel'">
                       <template #prepend>
                         <v-icon>mdi-table-large</v-icon>
                       </template>
-                      <v-list-item-title>Start Cell</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.startCell') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.startCell }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'JSON'">
                       <template #prepend>
                         <v-icon>mdi-code-braces</v-icon>
                       </template>
-                      <v-list-item-title>JSON Structure</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.jsonStructure') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.structure }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="dataSource.config.format === 'JSON' && dataSource.config.writeConfig.rootKey">
                       <template #prepend>
                         <v-icon>mdi-key-variant</v-icon>
                       </template>
-                      <v-list-item-title>Root Key</v-list-item-title>
+                      <v-list-item-title>{{ t('dataSources.rootKey') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ dataSource.config.writeConfig.rootKey }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
@@ -1216,17 +1216,17 @@ const currentStep = ref(1);
 const saving = ref(false);
 const schemaValidation = ref({ isValid: true, errors: [] });
 
-const dataSourceTypes = [
-  { title: 'Database', value: 'Database' },
-  { title: 'API', value: 'API' },
-  { title: 'File', value: 'File' }
-];
+const dataSourceTypes = computed(() => [
+  { title: t('dataSources.database'), value: 'Database' },
+  { title: t('dataSources.api'), value: 'API' },
+  { title: t('dataSources.file'), value: 'File' }
+]);
 
-const directionOptions = [
-  { title: 'Source Only', value: 'source', icon: 'mdi-download' },
-  { title: 'Destination Only', value: 'destination', icon: 'mdi-upload' },
-  { title: 'Both (Source & Destination)', value: 'both', icon: 'mdi-swap-horizontal' }
-];
+const directionOptions = computed(() => [
+  { title: t('dataSources.sourceOnly'), value: 'source', icon: 'mdi-download' },
+  { title: t('dataSources.destinationOnly'), value: 'destination', icon: 'mdi-upload' },
+  { title: t('dataSources.both'), value: 'both', icon: 'mdi-swap-horizontal' }
+]);
 
 const providersByType = {
   Database: ['SQL Server', 'PostgreSQL', 'MySQL', 'Oracle'],
@@ -1234,8 +1234,13 @@ const providersByType = {
   File: ['Local', 'FTP', 'S3', 'Azure Blob']
 };
 
-const authTypes = ['None', 'Basic', 'Bearer', 'OAuth2'];
-const fileFormats = ['CSV', 'JSON', 'XML', 'Excel'];
+const authTypes = computed(() => [
+  t('dataSources.authNone'),
+  t('dataSources.authBasic'),
+  t('dataSources.authBearer'),
+  t('dataSources.authOAuth2')
+]);
+const fileFormats = computed(() => ['CSV', 'JSON', 'XML', 'Excel']);
 const httpMethods = {
   source: ['GET'],
   destination: ['POST', 'PUT', 'PATCH']
@@ -1304,9 +1309,9 @@ function getDirectionIcon(direction) {
 
 function getDirectionLabel(direction) {
   const labels = {
-    source: 'Source Only',
-    destination: 'Destination Only',
-    both: 'Both (Source & Destination)'
+    source: t('dataSources.sourceOnly'),
+    destination: t('dataSources.destinationOnly'),
+    both: t('dataSources.both')
   };
   return labels[direction] || direction;
 }

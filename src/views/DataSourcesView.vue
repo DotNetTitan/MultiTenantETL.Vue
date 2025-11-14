@@ -150,7 +150,7 @@
     >
       <v-card>
         <v-card-title>
-          {{ editedDataSource.id ? 'Edit Data Source' : 'Create Data Source' }}
+          {{ editedDataSource.id ? $t('dataSources.editDataSource') : $t('dataSources.createDataSource') }}
         </v-card-title>
         <v-card-text>
           <v-form ref="form" @submit.prevent="saveDataSource">
@@ -628,18 +628,18 @@ const headers = computed(() => [
 const search = ref('');
 const typeFilter = ref('All');
 const sortBy = ref('name_asc');
-const typeOptions = ref([
-  { title: 'All Types', value: 'All' },
-  { title: 'Database', value: 'Database' },
-  { title: 'File', value: 'File' },
-  { title: 'API', value: 'API' }
+const typeOptions = computed(() => [
+  { title: t('filters.allTypes'), value: 'All' },
+  { title: t('dataSources.database'), value: 'Database' },
+  { title: t('dataSources.file'), value: 'File' },
+  { title: t('dataSources.api'), value: 'API' }
 ]);
-const sortOptions = ref([
-  { title: 'Name (A-Z)', value: 'name_asc' },
-  { title: 'Name (Z-A)', value: 'name_desc' },
-  { title: 'Created (Newest)', value: 'created_desc' },
-  { title: 'Created (Oldest)', value: 'created_asc' },
-  { title: 'Type', value: 'type_asc' }
+const sortOptions = computed(() => [
+  { title: t('filters.nameAsc'), value: 'name_asc' },
+  { title: t('filters.nameDesc'), value: 'name_desc' },
+  { title: t('filters.createdDesc'), value: 'created_desc' },
+  { title: t('filters.createdAsc'), value: 'created_asc' },
+  { title: t('filters.typeAsc'), value: 'type_asc' }
 ]);
 
 // Data source data

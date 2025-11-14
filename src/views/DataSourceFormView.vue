@@ -11,21 +11,21 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <div>
-        <h1 class="text-h4">{{ isEdit ? 'Edit Data Source' : 'Create New Data Source' }}</h1>
-        <p class="text-caption text-grey">{{ isEdit ? 'Update data source configuration' : 'Configure a new data source for your ETL pipelines' }}</p>
+        <h1 class="text-h4">{{ isEdit ? t('dataSources.editDataSource') : t('dataSources.createNewDataSource') }}</h1>
+        <p class="text-caption text-grey">{{ isEdit ? t('dataSources.updateDataSourceConfiguration') : t('dataSources.configureNewDataSource') }}</p>
       </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="mt-4">Loading data source...</p>
+      <p class="mt-4">{{ t('dataSources.loadingDataSource') }}</p>
     </div>
 
     <!-- Error State -->
     <v-alert v-else-if="error" type="error" class="mb-4">
       {{ error }}
-      <v-btn variant="text" @click="loadDataSource">Retry</v-btn>
+      <v-btn variant="text" @click="loadDataSource">{{ t('common.retry') }}</v-btn>
     </v-alert>
 
     <!-- Wizard -->
@@ -42,8 +42,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import DataSourceWizard from '@/components/datasource/DataSourceWizard.vue';
 import { fetchDataSourceById, saveDataSource } from '@/services/dataSourceService';
+
+const { t } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
