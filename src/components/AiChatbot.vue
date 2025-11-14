@@ -220,10 +220,31 @@ marked.setOptions({
   gfm: true
 });
 
-// Render markdown to HTML
+// Render markdown to HTML with copy button for code blocks
 const renderMarkdown = (text) => {
-  return marked.parse(text);
+  const html = marked.parse(text);
+  // Add copy button to code blocks
+  return html.replace(/<pre><code/g, '<div class="code-block-wrapper"><button class="copy-code-btn" onclick="copyCode(this)"><span class="mdi mdi-content-copy"></span></button><pre><code').replace(/<\/code><\/pre>/g, '</code></pre></div>');
 };
+
+// Copy code function (attached to window for onclick access)
+if (typeof window !== 'undefined') {
+  window.copyCode = function(button) {
+    const codeBlock = button.parentElement.querySelector('code');
+    const code = codeBlock.textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      const icon = button.querySelector('.mdi');
+      icon.classList.remove('mdi-content-copy');
+      icon.classList.add('mdi-check');
+      button.classList.add('copied');
+      setTimeout(() => {
+        icon.classList.remove('mdi-check');
+        icon.classList.add('mdi-content-copy');
+        button.classList.remove('copied');
+      }, 2000);
+    });
+  };
+}
 
 // Get current page context from route
 const getCurrentPage = () => {
@@ -496,12 +517,45 @@ onUnmounted(() => {
   font-size: 0.85em;
 }
 
+/* Code block wrapper with copy button */
+.message-text :deep(.code-block-wrapper) {
+  position: relative;
+  margin: 8px 0;
+}
+
+.message-text :deep(.copy-code-btn) {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.message-text :deep(.copy-code-btn:hover) {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.message-text :deep(.copy-code-btn.copied) {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+  color: #4caf50;
+}
+
 .message-text :deep(pre) {
   background: #2d2d2d;
   padding: 12px;
+  padding-top: 36px;
   border-radius: 6px;
   overflow-x: auto;
-  margin: 8px 0;
+  margin: 0;
 }
 
 .message-text :deep(pre code) {
@@ -523,6 +577,17 @@ onUnmounted(() => {
 .v-theme--light .message-text :deep(pre code) {
   color: #2c3e50 !important;
   background: transparent !important;
+}
+
+.v-theme--light .message-text :deep(.copy-code-btn) {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #666;
+}
+
+.v-theme--light .message-text :deep(.copy-code-btn:hover) {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
 }
 
 
