@@ -272,36 +272,73 @@ Gets all data sources with optional filtering.
     "name": "string",
     "description": "string",
     "type": "string",
-    "isSource": "boolean",
-    "isDestination": "boolean",
-    "requiresCredentials": "boolean",
-    "database": {
-      "provider": "string",
-      "server": "string",
-      "port": "string",
-      "databaseName": "string"
-    },
-    "file": {
-      "storageType": "string",
-      "path": "string",
-      "fileType": "string",
-      "delimiter": "string"
-    },
-    "api": {
-      "baseUrl": "string",
-      "authType": "string",
-      "dataFormat": "string"
-    },
-    "credentials": {
+    "provider": "string",
+    "direction": "string (source|destination|both)",
+    "config": {
+      "server": "string (Database)",
+      "port": "string (Database)",
+      "database": "string (Database)",
       "username": "string",
       "password": "string",
-      "apiKey": "string",
-      "token": "string"
+      "useCustomConnectionString": "boolean (Database)",
+      "connectionString": "string (Database)",
+      "url": "string (API)",
+      "authType": "string (API)",
+      "token": "string (API)",
+      "headers": "string (API)",
+      "endpoints": [
+        {
+          "id": "string",
+          "method": "string",
+          "path": "string",
+          "responseDataPath": "string",
+          "requestDataPath": "string"
+        }
+      ],
+      "format": "string (File: CSV|JSON|XML|Excel)",
+      "path": "string (File)",
+      "delimiter": "string (File)",
+      "hasHeader": "boolean (File)",
+      "writeConfig": {
+        "tableName": "string (Database)",
+        "operation": "string (Database: INSERT|UPDATE|UPSERT|BULK_INSERT)",
+        "primaryKeys": ["string"] (Database),
+        "batchSize": "number",
+        "requestFormat": "string (API: JSON|XML|Form Data)",
+        "wrapInArray": "boolean (API)",
+        "rootKey": "string (API/File)",
+        "includeHeaders": "boolean (File CSV)",
+        "columnOrder": ["string"] (File CSV),
+        "sheetName": "string (File Excel)",
+        "startCell": "string (File Excel)",
+        "structure": "string (File JSON: array|object|nested)",
+        "writeMode": "string (File: overwrite|append)"
+      }
     },
+    "schema": {
+      "fields": [
+        {
+          "name": "string",
+          "type": "string",
+          "required": "boolean",
+          "nullable": "boolean",
+          "description": "string",
+          "isPrimaryKey": "boolean"
+        }
+      ],
+      "version": "number",
+      "isManual": "boolean",
+      "lastModified": "string (ISO date)"
+    },
+    "isSource": "boolean (deprecated, use direction)",
+    "isDestination": "boolean (deprecated, use direction)",
+    "requiresCredentials": "boolean",
     "createdAt": "string (ISO date)"
   }
 ]
 ```
+
+**Note:** The `config` object structure varies by type. The `writeConfig` property is only required when `direction` is "destination" or "both".
 
 #### GET /data-sources/{id}
 
@@ -758,6 +795,96 @@ Deletes an API key.
 }
 ```
 
+## Write Configuration for Destinations
+
+When a data source is configured as a destination (or both source and destination), it requires write configuration to specify how data should be physically written. This configuration is stored in the `config.writeConfig` property.
+
+### Database Write Configuration
+
+Required when `type` is "Database" and `direction` is "destination" or "both":
+
+```json
+{
+  "tableName": "Orders",
+  "operation": "UPSERT",
+  "primaryKeys": ["OrderId"],
+  "batchSize": 1000
+}
+```
+
+**Fields:**
+- `tableName` (required): Target table name
+- `operation` (required): INSERT, UPDATE, UPSERT, or BULK_INSERT
+- `primaryKeys` (required for UPDATE/UPSERT): Array of field names used to match existing records
+- `batchSize` (optional): Number of records per batch (default: 1000)
+
+### API Write Configuration
+
+Required when `type` is "API" and `direction` is "destination" or "both":
+
+```json
+{
+  "requestFormat": "JSON",
+  "wrapInArray": false,
+  "rootKey": "product",
+  "batchSize": 100
+}
+```
+
+**Fields:**
+- `requestFormat` (required): JSON, XML, or Form Data
+- `wrapInArray` (optional): Send data as array even for single records
+- `rootKey` (optional): Wrap payload under this key
+- `batchSize` (optional): Records per API request (default: 100)
+
+### File Write Configuration
+
+Required when `type` is "File" and `direction` is "destination" or "both":
+
+**CSV:**
+```json
+{
+  "writeMode": "overwrite",
+  "includeHeaders": true,
+  "columnOrder": ["customer_id", "first_name", "last_name", "email"]
+}
+```
+
+**Excel:**
+```json
+{
+  "writeMode": "overwrite",
+  "sheetName": "Orders",
+  "startCell": "A1"
+}
+```
+
+**JSON:**
+```json
+{
+  "writeMode": "overwrite",
+  "structure": "array",
+  "rootKey": "data"
+}
+```
+
+**Common Fields:**
+- `writeMode` (required): "overwrite" or "append"
+
+**CSV-Specific:**
+- `includeHeaders`: Write column names as first row
+- `columnOrder`: Array of field names defining column order
+
+**Excel-Specific:**
+- `sheetName` (required): Name of the Excel sheet
+- `startCell`: Cell where data starts (e.g., "A1")
+
+**JSON-Specific:**
+- `structure` (required): "array", "object", or "nested"
+- `rootKey`: Top-level key for nested structure
+
+See `docs/write-configuration.md` for detailed documentation.
+
 ## Implementation Notes
 
 This API specification is designed to replace all the mock data in your Vue application with real backend API calls. The endpoints follow the same structure you're currently using in your mock implementations:
@@ -765,19 +892,22 @@ This API specification is designed to replace all the mock data in your Vue appl
 1. **Authentication**: Handles login/logout and token management
 2. **Tenants**: Multi-tenant management with filtering, sorting, and status toggling
 3. **Users**: User management with roles and status controls
-4. **Data Sources**: Different types (Database, File, API) with testing connections and schema retrieval
+4. **Data Sources**: Different types (Database, File, API) with testing connections, schema retrieval, and write configuration
 5. **Transformations**: Various transformation types with configuration validation
-6. **Pipelines**: Complete pipeline definitions with transformation chains
+6. **Pipelines**: Complete pipeline definitions with transformation chains and field mappings
 7. **Executions**: Monitor and retrieve pipeline execution details
 8. **Dashboard**: Aggregate statistics for the dashboard view
 9. **Settings**: User preferences and configuration
 
 To implement the backend, use:
 - ASP.NET Core Web API
+- PostgreSQL for database
 
 When implementing, make sure to:
 1. Secure all endpoints with proper authentication and tenant isolation
-2. Include input validation on all requests
+2. Include input validation on all requests, especially for write configuration
 3. Implement proper error handling with descriptive messages
 4. Document the API using OpenAPI/Swagger
 5. Include pagination for collection endpoints that may return large datasets
+6. Validate write configuration based on data source type and direction
+7. Use write configuration during the Load phase of ETL pipeline execution

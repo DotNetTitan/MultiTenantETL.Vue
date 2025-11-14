@@ -7,7 +7,22 @@ const mockDataSources = [
     name: 'SQL Server - Sales',
     description: 'Main sales database',
     type: 'Database',
+    provider: 'SQL Server',
+    direction: 'both',
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      server: 'sales-db.example.com',
+      port: '1433',
+      database: 'SalesDB',
+      username: 'sa',
+      password: '***',
+      writeConfig: {
+        tableName: 'Orders',
+        operation: 'UPSERT',
+        primaryKeys: ['OrderId'],
+        batchSize: 1000
+      }
+    },
     database: {
       provider: 'SQL Server',
       server: 'sales-db.example.com',
@@ -35,7 +50,15 @@ const mockDataSources = [
     name: 'SFTP - Customer Files',
     description: 'SFTP server containing customer data files',
     type: 'File',
+    provider: 'SFTP',
+    direction: 'source',
     createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      format: 'CSV',
+      path: '/customers/data',
+      delimiter: ',',
+      hasHeader: true
+    },
     file: {
       storageType: 'SFTP',
       path: '/customers/data',
@@ -63,7 +86,24 @@ const mockDataSources = [
     name: 'ERP API',
     description: 'REST API for the ERP system',
     type: 'API',
+    provider: 'REST',
+    direction: 'both',
     createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+    config: {
+      url: 'https://erp.example.com/api/v1',
+      authType: 'Bearer',
+      token: '***',
+      endpoints: [
+        { id: '1', method: 'GET', path: '/products', responseDataPath: 'data' },
+        { id: '2', method: 'POST', path: '/products', requestDataPath: 'product', responseDataPath: 'data' }
+      ],
+      writeConfig: {
+        requestFormat: 'JSON',
+        wrapInArray: false,
+        rootKey: 'product',
+        batchSize: 100
+      }
+    },
     api: {
       baseUrl: 'https://erp.example.com/api/v1',
       authType: 'Bearer Token',

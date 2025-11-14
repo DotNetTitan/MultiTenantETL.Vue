@@ -22,9 +22,17 @@
           title="Schema"
           subtitle="Define data structure"
         />
+        <v-icon v-if="showWriteConfigStep" class="step-arrow">mdi-chevron-right</v-icon>
+        <v-stepper-item
+          v-if="showWriteConfigStep"
+          :complete="currentStep > 4"
+          :value="4"
+          title="Write Config"
+          subtitle="Destination settings"
+        />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
-          :value="4"
+          :value="showWriteConfigStep ? 5 : 4"
           title="Review & Save"
           subtitle="Review configuration"
         />
@@ -258,16 +266,171 @@
                   required
                 />
               </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="dataSource.config.path"
-                  label="File Path"
-                  placeholder="/path/to/file.csv"
-                  variant="outlined"
-                  :rules="[v => !!v || 'Path is required']"
-                  required
-                />
-              </v-col>
+
+              <!-- Local Storage -->
+              <template v-if="dataSource.provider === 'Local'">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="dataSource.config.path"
+                    label="File Path"
+                    placeholder="C:\data\file.csv or /data/file.csv"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Path is required']"
+                    required
+                  />
+                </v-col>
+              </template>
+
+              <!-- FTP Storage -->
+              <template v-if="dataSource.provider === 'FTP'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.ftpHost"
+                    label="FTP Host"
+                    placeholder="ftp.example.com"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Host is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.ftpPort"
+                    label="Port"
+                    placeholder="21"
+                    type="number"
+                    variant="outlined"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.ftpUsername"
+                    label="Username"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Username is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.ftpPassword"
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Password is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="dataSource.config.path"
+                    label="File Path"
+                    placeholder="/remote/path/file.csv"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Path is required']"
+                    required
+                  />
+                </v-col>
+              </template>
+
+              <!-- S3 Storage -->
+              <template v-if="dataSource.provider === 'S3'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.s3Bucket"
+                    label="Bucket Name"
+                    placeholder="my-bucket"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Bucket is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.s3Region"
+                    label="Region"
+                    placeholder="us-east-1"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Region is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.s3AccessKey"
+                    label="Access Key ID"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Access key is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.s3SecretKey"
+                    label="Secret Access Key"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Secret key is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="dataSource.config.path"
+                    label="Object Key (File Path)"
+                    placeholder="folder/file.csv"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Path is required']"
+                    required
+                  />
+                </v-col>
+              </template>
+
+              <!-- Azure Blob Storage -->
+              <template v-if="dataSource.provider === 'Azure Blob'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.azureAccountName"
+                    label="Storage Account Name"
+                    placeholder="mystorageaccount"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Account name is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.azureContainer"
+                    label="Container Name"
+                    placeholder="mycontainer"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Container is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="dataSource.config.azureAccountKey"
+                    label="Account Key"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Account key is required']"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="dataSource.config.path"
+                    label="Blob Path"
+                    placeholder="folder/file.csv"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Path is required']"
+                    required
+                  />
+                </v-col>
+              </template>
+
+              <!-- Format-specific options (CSV) -->
               <v-col v-if="dataSource.config.format === 'CSV'" cols="12" md="6">
                 <v-text-field
                   v-model="dataSource.config.delimiter"
@@ -299,8 +462,258 @@
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 4: Review & Save -->
-        <v-stepper-window-item :value="4">
+        <!-- Step 4: Write Configuration (only for destinations) -->
+        <v-stepper-window-item v-if="showWriteConfigStep" :value="4">
+          <div class="pa-6">
+            <div class="text-h5 mb-4">Write Configuration</div>
+            <p class="text-body-2 text-medium-emphasis mb-6">
+              Configure how data will be written to this destination
+            </p>
+
+            <!-- Database Write Config -->
+            <v-row v-if="dataSource.type === 'Database'">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="dataSource.config.writeConfig.tableName"
+                  label="Table Name"
+                  placeholder="e.g., Orders, Customers"
+                  variant="outlined"
+                  :rules="[v => !!v || 'Table name is required']"
+                  required
+                  hint="The table where data will be written"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="dataSource.config.writeConfig.operation"
+                  :items="['INSERT', 'UPDATE', 'UPSERT', 'BULK_INSERT']"
+                  label="Write Operation"
+                  variant="outlined"
+                  hint="How records should be written"
+                  persistent-hint
+                >
+                  <template #item="{ item, props }">
+                    <v-list-item v-bind="props">
+                      <template #subtitle>
+                        <span v-if="item.value === 'INSERT'">Add new records only</span>
+                        <span v-else-if="item.value === 'UPDATE'">Update existing records</span>
+                        <span v-else-if="item.value === 'UPSERT'">Insert or update based on key</span>
+                        <span v-else-if="item.value === 'BULK_INSERT'">Batch insert for performance</span>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
+              <v-col v-if="['UPDATE', 'UPSERT'].includes(dataSource.config.writeConfig.operation)" cols="12">
+                <v-combobox
+                  v-model="dataSource.config.writeConfig.primaryKeys"
+                  :items="dataSource.schema.fields.map(f => f.name)"
+                  label="Primary Key Fields"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                  :rules="[v => (v && v.length > 0) || 'At least one primary key is required for UPDATE/UPSERT']"
+                  hint="Fields used to match existing records"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model.number="dataSource.config.writeConfig.batchSize"
+                  label="Batch Size"
+                  type="number"
+                  variant="outlined"
+                  hint="Number of records per batch"
+                  persistent-hint
+                  :min="1"
+                  :max="10000"
+                />
+              </v-col>
+            </v-row>
+
+            <!-- API Write Config -->
+            <v-row v-else-if="dataSource.type === 'API'">
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="dataSource.config.writeConfig.requestFormat"
+                  :items="['JSON', 'XML', 'Form Data']"
+                  label="Request Format"
+                  variant="outlined"
+                  hint="Format for the request body"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-switch
+                  v-model="dataSource.config.writeConfig.wrapInArray"
+                  label="Wrap Data in Array"
+                  color="primary"
+                  hint="Send data as array even for single records"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="dataSource.config.writeConfig.rootKey"
+                  label="Root Key (Optional)"
+                  placeholder="e.g., data, items"
+                  variant="outlined"
+                  hint="Wrap payload under this key"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model.number="dataSource.config.writeConfig.batchSize"
+                  label="Batch Size"
+                  type="number"
+                  variant="outlined"
+                  hint="Records per API request"
+                  persistent-hint
+                  :min="1"
+                  :max="1000"
+                />
+              </v-col>
+            </v-row>
+
+            <!-- File Write Config -->
+            <v-row v-else-if="dataSource.type === 'File'">
+              <v-col cols="12">
+                <v-text-field
+                  v-model="dataSource.config.writeConfig.filenamePattern"
+                  label="Filename Pattern"
+                  variant="outlined"
+                  placeholder="output_{date}_{time}"
+                  :hint="`File extension will be added automatically based on format (${dataSource.config.format}). Use {date}, {time}, {timestamp}, {pipeline}, {executionId} as placeholders`"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col cols="12">
+                <div class="text-caption text-medium-emphasis mb-2">
+                  Available placeholders:
+                </div>
+                <v-tooltip text="Format: YYYY-MM-DD (e.g., 2024-11-14)" location="top">
+                  <template #activator="{ props }">
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{date}</v-chip>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Format: HH-MM-SS (e.g., 14-30-45)" location="top">
+                  <template #activator="{ props }">
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{time}</v-chip>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Unix timestamp (e.g., 1699974645)" location="top">
+                  <template #activator="{ props }">
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{timestamp}</v-chip>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Pipeline name (e.g., sales_pipeline)" location="top">
+                  <template #activator="{ props }">
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipeline}</v-chip>
+                  </template>
+                </v-tooltip>
+                <v-tooltip text="Execution ID (e.g., 12345)" location="top">
+                  <template #activator="{ props }">
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{executionId}</v-chip>
+                  </template>
+                </v-tooltip>
+                <div class="text-caption text-medium-emphasis mt-2">
+                  Example: data_{pipeline}_{date}_{time} → data_sales_pipeline_2024-11-14_14-30-45.csv
+                </div>
+              </v-col>
+
+              <!-- CSV Specific -->
+              <template v-if="dataSource.config.format === 'CSV'">
+                <v-col cols="12" md="6">
+                  <v-switch
+                    v-model="dataSource.config.writeConfig.includeHeaders"
+                    label="Include Header Row"
+                    color="primary"
+                    hint="Write column names as first row"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-combobox
+                    v-model="dataSource.config.writeConfig.columnOrder"
+                    :items="dataSource.schema.fields.map(f => f.name)"
+                    label="Column Order"
+                    variant="outlined"
+                    multiple
+                    chips
+                    closable-chips
+                    hint="Select columns in the order they should appear, or leave empty to use schema order"
+                    persistent-hint
+                  />
+                </v-col>
+              </template>
+
+              <!-- Excel Specific -->
+              <template v-if="dataSource.config.format === 'Excel'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.writeConfig.sheetName"
+                    label="Sheet Name"
+                    placeholder="Sheet1"
+                    variant="outlined"
+                    :rules="[v => !!v || 'Sheet name is required']"
+                    hint="Name of the Excel sheet"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.writeConfig.startCell"
+                    label="Start Cell"
+                    placeholder="A1"
+                    variant="outlined"
+                    hint="Cell where data starts (e.g., A1, B2)"
+                    persistent-hint
+                  />
+                </v-col>
+              </template>
+
+              <!-- JSON Specific -->
+              <template v-if="dataSource.config.format === 'JSON'">
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="dataSource.config.writeConfig.structure"
+                    :items="['array', 'object', 'nested']"
+                    label="JSON Structure"
+                    variant="outlined"
+                    hint="How to structure the JSON output"
+                    persistent-hint
+                  >
+                    <template #item="{ item, props }">
+                      <v-list-item v-bind="props">
+                        <template #subtitle>
+                          <span v-if="item.value === 'array'">Array of objects</span>
+                          <span v-else-if="item.value === 'object'">Single object</span>
+                          <span v-else>Nested structure</span>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </v-col>
+                <v-col v-if="dataSource.config.writeConfig.structure === 'nested'" cols="12" md="6">
+                  <v-text-field
+                    v-model="dataSource.config.writeConfig.rootKey"
+                    label="Root Key"
+                    placeholder="e.g., data, records"
+                    variant="outlined"
+                    hint="Top-level key for nested structure"
+                    persistent-hint
+                  />
+                </v-col>
+              </template>
+            </v-row>
+          </div>
+        </v-stepper-window-item>
+
+        <!-- Step 4/5: Review & Save -->
+        <v-stepper-window-item :value="showWriteConfigStep ? 5 : 4">
           <div class="pa-6">
             <div class="text-h5 mb-4">Review Configuration</div>
             
@@ -420,6 +833,34 @@
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
+                        <v-icon>mdi-cloud</v-icon>
+                      </template>
+                      <v-list-item-title>Storage Provider</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.provider }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.provider === 'FTP'">
+                      <template #prepend>
+                        <v-icon>mdi-server</v-icon>
+                      </template>
+                      <v-list-item-title>FTP Host</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.ftpHost }}:{{ dataSource.config.ftpPort || '21' }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.provider === 'S3'">
+                      <template #prepend>
+                        <v-icon>mdi-aws</v-icon>
+                      </template>
+                      <v-list-item-title>S3 Bucket</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.s3Bucket }} ({{ dataSource.config.s3Region }})</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.provider === 'Azure Blob'">
+                      <template #prepend>
+                        <v-icon>mdi-microsoft-azure</v-icon>
+                      </template>
+                      <v-list-item-title>Azure Storage</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.azureAccountName }}/{{ dataSource.config.azureContainer }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
                         <v-icon>mdi-folder</v-icon>
                       </template>
                       <v-list-item-title>Path</v-list-item-title>
@@ -499,6 +940,134 @@
                 </v-table>
               </v-card-text>
             </v-card>
+
+            <!-- Write Configuration (if destination) -->
+            <v-card v-if="showWriteConfigStep && dataSource.config.writeConfig" variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-pencil</v-icon>
+                Write Configuration
+              </v-card-title>
+              <v-card-text>
+                <v-list density="compact">
+                  <!-- Database Write Config -->
+                  <template v-if="dataSource.type === 'Database'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-table</v-icon>
+                      </template>
+                      <v-list-item-title>Table Name</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.tableName }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-database-edit</v-icon>
+                      </template>
+                      <v-list-item-title>Operation</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.operation }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.writeConfig.primaryKeys && dataSource.config.writeConfig.primaryKeys.length > 0">
+                      <template #prepend>
+                        <v-icon>mdi-key</v-icon>
+                      </template>
+                      <v-list-item-title>Primary Keys</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.primaryKeys.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-package-variant</v-icon>
+                      </template>
+                      <v-list-item-title>Batch Size</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} records</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+
+                  <!-- API Write Config -->
+                  <template v-if="dataSource.type === 'API'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-code-json</v-icon>
+                      </template>
+                      <v-list-item-title>Request Format</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.requestFormat }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-format-list-bulleted</v-icon>
+                      </template>
+                      <v-list-item-title>Wrap in Array</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.wrapInArray ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.writeConfig.rootKey">
+                      <template #prepend>
+                        <v-icon>mdi-key-variant</v-icon>
+                      </template>
+                      <v-list-item-title>Root Key</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.rootKey }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-package-variant</v-icon>
+                      </template>
+                      <v-list-item-title>Batch Size</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.batchSize }} records</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+
+                  <!-- File Write Config -->
+                  <template v-if="dataSource.type === 'File'">
+                    <v-list-item v-if="dataSource.config.writeConfig.filenamePattern">
+                      <template #prepend>
+                        <v-icon>mdi-file-outline</v-icon>
+                      </template>
+                      <v-list-item-title>Filename Pattern</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.filenamePattern }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'CSV'">
+                      <template #prepend>
+                        <v-icon>mdi-format-header-1</v-icon>
+                      </template>
+                      <v-list-item-title>Include Headers</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.includeHeaders ? 'Yes' : 'No' }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'CSV' && dataSource.config.writeConfig.columnOrder && dataSource.config.writeConfig.columnOrder.length > 0">
+                      <template #prepend>
+                        <v-icon>mdi-sort</v-icon>
+                      </template>
+                      <v-list-item-title>Column Order</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.columnOrder.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'Excel'">
+                      <template #prepend>
+                        <v-icon>mdi-file-excel</v-icon>
+                      </template>
+                      <v-list-item-title>Sheet Name</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.sheetName }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'Excel'">
+                      <template #prepend>
+                        <v-icon>mdi-table-large</v-icon>
+                      </template>
+                      <v-list-item-title>Start Cell</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.startCell }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'JSON'">
+                      <template #prepend>
+                        <v-icon>mdi-code-braces</v-icon>
+                      </template>
+                      <v-list-item-title>JSON Structure</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.structure }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="dataSource.config.format === 'JSON' && dataSource.config.writeConfig.rootKey">
+                      <template #prepend>
+                        <v-icon>mdi-key-variant</v-icon>
+                      </template>
+                      <v-list-item-title>Root Key</v-list-item-title>
+                      <v-list-item-subtitle>{{ dataSource.config.writeConfig.rootKey }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-card-text>
+            </v-card>
           </div>
         </v-stepper-window-item>
       </v-stepper-window>
@@ -517,7 +1086,7 @@
       </v-btn>
       <v-spacer />
       <v-btn
-        v-if="currentStep < 4"
+        v-if="currentStep < (showWriteConfigStep ? 5 : 4)"
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
@@ -602,6 +1171,10 @@ const providerOptions = computed(() => {
   return providersByType[props.dataSource.type] || [];
 });
 
+const showWriteConfigStep = computed(() => {
+  return props.dataSource.direction === 'destination' || props.dataSource.direction === 'both';
+});
+
 const canProceed = computed(() => {
   switch (currentStep.value) {
     case 1:
@@ -611,19 +1184,30 @@ const canProceed = computed(() => {
     case 3:
       return schemaValidation.value.isValid && props.dataSource.schema.fields.length > 0;
     case 4:
-      return true;
+      if (showWriteConfigStep.value) {
+        return validateWriteConfig();
+      }
+      return true; // Review step
+    case 5:
+      return true; // Review step when write config is shown
     default:
       return false;
   }
 });
 
 const canSave = computed(() => {
-  return props.dataSource.name &&
+  const baseValid = props.dataSource.name &&
          props.dataSource.type &&
          props.dataSource.provider &&
          validateConnectionConfig() &&
          schemaValidation.value.isValid &&
          props.dataSource.schema.fields.length > 0;
+  
+  if (showWriteConfigStep.value) {
+    return baseValid && validateWriteConfig();
+  }
+  
+  return baseValid;
 });
 
 function getTypeIcon(type) {
@@ -679,7 +1263,13 @@ function getDefaultConfig(type) {
         username: '',
         password: '',
         useCustomConnectionString: false,
-        connectionString: ''
+        connectionString: '',
+        writeConfig: {
+          tableName: '',
+          operation: 'INSERT',
+          primaryKeys: [],
+          batchSize: 1000
+        }
       };
     case 'API':
       return {
@@ -689,14 +1279,43 @@ function getDefaultConfig(type) {
         username: '',
         password: '',
         headers: '',
-        endpoints: []
+        endpoints: [],
+        writeConfig: {
+          requestFormat: 'JSON',
+          wrapInArray: false,
+          rootKey: '',
+          batchSize: 100
+        }
       };
     case 'File':
       return {
         format: 'CSV',
         path: '',
         delimiter: ',',
-        hasHeader: true
+        hasHeader: true,
+        // FTP fields
+        ftpHost: '',
+        ftpPort: '21',
+        ftpUsername: '',
+        ftpPassword: '',
+        // S3 fields
+        s3Bucket: '',
+        s3Region: '',
+        s3AccessKey: '',
+        s3SecretKey: '',
+        // Azure Blob fields
+        azureAccountName: '',
+        azureContainer: '',
+        azureAccountKey: '',
+        writeConfig: {
+          filenamePattern: '',
+          includeHeaders: true,
+          columnOrder: [],
+          sheetName: 'Sheet1',
+          startCell: 'A1',
+          structure: 'array',
+          rootKey: ''
+        }
       };
     default:
       return {};
@@ -750,7 +1369,74 @@ function validateConnectionConfig() {
   }
   
   if (type === 'File') {
-    return !!config.format && !!config.path;
+    const provider = props.dataSource.provider;
+    if (!config.format || !provider) return false;
+    
+    // Validate provider-specific fields
+    if (provider === 'Local') {
+      return !!config.path;
+    }
+    
+    if (provider === 'FTP') {
+      return !!config.ftpHost && !!config.ftpUsername && !!config.ftpPassword && !!config.path;
+    }
+    
+    if (provider === 'S3') {
+      return !!config.s3Bucket && !!config.s3Region && !!config.s3AccessKey && !!config.s3SecretKey && !!config.path;
+    }
+    
+    if (provider === 'Azure Blob') {
+      return !!config.azureAccountName && !!config.azureContainer && !!config.azureAccountKey && !!config.path;
+    }
+    
+    return false;
+  }
+  
+  return false;
+}
+
+function validateWriteConfig() {
+  const { type, config } = props.dataSource;
+  
+  if (!config.writeConfig) return false;
+  
+  if (type === 'Database') {
+    // Table name is required
+    if (!config.writeConfig.tableName) return false;
+    
+    // For UPDATE/UPSERT operations, primary keys are required
+    if (['UPDATE', 'UPSERT'].includes(config.writeConfig.operation)) {
+      return config.writeConfig.primaryKeys && config.writeConfig.primaryKeys.length > 0;
+    }
+    
+    return true;
+  }
+  
+  if (type === 'API') {
+    // Request format is required
+    return !!config.writeConfig.requestFormat;
+  }
+  
+  if (type === 'File') {
+    // Write mode is required
+    if (!config.writeConfig.writeMode) return false;
+    
+    // For CSV, column order should be defined (can be empty initially)
+    if (config.format === 'CSV') {
+      return config.writeConfig.columnOrder !== undefined;
+    }
+    
+    // For Excel, sheet name is required
+    if (config.format === 'Excel') {
+      return !!config.writeConfig.sheetName;
+    }
+    
+    // For JSON, structure is required
+    if (config.format === 'JSON') {
+      return !!config.writeConfig.structure;
+    }
+    
+    return true;
   }
   
   return false;
