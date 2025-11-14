@@ -9,21 +9,24 @@ const pageContexts = {
     title: 'Dashboard',
     description: 'Real-time monitoring hub showing overview of all ETL operations',
     details: `The Dashboard displays four key metric cards at the top:
-- Total Pipelines: Shows count of all pipelines in the system
-- Active Pipelines: Number of pipelines currently enabled and ready to run
-- Data Sources: Total configured database, file, and API connections
-- Recent Executions: Count of pipeline runs in the last 24 hours
+- Total Pipelines: Shows count of all pipelines in the system (click "VIEW PIPELINES" to see all pipelines)
+- Active Pipelines: Number of pipelines currently enabled and ready to run (click "VIEW ACTIVE" to filter active ones)
+- Data Sources: Total configured database, file, and API connections (click "VIEW SOURCES" to manage data sources)
+- Recent Executions: Count of pipeline runs in the last 24 hours (click "VIEW EXECUTIONS" to see all executions)
 
 Below the metrics, there are two main sections:
 1. Pipeline Status Chart: Pie chart showing distribution of pipeline statuses (Active, Inactive, Failed)
 2. Recent Executions Table: Lists the 5 most recent pipeline runs with columns for Pipeline Name, Status (Running/Completed/Failed), Start Time, Duration, and Records Processed
 
-Quick action buttons allow creating new pipelines and data sources directly from the dashboard.`,
+IMPORTANT: The Dashboard is READ-ONLY for viewing metrics and monitoring. There are NO "Create Pipeline" or "Create Data Source" buttons on the Dashboard page itself. To create new items, users must navigate to the respective pages using the left sidebar menu.`,
     features: [
       'Auto-refreshes every 30 seconds (configurable in Settings)',
       'Click on any execution to view detailed logs',
       'Status badges use color coding: green (completed), blue (running), red (failed)',
-      'Metrics update in real-time as pipelines execute'
+      'Metrics update in real-time as pipelines execute',
+      'Click "VIEW PIPELINES" button to navigate to Pipelines page where you can create new pipelines',
+      'Click "VIEW SOURCES" button to navigate to Data Sources page where you can create new data sources',
+      'Use the left sidebar menu to navigate to different pages (Pipelines, Data Sources, etc.)'
     ]
   },
   pipelines: {
