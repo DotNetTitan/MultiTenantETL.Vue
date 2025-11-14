@@ -203,10 +203,15 @@ watch(() => route.path, () => {
   overflow: hidden;
 }
 
+.chat-header {
+  flex-shrink: 0;
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;
   background: rgba(var(--v-theme-surface), 0.5);
+  -webkit-overflow-scrolling: touch;
 }
 
 .message {
@@ -245,6 +250,7 @@ watch(() => route.path, () => {
 .message-text {
   white-space: pre-wrap;
   word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Light mode only improvements - don't touch dark mode */
@@ -290,15 +296,10 @@ watch(() => route.path, () => {
   border-top: 1px solid #E0E0E0;
 }
 
-@media (max-width: 600px) {
-  .chat-window {
-    width: calc(100vw - 32px);
-    height: calc(100vh - 100px);
-  }
-  
+/* Hide chatbot completely on mobile and tablet */
+@media (max-width: 960px) {
   .ai-chatbot {
-    bottom: 16px;
-    right: 16px;
+    display: none !important;
   }
 }
 </style>
