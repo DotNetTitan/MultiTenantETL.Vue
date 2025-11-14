@@ -395,8 +395,32 @@ API Key Usage:
   }
 };
 
+// Retry helper with exponential backoff
+async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const isRetryable = error.message?.includes('503') || 
+                          error.message?.includes('overloaded') ||
+                          error.message?.includes('429');
+      
+      const isLastAttempt = attempt === maxRetries - 1;
+      
+      if (!isRetryable || isLastAttempt) {
+        throw error;
+      }
+      
+      // Exponential backoff: 1s, 2s, 4s
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+}
+
 export async function getChatResponse(message, currentPage, conversationHistory = []) {
-  try {
+  return retryWithBackoff(async () => {
     // Use gemini-2.5-flash (stable, fast, and widely supported)
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash'
@@ -460,23 +484,27 @@ Navigation:
       },
     });
 
-    const result = await chat.sendMessage(`${systemPrompt}\n\nUser question: ${message}`);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('Error getting Gemini response:', error);
-    
-    // More specific error handling
-    if (error.message?.includes('429')) {
-      throw new Error('Rate limit exceeded. Please wait and try again.');
-    } else if (error.message?.includes('quota')) {
-      throw new Error('API quota exceeded. Please create a new API key.');
-    } else if (error.message?.includes('403')) {
-      throw new Error('API access forbidden. Please check your API key.');
-    } else if (error.message?.includes('404')) {
-      throw new Error('Model not found. Please check your API configuration.');
+    try {
+      const result = await chat.sendMessage(`${systemPrompt}\n\nUser question: ${message}`);
+      const response = result.response;
+      return response.text();
+    } catch (error) {
+      console.error('Error getting Gemini response:', error);
+      
+      // More specific error handling
+      if (error.message?.includes('503') || error.message?.includes('overloaded')) {
+        throw new Error('The AI service is currently overloaded. Retrying...');
+      } else if (error.message?.includes('429')) {
+        throw new Error('Rate limit exceeded. Retrying...');
+      } else if (error.message?.includes('quota')) {
+        throw new Error('API quota exceeded. Please create a new API key.');
+      } else if (error.message?.includes('403')) {
+        throw new Error('API access forbidden. Please check your API key.');
+      } else if (error.message?.includes('404')) {
+        throw new Error('Model not found. Please check your API configuration.');
+      }
+      
+      throw error;
     }
-    
-    throw error;
-  }
+  });
 }

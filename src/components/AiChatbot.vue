@@ -68,21 +68,54 @@
     <v-card
       v-if="isOpen"
       class="chat-window"
+      :class="{ 'chat-window-expanded': isExpanded }"
       elevation="12"
     >
       <v-card-title class="d-flex align-center pa-3 primary chat-header">
         <v-icon class="mr-2 text-white">mdi-robot</v-icon>
         <span class="text-white">Maeve</span>
         <v-spacer />
-        <v-btn
-          icon
-          size="small"
-          variant="text"
-          class="close-btn"
-          @click="toggleChat"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+        <v-tooltip text="Clear chat" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              :disabled="messages.length === 0"
+              v-bind="props"
+              @click="clearChat"
+            >
+              <v-icon>mdi-broom</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip :text="isExpanded ? 'Collapse' : 'Expand'" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              v-bind="props"
+              @click="isExpanded = !isExpanded"
+            >
+              <v-icon>{{ isExpanded ? 'mdi-arrow-collapse' : 'mdi-arrow-expand' }}</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip text="Close" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              class="close-btn"
+              v-bind="props"
+              @click="toggleChat"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </v-card-title>
 
       <v-divider />
@@ -110,7 +143,10 @@
               </v-icon>
               <span class="text-caption">{{ msg.role === 'user' ? 'You' : 'Maeve' }}</span>
             </div>
-            <div class="message-text">{{ msg.content }}</div>
+            <div 
+              class="message-text" 
+              v-html="msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content"
+            ></div>
           </div>
         </div>
 
@@ -165,6 +201,7 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { getChatResponse } from '@/services/geminiService';
+import { marked } from 'marked';
 
 const route = useRoute();
 const isOpen = ref(false);
@@ -175,6 +212,18 @@ const messagesContainer = ref(null);
 const showHint = ref(false);
 const hintTimer = ref(null);
 const hintDismissed = ref(false);
+const isExpanded = ref(false);
+
+// Configure marked for basic rendering
+marked.setOptions({
+  breaks: true,
+  gfm: true
+});
+
+// Render markdown to HTML
+const renderMarkdown = (text) => {
+  return marked.parse(text);
+};
 
 // Get current page context from route
 const getCurrentPage = () => {
@@ -189,10 +238,22 @@ const toggleChat = () => {
   }
 };
 
-const scrollToBottom = () => {
+const clearChat = () => {
+  messages.value = [];
+};
+
+const scrollToBottom = (smooth = false) => {
   nextTick(() => {
     if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+      const element = messagesContainer.value.$el || messagesContainer.value;
+      if (smooth) {
+        element.scrollTo({
+          top: element.scrollHeight,
+          behavior: 'smooth'
+        });
+      } else {
+        element.scrollTop = element.scrollHeight;
+      }
     }
   });
 };
@@ -222,7 +283,8 @@ const sendMessage = async () => {
       content: response
     });
 
-    scrollToBottom();
+    // Scroll with smooth animation after response
+    setTimeout(() => scrollToBottom(true), 100);
   } catch (error) {
     messages.value.push({
       role: 'assistant',
@@ -329,6 +391,12 @@ onUnmounted(() => {
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.chat-window-expanded {
+  width: 600px;
+  height: 700px;
 }
 
 .chat-header {
@@ -379,6 +447,65 @@ onUnmounted(() => {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+/* Markdown styling in messages */
+.message-text :deep(p) {
+  margin: 0 0 8px 0;
+}
+
+.message-text :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.message-text :deep(strong) {
+  font-weight: 600;
+}
+
+.message-text :deep(em) {
+  font-style: italic;
+}
+
+.message-text :deep(code) {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.message-text :deep(pre) {
+  background: #2d2d2d;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.message-text :deep(pre code) {
+  background: none;
+  padding: 0;
+  font-size: 0.8em;
+  line-height: 1.5;
+  display: block;
+  white-space: pre;
+  color: #ccc;
+}
+
+
+
+.message-text :deep(a) {
+  color: rgb(var(--v-theme-primary));
+  text-decoration: underline;
+}
+
+.v-theme--light .message-text :deep(code) {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.v-theme--light .message-text :deep(pre) {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Light mode only improvements - don't touch dark mode */
@@ -501,3 +628,5 @@ onUnmounted(() => {
   }
 }
 </style>
+
+
