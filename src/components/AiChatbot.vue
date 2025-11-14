@@ -286,10 +286,32 @@ const sendMessage = async () => {
     // Scroll with smooth animation after response
     setTimeout(() => scrollToBottom(true), 100);
   } catch (error) {
+    console.error('Chat error:', error);
+    
+    // Provide specific error message
+    let errorMessage = 'Sorry, I encountered an error. Please try again.';
+    
+    if (error && error.message) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('overloaded') || msg.includes('503')) {
+        errorMessage = '⚠️ The AI service is currently overloaded. I tried 3 times but couldn\'t get through. Please wait a moment and try again.';
+      } else if (msg.includes('retrying')) {
+        errorMessage = '⚠️ The AI service is busy. Please try again in a moment.';
+      } else if (msg.includes('quota')) {
+        errorMessage = '❌ API quota exceeded. Please contact support.';
+      } else if (msg.includes('api key') || msg.includes('403')) {
+        errorMessage = '❌ API configuration error. Please contact support.';
+      } else if (msg.includes('429')) {
+        errorMessage = '⚠️ Rate limit exceeded. Please wait a moment before trying again.';
+      }
+    }
+    
     messages.value.push({
       role: 'assistant',
-      content: 'Sorry, I encountered an error. Please try again.'
+      content: errorMessage
     });
+    
+    setTimeout(() => scrollToBottom(true), 100);
   } finally {
     isLoading.value = false;
   }

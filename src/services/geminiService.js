@@ -152,12 +152,13 @@ Schema Definition:
    - Regex support for complex patterns
 
 7. SCRIPT Transformation:
-   - Purpose: Custom logic using JavaScript or C#
-   - Configuration: Script language, Code editor with syntax highlighting
+   - Purpose: Custom logic using JavaScript or C# ONLY (Python is NOT supported)
+   - Configuration: Script language (JavaScript or C#), Code editor with syntax highlighting
    - Access to row data via 'row' object
    - Return modified row object
    - Example: Calculate derived fields, complex validations
    - Most flexible but requires programming knowledge
+   - IMPORTANT: Only JavaScript and C# are supported - do not suggest Python or other languages
 
 Using Transformations in Pipelines:
 - Add multiple transformations to a pipeline
@@ -444,12 +445,18 @@ Application: Multi-Tenant ETL (Extract, Transform, Load) Platform
 Purpose: Move and transform data between different systems with complete tenant isolation
 
 Core Concepts:
-- Data Sources: Connections to databases (SQL Server, PostgreSQL, MySQL), files (CSV, Excel, JSON), or REST APIs
+- Data Sources: Connections to databases (ONLY SQL Server, PostgreSQL, MySQL), files (ONLY CSV, Excel .xlsx, JSON), or REST APIs (GET/POST/PUT methods only)
 - Pipelines: Orchestrate data movement from source → transformations → destination
-- Transformations: Modify data during transfer (filter, map, trim, case convert, substring, replace, custom scripts)
+- Transformations: EXACTLY 7 types available - Filter, Map, Trim, Case Convert, Substring, Replace, Script (JavaScript/C# only)
 - Executions: Historical record of pipeline runs with detailed logs
 - Tenants: Organizations with isolated data (multi-customer support)
-- Users: Two roles - Admin (full access) and User (limited access)
+- Users: ONLY two roles - Admin (full access) and User (limited access)
+
+IMPORTANT LIMITATIONS:
+- Script transformations support ONLY JavaScript and C# (NOT Python, Ruby, or any other language)
+- Database support is ONLY SQL Server, PostgreSQL, and MySQL (NOT Oracle, MongoDB, etc.)
+- File formats are ONLY CSV, Excel (.xlsx), and JSON (NOT XML, Parquet, Avro, etc.)
+- HTTP methods for APIs are ONLY GET, POST, PUT (NOT DELETE, PATCH, etc.)
 
 Navigation:
 - Dashboard: Overview and metrics
@@ -468,7 +475,15 @@ Navigation:
 - If the user asks about features on a different page, briefly explain and tell them which page to navigate to
 - For technical questions, provide step-by-step instructions
 - Be conversational but professional
-- If you don't know something specific about the implementation, say so honestly`;
+- If you don't know something specific about the implementation, say so honestly
+
+CRITICAL - DO NOT HALLUCINATE:
+- ONLY suggest JavaScript or C# for script transformations (NEVER Python, Ruby, etc.)
+- ONLY mention SQL Server, PostgreSQL, or MySQL for databases (NEVER Oracle, MongoDB, etc.)
+- ONLY mention CSV, Excel, or JSON for files (NEVER XML, Parquet, etc.)
+- ONLY mention the 7 transformation types listed above (NEVER suggest custom plugins, extensions, etc.)
+- If a user asks about unsupported features, politely explain what IS supported instead
+- Do not invent features, integrations, or capabilities that are not explicitly mentioned in this context`;
 
     // Build conversation history
     const history = conversationHistory.map(msg => ({
