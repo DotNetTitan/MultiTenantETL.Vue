@@ -423,7 +423,22 @@
     "trimDescription": "Remove whitespace from text",
     "caseDescription": "Convert text case",
     "substringDescription": "Extract portion of text",
-    "replaceDescription": "Find and replace text"
+    "replaceDescription": "Find and replace text",
+    "noValueMappings": "No value mappings defined yet",
+    "mapConfigDescription": "Define value mappings that will replace values in a field. The source field will be specified when applying this transformation in a pipeline.",
+    "defineValueMappingsHint": "Define how values should be transformed",
+    "scriptConfigDescription": "Write a script that will be applied to the data. The script receives a 'row' object with all fields.",
+    "trimConfigDescription": "Remove leading and/or trailing whitespace from text fields.",
+    "caseConfigDescription": "Convert text to different case formats.",
+    "substringConfigDescription": "Extract a portion of text starting at a specific position.",
+    "replaceConfigDescription": "Find and replace text or patterns in fields.",
+    "trimBoth": "Both (Leading & Trailing)",
+    "trimStart": "Start (Leading only)",
+    "trimEnd": "End (Trailing only)",
+    "caseUppercase": "UPPERCASE",
+    "caseLowercase": "lowercase",
+    "caseTitleCase": "Title Case",
+    "caseCamelCase": "camelCase"
   },
   "executions": {
     "title": "Pipeline Executions",

@@ -423,7 +423,22 @@
     "trimDescription": "Eliminar espacios en blanco del texto",
     "caseDescription": "Convertir mayúsculas/minúsculas del texto",
     "substringDescription": "Extraer porción de texto",
-    "replaceDescription": "Buscar y reemplazar texto"
+    "replaceDescription": "Buscar y reemplazar texto",
+    "noValueMappings": "Aún no se han definido mapeos de valores",
+    "mapConfigDescription": "Defina mapeos de valores que reemplazarán valores en un campo. El campo de origen se especificará al aplicar esta transformación en una tubería.",
+    "defineValueMappingsHint": "Defina cómo se deben transformar los valores",
+    "scriptConfigDescription": "Escriba un script que se aplicará a los datos. El script recibe un objeto 'row' con todos los campos.",
+    "trimConfigDescription": "Eliminar espacios en blanco iniciales y/o finales de campos de texto.",
+    "caseConfigDescription": "Convertir texto a diferentes formatos de mayúsculas/minúsculas.",
+    "substringConfigDescription": "Extraer una porción de texto comenzando en una posición específica.",
+    "replaceConfigDescription": "Buscar y reemplazar texto o patrones en campos.",
+    "trimBoth": "Ambos (Inicial y Final)",
+    "trimStart": "Inicio (Solo inicial)",
+    "trimEnd": "Final (Solo final)",
+    "caseUppercase": "MAYÚSCULAS",
+    "caseLowercase": "minúsculas",
+    "caseTitleCase": "Título",
+    "caseCamelCase": "camelCase"
   },
   "executions": {
     "title": "Ejecuciones de Tuberías",

@@ -423,7 +423,22 @@
     "trimDescription": "Supprimer les espaces du texte",
     "caseDescription": "Convertir la casse du texte",
     "substringDescription": "Extraire une portion de texte",
-    "replaceDescription": "Rechercher et remplacer du texte"
+    "replaceDescription": "Rechercher et remplacer du texte",
+    "noValueMappings": "Aucun mappage de valeurs défini pour le moment",
+    "mapConfigDescription": "Définissez des mappages de valeurs qui remplaceront les valeurs dans un champ. Le champ source sera spécifié lors de l'application de cette transformation dans un pipeline.",
+    "defineValueMappingsHint": "Définir comment les valeurs doivent être transformées",
+    "scriptConfigDescription": "Écrivez un script qui sera appliqué aux données. Le script reçoit un objet 'row' avec tous les champs.",
+    "trimConfigDescription": "Supprimer les espaces de début et/ou de fin des champs de texte.",
+    "caseConfigDescription": "Convertir le texte en différents formats de casse.",
+    "substringConfigDescription": "Extraire une portion de texte à partir d'une position spécifique.",
+    "replaceConfigDescription": "Rechercher et remplacer du texte ou des motifs dans les champs.",
+    "trimBoth": "Les Deux (Début et Fin)",
+    "trimStart": "Début (Début seulement)",
+    "trimEnd": "Fin (Fin seulement)",
+    "caseUppercase": "MAJUSCULES",
+    "caseLowercase": "minuscules",
+    "caseTitleCase": "Casse de Titre",
+    "caseCamelCase": "camelCase"
   },
   "executions": {
     "title": "Exécutions de Pipelines",
