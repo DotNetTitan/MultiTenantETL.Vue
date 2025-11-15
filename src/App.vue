@@ -90,6 +90,7 @@
 import { computed, ref, onBeforeUnmount, onMounted, provide, onErrorCaptured } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
+import { initializeMetadata } from '@/composables/useMetadata';
 import AuthenticatedLayout from '@/components/layouts/AuthenticatedLayout.vue';
 import GuestLayout from '@/components/layouts/GuestLayout.vue';
 import AiChatbot from '@/components/AiChatbot.vue';
@@ -221,7 +222,15 @@ const handleRouteLoadingEnd = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize metadata on app startup
+  try {
+    await initializeMetadata();
+  } catch (error) {
+    console.warn('Failed to initialize metadata:', error);
+    // App will continue with cached or default values
+  }
+  
   // Listen for route loading events
   window.addEventListener('route-loading-start', handleRouteLoadingStart);
   window.addEventListener('route-loading-end', handleRouteLoadingEnd);

@@ -595,6 +595,7 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
 import { useDataSource } from '@/composables/useDataSource';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import { 
   fetchDataSources as getDataSources, 
   saveDataSource as saveDataSourceAPI, 
@@ -614,6 +615,7 @@ const tenantStore = useTenantStore();
 const { t } = useI18n();
 
 const { validateConnection } = useDataSource();
+const { dataSourceTypes: metadataTypes } = useTranslatedMetadata();
 
 // Data table
 const headers = computed(() => [
@@ -630,9 +632,10 @@ const typeFilter = ref('All');
 const sortBy = ref('name_asc');
 const typeOptions = computed(() => [
   { title: t('filters.allTypes'), value: 'All' },
-  { title: t('dataSources.database'), value: 'Database' },
-  { title: t('dataSources.file'), value: 'File' },
-  { title: t('dataSources.api'), value: 'API' }
+  ...metadataTypes.value.map(type => ({
+    title: type.label,
+    value: type.value
+  }))
 ]);
 const sortOptions = computed(() => [
   { title: t('filters.nameAsc'), value: 'name_asc' },
@@ -644,7 +647,6 @@ const sortOptions = computed(() => [
 
 // Data source data
 const dataSources = ref([]);
-const dataSourceTypes = ref(['Database', 'File', 'API']);
 const loading = ref(false);
 const savingDataSource = ref(false);
 const deletingDataSource = ref(false);

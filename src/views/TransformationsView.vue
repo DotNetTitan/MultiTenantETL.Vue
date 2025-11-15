@@ -643,6 +643,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import { useTenantStore } from '@/stores/tenant';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import { transformationService } from '@/services/transformationService';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -653,12 +654,12 @@ import 'prismjs/components/prism-csharp';
 const { 
   getTypeColor, 
   formatDate,
-  getTransformationTypes,
   createEmpty,
   getAvailableColumns 
 } = transformationService;
 
 const tenantStore = useTenantStore();
+const { transformationTypes: metadataTransformations } = useTranslatedMetadata();
 
 // Data table
 const headers = [
@@ -669,18 +670,20 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false, width: '150px', align: 'end' }
 ];
 
-// Get transformation types from service
-const transformationTypes = getTransformationTypes();
+// Get transformation types from metadata service
+const transformationTypes = computed(() => 
+  metadataTransformations.value.map(t => t.value)
+);
 
 // Filters and sorting
 const search = ref('');
 const typeFilter = ref('All');
 const sortBy = ref('name_asc');
-const typeOptions = ref([
+const typeOptions = computed(() => [
   { title: 'All Types', value: 'All' },
-  ...transformationTypes.map(type => ({ 
-    title: type, 
-    value: type 
+  ...metadataTransformations.value.map(type => ({ 
+    title: type.label, 
+    value: type.value 
   }))
 ]);
 const sortOptions = ref([

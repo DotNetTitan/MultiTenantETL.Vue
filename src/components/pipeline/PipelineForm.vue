@@ -241,6 +241,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { usePipeline } from '@/composables/usePipeline';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FormInput from '@/components/form/FormInput.vue';
 import TransformationList from './TransformationList.vue';
 import TransformationDialog from './TransformationDialog.vue';
@@ -264,8 +265,11 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel', 'notify']);
 
 const { validatePipeline, errorStrategies } = usePipeline();
+const { scheduleFrequencies: metadataFrequencies } = useTranslatedMetadata();
 
-const scheduleFrequencies = ['Hourly', 'Daily', 'Weekly', 'Monthly', 'Custom'];
+const scheduleFrequencies = computed(() => 
+  metadataFrequencies.value.map(freq => freq.value)
+);
 const logLevels = ['ERROR', 'WARN', 'INFO', 'DEBUG'];
 const timezones = Intl.supportedValuesOf('timeZone');
 

@@ -206,6 +206,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useDataSource } from '@/composables/useDataSource';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FormInput from '@/components/form/FormInput.vue';
 
 const props = defineProps({
@@ -219,14 +220,31 @@ const emit = defineEmits(['save', 'cancel']);
 
 const { validateConnection, getConnectionTemplate } = useDataSource();
 
-const dataSourceTypes = ['Database', 'API', 'File'];
-const providerOptions = {
-  Database: ['SQL Server', 'PostgreSQL', 'MySQL', 'Oracle'],
-  API: ['REST', 'GraphQL', 'SOAP'],
-  File: ['Local', 'FTP', 'S3']
-};
-const authTypes = ['None', 'Basic', 'Bearer', 'OAuth2'];
-const fileFormats = ['CSV', 'JSON', 'XML', 'Excel'];
+// Use translated metadata service
+const {
+  dataSourceTypes: metadataTypes,
+  authTypes: metadataAuthTypes,
+  fileFormats: metadataFileFormats,
+  getProvidersForType
+} = useTranslatedMetadata();
+
+// Map to simple arrays for FormInput compatibility
+const dataSourceTypes = computed(() => 
+  metadataTypes.value.map(type => type.value)
+);
+
+const authTypes = computed(() => 
+  metadataAuthTypes.value.map(auth => auth.value)
+);
+
+const fileFormats = computed(() => 
+  metadataFileFormats.value.map(format => format.value)
+);
+
+// Get providers dynamically based on selected type
+const providerOptions = computed(() => 
+  getProvidersForType(form.value.type)
+);
 
 const form = ref({
   name: '',

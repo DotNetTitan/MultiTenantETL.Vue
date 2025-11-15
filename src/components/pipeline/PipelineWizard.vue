@@ -435,9 +435,11 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FieldMappingEditor from './FieldMappingEditor.vue';
 
 const { t } = useI18n();
+const { scheduleFrequencies, daysOfWeek } = useTranslatedMetadata();
 
 const props = defineProps({
   pipeline: {
@@ -464,23 +466,20 @@ const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
 
-// Computed options for schedule dropdowns
-const frequencyOptions = computed(() => [
-  { title: t('pipelines.daily'), value: 'Daily' },
-  { title: t('pipelines.weekly'), value: 'Weekly' },
-  { title: t('pipelines.monthly'), value: 'Monthly' },
-  { title: t('pipelines.custom'), value: 'Custom' }
-]);
+// Use translated metadata for schedule options
+const frequencyOptions = computed(() => 
+  scheduleFrequencies.value.map(freq => ({
+    title: freq.label,
+    value: freq.value
+  }))
+);
 
-const dayOfWeekOptions = computed(() => [
-  { title: t('pipelines.monday'), value: 'Monday' },
-  { title: t('pipelines.tuesday'), value: 'Tuesday' },
-  { title: t('pipelines.wednesday'), value: 'Wednesday' },
-  { title: t('pipelines.thursday'), value: 'Thursday' },
-  { title: t('pipelines.friday'), value: 'Friday' },
-  { title: t('pipelines.saturday'), value: 'Saturday' },
-  { title: t('pipelines.sunday'), value: 'Sunday' }
-]);
+const dayOfWeekOptions = computed(() => 
+  daysOfWeek.value.map(day => ({
+    title: day.label,
+    value: day.value
+  }))
+);
 
 const canProceed = computed(() => {
   switch (currentStep.value) {

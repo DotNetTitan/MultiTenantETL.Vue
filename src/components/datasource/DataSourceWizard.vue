@@ -68,6 +68,8 @@
                 <v-select
                   v-model="dataSource.type"
                   :items="dataSourceTypes"
+                  item-title="title"
+                  item-value="value"
                   :label="t('dataSources.type')"
                   variant="outlined"
                   :rules="[v => !!v || t('validation.required', { field: t('dataSources.type') })]"
@@ -98,6 +100,8 @@
                 <v-select
                   v-model="dataSource.direction"
                   :items="directionOptions"
+                  item-title="title"
+                  item-value="value"
                   :label="t('dataSources.direction')"
                   variant="outlined"
                   :rules="[v => !!v || t('validation.required', { field: t('dataSources.direction') })]"
@@ -1185,10 +1189,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import SchemaEditor from './SchemaEditor.vue';
+import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const { t } = useI18n();
-import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const props = defineProps({
   dataSource: {
@@ -1216,38 +1221,48 @@ const currentStep = ref(1);
 const saving = ref(false);
 const schemaValidation = ref({ isValid: true, errors: [] });
 
-const dataSourceTypes = computed(() => [
-  { title: t('dataSources.database'), value: 'Database' },
-  { title: t('dataSources.api'), value: 'API' },
-  { title: t('dataSources.file'), value: 'File' }
-]);
+// Use translated metadata service
+const {
+  dataSourceTypes: metadataTypes,
+  directions,
+  authTypes: metadataAuthTypes,
+  fileFormats: metadataFileFormats,
+  httpMethods: metadataHttpMethods,
+  dataSourceProviders,
+  getProvidersForType
+} = useTranslatedMetadata();
 
-const directionOptions = computed(() => [
-  { title: t('dataSources.sourceOnly'), value: 'source', icon: 'mdi-download' },
-  { title: t('dataSources.destinationOnly'), value: 'destination', icon: 'mdi-upload' },
-  { title: t('dataSources.both'), value: 'both', icon: 'mdi-swap-horizontal' }
-]);
+// Map to component format for compatibility
+const dataSourceTypes = computed(() => 
+  metadataTypes.value.map(type => ({
+    title: type.label,
+    value: type.value
+  }))
+);
 
-const providersByType = {
-  Database: ['SQL Server', 'PostgreSQL', 'MySQL', 'Oracle'],
-  API: ['REST'],
-  File: ['Local', 'FTP', 'S3', 'Azure Blob']
-};
+const directionOptions = computed(() => 
+  directions.value.map(dir => ({
+    title: dir.label,
+    value: dir.value,
+    icon: dir.icon
+  }))
+);
 
-const authTypes = computed(() => [
-  t('dataSources.authNone'),
-  t('dataSources.authBasic'),
-  t('dataSources.authBearer'),
-  t('dataSources.authOAuth2')
-]);
-const fileFormats = computed(() => ['CSV', 'JSON', 'XML', 'Excel']);
-const httpMethods = {
-  source: ['GET'],
-  destination: ['POST', 'PUT', 'PATCH']
-};
+const authTypes = computed(() => 
+  metadataAuthTypes.value.map(auth => auth.label)
+);
+
+const fileFormats = computed(() => 
+  metadataFileFormats.value.map(format => format.value)
+);
+
+const httpMethods = computed(() => ({
+  source: metadataHttpMethods.value.filter(m => m.value === 'GET').map(m => m.value),
+  destination: metadataHttpMethods.value.filter(m => ['POST', 'PUT', 'PATCH'].includes(m.value)).map(m => m.value)
+}));
 
 const providerOptions = computed(() => {
-  return providersByType[props.dataSource.type] || [];
+  return getProvidersForType(props.dataSource.type);
 });
 
 const showWriteConfigStep = computed(() => {
