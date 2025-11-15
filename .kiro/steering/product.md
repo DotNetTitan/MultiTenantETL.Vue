@@ -15,7 +15,7 @@ Multi-tenant ETL Platform - A modern web application for managing Extract, Trans
 - Schema management with auto-detection and manual definition
 - API key generation and management
 - AI-powered chatbot assistant (Google Gemini) for contextual help
-- Full internationalization (i18n) support with English, Spanish, and French
+- Full internationalization (i18n) support with English, Spanish, French, German, Italian, and Portuguese
 - Centralized metadata service for configuration management
 
 ## User Roles

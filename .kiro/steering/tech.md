@@ -56,7 +56,7 @@ The frontend expects a REST API backend at `http://localhost:5000/api` (see api-
 ## Internationalization (i18n)
 
 - **Vue I18n** for multi-language support
-- Currently supports: English (en), Spanish (es), French (fr)
+- Currently supports: English (en), Spanish (es), French (fr), German (de), Italian (it), Portuguese (pt)
 - Translation files located in `src/locales/`
 - Language selection persisted in localStorage
 - Automatic Vuetify component translation

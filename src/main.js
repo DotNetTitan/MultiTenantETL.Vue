@@ -8,7 +8,7 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-import { en, es, fr } from 'vuetify/locale'
+import { en, es, fr, de, it, pt } from 'vuetify/locale'
 
 // Vue I18n
 import { createI18n } from 'vue-i18n'
@@ -86,7 +86,7 @@ const vuetify = createVuetify({
   locale: {
     locale: savedLocale,
     fallback: fallbackLocale,
-    messages: { en, es, fr }
+    messages: { en, es, fr, de, it, pt }
   }
 })
 

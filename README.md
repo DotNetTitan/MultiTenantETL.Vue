@@ -16,7 +16,7 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 - 📈 **Execution Monitoring**: Detailed execution logs, timeline view, and progress tracking
 - 🔐 **API Key Management**: Generate and manage API keys for programmatic access
 - 🤖 **AI Assistant**: Context-aware chatbot powered by Google Gemini AI to help users navigate and use the platform
-- 🌍 **Multi-language Support**: Full internationalization (i18n) with English, Spanish, and French translations
+- 🌍 **Multi-language Support**: Full internationalization (i18n) with English, Spanish, French, German, Italian, and Portuguese translations
 - 🎯 **Metadata Service**: Centralized configuration management for dropdowns and options with translation support
 
 ## Tech Stack
@@ -230,7 +230,7 @@ src/
 
 ### Internationalization (i18n)
 - Full multi-language support with Vue I18n
-- Currently supports: English, Spanish, French
+- Currently supports: English, Spanish, French, German, Italian, Portuguese
 - Language persistence in localStorage
 - Automatic Vuetify component translation
 - AI chatbot responds in user's selected language

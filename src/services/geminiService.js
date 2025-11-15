@@ -434,7 +434,10 @@ export async function getChatResponse(message, currentPage, conversationHistory 
     const languageInstructions = {
       'en': 'Respond in English.',
       'es': 'Responde en español (Spanish).',
-      'fr': 'Répondez en français (French).'
+      'fr': 'Répondez en français (French).',
+      'de': 'Antworte auf Deutsch (German).',
+      'it': 'Rispondi in italiano (Italian).',
+      'pt': 'Responda em português (Portuguese).'
     };
     const languageInstruction = languageInstructions[userLanguage] || languageInstructions['en'];
     

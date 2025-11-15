@@ -7,6 +7,9 @@ This application uses **Vue I18n v9** for complete multi-language support.
 - 🇺🇸 **English** (en) - Default
 - 🇪🇸 **Español** (es) - Spanish
 - 🇫🇷 **Français** (fr) - French
+- 🇩🇪 **Deutsch** (de) - German
+- 🇮🇹 **Italiano** (it) - Italian
+- 🇵🇹 **Português** (pt) - Portuguese
 
 ## Usage in Components
 
@@ -66,6 +69,9 @@ src/locales/
 ├── en.json          # English translations
 ├── es.json          # Spanish translations
 ├── fr.json          # French translations
+├── de.json          # German translations
+├── it.json          # Italian translations
+├── pt.json          # Portuguese translations
 ├── index.js         # Locale configuration
 └── README.md        # This file
 ```
