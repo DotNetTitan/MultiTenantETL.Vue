@@ -468,8 +468,10 @@
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
               {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
-              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
-              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
+              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'">
+                · 
+                <span class="font-weight-medium">{{ dataSource.config.format }}</span>
+              </template> · 
               <span class="font-weight-medium">{{ dataSource.direction === 'source' ? $t('dataSources.source') : dataSource.direction === 'destination' ? $t('dataSources.destination') : $t('dataSources.sourceAndDestination') }}</span>
             </div>
             
@@ -488,8 +490,10 @@
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
               {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ dataSource.type }}</span> · 
-              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'"> · 
-              <span class="font-weight-medium">{{ dataSource.config.format }}</span></template> · 
+              <span class="font-weight-medium">{{ dataSource.provider }}</span><template v-if="dataSource.type === 'File'">
+                · 
+                <span class="font-weight-medium">{{ dataSource.config.format }}</span>
+              </template> · 
               <span class="font-weight-medium">{{ dataSource.direction === 'source' ? $t('dataSources.source') : dataSource.direction === 'destination' ? $t('dataSources.destination') : $t('dataSources.sourceAndDestination') }}</span> · 
               <span class="font-weight-medium">{{ dataSource.schema.fields.length }} {{ $t('dataSources.fields', dataSource.schema.fields.length) }}</span>
             </div>

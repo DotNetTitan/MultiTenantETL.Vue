@@ -3,7 +3,7 @@
     <v-col :cols="searchCols">
       <FormInput
         v-model="search"
-        :label="searchLabel"
+        :label="computedSearchLabel"
         prepend-inner-icon="mdi-magnify"
         density="compact"
         hide-details
@@ -27,7 +27,7 @@
     <v-col :cols="sortCols">
       <v-select
         v-model="selectedSort"
-        :label="sortLabel"
+        :label="computedSortLabel"
         :items="sortOptions"
         density="compact"
         hide-details
@@ -39,13 +39,16 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import FormInput from '@/components/form/FormInput.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   searchLabel: {
     type: String,
-    default: 'Search'
+    default: null
   },
   searchCols: {
     type: [Number, String],
@@ -57,7 +60,7 @@ const props = defineProps({
   },
   sortLabel: {
     type: String,
-    default: 'Sort By'
+    default: null
   },
   sortOptions: {
     type: Array,
@@ -68,6 +71,10 @@ const props = defineProps({
     default: 3
   }
 });
+
+// Use i18n defaults if not provided
+const computedSearchLabel = computed(() => props.searchLabel || t('common.search'));
+const computedSortLabel = computed(() => props.sortLabel || t('filters.sortBy'));
 
 const emit = defineEmits(['update:search', 'filter', 'sort']);
 

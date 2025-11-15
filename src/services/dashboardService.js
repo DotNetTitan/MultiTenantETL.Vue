@@ -1,4 +1,6 @@
 // Dashboard service for handling dashboard-related API calls
+import { mockPipelines, mockExecutions } from '@/mocks/pipelines';
+import { mockDataSources } from '@/mocks/dataSources';
 
 /**
  * Fetches dashboard data including stats and recent executions
@@ -6,62 +8,55 @@
  */
 export async function fetchDashboardData() {
   try {
-    // In a real app, this would be an actual API call
-    // For now, using simulated data
-    
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Mock data
+    // Calculate stats from actual mock data
+    const totalPipelines = mockPipelines.length;
+    const activePipelines = mockPipelines.filter(p => p.status === 'Running').length;
+    const dataSources = mockDataSources.length;
+    const recentExecutions = mockExecutions.length;
+    
     const stats = {
-      totalPipelines: 12,
-      activePipelines: 3,
-      dataSources: 8,
-      recentExecutions: 27
+      totalPipelines,
+      activePipelines,
+      dataSources,
+      recentExecutions
     };
     
+    // Calculate status distribution from executions
+    const statusCounts = mockExecutions.reduce((acc, exec) => {
+      acc[exec.status] = (acc[exec.status] || 0) + 1;
+      return acc;
+    }, {});
+    
     const statusDistribution = [
-      { name: 'Completed', count: 18 },
-      { name: 'Running', count: 3 },
-      { name: 'Failed', count: 6 }
+      { name: 'Completed', count: statusCounts.Completed || 0 },
+      { name: 'Running', count: statusCounts.Running || 0 },
+      { name: 'Failed', count: statusCounts.Failed || 0 }
     ];
     
-    const recentExecutions = [
-      {
-        id: '1',
-        pipelineName: 'Sales Data ETL',
-        startTime: new Date(Date.now() - 30 * 60000).toISOString(),
-        duration: 245000,
-        status: 'Completed',
-        rowsProcessed: 12345
-      },
-      {
-        id: '2',
-        pipelineName: 'Customer Import',
-        startTime: new Date(Date.now() - 120 * 60000).toISOString(),
-        duration: 183000,
-        status: 'Completed',
-        rowsProcessed: 5280
-      },
-      {
-        id: '3',
-        pipelineName: 'Product Sync',
-        startTime: new Date(Date.now() - 10 * 60000).toISOString(),
-        duration: 450000,
-        status: 'Running',
-        rowsProcessed: 3200
-      },
-      {
-        id: '4',
-        pipelineName: 'Analytics Export',
-        startTime: new Date(Date.now() - 180 * 60000).toISOString(),
-        duration: 360000,
-        status: 'Failed',
-        rowsProcessed: 0
-      }
-    ];
+    // Get recent executions (last 5, sorted by start time)
+    const sortedExecutions = [...mockExecutions]
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+      .slice(0, 5);
     
-    return { stats, statusDistribution, recentExecutions };
+    const recentExecutionsData = sortedExecutions.map(exec => {
+      const duration = exec.endTime 
+        ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
+        : Date.now() - new Date(exec.startTime).getTime();
+      
+      return {
+        id: exec.id,
+        pipelineName: exec.pipelineName,
+        startTime: exec.startTime,
+        duration: duration,
+        status: exec.status,
+        rowsProcessed: exec.recordsProcessed || 0
+      };
+    });
+    
+    return { stats, statusDistribution, recentExecutions: recentExecutionsData };
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
     throw error;

@@ -68,10 +68,10 @@
                 </v-list-item>
                 
                 <v-list-item
-                  @click="logout"
                   prepend-icon="mdi-logout"
                   class="menu-item logout-item"
                   rounded="lg"
+                  @click="logout"
                 >
                   <v-list-item-title class="text-body-2">{{ $t('nav.logout') }}</v-list-item-title>
                 </v-list-item>

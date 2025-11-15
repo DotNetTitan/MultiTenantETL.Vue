@@ -396,42 +396,39 @@ const { t } = useI18n();
 const tenantStore = useTenantStore();
 const theme = useTheme();
 
-// Mock data for demo
-const mockExecutions = [
-  {
-    id: '1',
-    pipelineName: 'Sales Data ETL',
-    status: 'Completed',
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 1.9 * 60 * 60 * 1000).toISOString(),
-    duration: 360000, // 6 minutes
-    rowsProcessed: 12345,
-    progressPercent: 100,
-    logs: '[2025-04-24 10:15:01] Starting pipeline execution\n[2025-04-24 10:15:02] Extracted 12345 rows from source\n[2025-04-24 10:15:03] Applying transformations\n[2025-04-24 10:15:04] Successfully loaded data to destination'
-  },
-  {
-    id: '2',
-    pipelineName: 'Customer Import',
-    status: 'Running',
-    startTime: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    endTime: null,
-    duration: 900000, // 15 minutes so far
-    rowsProcessed: 5000,
-    progressPercent: 45,
-    logs: '[2025-04-24 11:45:01] Starting pipeline execution\n[2025-04-24 11:45:02] Extracting customer data\n[2025-04-24 11:45:03] Processing batch 1/3\n[2025-04-24 11:45:04] Processing batch 2/3'
-  },
-  {
-    id: '3',
-    pipelineName: 'Product Sync',
-    status: 'Failed',
-    startTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 44.9 * 60 * 60 * 1000).toISOString(),
-    duration: 180000, // 3 minutes
-    rowsProcessed: 0,
-    progressPercent: 15,
-    logs: '[2025-04-24 11:15:01] Starting pipeline execution\n[2025-04-24 11:15:02] Error: Failed to connect to source database\n[2025-04-24 11:15:03] Pipeline execution failed'
+// Import mock data from centralized location
+import { mockExecutions as mockExecutionsData } from '@/mocks/pipelines';
+
+// Transform mock data to match view format
+const mockExecutions = mockExecutionsData.map(exec => {
+  const duration = exec.endTime 
+    ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
+    : Date.now() - new Date(exec.startTime).getTime();
+  
+  // Format logs from array to string
+  let logsText = '';
+  if (exec.logs && exec.logs.length > 0) {
+    logsText = exec.logs.map(log => 
+      `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
+    ).join('\n');
+  } else {
+    logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
   }
-];
+  
+  return {
+    id: exec.id,
+    pipelineName: exec.pipelineName,
+    pipelineId: exec.pipelineId,
+    status: exec.status,
+    startTime: exec.startTime,
+    endTime: exec.endTime,
+    duration: duration,
+    rowsProcessed: exec.recordsProcessed || 0,
+    progressPercent: exec.status === 'Completed' ? 100 : (exec.status === 'Running' ? 50 : 0),
+    logs: logsText,
+    errors: exec.errors || []
+  };
+});
 
 // Data table
 const headers = computed(() => [

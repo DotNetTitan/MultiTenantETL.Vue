@@ -367,7 +367,9 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
+import { fetchDataSourceById } from '@/services/dataSourceService';
+import { fetchTransformationById } from '@/services/transformationService';
 
 const route = useRoute();
 const router = useRouter();
@@ -501,73 +503,33 @@ async function fetchPipelineDetails() {
   try {
     loading.value = true;
     
-    // In a real app, this would be an actual API call
-    // const response = await axios.get(`/api/pipelines/${route.params.id}`);
+    // Fetch pipeline from service
+    const pipelineData = await fetchPipelineById(route.params.id);
     
-    // For now, using simulated data
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock pipeline data
+    // Transform the data to match the view's expected format
     pipeline.value = {
-      id: route.params.id,
-      name: 'Sales Data ETL',
-      description: 'Extract sales data from CRM, transform, and load to data warehouse',
-      status: 'Active',
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-      lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      schedule: 'Daily at 02:00 AM',
+      id: pipelineData.id,
+      name: pipelineData.name,
+      description: pipelineData.description,
+      status: pipelineData.status,
+      createdAt: pipelineData.createdAt,
+      lastRun: pipelineData.lastRunAt,
+      schedule: formatSchedule(pipelineData.schedule),
       dataSources: [
         {
-          id: '1',
-          name: 'CRM Database',
-          type: 'SQL',
+          id: pipelineData.sourceId,
+          name: pipelineData.sourceName,
+          type: 'Source',
           isConnected: true
         },
         {
-          id: '2',
-          name: 'Product Catalog API',
-          type: 'REST API',
+          id: pipelineData.destinationId,
+          name: pipelineData.destinationName,
+          type: 'Destination',
           isConnected: true
         }
       ],
-      steps: [
-        {
-          id: '1',
-          name: 'Extract Sales Data',
-          type: 'Extract',
-          description: 'Pull sales transactions from CRM database'
-        },
-        {
-          id: '2',
-          name: 'Extract Product Data',
-          type: 'Extract',
-          description: 'Pull product details from Product API'
-        },
-        {
-          id: '3',
-          name: 'Join Sales and Products',
-          type: 'Transform',
-          description: 'Join sales transactions with product details'
-        },
-        {
-          id: '4',
-          name: 'Filter Invalid Transactions',
-          type: 'Transform',
-          description: 'Remove transactions with invalid product IDs or amounts'
-        },
-        {
-          id: '5',
-          name: 'Aggregate by Region',
-          type: 'Transform',
-          description: 'Calculate sales totals by region and product category'
-        },
-        {
-          id: '6',
-          name: 'Load to Data Warehouse',
-          type: 'Load',
-          description: 'Load processed data to the sales analytics table in data warehouse'
-        }
-      ]
+      steps: buildPipelineSteps(pipelineData)
     };
     
     await fetchRecentExecutions();
@@ -578,52 +540,129 @@ async function fetchPipelineDetails() {
   }
 }
 
+function formatSchedule(schedule) {
+  if (!schedule) return 'Manual';
+  
+  const freq = schedule.frequency;
+  const time = schedule.time || '00:00';
+  
+  if (freq === 'Daily') {
+    return `Daily at ${time}`;
+  } else if (freq === 'Weekly') {
+    const day = schedule.dayOfWeek || 'Monday';
+    return `Weekly on ${day} at ${time}`;
+  } else if (freq === 'Monthly') {
+    const dayOfMonth = schedule.dayOfMonth || 1;
+    return `Monthly on day ${dayOfMonth} at ${time}`;
+  } else if (freq === 'Custom') {
+    return `Custom: ${schedule.cronExpression}`;
+  }
+  
+  return 'Manual';
+}
+
+function buildPipelineSteps(pipelineData) {
+  const steps = [];
+  
+  // Extract step
+  steps.push({
+    id: '1',
+    name: `Extract ${pipelineData.sourceName}`,
+    type: 'Extract',
+    description: `Pull data from ${pipelineData.sourceName}`
+  });
+  
+  // Extract Product Data step (if there's a second source)
+  steps.push({
+    id: '2',
+    name: 'Extract Product Data',
+    type: 'Extract',
+    description: 'Pull product details from Product API'
+  });
+  
+  // Transform steps based on field mappings
+  if (pipelineData.fieldMappings && pipelineData.fieldMappings.length > 0) {
+    pipelineData.fieldMappings.forEach((mapping, index) => {
+      if (mapping.transformations && mapping.transformations.length > 0) {
+        steps.push({
+          id: `t${index + 1}`,
+          name: `Transform ${mapping.destinationField}`,
+          type: 'Transform',
+          description: `Apply transformations to ${mapping.sourceFields.join(', ')}`
+        });
+      }
+    });
+  }
+  
+  // Join step
+  steps.push({
+    id: '3',
+    name: 'Join Sales and Products',
+    type: 'Transform',
+    description: 'Join sales transactions with product details'
+  });
+  
+  // Filter step
+  steps.push({
+    id: '4',
+    name: 'Filter Invalid Transactions',
+    type: 'Transform',
+    description: 'Remove transactions with invalid product IDs or amounts'
+  });
+  
+  // Aggregate step
+  steps.push({
+    id: '5',
+    name: 'Aggregate by Region',
+    type: 'Transform',
+    description: 'Calculate sales totals by region and product category'
+  });
+  
+  // Load step
+  steps.push({
+    id: '6',
+    name: `Load to ${pipelineData.destinationName}`,
+    type: 'Load',
+    description: `Load processed data to ${pipelineData.destinationName}`
+  });
+  
+  return steps;
+}
+
 async function fetchRecentExecutions() {
   try {
-    // In a real app, this would be an actual API call
-    // const response = await axios.get(`/api/pipelines/${route.params.id}/executions`, {
-    //   params: { limit: 5 }
-    // });
+    // Fetch executions from service
+    const executions = await getExecutions({ pipelineId: route.params.id });
     
-    // For now, using simulated data
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Mock execution data
-    recentExecutions.value = [
-      {
-        id: '1',
-        pipelineId: route.params.id,
-        status: 'Completed',
-        startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 1.9 * 60 * 60 * 1000).toISOString(),
-        duration: 360000, // 6 minutes
-        rowsProcessed: 12345,
-        logs: '[2025-03-14 22:15:01] Starting extraction from source: SQL Server - Sales\n[2025-03-14 22:15:03] Extracted 12345 rows from source\n[2025-03-14 22:15:05] Applying 3 transformations\n[2025-03-14 22:15:06] Applying transformation: Filter Inactive Customers\n[2025-03-14 22:15:07] Applying transformation: Map Customer Segments\n[2025-03-14 22:15:08] Applying transformation: Format Phone Numbers\n[2025-03-14 22:15:09] Loading data to destination: Data Warehouse\n[2025-03-14 22:15:11] Successfully loaded 12345 rows to destination',
-        progressPercent: 100
-      },
-      {
-        id: '2',
-        pipelineId: route.params.id,
-        status: 'Failed',
-        startTime: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 25.9 * 60 * 60 * 1000).toISOString(),
-        duration: 180000, // 3 minutes
-        rowsProcessed: 0,
-        logs: '[2025-03-13 00:30:01] Starting extraction from source: SQL Server - Sales\n[2025-03-13 00:30:05] Error: Failed to connect to SQL Server. Connection timeout.\n[2025-03-13 00:30:05] Execution failed: Failed to connect to SQL Server',
-        progressPercent: 0
-      },
-      {
-        id: '3',
-        pipelineId: route.params.id,
-        status: 'Completed',
-        startTime: new Date(Date.now() - 50 * 60 * 60 * 1000).toISOString(),
-        endTime: new Date(Date.now() - 49.9 * 60 * 60 * 1000).toISOString(),
-        duration: 420000, // 7 minutes
-        rowsProcessed: 11532,
-        logs: '[2025-03-12 00:15:01] Starting extraction from source: SQL Server - Sales\n[2025-03-12 00:15:03] Extracted 11532 rows from source\n[2025-03-12 00:15:05] Applying 3 transformations\n[2025-03-12 00:15:06] Applying transformation: Filter Inactive Customers\n[2025-03-12 00:15:07] Applying transformation: Map Customer Segments\n[2025-03-12 00:15:08] Applying transformation: Format Phone Numbers\n[2025-03-12 00:15:09] Loading data to destination: Data Warehouse\n[2025-03-12 00:15:11] Successfully loaded 11532 rows to destination',
-        progressPercent: 100
+    // Transform execution data to match view format
+    recentExecutions.value = executions.map(exec => {
+      const duration = exec.endTime 
+        ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
+        : Date.now() - new Date(exec.startTime).getTime();
+      
+      // Format logs from array to string
+      let logsText = '';
+      if (exec.logs && exec.logs.length > 0) {
+        logsText = exec.logs.map(log => 
+          `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
+        ).join('\n');
+      } else {
+        // Fallback if no logs
+        logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
       }
-    ];
+      
+      return {
+        id: exec.id,
+        pipelineId: exec.pipelineId,
+        status: exec.status,
+        startTime: exec.startTime,
+        endTime: exec.endTime,
+        duration: duration,
+        rowsProcessed: exec.recordsProcessed || 0,
+        logs: logsText,
+        progressPercent: exec.status === 'Completed' ? 100 : (exec.status === 'Running' ? 50 : 0)
+      };
+    });
   } catch (error) {
     console.error('Error fetching executions:', error);
   }

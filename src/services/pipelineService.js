@@ -1,123 +1,4 @@
-import { API_ENDPOINTS } from '@/config/api'
-
-// Mock data
-const mockPipelines = [
-  {
-    id: '1',
-    name: 'Sales Data ETL',
-    description: 'Extract sales data from SQL Server, transform, and load to data warehouse',
-    sourceName: 'SQL Server - Sales',
-    destinationName: 'Data Warehouse',
-    status: 'Idle',
-    sourceId: '1',
-    destinationId: '5',
-    transformationIds: ['1', '4'],
-    transformations: [],
-    isScheduled: true,
-    schedule: {
-      frequency: 'Daily',
-      time: '02:00',
-      cronExpression: '0 2 * * *'
-    },
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    lastRunAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: '2',
-    name: 'Customer Import',
-    description: 'Import customer data from CSV files',
-    sourceName: 'SFTP - Customer Files',
-    destinationName: 'Customer Database',
-    status: 'Idle',
-    sourceId: '2',
-    destinationId: '6',
-    transformationIds: ['2', '3'],
-    transformations: [],
-    isScheduled: true,
-    schedule: {
-      frequency: 'Weekly',
-      time: '04:30',
-      cronExpression: '30 4 * * 1'
-    },
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-    lastRunAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: '3',
-    name: 'Product Sync',
-    description: 'Sync product data between systems',
-    sourceName: 'ERP API',
-    destinationName: 'E-commerce Platform',
-    status: 'Running',
-    sourceId: '3',
-    destinationId: '7',
-    transformationIds: ['5'],
-    transformations: [],
-    isScheduled: false,
-    schedule: null,
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-    lastRunAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
-  },
-  {
-    id: '4',
-    name: 'Analytics Export',
-    description: 'Export analytics data to reporting system',
-    sourceName: 'Analytics DB',
-    destinationName: 'Reporting System',
-    status: 'Failed',
-    sourceId: '4',
-    destinationId: '8',
-    transformationIds: [],
-    transformations: [],
-    isScheduled: true,
-    schedule: {
-      frequency: 'Daily',
-      time: '01:00',
-      cronExpression: '0 1 * * *'
-    },
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    lastRunAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
-  }
-];
-
-const mockExecutions = [
-  {
-    id: '1',
-    pipelineId: '1',
-    status: 'Completed',
-    startTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 5 * 60 * 1000).toISOString(),
-    recordsProcessed: 1245,
-    errors: []
-  },
-  {
-    id: '2',
-    pipelineId: '2',
-    status: 'Completed',
-    startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
-    recordsProcessed: 3456,
-    errors: []
-  },
-  {
-    id: '3',
-    pipelineId: '1',
-    status: 'Failed',
-    startTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000).toISOString(),
-    recordsProcessed: 560,
-    errors: ['Data validation failed: Missing required fields']
-  },
-  {
-    id: '4',
-    pipelineId: '3',
-    status: 'Completed',
-    startTime: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000 + 12 * 60 * 1000).toISOString(),
-    recordsProcessed: 9872,
-    errors: []
-  }
-];
+import { mockPipelines, mockExecutions } from '@/mocks/pipelines'
 
 /**
  * Fetches the list of pipelines with optional filtering
@@ -188,14 +69,19 @@ export async function fetchPipelineById(id) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
+    console.log('Fetching pipeline with ID:', id);
+    console.log('Available pipelines:', mockPipelines.map(p => ({ id: p.id, name: p.name })));
+    
     const pipeline = mockPipelines.find(p => p.id === id);
     
     if (!pipeline) {
+      console.error('Pipeline not found with ID:', id);
       const error = new Error('Pipeline not found');
       error.response = { status: 404 };
       throw error;
     }
     
+    console.log('Found pipeline:', pipeline.name);
     return { ...pipeline };
   } catch (error) {
     console.error(`Error fetching pipeline ${id}:`, error);
