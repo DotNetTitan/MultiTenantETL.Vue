@@ -479,6 +479,7 @@
     "addTenant": "Ajouter un Locataire",
     "editTenant": "Modifier le Locataire",
     "deleteTenant": "Supprimer le Locataire",
+    "searchTenants": "Rechercher des Locataires",
     "tenantName": "Nom du Locataire",
     "identifier": "Identifiant",
     "contact": "Contact",

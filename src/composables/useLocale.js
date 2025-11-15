@@ -1,14 +1,18 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useLocale as useVuetifyLocale } from 'vuetify';
 import { availableLocales } from '@/locales';
 
 export function useLocale() {
   const { locale, t } = useI18n();
+  const vuetifyLocale = useVuetifyLocale();
 
   const currentLocale = computed({
     get: () => locale.value,
     set: (newLocale) => {
       locale.value = newLocale;
+      // Update Vuetify locale
+      vuetifyLocale.current.value = newLocale;
       // Persist to localStorage
       localStorage.setItem('user-locale', newLocale);
       // Update HTML lang attribute

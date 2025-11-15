@@ -8,6 +8,7 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { en, es, fr } from 'vuetify/locale'
 
 // Vue I18n
 import { createI18n } from 'vue-i18n'
@@ -81,6 +82,11 @@ const vuetify = createVuetify({
       light: lightTheme,
       dark: darkTheme
     }
+  },
+  locale: {
+    locale: savedLocale,
+    fallback: fallbackLocale,
+    messages: { en, es, fr }
   }
 })
 

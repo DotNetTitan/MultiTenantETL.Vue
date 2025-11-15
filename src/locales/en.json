@@ -479,6 +479,7 @@
     "addTenant": "Add Tenant",
     "editTenant": "Edit Tenant",
     "deleteTenant": "Delete Tenant",
+    "searchTenants": "Search Tenants",
     "tenantName": "Tenant Name",
     "identifier": "Identifier",
     "contact": "Contact",

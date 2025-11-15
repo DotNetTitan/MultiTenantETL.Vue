@@ -64,7 +64,7 @@
               text-color="white"
               size="small"
             >
-              {{ item.type }}
+              {{ $t(`dataSources.${item.type.toLowerCase()}`) }}
             </v-chip>
           </template>
           <template #item.description="{ item }">
@@ -72,7 +72,7 @@
               <div>{{ item.description || '-' }}</div>
               <div v-if="item.schema && item.schema.fields && item.schema.fields.length > 0" class="text-caption text-grey">
                 <v-icon size="x-small" class="mr-1">mdi-table</v-icon>
-                {{ item.schema.fields.length }} field{{ item.schema.fields.length !== 1 ? 's' : '' }}
+                {{ item.schema.fields.length }} {{ $t('dataSources.fields', item.schema.fields.length) }}
               </div>
             </div>
           </template>

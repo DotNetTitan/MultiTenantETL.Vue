@@ -479,6 +479,7 @@
     "addTenant": "Agregar Inquilino",
     "editTenant": "Editar Inquilino",
     "deleteTenant": "Eliminar Inquilino",
+    "searchTenants": "Buscar Inquilinos",
     "tenantName": "Nombre del Inquilino",
     "identifier": "Identificador",
     "contact": "Contacto",

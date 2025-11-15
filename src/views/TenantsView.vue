@@ -16,73 +16,58 @@
     <v-card>
       <v-card-text>
         <table-filters
+          :search-label="$t('tenants.searchTenants')"
           :filters="availableFilters"
           :sort-options="sortOptions"
           @filter="handleFilter"
           @sort="handleSort"
         />
 
-        <v-table>
-          <thead>
-            <tr>
-              <th>{{ $t('common.name') }}</th>
-              <th>{{ $t('tenants.identifier') }}</th>
-              <th>{{ $t('tenants.contact') }}</th>
-              <th>{{ $t('common.status') }}</th>
-              <th>{{ $t('common.created') }}</th>
-              <th>{{ $t('common.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="loading" class="text-center">
-              <td colspan="6">
-                <v-progress-circular indeterminate class="ma-4" />
-              </td>
-            </tr>
-            <tr v-else-if="!tenants.length">
-              <td colspan="6" class="text-center">{{ $t('tenants.noTenantsFound') }}</td>
-            </tr>
-            <tr v-for="tenant in tenants" :key="tenant.id">
-              <td>{{ tenant.name }}</td>
-              <td>{{ tenant.identifier }}</td>
-              <td>
-                <div>{{ tenant.contactName }}</div>
-                <div class="text-caption">{{ tenant.contactEmail }}</div>
-              </td>
-              <td>
-                <v-chip
-                  :color="tenant.isActive ? 'success' : 'error'"
-                  size="small"
-                >
-                  {{ tenant.isActive ? $t('common.active') : $t('common.inactive') }}
-                </v-chip>
-              </td>
-              <td>{{ tenantService.formatDate(tenant.createdAt) }}</td>
-              <td>
-                <v-btn
-                  icon="mdi-pencil"
-                  size="small"
-                  variant="text"
-                  @click="openEditDialog(tenant)"
-                />
-                <v-btn
-                  icon="mdi-delete"
-                  size="small"
-                  variant="text"
-                  color="error"
-                  @click="confirmDelete(tenant)"
-                />
-                <v-btn
-                  :icon="tenant.isActive ? 'mdi-close' : 'mdi-check'"
-                  size="small"
-                  variant="text"
-                  :color="tenant.isActive ? 'error' : 'success'"
-                  @click="toggleTenantStatus(tenant)"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
+        <v-data-table
+          :headers="headers"
+          :items="tenants"
+          :loading="loading"
+          :items-per-page="10"
+          class="mt-2"
+        >
+          <template #item.contact="{ item }">
+            <div>{{ item.contactName }}</div>
+            <div class="text-caption">{{ item.contactEmail }}</div>
+          </template>
+          <template #item.isActive="{ item }">
+            <v-chip
+              :color="item.isActive ? 'success' : 'error'"
+              size="small"
+            >
+              {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
+            </v-chip>
+          </template>
+          <template #item.createdAt="{ item }">
+            {{ tenantService.formatDate(item.createdAt) }}
+          </template>
+          <template #item.actions="{ item }">
+            <v-btn
+              icon="mdi-pencil"
+              size="small"
+              variant="text"
+              @click="openEditDialog(item)"
+            />
+            <v-btn
+              icon="mdi-delete"
+              size="small"
+              variant="text"
+              color="error"
+              @click="confirmDelete(item)"
+            />
+            <v-btn
+              :icon="item.isActive ? 'mdi-close' : 'mdi-check'"
+              size="small"
+              variant="text"
+              :color="item.isActive ? 'error' : 'success'"
+              @click="toggleTenantStatus(item)"
+            />
+          </template>
+        </v-data-table>
       </v-card-text>
     </v-card>
 
@@ -174,6 +159,16 @@ const availableFilters = computed(() => [{
 const sortOptions = computed(() => [
   { title: t('common.name'), value: 'name_asc' },
   { title: t('common.created'), value: 'createdAt_asc' }
+]);
+
+// Data table headers
+const headers = computed(() => [
+  { title: t('common.name'), key: 'name' },
+  { title: t('tenants.identifier'), key: 'identifier' },
+  { title: t('tenants.contact'), key: 'contact', sortable: false },
+  { title: t('common.status'), key: 'isActive', width: '120px' },
+  { title: t('common.created'), key: 'createdAt', width: '180px' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '150px', align: 'end' }
 ]);
 
 function createEmptyTenant() {

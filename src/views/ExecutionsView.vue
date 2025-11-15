@@ -434,15 +434,15 @@ const mockExecutions = [
 ];
 
 // Data table
-const headers = [
-  { title: 'Pipeline', key: 'pipelineName' },
-  { title: 'Status', key: 'status', width: '120px' },
-  { title: 'Start Time', key: 'startTime', width: '150px' },
-  { title: 'End Time', key: 'endTime', width: '150px' },
-  { title: 'Duration', key: 'duration', width: '100px' },
-  { title: 'Rows Processed', key: 'rowsProcessed', width: '120px' },
-  { title: 'Actions', key: 'actions', sortable: false, width: '100px', align: 'end' }
-];
+const headers = computed(() => [
+  { title: t('dashboard.pipeline'), key: 'pipelineName' },
+  { title: t('common.status'), key: 'status', width: '120px' },
+  { title: t('dashboard.startTime'), key: 'startTime', width: '150px' },
+  { title: t('executions.endTime'), key: 'endTime', width: '150px' },
+  { title: t('dashboard.duration'), key: 'duration', width: '100px' },
+  { title: t('dashboard.rowsProcessed'), key: 'rowsProcessed', width: '120px' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' }
+]);
 
 // Filters and sorting
 const search = ref('');
