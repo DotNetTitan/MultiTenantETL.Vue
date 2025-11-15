@@ -11,9 +11,11 @@
 
 ## Additional Libraries
 
+- **Vue I18n** for internationalization (multi-language support)
 - **Prism.js** for syntax highlighting (JavaScript/C# code in transformations)
 - **PapaParse** for CSV file parsing
 - **XLSX** for Excel file processing
+- **Google Gemini AI** for AI-powered chatbot assistant
 
 ## Development Tools
 
@@ -50,3 +52,22 @@ The frontend expects a REST API backend at `http://localhost:5000/api` (see api-
 - Default theme: dark
 - Theme colors defined in src/main.js
 - CSS custom properties for consistent styling across components
+
+## Internationalization (i18n)
+
+- **Vue I18n** for multi-language support
+- Currently supports: English (en), Spanish (es), French (fr)
+- Translation files located in `src/locales/`
+- Language selection persisted in localStorage
+- Automatic Vuetify component translation
+- AI chatbot responds in user's selected language
+- Easy to add new languages by creating new JSON translation files
+
+## Metadata Service
+
+- Centralized configuration management for dropdown options
+- Supports both mock data (for development) and API backend
+- Automatic translation of metadata labels based on user's language
+- Cached in localStorage for performance
+- Used for: data source types, auth types, file formats, transformation types, schedule frequencies, etc.
+- Easy to switch between mock and real API by toggling `USE_MOCK_DATA` flag

@@ -8,27 +8,40 @@ src/
 ├── main.js                 # Application entry point, Vuetify and Pinia setup
 ├── components/             # Reusable UI components
 │   ├── dashboard/          # Dashboard-specific components
-│   ├── datasource/         # Data source components
-│   ├── dialogs/            # Modal dialogs
+│   ├── datasource/         # Data source components (wizard, form, schema editor)
+│   ├── dialogs/            # Modal dialogs (confirmation, etc.)
 │   ├── executions/         # Pipeline execution components
 │   ├── form/               # Form input components
 │   ├── layouts/            # Layout components (Authenticated, Guest)
 │   ├── notifications/      # Notification components
-│   ├── pipeline/           # Pipeline-specific components
+│   ├── pipeline/           # Pipeline-specific components (wizard, field mapping)
 │   ├── settings/           # Settings page components
-│   ├── table/              # Table components
+│   ├── table/              # Table components (filters, etc.)
 │   ├── tenants/            # Tenant management components
 │   ├── transformation/     # Transformation components
-│   └── users/              # User management components
+│   ├── users/              # User management components
+│   ├── AiChatbot.vue       # AI assistant chatbot
+│   ├── LanguageSwitcher.vue # Language selection component
+│   └── TenantSelector.vue  # Tenant switching component
 ├── composables/            # Reusable composition functions
 │   ├── useDashboard.js
 │   ├── useDataSource.js
 │   ├── useFormValidation.js
+│   ├── useGlobalState.js
+│   ├── useLocale.js
+│   ├── useMetadata.js          # Raw metadata access
 │   ├── usePipeline.js
 │   ├── usePipelineForm.js
-│   └── useTransformation.js
+│   ├── useTransformation.js
+│   └── useTranslatedMetadata.js # Auto-translating metadata
 ├── config/                 # Configuration files
 │   └── api.js              # API base URL configuration
+├── locales/                # Internationalization (i18n)
+│   ├── en.json             # English translations
+│   ├── es.json             # Spanish translations
+│   ├── fr.json             # French translations
+│   ├── index.js            # i18n configuration
+│   └── README.md           # Translation guide
 ├── router/                 # Vue Router configuration
 │   └── index.js            # Route definitions and navigation guards
 ├── services/               # API service layer
@@ -36,6 +49,8 @@ src/
 │   ├── authService.js      # Authentication API calls
 │   ├── dashboardService.js # Dashboard data API calls
 │   ├── dataSourceService.js # Data source CRUD operations
+│   ├── geminiService.js    # Google Gemini AI integration
+│   ├── metadataService.js  # Centralized metadata/config service
 │   ├── pipelineService.js  # Pipeline CRUD operations
 │   ├── schemaService.js    # Schema management and versioning
 │   ├── tenantService.js    # Tenant management API calls
@@ -72,6 +87,7 @@ src/
 - **Pinia stores** for global state (auth, tenant context)
 - **Composables** for reusable business logic and API interactions
 - **Provide/inject** for global notification system
+- **Metadata Service** for centralized configuration and dropdown options with translation support
 
 ### Service Layer
 - All API calls go through service modules in `src/services/`
@@ -88,3 +104,11 @@ src/
 - Global CSS custom properties for theme consistency
 - SASS for advanced styling when needed
 - Theme-aware classes (`.v-theme--dark`, `.v-theme--light`)
+
+### Internationalization (i18n)
+- Vue I18n for multi-language support
+- Translation files in `src/locales/` (en.json, es.json, fr.json)
+- Language persistence in localStorage
+- Automatic Vuetify component translation
+- AI chatbot responds in user's selected language
+- Metadata service provides translated dropdown options

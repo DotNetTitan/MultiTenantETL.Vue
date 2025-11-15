@@ -16,6 +16,8 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 - 📈 **Execution Monitoring**: Detailed execution logs, timeline view, and progress tracking
 - 🔐 **API Key Management**: Generate and manage API keys for programmatic access
 - 🤖 **AI Assistant**: Context-aware chatbot powered by Google Gemini AI to help users navigate and use the platform
+- 🌍 **Multi-language Support**: Full internationalization (i18n) with English, Spanish, and French translations
+- 🎯 **Metadata Service**: Centralized configuration management for dropdowns and options with translation support
 
 ## Tech Stack
 
@@ -83,27 +85,40 @@ src/
 ├── main.js                 # Application entry point, Vuetify and Pinia setup
 ├── components/             # Reusable UI components
 │   ├── dashboard/          # Dashboard-specific components
-│   ├── datasource/         # Data source components
-│   ├── dialogs/            # Modal dialogs
+│   ├── datasource/         # Data source components (wizard, form, schema editor)
+│   ├── dialogs/            # Modal dialogs (confirmation, etc.)
 │   ├── executions/         # Pipeline execution components
 │   ├── form/               # Form input components
 │   ├── layouts/            # Layout components (Authenticated, Guest)
 │   ├── notifications/      # Notification components
-│   ├── pipeline/           # Pipeline-specific components
+│   ├── pipeline/           # Pipeline-specific components (wizard, field mapping)
 │   ├── settings/           # Settings page components
-│   ├── table/              # Table components
+│   ├── table/              # Table components (filters, etc.)
 │   ├── tenants/            # Tenant management components
 │   ├── transformation/     # Transformation components
-│   └── users/              # User management components
+│   ├── users/              # User management components
+│   ├── AiChatbot.vue       # AI assistant chatbot
+│   ├── LanguageSwitcher.vue # Language selection component
+│   └── TenantSelector.vue  # Tenant switching component
 ├── composables/            # Reusable composition functions
 │   ├── useDashboard.js
 │   ├── useDataSource.js
 │   ├── useFormValidation.js
+│   ├── useGlobalState.js
+│   ├── useLocale.js
+│   ├── useMetadata.js          # Raw metadata access
 │   ├── usePipeline.js
 │   ├── usePipelineForm.js
-│   └── useTransformation.js
+│   ├── useTransformation.js
+│   └── useTranslatedMetadata.js # Auto-translating metadata
 ├── config/                 # Configuration files
 │   └── api.js              # API base URL configuration
+├── locales/                # Internationalization (i18n)
+│   ├── en.json             # English translations
+│   ├── es.json             # Spanish translations
+│   ├── fr.json             # French translations
+│   ├── index.js            # i18n configuration
+│   └── README.md           # Translation guide
 ├── router/                 # Vue Router configuration
 │   └── index.js            # Route definitions and navigation guards
 ├── services/               # API service layer
@@ -111,6 +126,8 @@ src/
 │   ├── authService.js      # Authentication API calls
 │   ├── dashboardService.js # Dashboard data API calls
 │   ├── dataSourceService.js # Data source CRUD operations
+│   ├── geminiService.js    # Google Gemini AI integration
+│   ├── metadataService.js  # Centralized metadata/config service
 │   ├── pipelineService.js  # Pipeline CRUD operations
 │   ├── schemaService.js    # Schema management
 │   ├── tenantService.js    # Tenant management API calls
@@ -147,6 +164,7 @@ src/
 - **Pinia stores** for global state (authentication, tenant context)
 - **Composables** for reusable business logic and API interactions
 - **Provide/inject** for global notification system
+- **Metadata Service** for centralized configuration and dropdown options
 
 ### Service Layer
 - All API calls go through service modules in `src/services/`
@@ -209,6 +227,14 @@ src/
 - CSS custom properties for consistent styling
 - Responsive design with Vuetify breakpoints
 - Mobile-friendly interface with touch-optimized controls
+
+### Internationalization (i18n)
+- Full multi-language support with Vue I18n
+- Currently supports: English, Spanish, French
+- Language persistence in localStorage
+- Automatic Vuetify component translation
+- AI chatbot responds in user's selected language
+- Easy to add new languages by creating translation files
 
 ## Contributing
 
