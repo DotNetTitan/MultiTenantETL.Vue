@@ -159,7 +159,7 @@
                         text-color="white"
                         :prepend-icon="getStatusIcon(execution.status)"
                       >
-                        {{ execution.status }}
+                        {{ $t(`executions.${execution.status.toLowerCase()}`) }}
                       </v-chip>
                     </td>
                     <td>{{ execution.rowsProcessed?.toLocaleString() || '-' }}</td>
@@ -196,7 +196,7 @@
                         :color="getStatusColor(status.name)"
                         :class="{'on-hover': isHovering}"
                       >
-                        <div class="text-white">{{ status.name }}</div>
+                        <div class="text-white">{{ $t(`executions.${status.name.toLowerCase()}`) }}</div>
                         <div class="text-h4 text-white mt-2">{{ status.count }}</div>
                       </v-sheet>
                     </v-hover>

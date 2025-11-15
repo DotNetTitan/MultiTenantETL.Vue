@@ -459,7 +459,7 @@
             :disabled="testingConnection"
             @click="showConnectionDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -481,7 +481,7 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="mr-2">mdi-table-eye</v-icon>
-          {{ selectedDataSource?.name }} - Schema
+          {{ selectedDataSource?.name }} - {{ $t('common.schema') }}
           <v-spacer />
           <v-btn
             icon
@@ -517,7 +517,7 @@
                     <div class="text-h6">{{ dataSourceSchema.version || 1 }}</div>
                   </v-col>
                   <v-col v-if="dataSourceSchema.lastModified" cols="12">
-                    <div class="text-caption text-grey">Last Modified</div>
+                    <div class="text-caption text-grey">{{ $t('dataSources.lastModified') }}</div>
                     <div class="text-body-2">{{ formatDate(dataSourceSchema.lastModified) }}</div>
                   </v-col>
                 </v-row>
@@ -528,11 +528,11 @@
             <v-table density="comfortable" hover>
               <thead>
                 <tr>
-                  <th class="text-left">Field Name</th>
-                  <th class="text-left">Data Type</th>
-                  <th class="text-center">Required</th>
-                  <th class="text-center">Nullable</th>
-                  <th class="text-left">Description</th>
+                  <th class="text-left">{{ $t('dataSources.fieldName') }}</th>
+                  <th class="text-left">{{ $t('dataSources.dataType') }}</th>
+                  <th class="text-center">{{ $t('common.required') }}</th>
+                  <th class="text-center">{{ $t('dataSources.nullable') }}</th>
+                  <th class="text-left">{{ $t('common.description') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -580,7 +580,7 @@
             color="primary"
             @click="showSchemaDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>

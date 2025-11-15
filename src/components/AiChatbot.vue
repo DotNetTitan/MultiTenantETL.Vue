@@ -75,7 +75,7 @@
         <v-icon class="mr-2 text-white">mdi-robot</v-icon>
         <span class="text-white">Maeve</span>
         <v-spacer />
-        <v-tooltip text="Clear chat" location="bottom">
+        <v-tooltip :text="$t('chatbot.clearChat')" location="bottom">
           <template #activator="{ props }">
             <v-btn
               icon
@@ -89,7 +89,7 @@
             </v-btn>
           </template>
         </v-tooltip>
-        <v-tooltip :text="isExpanded ? 'Collapse' : 'Expand'" location="bottom">
+        <v-tooltip :text="isExpanded ? $t('common.collapse') : $t('common.expand')" location="bottom">
           <template #activator="{ props }">
             <v-btn
               icon
@@ -102,7 +102,7 @@
             </v-btn>
           </template>
         </v-tooltip>
-        <v-tooltip text="Close" location="bottom">
+        <v-tooltip :text="$t('common.close')" location="bottom">
           <template #activator="{ props }">
             <v-btn
               icon
@@ -127,7 +127,7 @@
       >
         <div v-if="messages.length === 0" class="text-center text-medium-emphasis py-8">
           <v-icon size="48" class="mb-2">mdi-chat-question</v-icon>
-          <p>Hi! I'm Maeve, your AI assistant. Ask me anything about this page or the ETL platform.</p>
+          <p>{{ $t('chatbot.greeting') }}</p>
         </div>
 
         <div
@@ -141,7 +141,7 @@
               <v-icon size="small" class="mr-1">
                 {{ msg.role === 'user' ? 'mdi-account' : 'mdi-robot' }}
               </v-icon>
-              <span class="text-caption">{{ msg.role === 'user' ? 'You' : 'Maeve' }}</span>
+              <span class="text-caption">{{ msg.role === 'user' ? $t('chatbot.you') : 'Maeve' }}</span>
             </div>
             <div 
               class="message-text" 
@@ -163,7 +163,7 @@
                 width="2"
                 class="mr-2"
               />
-              Thinking...
+              {{ $t('chatbot.thinking') }}
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@
         <div class="input-wrapper">
           <v-textarea
             v-model="userInput"
-            placeholder="Ask me anything... (Shift+Enter for new line, Enter to send)"
+            :placeholder="$t('chatbot.placeholder')"
             variant="outlined"
             rows="2"
             auto-grow
@@ -203,7 +203,7 @@
           />
           <div class="input-controls">
             <span v-if="userInput.length > 0" class="text-caption char-counter" :class="{ 'text-error': userInput.length > 500 }">
-              {{ userInput.length }}/500
+              {{ $t('chatbot.charLimit', { count: userInput.length }) }}
             </span>
             <v-spacer />
             <v-btn
@@ -223,12 +223,14 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { getChatResponse } from '@/services/geminiService';
 import { marked } from 'marked';
 
 const route = useRoute();
+const { t } = useI18n();
 const isOpen = ref(false);
 const userInput = ref('');
 const messages = ref([]);
@@ -240,11 +242,11 @@ const hintDismissed = ref(false);
 const isExpanded = ref(false);
 
 // Quick suggestions based on current page
-const quickSuggestions = ref([
-  'Explain this page',
-  'How do I create a pipeline?',
-  'Show me an example',
-  'What can I do here?'
+const quickSuggestions = computed(() => [
+  t('chatbot.explainPage'),
+  t('chatbot.howToCreatePipeline'),
+  t('chatbot.showExample'),
+  t('chatbot.whatCanIDo')
 ]);
 
 // Configure marked for basic rendering
