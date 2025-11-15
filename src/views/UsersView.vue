@@ -17,10 +17,10 @@
       <v-card-text>
         <TableFilters
           v-model:search="search"
-          search-label="Search Users"
+          :search-label="$t('users.searchUsers')"
           :filters="[{
             key: 'status',
-            label: 'Status',
+            label: $t('common.status'),
             items: statusOptions,
             cols: 3
           }]"
@@ -42,7 +42,7 @@
               text-color="white"
               size="small"
             >
-              {{ item.isActive ? 'Active' : 'Inactive' }}
+              {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
             </v-chip>
           </template>
           <template #item.role="{ item }">
@@ -62,7 +62,7 @@
               icon
               variant="text"
               size="small"
-              title="Edit user"
+              :title="$t('users.editUser')"
               @click="editUser(item)"
             >
               <v-icon>mdi-pencil</v-icon>
@@ -73,7 +73,7 @@
               variant="text"
               size="small"
               color="success"
-              title="Activate user"
+              :title="$t('users.activateUser')"
               @click="toggleUserStatus(item)"
             >
               <v-icon>mdi-check</v-icon>
@@ -84,7 +84,7 @@
               variant="text"
               size="small"
               color="warning"
-              title="Deactivate user"
+              :title="$t('users.deactivateUser')"
               @click="toggleUserStatus(item)"
             >
               <v-icon>mdi-close</v-icon>
@@ -94,7 +94,7 @@
               variant="text"
               size="small"
               color="error"
-              title="Delete user"
+              :title="$t('users.deleteUser')"
               :disabled="item.isActive"
               @click="confirmDelete(item)"
             >
@@ -113,7 +113,7 @@
     >
       <v-card>
         <v-card-title class="text-h5 pa-4 d-flex align-center">
-          {{ editedUser.id ? 'Edit User' : 'Create User' }}
+          {{ editedUser.id ? $t('users.editUser') : $t('users.createUser') }}
           <v-spacer />
           <v-btn
             icon
@@ -137,14 +137,14 @@
             :disabled="savingUser"
             @click="closeCreateDialog"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
           <v-btn
             color="primary"
             :loading="savingUser"
             @click="saveUser"
           >
-            Save
+            {{ $t('common.save') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -153,13 +153,13 @@
     <!-- Delete Confirmation Dialog -->
     <ConfirmationDialog
       v-model:show="showDeleteDialog"
-      title="Delete User"
-      confirm-text="Delete"
+      :title="$t('users.deleteUser')"
+      :confirm-text="$t('common.delete')"
       confirm-color="error"
       :loading="deletingUser"
       @confirm="deleteUser"
     >
-      Are you sure you want to delete the user "{{ userToDelete?.firstName }} {{ userToDelete?.lastName }}"? This action cannot be undone.
+      {{ $t('users.deleteConfirm', { name: `${userToDelete?.firstName} ${userToDelete?.lastName}` }) }}
     </ConfirmationDialog>
 
     <!-- Notification -->
@@ -168,7 +168,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { userService } from '@/services/userService';
@@ -190,15 +190,19 @@ const {
 const router = useRouter();
 const authStore = useAuthStore();
 
+// Import i18n
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 // Data table
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Email', key: 'email' },
-  { title: 'Role', key: 'role', width: '120px' },
-  { title: 'Status', key: 'status', width: '120px' },
-  { title: 'Created', key: 'createdAt', width: '150px' },
-  { title: 'Actions', key: 'actions', sortable: false, width: '120px', align: 'end' }
-];
+const headers = computed(() => [
+  { title: t('common.name'), key: 'name' },
+  { title: t('users.email'), key: 'email' },
+  { title: t('users.role'), key: 'role', width: '120px' },
+  { title: t('common.status'), key: 'status', width: '120px' },
+  { title: t('common.created'), key: 'createdAt', width: '150px' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+]);
 
 // Get available roles from service
 const roles = getAvailableRoles();
@@ -207,17 +211,17 @@ const roles = getAvailableRoles();
 const search = ref('');
 const statusFilter = ref('All');
 const sortBy = ref('name_asc');
-const statusOptions = [
-  { title: 'All Statuses', value: 'All' },
-  { title: 'Active', value: 'Active' },
-  { title: 'Inactive', value: 'Inactive' }
-];
-const sortOptions = [
-  { title: 'Name (A-Z)', value: 'name_asc' },
-  { title: 'Name (Z-A)', value: 'name_desc' },
-  { title: 'Created (Newest)', value: 'created_desc' },
-  { title: 'Created (Oldest)', value: 'created_asc' }
-];
+const statusOptions = computed(() => [
+  { title: t('filters.allStatuses'), value: 'All' },
+  { title: t('common.active'), value: 'Active' },
+  { title: t('common.inactive'), value: 'Inactive' }
+]);
+const sortOptions = computed(() => [
+  { title: t('filters.nameAsc'), value: 'name_asc' },
+  { title: t('filters.nameDesc'), value: 'name_desc' },
+  { title: t('filters.createdDesc'), value: 'created_desc' },
+  { title: t('filters.createdAsc'), value: 'created_asc' }
+]);
 
 // Data
 const users = ref([]);

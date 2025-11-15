@@ -25,12 +25,12 @@
         <v-table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Identifier</th>
-              <th>Contact</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Actions</th>
+              <th>{{ $t('common.name') }}</th>
+              <th>{{ $t('tenants.identifier') }}</th>
+              <th>{{ $t('tenants.contact') }}</th>
+              <th>{{ $t('common.status') }}</th>
+              <th>{{ $t('common.created') }}</th>
+              <th>{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -40,7 +40,7 @@
               </td>
             </tr>
             <tr v-else-if="!tenants.length">
-              <td colspan="6" class="text-center">No tenants found</td>
+              <td colspan="6" class="text-center">{{ $t('tenants.noTenantsFound') }}</td>
             </tr>
             <tr v-for="tenant in tenants" :key="tenant.id">
               <td>{{ tenant.name }}</td>
@@ -54,7 +54,7 @@
                   :color="tenant.isActive ? 'success' : 'error'"
                   size="small"
                 >
-                  {{ tenant.isActive ? 'Active' : 'Inactive' }}
+                  {{ tenant.isActive ? $t('common.active') : $t('common.inactive') }}
                 </v-chip>
               </td>
               <td>{{ tenantService.formatDate(tenant.createdAt) }}</td>
@@ -90,7 +90,7 @@
     <v-dialog v-model="showCreateDialog" max-width="600">
       <v-card>
         <v-card-title class="d-flex align-center">
-          {{ isEditing ? 'Edit' : 'Create' }} Tenant
+          {{ isEditing ? $t('tenants.editTenant') : $t('tenants.createTenant') }}
           <v-spacer />
           <v-btn
             icon
@@ -115,14 +115,14 @@
             :disabled="loading"
             @click="closeDialog"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
           <v-btn
             color="primary"
             :loading="loading"
             @click="saveTenant"
           >
-            Save
+            {{ $t('common.save') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -131,8 +131,8 @@
     <!-- Confirmation Dialog -->
     <confirmation-dialog
       v-model:show="showDeleteDialog"
-      :title="'Delete Tenant'"
-      :message="'Are you sure you want to delete this tenant? This action cannot be undone.'"
+      :title="$t('tenants.deleteTenant')"
+      :message="$t('tenants.deleteConfirm')"
       @confirm="deleteTenant"
     />
   </div>
@@ -140,6 +140,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 import { tenantService } from '@/services/tenantService';
 import TableFilters from '@/components/table/TableFilters.vue';
 import TenantForm from '@/components/tenants/TenantForm.vue';
@@ -157,22 +159,22 @@ const sortBy = ref('name');
 const editedTenant = ref(createEmptyTenant());
 const isEditing = computed(() => !!editedTenant.value.id);
 
-const availableFilters = [{
+const availableFilters = computed(() => [{
   key: 'status',
-  label: 'Status',
+  label: t('common.status'),
   cols: 3,
   items: [
-    { title: 'All', value: 'all' },
-    { title: 'Active', value: 'active' },
-    { title: 'Inactive', value: 'inactive' }
+    { title: t('common.all'), value: 'all' },
+    { title: t('common.active'), value: 'active' },
+    { title: t('common.inactive'), value: 'inactive' }
   ],
   default: 'all'
-}];
+}]);
 
-const sortOptions = [
-  { title: 'Name', value: 'name_asc' },
-  { title: 'Created Date', value: 'createdAt_asc' }
-];
+const sortOptions = computed(() => [
+  { title: t('common.name'), value: 'name_asc' },
+  { title: t('common.created'), value: 'createdAt_asc' }
+]);
 
 function createEmptyTenant() {
   return {

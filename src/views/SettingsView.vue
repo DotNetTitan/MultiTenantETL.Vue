@@ -25,60 +25,60 @@
       <!-- User Profile Tab -->
       <v-window-item value="profile">
         <v-card>
-          <v-card-title>User Profile</v-card-title>
+          <v-card-title>{{ $t('settings.userProfile') }}</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="saveProfile">
               <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="profile.firstName"
-                    label="First Name"
+                    :label="$t('users.firstName')"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="profile.lastName"
-                    label="Last Name"
+                    :label="$t('users.lastName')"
                     required
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="profile.email"
-                    label="Email"
+                    :label="$t('users.email')"
                     type="email"
                     required
-                    :rules="[v => !!v || 'Email is required', v => /.+@.+\..+/.test(v) || 'Email must be valid']"
+                    :rules="[v => !!v || t('validation.required', { field: t('users.email') }), v => /.+@.+\..+/.test(v) || t('validation.email')]"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="profile.phone"
-                    label="Phone Number"
+                    :label="$t('settings.phone')"
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="profile.jobTitle"
-                    label="Job Title"
+                    :label="$t('settings.jobTitle')"
                   />
                 </v-col>
                 <v-col cols="12">
                   <v-textarea
                     v-model="profile.bio"
-                    label="Bio"
+                    :label="$t('settings.bio')"
                     rows="3"
                   />
                 </v-col>
               </v-row>
               <v-divider class="my-4" />
-              <h3 class="text-h6 mb-4">Change Password</h3>
+              <h3 class="text-h6 mb-4">{{ $t('settings.changePassword') }}</h3>
               <v-row>
                 <v-col cols="12" md="4">
                   <v-text-field
                     v-model="passwordChange.current"
-                    label="Current Password"
+                    :label="$t('settings.currentPassword')"
                     type="password"
                     autocomplete="current-password"
                   />
@@ -86,23 +86,23 @@
                 <v-col cols="12" md="4">
                   <v-text-field
                     v-model="passwordChange.new"
-                    label="New Password"
+                    :label="$t('settings.newPassword')"
                     type="password"
                     autocomplete="new-password"
                     :rules="[
-                      v => !v || v.length >= 8 || 'Password must be at least 8 characters',
-                      v => !v || /[A-Z]/.test(v) || 'Password must contain at least one uppercase letter',
-                      v => !v || /[0-9]/.test(v) || 'Password must contain at least one number'
+                      v => !v || v.length >= 8 || t('validation.minLength', { field: t('settings.newPassword'), length: 8 }),
+                      v => !v || /[A-Z]/.test(v) || t('validation.passwordRequirements'),
+                      v => !v || /[0-9]/.test(v) || t('validation.passwordRequirements')
                     ]"
                   />
                 </v-col>
                 <v-col cols="12" md="4">
                   <v-text-field
                     v-model="passwordChange.confirm"
-                    label="Confirm New Password"
+                    :label="$t('settings.confirmNewPassword')"
                     type="password"
                     autocomplete="new-password"
-                    :rules="[v => v === passwordChange.new || 'Passwords do not match']"
+                    :rules="[v => v === passwordChange.new || t('validation.passwordMatch')]"
                   />
                 </v-col>
               </v-row>
@@ -112,7 +112,7 @@
                 class="mt-4"
                 :loading="savingProfile"
               >
-                Save Changes
+                {{ $t('settings.saveChanges') }}
               </v-btn>
             </v-form>
           </v-card-text>
@@ -122,15 +122,15 @@
       <!-- Preferences Tab -->
       <v-window-item value="preferences">
         <v-card>
-          <v-card-title>Preferences</v-card-title>
+          <v-card-title>{{ $t('settings.preferences') }}</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="savePreferences">
-              <h3 class="text-h6 mb-4">Theme</h3>
+              <h3 class="text-h6 mb-4">{{ $t('settings.theme') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-switch
                     v-model="preferences.darkMode"
-                    label="Dark Mode"
+                    :label="$t('settings.darkMode')"
                     color="primary"
                     hide-details
                     @change="updateTheme"
@@ -139,7 +139,7 @@
                 <v-col cols="12" md="6">
                   <v-switch
                     v-model="preferences.highContrast"
-                    label="High Contrast"
+                    :label="$t('settings.highContrast')"
                     color="primary"
                     hide-details
                   />
@@ -148,59 +148,40 @@
 
               <v-divider class="my-6" />
               
-              <h3 class="text-h6 mb-4">Dashboard</h3>
+              <h3 class="text-h6 mb-4">{{ $t('dashboard.title') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="preferences.defaultDashboardView"
-                    label="Default Dashboard View"
-                    :items="[
-                      { title: 'Pipeline Stats', value: 'pipeline-stats' },
-                      { title: 'Recent Executions', value: 'recent-executions' },
-                      { title: 'Data Source Health', value: 'data-source-health' }
-                    ]"
+                    :label="$t('settings.defaultDashboardView')"
+                    :items="dashboardViewOptions"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="preferences.dashboardRefreshInterval"
-                    label="Dashboard Refresh Interval"
-                    :items="[
-                      { title: 'Never', value: 0 },
-                      { title: '30 seconds', value: 30 },
-                      { title: '1 minute', value: 60 },
-                      { title: '5 minutes', value: 300 },
-                      { title: '15 minutes', value: 900 }
-                    ]"
+                    :label="$t('settings.dashboardRefreshInterval')"
+                    :items="refreshIntervalOptions"
                   />
                 </v-col>
               </v-row>
 
               <v-divider class="my-6" />
               
-              <h3 class="text-h6 mb-4">Data View</h3>
+              <h3 class="text-h6 mb-4">{{ $t('common.data') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="preferences.defaultItemsPerPage"
-                    label="Default Items Per Page"
-                    :items="[
-                      { title: '10 items', value: 10 },
-                      { title: '25 items', value: 25 },
-                      { title: '50 items', value: 50 },
-                      { title: '100 items', value: 100 }
-                    ]"
+                    :label="$t('settings.defaultItemsPerPage')"
+                    :items="itemsPerPageOptions"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-select
                     v-model="preferences.dateFormat"
-                    label="Date Format"
-                    :items="[
-                      { title: 'MM/DD/YYYY', value: 'MM/DD/YYYY' },
-                      { title: 'DD/MM/YYYY', value: 'DD/MM/YYYY' },
-                      { title: 'YYYY-MM-DD', value: 'YYYY-MM-DD' }
-                    ]"
+                    :label="$t('settings.dateFormat')"
+                    :items="dateFormatOptions"
                   />
                 </v-col>
               </v-row>
@@ -211,7 +192,7 @@
                 class="mt-4"
                 :loading="savingPreferences"
               >
-                Save Preferences
+                {{ $t('settings.savePreferences') }}
               </v-btn>
             </v-form>
           </v-card-text>
@@ -222,7 +203,7 @@
       <v-window-item value="apiKeys">
         <v-card>
           <v-card-title class="d-flex align-center">
-            <span>API Keys</span>
+            <span>{{ $t('settings.apiKeys') }}</span>
             <v-spacer />
             <v-btn 
               color="primary" 
@@ -230,12 +211,12 @@
               :loading="creatingApiKey"
               @click="createApiKey"
             >
-              Create API Key
+              {{ $t('settings.createApiKey') }}
             </v-btn>
           </v-card-title>
           <v-card-text>
             <p class="mb-4">
-              API keys allow you to authenticate requests to the ETL Platform API. Keep your API keys secure; anyone with your API key can make API calls on your behalf.
+              {{ $t('settings.apiKeyDescription') }}
             </p>
             
             <v-alert
@@ -244,8 +225,8 @@
               variant="outlined"
               class="mb-4"
             >
-              <p><strong>Your new API key has been created.</strong></p>
-              <p>This is the only time the API key will be displayed. Please copy it now:</p>
+              <p><strong>{{ $t('settings.apiKeyCreated') }}</strong></p>
+              <p>{{ $t('settings.apiKeyWarning') }}</p>
               <v-text-field
                 v-model="newApiKey"
                 readonly
@@ -264,7 +245,7 @@
                 {{ formatDate(item.createdAt) }}
               </template>
               <template #item.lastUsed="{ item }">
-                {{ item.lastUsed ? formatDate(item.lastUsed) : 'Never' }}
+                {{ item.lastUsed ? formatDate(item.lastUsed) : $t('common.none') }}
               </template>
               <template #item.actions="{ item }">
                 <v-btn
@@ -272,7 +253,7 @@
                   variant="text"
                   size="small"
                   color="error"
-                  title="Revoke key"
+                  :title="$t('settings.revokeKey')"
                   @click="revokeApiKey(item)"
                 >
                   <v-icon>mdi-delete</v-icon>
@@ -286,15 +267,15 @@
       <!-- Notifications Tab -->
       <v-window-item value="notifications">
         <v-card>
-          <v-card-title>Notification Settings</v-card-title>
+          <v-card-title>{{ $t('settings.notificationSettings') }}</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="saveNotificationSettings">
-              <h3 class="text-h6 mb-4">Email Notifications</h3>
+              <h3 class="text-h6 mb-4">{{ $t('settings.emailNotifications') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-switch
                     v-model="notificationSettings.emailEnabled"
-                    label="Enable Email Notifications"
+                    :label="$t('settings.enableEmailNotifications')"
                     color="primary"
                     hide-details
                   />
@@ -302,22 +283,22 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="notificationSettings.emailAddress"
-                    label="Notification Email"
+                    :label="$t('settings.notificationEmail')"
                     type="email"
                     :disabled="!notificationSettings.emailEnabled"
-                    :rules="[v => !notificationSettings.emailEnabled || !!v || 'Email is required']"
+                    :rules="[v => !notificationSettings.emailEnabled || !!v || t('validation.required', { field: t('users.email') })]"
                   />
                 </v-col>
               </v-row>
 
               <v-divider class="my-6" />
               
-              <h3 class="text-h6 mb-4">Webhook Notifications</h3>
+              <h3 class="text-h6 mb-4">{{ $t('settings.webhookNotifications') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-switch
                     v-model="notificationSettings.webhookEnabled"
-                    label="Enable Webhook Notifications"
+                    :label="$t('settings.enableWebhookNotifications')"
                     color="primary"
                     hide-details
                   />
@@ -325,49 +306,49 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="notificationSettings.webhookUrl"
-                    label="Webhook URL"
+                    :label="$t('settings.webhookUrl')"
                     :disabled="!notificationSettings.webhookEnabled"
-                    :rules="[v => !notificationSettings.webhookEnabled || !!v || 'Webhook URL is required']"
+                    :rules="[v => !notificationSettings.webhookEnabled || !!v || t('validation.required', { field: t('settings.webhookUrl') })]"
                   />
                 </v-col>
               </v-row>
 
               <v-divider class="my-6" />
               
-              <h3 class="text-h6 mb-4">Notification Events</h3>
+              <h3 class="text-h6 mb-4">{{ $t('settings.notificationEvents') }}</h3>
               <v-row>
                 <v-col cols="12" md="6">
                   <v-checkbox
                     v-model="notificationSettings.events.pipelineSuccess"
-                    label="Pipeline Execution Success"
+                    :label="$t('settings.pipelineSuccess')"
                     hide-details
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-checkbox
                     v-model="notificationSettings.events.pipelineFailure"
-                    label="Pipeline Execution Failure"
+                    :label="$t('settings.pipelineFailure')"
                     hide-details
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-checkbox
                     v-model="notificationSettings.events.dataSourceDown"
-                    label="Data Source Connection Issues"
+                    :label="$t('settings.dataSourceDown')"
                     hide-details
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-checkbox
                     v-model="notificationSettings.events.quotaExceeded"
-                    label="Quota Exceeded"
+                    :label="$t('settings.quotaExceeded')"
                     hide-details
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-checkbox
                     v-model="notificationSettings.events.systemUpdates"
-                    label="System Updates"
+                    :label="$t('settings.systemUpdates')"
                     hide-details
                   />
                 </v-col>
@@ -379,7 +360,7 @@
                 class="mt-4"
                 :loading="savingNotifications"
               >
-                Save Notification Settings
+                {{ $t('settings.saveNotificationSettings') }}
               </v-btn>
             </v-form>
           </v-card-text>
@@ -394,10 +375,10 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          Revoke API Key
+          {{ $t('settings.revokeApiKey') }}
         </v-card-title>
         <v-card-text>
-          Are you sure you want to revoke this API key? Any applications using this key will no longer be able to access the API.
+          {{ $t('settings.revokeApiKeyConfirm') }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -405,14 +386,14 @@
             variant="text"
             @click="showRevokeDialog = false"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
             color="error"
             :loading="revokingApiKey"
             @click="confirmRevokeApiKey"
           >
-            Revoke
+            {{ $t('common.delete') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -422,10 +403,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTheme } from 'vuetify';
 import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const theme = useTheme();
 
@@ -467,11 +450,39 @@ const revokingApiKey = ref(false);
 const showRevokeDialog = ref(false);
 const apiKeyToRevoke = ref(null);
 const newApiKey = ref(null);
-const apiKeyHeaders = [
-  { title: 'Name', key: 'name' },
-  { title: 'Created', key: 'createdAt' },
-  { title: 'Last Used', key: 'lastUsed' },
-  { title: 'Actions', key: 'actions', sortable: false, align: 'end' }
+const apiKeyHeaders = computed(() => [
+  { title: t('common.name'), key: 'name' },
+  { title: t('common.created'), key: 'createdAt' },
+  { title: t('settings.lastUsed'), key: 'lastUsed' },
+  { title: t('common.actions'), key: 'actions', sortable: false, align: 'end' }
+]);
+
+// Computed options for dropdowns
+const dashboardViewOptions = computed(() => [
+  { title: t('dashboard.totalPipelines'), value: 'pipeline-stats' },
+  { title: t('dashboard.recentExecutions'), value: 'recent-executions' },
+  { title: t('dataSources.title'), value: 'data-source-health' }
+]);
+
+const refreshIntervalOptions = computed(() => [
+  { title: t('common.none'), value: 0 },
+  { title: '30 ' + t('common.seconds'), value: 30 },
+  { title: '1 ' + t('common.minute'), value: 60 },
+  { title: '5 ' + t('common.minutes'), value: 300 },
+  { title: '15 ' + t('common.minutes'), value: 900 }
+]);
+
+const itemsPerPageOptions = computed(() => [
+  { title: '10 ' + t('common.items'), value: 10 },
+  { title: '25 ' + t('common.items'), value: 25 },
+  { title: '50 ' + t('common.items'), value: 50 },
+  { title: '100 ' + t('common.items'), value: 100 }
+]);
+
+const dateFormatOptions = [
+  { title: 'MM/DD/YYYY', value: 'MM/DD/YYYY' },
+  { title: 'DD/MM/YYYY', value: 'DD/MM/YYYY' },
+  { title: 'YYYY-MM-DD', value: 'YYYY-MM-DD' }
 ];
 
 // Notifications
