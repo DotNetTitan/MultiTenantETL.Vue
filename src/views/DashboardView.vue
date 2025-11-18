@@ -66,7 +66,7 @@
           >
             <v-card-item>
               <v-card-title class="d-flex align-center">
-                <v-icon icon="mdi-database" size="x-large" class="mr-2" color="info" />
+                <v-icon icon="mdi-connection" size="x-large" class="mr-2" color="info" />
                 {{ $t('dashboard.connectors') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">

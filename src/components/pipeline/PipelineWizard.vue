@@ -77,7 +77,7 @@
                   </div>
                   <v-select
                     v-model="pipeline.sourceId"
-                    :items="dataSources"
+                    :items="connectors"
                     item-title="name"
                     item-value="id"
                     :label="$t('pipelines.selectSource')"
@@ -88,7 +88,7 @@
                       <v-list-item
                         :title="$t('pipelines.createNewSource')"
                         prepend-icon="mdi-plus"
-                        @click="$emit('create-datasource')"
+                        @click="$emit('create-connector')"
                       />
                       <v-divider class="mt-2" />
                     </template>
@@ -103,7 +103,7 @@
                   </div>
                   <v-select
                     v-model="pipeline.destinationId"
-                    :items="dataSources"
+                    :items="connectors"
                     item-title="name"
                     item-value="id"
                     :label="$t('pipelines.selectDestination')"
@@ -114,7 +114,7 @@
                       <v-list-item
                         :title="$t('pipelines.createNewDestination')"
                         prepend-icon="mdi-plus"
-                        @click="$emit('create-datasource')"
+                        @click="$emit('create-connector')"
                       />
                       <v-divider class="mt-2" />
                     </template>
@@ -131,8 +131,8 @@
             <FieldMappingEditor
               v-if="pipeline.sourceId && pipeline.destinationId"
               v-model="pipeline.fieldMappings"
-              :source-id="getDataSourceId(pipeline.sourceId)"
-              :destination-id="getDataSourceId(pipeline.destinationId)"
+              :source-id="getConnectorId(pipeline.sourceId)"
+              :destination-id="getConnectorId(pipeline.destinationId)"
               :transformations="transformations"
               @validate="handleMappingValidation"
             />
@@ -246,11 +246,11 @@
               </v-card-text>
             </v-card>
 
-            <!-- Data Sources -->
+            <!-- Connectors -->
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-database-sync</v-icon>
-                {{ $t('dashboard.dataSources') }}
+                {{ $t('connectors.title') }}
               </v-card-title>
               <v-card-text>
                 <v-list density="compact">
@@ -259,14 +259,14 @@
                       <v-icon color="blue">mdi-database-export</v-icon>
                     </template>
                     <v-list-item-title>{{ $t('pipelines.source') }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ getDataSourceName(pipeline.sourceId) }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ getConnectorName(pipeline.sourceId) }}</v-list-item-subtitle>
                   </v-list-item>
                   <v-list-item>
                     <template #prepend>
                       <v-icon color="green">mdi-database-import</v-icon>
                     </template>
                     <v-list-item-title>{{ $t('pipelines.destination') }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ getDataSourceName(pipeline.destinationId) }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ getConnectorName(pipeline.destinationId) }}</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-card-text>
@@ -446,7 +446,7 @@ const props = defineProps({
     type: Object,
     required: true
   },
-  dataSources: {
+  connectors: {
     type: Array,
     default: () => []
   },
@@ -460,7 +460,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['save', 'close', 'create-datasource', 'add-transformation', 'toggle-fullscreen']);
+const emit = defineEmits(['save', 'close', 'create-connector', 'add-transformation', 'toggle-fullscreen']);
 
 const currentStep = ref(1);
 const saving = ref(false);
@@ -506,14 +506,14 @@ function handleMappingValidation(result) {
   mappingValidation.value = result;
 }
 
-function getDataSourceId(sourceIdOrObject) {
+function getConnectorId(sourceIdOrObject) {
   return typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
 }
 
-function getDataSourceName(sourceIdOrObject) {
+function getConnectorName(sourceIdOrObject) {
   const id = typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
-  const dataSource = props.dataSources.find(ds => ds.id === id);
-  return dataSource?.name || 'Unknown';
+  const connector = props.connectors.find(c => c.id === id);
+  return connector?.name || 'Unknown';
 }
 
 function getTransformationName(transformationId) {

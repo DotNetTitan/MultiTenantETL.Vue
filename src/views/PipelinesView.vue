@@ -135,12 +135,12 @@
     >
       <PipelineWizard
         :pipeline="editedPipeline"
-        :data-sources="dataSources"
+        :connectors="dataSources"
         :transformations="availableTransformations"
         :timezones="timezones"
         @save="handleSavePipeline"
         @close="showCreateDialog = false"
-        @create-datasource="goToCreateDataSource"
+        @create-connector="goToCreateDataSource"
         @add-transformation="addTransformation"
         @toggle-fullscreen="isDialogFullscreen = $event"
       />

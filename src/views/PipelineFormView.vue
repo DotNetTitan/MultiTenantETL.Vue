@@ -32,7 +32,7 @@
     <PipelineWizard
       v-else
       :pipeline="pipeline"
-      :data-sources="dataSources"
+      :connectors="dataSources"
       :transformations="transformations"
       :timezones="timezones"
       @save="handleSave"

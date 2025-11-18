@@ -47,7 +47,7 @@
                 <v-list-item-subtitle>
                   <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
                   <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                    {{ $t('dataSources.nullable') }}
+                    {{ $t('connectors.nullable') }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -116,7 +116,7 @@
                 <v-list-item-subtitle>
                   <v-chip size="x-small" class="mr-1">{{ field.type }}</v-chip>
                   <v-chip v-if="field.nullable" size="x-small" color="grey-lighten-2">
-                    {{ $t('dataSources.nullable') }}
+                    {{ $t('connectors.nullable') }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>

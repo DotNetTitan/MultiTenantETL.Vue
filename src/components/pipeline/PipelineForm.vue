@@ -21,7 +21,7 @@
         v-model="form.sourceId"
         label="Source"
         type="select"
-        :options="availableDataSources"
+        :options="availableConnectors"
         :error="errors.sourceId"
         required
       />
@@ -30,7 +30,7 @@
         v-model="form.destinationId"
         label="Destination"
         type="select"
-        :options="availableDataSources"
+        :options="availableConnectors"
         :error="errors.destinationId"
         required
       />
@@ -252,7 +252,7 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  dataSources: {
+  connectors: {
     type: Array,
     default: () => []
   },
@@ -366,10 +366,10 @@ const validateForm = () => {
   return Object.keys(newErrors).length === 0;
 };
 
-const availableDataSources = computed(() => 
-  props.dataSources.map(ds => ({
-    value: ds.id,
-    label: ds.name
+const availableConnectors = computed(() => 
+  props.connectors.map(c => ({
+    value: c.id,
+    label: c.name
   }))
 );
 
