@@ -834,7 +834,7 @@
                         <v-icon>mdi-link-variant</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.customConnectionString') }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-truncate">{{ connector.config.connectionString }}</v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.connectionString"></v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
@@ -859,7 +859,7 @@
                         <v-icon>mdi-code-json</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.customHeaders') }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-truncate">{{ connector.config.headers }}</v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.headers"></v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
