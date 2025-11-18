@@ -30,8 +30,8 @@ export const API_ENDPOINTS = {
     executions: '/executions',
     executionById: (id) => `/executions/${id}`
   },
-  dataSources: {
-    base: '/data-sources',
-    byId: (id) => `/data-sources/${id}`
+  connectors: {
+    base: '/connectors',
+    byId: (id) => `/connectors/${id}`
   }
 }

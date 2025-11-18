@@ -171,17 +171,17 @@ const MOCK_METADATA = {
 const delay = (ms = 100) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Get data source configuration metadata
- * @returns {Promise<Object>} Data source configuration
+ * Get connector configuration metadata
+ * @returns {Promise<Object>} Connector configuration
  */
-export async function getDataSourceConfig() {
+export async function getConnectorConfig() {
   if (USE_MOCK_DATA) {
     await delay(100);
-    return MOCK_METADATA.dataSourceConfig;
+    return MOCK_METADATA.connectorConfig;
   }
   
   // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/datasource-config');
+  // const { data } = await axios.get('/api/metadata/connector-config');
   // return data;
   
   throw new Error('Backend API not implemented yet');

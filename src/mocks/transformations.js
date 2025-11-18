@@ -6,8 +6,8 @@ export const mockTransformations = [
     type: 'Filter',
     description: 'Filter rows where a field equals a specific value',
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Sales Data ETL', 'Customer Import'],
     config: {
       operator: 'equals',
@@ -21,8 +21,8 @@ export const mockTransformations = [
     type: 'Filter',
     description: 'Filter rows where a numeric field is greater than 1000',
     createdAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       operator: 'greaterThan',
@@ -36,8 +36,8 @@ export const mockTransformations = [
     type: 'Map',
     description: 'Maps single-letter status codes to full names',
     createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Sales Data ETL'],
     config: {
       mappings: [
@@ -54,8 +54,8 @@ export const mockTransformations = [
     type: 'Trim',
     description: 'Remove leading and trailing whitespace from text fields',
     createdAt: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Sales Data ETL'],
     config: {
       fields: ['Status', 'CustomerName']
@@ -67,8 +67,8 @@ export const mockTransformations = [
     type: 'Case Convert',
     description: 'Convert product codes to uppercase for consistency',
     createdAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Product Sync'],
     config: {
       field: 'product_code',
@@ -81,8 +81,8 @@ export const mockTransformations = [
     type: 'Script',
     description: 'Formats phone numbers to (XXX) XXX-XXXX pattern',
     createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Customer Import'],
     config: {
       scriptLanguage: 'javascript',
@@ -102,8 +102,8 @@ return row;`
     type: 'Script',
     description: 'Multiplies quantity by price to get total value',
     createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: ['Product Sync'],
     config: {
       scriptLanguage: 'javascript',
@@ -120,8 +120,8 @@ return row;`
     type: 'Script',
     description: 'Removes leading and trailing spaces from text fields',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       scriptLanguage: 'javascript',
@@ -138,8 +138,8 @@ return row;`
     type: 'Script',
     description: 'Validates and cleans data using C# with better performance',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       scriptLanguage: 'csharp',
@@ -166,8 +166,8 @@ return row;`
     type: 'Script',
     description: 'Performs complex calculations with C# for better performance',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       scriptLanguage: 'csharp',
@@ -193,8 +193,8 @@ return row;`
     type: 'Substring',
     description: 'Extract year portion from date fields',
     createdAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       field: 'OrderDate',
@@ -208,8 +208,8 @@ return row;`
     type: 'Replace',
     description: 'Replace null or empty values with default text',
     createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-    dataSourceId: null,
-    dataSourceName: null,
+    connectorId: null,
+    connectorName: null,
     usedInPipelines: [],
     config: {
       field: 'phone',
@@ -219,3 +219,4 @@ return row;`
     }
   }
 ];
+

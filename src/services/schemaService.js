@@ -1,28 +1,28 @@
 import { detectSchema } from './connectorService';
 
 /**
- * Fetch schema for a data source
+ * Fetch schema for a connector
  * Prioritizes manual schema if available, falls back to auto-detection
- * @param {string} dataSourceId - Data source ID
+ * @param {string} connectorId - Connector ID
  * @returns {Promise<Object>} Schema object with standardized format
  */
-export async function fetchSchema(dataSourceId) {
+export async function fetchSchema(connectorId) {
   try {
-    // First, try to get the data source to check for manual schema
+    // First, try to get the connector to check for manual schema
     const { fetchConnectorById } = await import('./connectorService');
-    const dataSource = await fetchConnectorById(dataSourceId);
+    const connector = await fetchConnectorById(connectorId);
     
     // If manual schema exists, use it
-    if (dataSource.schema && dataSource.schema.isManual && dataSource.schema.fields) {
+    if (connector.schema && connector.schema.isManual && connector.schema.fields) {
       return {
-        fields: dataSource.schema.fields,
+        fields: connector.schema.fields,
         isManual: true,
-        version: dataSource.schema.version || 1
+        version: connector.schema.version || 1
       };
     }
     
     // Otherwise, fall back to auto-detection
-    const schema = await detectSchema(dataSourceId);
+    const schema = await detectSchema(connectorId);
 
     // Transform to standardized format
     // Handle different schema structures (tables, columns, endpoints)
@@ -76,30 +76,30 @@ export async function fetchSchema(dataSourceId) {
 }
 
 /**
- * Save manual schema for a data source
- * @param {string} dataSourceId - Data source ID
+ * Save manual schema for a connector
+ * @param {string} connectorId - Connector ID
  * @param {Array} fields - Field definitions
  * @returns {Promise<Object>} Saved schema
  */
-export async function saveSchema(dataSourceId, fields) {
+export async function saveSchema(connectorId, fields) {
   try {
     const { fetchConnectorById, saveConnector } = await import('./connectorService');
-    const dataSource = await fetchConnectorById(dataSourceId);
+    const connector = await fetchConnectorById(connectorId);
     
-    // Update data source with manual schema
-    const updatedDataSource = {
-      ...dataSource,
+    // Update connector with manual schema
+    const updatedConnector = {
+      ...connector,
       schema: {
         fields,
-        version: (dataSource.schema?.version || 0) + 1,
+        version: (connector.schema?.version || 0) + 1,
         isManual: true,
         lastModified: new Date().toISOString()
       }
     };
     
-    await saveConnector(updatedDataSource);
+    await saveConnector(updatedConnector);
     
-    return updatedDataSource.schema;
+    return updatedConnector.schema;
   } catch (error) {
     console.error('Error saving schema:', error);
     throw error;

@@ -239,7 +239,7 @@ Vue I18n supports pluralization:
 
 ```json
 {
-  "dataSources": {
+  "connectors": {
     "fields": "field | fields"
   }
 }
@@ -247,8 +247,8 @@ Vue I18n supports pluralization:
 
 ```vue
 <template>
-  {{ $t('dataSources.fields', 1) }}  <!-- "field" -->
-  {{ $t('dataSources.fields', 5) }}  <!-- "fields" -->
+  {{ $t('connectors.fields', 1) }}  <!-- "field" -->
+  {{ $t('connectors.fields', 5) }}  <!-- "fields" -->
 </template>
 ```
 

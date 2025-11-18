@@ -6,7 +6,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { 
   getAllMetadata, 
-  getDataSourceConfig,
+  getConnectorConfig,
   getTransformationTypes,
   cacheMetadata,
   getCachedMetadata
@@ -71,31 +71,31 @@ export function useMetadata() {
 
   // Computed properties for easy access
   const connectorTypes = computed(() => 
-    metadata.value?.dataSourceConfig?.types || []
+    metadata.value?.connectorConfig?.types || []
   );
 
   const connectorProviders = computed(() => 
-    metadata.value?.dataSourceConfig?.providers || {}
+    metadata.value?.connectorConfig?.providers || {}
   );
 
   const directions = computed(() => 
-    metadata.value?.dataSourceConfig?.directions || []
+    metadata.value?.connectorConfig?.directions || []
   );
 
   const authTypes = computed(() => 
-    metadata.value?.dataSourceConfig?.authTypes || []
+    metadata.value?.connectorConfig?.authTypes || []
   );
 
   const fileFormats = computed(() => 
-    metadata.value?.dataSourceConfig?.fileFormats || []
+    metadata.value?.connectorConfig?.fileFormats || []
   );
 
   const writeOperations = computed(() => 
-    metadata.value?.dataSourceConfig?.writeOperations || []
+    metadata.value?.connectorConfig?.writeOperations || []
   );
 
   const httpMethods = computed(() => 
-    metadata.value?.dataSourceConfig?.httpMethods || []
+    metadata.value?.connectorConfig?.httpMethods || []
   );
 
   const transformationTypes = computed(() => 
