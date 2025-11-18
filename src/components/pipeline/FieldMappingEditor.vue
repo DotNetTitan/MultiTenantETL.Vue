@@ -142,7 +142,7 @@ import {
   validateFieldMappings 
 } from '@/services/schemaService';
 import { saveSchema } from '@/services/schemaService';
-import { detectSchema } from '@/services/dataSourceService';
+import { detectSchema } from '@/services/connectorService';
 import MappingCard from './MappingCard.vue';
 import SchemaViewer from './SchemaViewer.vue';
 import ValidationSummary from './ValidationSummary.vue';

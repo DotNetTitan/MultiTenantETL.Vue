@@ -487,7 +487,7 @@ async function handleExecutePipeline(pipeline) {
 
 function goToCreateDataSource() {
   showCreateDialog.value = false;
-  router.push('/data-sources?action=create');
+  router.push('/connectors?action=create');
 }
 
 function getStatusLabel(status) {

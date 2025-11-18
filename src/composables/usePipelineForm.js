@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { usePipeline } from './usePipeline'; // To get createEmptyPipeline
-import { fetchDataSources as getDataSources } from '@/services/dataSourceService';
+import { fetchConnectors as getDataSources } from '@/services/connectorService';
 
 // Common timezones list
 const timezonesList = [

@@ -1,4 +1,4 @@
-import { detectSchema } from './dataSourceService';
+import { detectSchema } from './connectorService';
 
 /**
  * Fetch schema for a data source
@@ -9,8 +9,8 @@ import { detectSchema } from './dataSourceService';
 export async function fetchSchema(dataSourceId) {
   try {
     // First, try to get the data source to check for manual schema
-    const { fetchDataSourceById } = await import('./dataSourceService');
-    const dataSource = await fetchDataSourceById(dataSourceId);
+    const { fetchConnectorById } = await import('./connectorService');
+    const dataSource = await fetchConnectorById(dataSourceId);
     
     // If manual schema exists, use it
     if (dataSource.schema && dataSource.schema.isManual && dataSource.schema.fields) {
@@ -83,8 +83,8 @@ export async function fetchSchema(dataSourceId) {
  */
 export async function saveSchema(dataSourceId, fields) {
   try {
-    const { fetchDataSourceById, saveDataSource } = await import('./dataSourceService');
-    const dataSource = await fetchDataSourceById(dataSourceId);
+    const { fetchConnectorById, saveConnector } = await import('./connectorService');
+    const dataSource = await fetchConnectorById(dataSourceId);
     
     // Update data source with manual schema
     const updatedDataSource = {
@@ -97,7 +97,7 @@ export async function saveSchema(dataSourceId, fields) {
       }
     };
     
-    await saveDataSource(updatedDataSource);
+    await saveConnector(updatedDataSource);
     
     return updatedDataSource.schema;
   } catch (error) {

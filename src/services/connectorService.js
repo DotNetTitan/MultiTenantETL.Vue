@@ -1,38 +1,38 @@
-import { mockDataSources } from '@/mocks/dataSources'
+import { mockConnectors } from '@/mocks/connectors'
 
 /**
- * Fetches the list of data sources with optional filtering
+ * Fetches the list of connectors with optional filtering
  * @param {Object} filters - Filter parameters
- * @param {string} filters.search - Search term to filter data sources
+ * @param {string} filters.search - Search term to filter connectors
  * @param {string} filters.type - Type to filter by (Database, File, API)
  * @param {string} filters.sortBy - Sort field and direction (e.g., 'name_asc')
- * @returns {Promise<Array>} List of data source objects
+ * @returns {Promise<Array>} List of connector objects
  */
-export async function fetchDataSources(filters = {}) {
+export async function fetchConnectors(filters = {}) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // Get a copy of the mock data
-    let dataSources = [...mockDataSources];
+    let connectors = [...mockConnectors];
     
     // Apply filters if provided
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      dataSources = dataSources.filter(ds => 
-        ds.name.toLowerCase().includes(searchLower) || 
-        ds.description?.toLowerCase().includes(searchLower)
+      connectors = connectors.filter(c => 
+        c.name.toLowerCase().includes(searchLower) || 
+        c.description?.toLowerCase().includes(searchLower)
       );
     }
     
     if (filters.type && filters.type !== 'All') {
-      dataSources = dataSources.filter(ds => ds.type === filters.type);
+      connectors = connectors.filter(c => c.type === filters.type);
     }
     
     // Apply sorting if provided
     if (filters.sortBy) {
       const [field, direction] = filters.sortBy.split('_');
-      dataSources.sort((a, b) => {
+      connectors.sort((a, b) => {
         let aVal = a[field];
         let bVal = b[field];
         
@@ -49,127 +49,127 @@ export async function fetchDataSources(filters = {}) {
       });
     }
     
-    return dataSources;
+    return connectors;
   } catch (error) {
-    console.error('Error fetching data sources:', error);
+    console.error('Error fetching connectors:', error);
     throw error;
   }
 }
 
 /**
- * Fetches a single data source by ID
- * @param {string} id - Data source ID
- * @returns {Promise<Object>} Data source object
+ * Fetches a single connector by ID
+ * @param {string} id - Connector ID
+ * @returns {Promise<Object>} Connector object
  */
-export async function fetchDataSourceById(id) {
+export async function fetchConnectorById(id) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    const dataSource = mockDataSources.find(ds => ds.id === id);
+    const connector = mockConnectors.find(c => c.id === id);
     
-    if (!dataSource) {
-      const error = new Error('Data source not found');
+    if (!connector) {
+      const error = new Error('Connector not found');
       error.response = { status: 404 };
       throw error;
     }
     
-    return { ...dataSource };
+    return { ...connector };
   } catch (error) {
-    console.error(`Error fetching data source ${id}:`, error);
+    console.error(`Error fetching connector ${id}:`, error);
     throw error;
   }
 }
 
 /**
- * Creates or updates a data source
- * @param {Object} dataSource - Data source data
- * @returns {Promise<Object>} Created/updated data source
+ * Creates or updates a connector
+ * @param {Object} connector - Connector data
+ * @returns {Promise<Object>} Created/updated connector
  */
-export async function saveDataSource(dataSource) {
+export async function saveConnector(connector) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
     // Check if it's an update or create
-    if (dataSource.id) {
-      // Update existing data source
-      const index = mockDataSources.findIndex(ds => ds.id === dataSource.id);
+    if (connector.id) {
+      // Update existing connector
+      const index = mockConnectors.findIndex(c => c.id === connector.id);
       
       if (index === -1) {
-        const error = new Error('Data source not found');
+        const error = new Error('Connector not found');
         error.response = { status: 404 };
         throw error;
       }
       
-      const updatedDataSource = {
-        ...mockDataSources[index],
-        ...dataSource
+      const updatedConnector = {
+        ...mockConnectors[index],
+        ...connector
       };
       
-      mockDataSources[index] = updatedDataSource;
-      return { ...updatedDataSource };
+      mockConnectors[index] = updatedConnector;
+      return { ...updatedConnector };
     } else {
-      // Create new data source
-      const newDataSource = {
-        ...dataSource,
+      // Create new connector
+      const newConnector = {
+        ...connector,
         id: Math.random().toString(36).substring(2, 15),
         createdAt: new Date().toISOString()
       };
       
-      mockDataSources.push(newDataSource);
-      return { ...newDataSource };
+      mockConnectors.push(newConnector);
+      return { ...newConnector };
     }
   } catch (error) {
-    console.error('Error saving data source:', error);
+    console.error('Error saving connector:', error);
     throw error;
   }
 }
 
 /**
- * Deletes a data source
- * @param {string} id - Data source ID to delete
+ * Deletes a connector
+ * @param {string} id - Connector ID to delete
  * @returns {Promise<boolean>} Success indicator
  */
-export async function deleteDataSource(id) {
+export async function deleteConnector(id) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 400));
     
-    const index = mockDataSources.findIndex(ds => ds.id === id);
+    const index = mockConnectors.findIndex(c => c.id === id);
     if (index === -1) {
-      const error = new Error('Data source not found');
+      const error = new Error('Connector not found');
       error.response = { status: 404 };
       throw error;
     }
     
-    mockDataSources.splice(index, 1);
+    mockConnectors.splice(index, 1);
     return true;
   } catch (error) {
-    console.error(`Error deleting data source ${id}:`, error);
+    console.error(`Error deleting connector ${id}:`, error);
     throw error;
   }
 }
 
 /**
- * Tests the connection to a data source
- * @param {Object} dataSource - Data source configuration to test
+ * Tests the connection to a connector
+ * @param {Object} connector - Connector configuration to test
  * @returns {Promise<Object>} Connection test result
  */
-export async function testConnection(dataSource) {
+export async function testConnection(connector) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Simulate different validation scenarios based on data source type
-    switch (dataSource.type) {
+    // Simulate different validation scenarios based on connector type
+    switch (connector.type) {
       case 'Database': {
-        const hasCredentials = dataSource.requiresCredentials && 
-          dataSource.credentials?.username && 
-          dataSource.credentials?.password;
+        const hasCredentials = connector.requiresCredentials && 
+          connector.credentials?.username && 
+          connector.credentials?.password;
         
-        const hasValidConfig = dataSource.database?.server && 
-          dataSource.database?.databaseName;
+        const hasValidConfig = connector.database?.server && 
+          connector.database?.databaseName;
         
         if (!hasCredentials) {
           return {
@@ -197,14 +197,14 @@ export async function testConnection(dataSource) {
       }
       
       case 'API': {
-        if (!dataSource.api?.baseUrl) {
+        if (!connector.api?.baseUrl) {
           return {
             success: false,
             message: 'Missing API URL'
           };
         }
         
-        if (dataSource.api.authType !== 'None' && !dataSource.credentials) {
+        if (connector.api.authType !== 'None' && !connector.credentials) {
           return {
             success: false,
             message: 'Missing API credentials'
@@ -222,15 +222,15 @@ export async function testConnection(dataSource) {
       }
       
       case 'File': {
-        if (!dataSource.file?.path) {
+        if (!connector.file?.path) {
           return {
             success: false,
             message: 'Missing file path'
           };
         }
         
-        if (dataSource.file.storageType === 'SFTP' && 
-            (!dataSource.credentials?.username || !dataSource.credentials?.password)) {
+        if (connector.file.storageType === 'SFTP' && 
+            (!connector.credentials?.username || !connector.credentials?.password)) {
           return {
             success: false,
             message: 'Missing SFTP credentials'
@@ -240,7 +240,7 @@ export async function testConnection(dataSource) {
         return {
           success: true,
           message: 'File access successful',
-          schema: dataSource.file.fileType === 'CSV' ? {
+          schema: connector.file.fileType === 'CSV' ? {
             delimiter: dataSource.file.delimiter || ',',
             hasHeader: true,
             sampleColumns: ['id', 'name', 'email', 'created_at']
@@ -251,7 +251,7 @@ export async function testConnection(dataSource) {
       default:
         return {
           success: false,
-          message: 'Unsupported data source type'
+          message: 'Unsupported connector type'
         };
     }
   } catch (error) {
@@ -261,8 +261,8 @@ export async function testConnection(dataSource) {
 }
 
 /**
- * Detects the schema of a data source
- * @param {string} id - Data source ID
+ * Detects the schema of a connector
+ * @param {string} id - Connector ID
  * @returns {Promise<Object>} Schema information
  */
 export async function detectSchema(id) {
@@ -270,16 +270,16 @@ export async function detectSchema(id) {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const dataSource = mockDataSources.find(ds => ds.id === id);
+    const connector = mockConnectors.find(c => c.id === id);
     
-    if (!dataSource) {
-      const error = new Error('Data source not found');
+    if (!connector) {
+      const error = new Error('Connector not found');
       error.response = { status: 404 };
       throw error;
     }
     
-    // Return mock schema based on data source type
-    switch (dataSource.type) {
+    // Return mock schema based on connector type
+    switch (connector.type) {
       case 'Database':
         return {
           tables: [
@@ -339,8 +339,8 @@ export async function detectSchema(id) {
       
       case 'File':
         return {
-          fileType: dataSource.file.fileType,
-          delimiter: dataSource.file.delimiter,
+          fileType: connector.file.fileType,
+          delimiter: connector.file.delimiter,
           hasHeader: true,
           columns: [
             { name: 'id', type: 'int', position: 0 },
@@ -354,51 +354,60 @@ export async function detectSchema(id) {
         return null;
     }
   } catch (error) {
-    console.error(`Error detecting schema for data source ${id}:`, error);
+    console.error(`Error detecting schema for connector ${id}:`, error);
     throw error;
   }
 }
 
 /**
- * Gets data sources that can be used as sources (for pipeline input)
- * @returns {Promise<Array>} List of source data sources
+ * Gets connectors that can be used as sources (for pipeline input)
+ * @returns {Promise<Array>} List of source connectors
  */
-export async function getSourceDataSources() {
+export async function getSourceConnectors() {
   try {
-    const dataSources = await fetchDataSources();
-    return dataSources.filter(ds => ds.isSource);
+    const connectors = await fetchConnectors();
+    return connectors.filter(c => c.isSource);
   } catch (error) {
-    console.error('Error fetching source data sources:', error);
+    console.error('Error fetching source connectors:', error);
     throw error;
   }
 }
 
 /**
- * Gets data sources that can be used as destinations (for pipeline output)
- * @returns {Promise<Array>} List of destination data sources
+ * Gets connectors that can be used as destinations (for pipeline output)
+ * @returns {Promise<Array>} List of destination connectors
  */
-export async function getDestinationDataSources() {
+export async function getDestinationConnectors() {
   try {
-    const dataSources = await fetchDataSources();
-    return dataSources.filter(ds => ds.isDestination);
+    const connectors = await fetchConnectors();
+    return connectors.filter(c => c.isDestination);
   } catch (error) {
-    console.error('Error fetching destination data sources:', error);
+    console.error('Error fetching destination connectors:', error);
     throw error;
   }
 }
 
 // For backward compatibility with code that might use the old object-based API
-export const dataSourceService = {
-  getAll: fetchDataSources,
-  getById: fetchDataSourceById,
-  create: dataSource => saveDataSource(dataSource),
-  update: (id, dataSourceData) => {
-    const dataSource = { id, ...dataSourceData };
-    return saveDataSource(dataSource);
+export const connectorService = {
+  getAll: fetchConnectors,
+  getById: fetchConnectorById,
+  create: connector => saveConnector(connector),
+  update: (id, connectorData) => {
+    const connector = { id, ...connectorData };
+    return saveConnector(connector);
   },
-  delete: deleteDataSource,
+  delete: deleteConnector,
   testConnection,
   detectSchema,
-  getSources: getSourceDataSources,
-  getDestinations: getDestinationDataSources
+  getSources: getSourceConnectors,
+  getDestinations: getDestinationConnectors
 };
+
+// Legacy exports for backward compatibility
+export const fetchDataSources = fetchConnectors;
+export const fetchDataSourceById = fetchConnectorById;
+export const saveDataSource = saveConnector;
+export const deleteDataSource = deleteConnector;
+export const getSourceDataSources = getSourceConnectors;
+export const getDestinationDataSources = getDestinationConnectors;
+export const dataSourceService = connectorService;

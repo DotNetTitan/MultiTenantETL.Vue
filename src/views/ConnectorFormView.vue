@@ -1,5 +1,5 @@
 <template>
-  <div class="data-source-form-view">
+  <div class="connector-form-view">
     <!-- Header -->
     <div class="page-header mb-4">
       <v-btn
@@ -29,7 +29,7 @@
     </v-alert>
 
     <!-- Wizard -->
-    <DataSourceWizard
+    <ConnectorWizard
       v-else
       :data-source="dataSource"
       :data-sources="[]"
@@ -43,8 +43,8 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import DataSourceWizard from '@/components/datasource/DataSourceWizard.vue';
-import { fetchDataSourceById, saveDataSource } from '@/services/dataSourceService';
+import ConnectorWizard from '@/components/connector/ConnectorWizard.vue';
+import { fetchConnectorById, saveConnector } from '@/services/connectorService';
 
 const { t } = useI18n();
 
@@ -76,14 +76,14 @@ async function loadDataSource() {
   try {
     loading.value = true;
     error.value = null;
-    const data = await fetchDataSourceById(route.params.id);
+    const data = await fetchConnectorById(route.params.id);
     // Ensure schema property exists
     dataSource.value = {
       ...data,
       schema: data.schema || { fields: [] }
     };
   } catch (err) {
-    error.value = `Failed to load data source: ${err.message}`;
+    error.value = `Failed to load connector: ${err.message}`;
   } finally {
     loading.value = false;
   }
@@ -91,20 +91,20 @@ async function loadDataSource() {
 
 async function handleSave(savedDataSource) {
   try {
-    await saveDataSource(savedDataSource);
-    router.push('/data-sources');
+    await saveConnector(savedDataSource);
+    router.push('/connectors');
   } catch (err) {
-    error.value = `Failed to save data source: ${err.message}`;
+    error.value = `Failed to save connector: ${err.message}`;
   }
 }
 
 function handleCancel() {
-  router.push('/data-sources');
+  router.push('/connectors');
 }
 </script>
 
 <style scoped>
-.data-source-form-view {
+.connector-form-view {
   padding: 24px;
   background: rgb(var(--v-theme-background));
   min-height: 100vh;

@@ -88,6 +88,7 @@
     "dashboard": "Panel de Control",
     "pipelines": "Tuberías",
     "dataSources": "Fuentes de Datos",
+    "connectors": "Conectores",
     "transformations": "Transformaciones",
     "executions": "Ejecuciones",
     "tenants": "Inquilinos",
@@ -115,7 +116,7 @@
     "title": "Panel de Control",
     "totalPipelines": "Total de Tuberías",
     "activePipelines": "Tuberías Activas",
-    "dataSources": "Fuentes de Datos",
+    "dataSources": "Conectores",
     "recentExecutions": "Ejecuciones Recientes",
     "viewPipelines": "Ver Tuberías",
     "viewActive": "Ver Activas",
@@ -201,7 +202,7 @@
     "savePipeline": "Guardar Tubería"
   },
   "dataSources": {
-    "title": "Fuentes de Datos",
+    "title": "Conectores",
     "customHeadersPlaceholder": "{\"Content-Type\": \"application/json\"}",
     "ftpHostPlaceholder": "ftp.ejemplo.com",
     "blobPath": "Ruta del Blob",

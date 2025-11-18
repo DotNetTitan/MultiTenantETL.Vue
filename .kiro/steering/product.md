@@ -6,7 +6,7 @@ Multi-tenant ETL Platform - A modern web application for managing Extract, Trans
 
 - Real-time dashboard for monitoring pipeline status and executions
 - ETL pipeline management with visual field mapping editor
-- Multi-source data integration (Databases, CSV, Excel, JSON, REST APIs)
+- Multi-source connector integration (Databases, CSV, Excel, JSON, REST APIs)
 - Transformation engine with 6 built-in templates (Filter, Map, Trim, Case Convert, Substring, Replace) and custom JavaScript/C# scripting
 - Multi-tenant architecture with secure tenant isolation and tenant switching
 - Role-based access control (Admin and User roles)
@@ -25,12 +25,12 @@ Multi-tenant ETL Platform - A modern web application for managing Extract, Trans
 
 ## Key Workflows
 
-1. **Data Source Setup**: Configure connections to databases, file systems, or APIs with schema auto-detection or manual definition
+1. **Connector Setup**: Configure connections to databases, file systems, or APIs with schema auto-detection or manual definition
 2. **Transformation Creation**: Define data transformations using built-in templates (Filter, Map, Trim, Case Convert, Substring, Replace) or custom JavaScript/C# scripts
 3. **Pipeline Configuration**: Connect source → transformations → destination with visual field mapping and validation
 4. **Execution & Monitoring**: Run pipelines manually or on schedule, monitor progress with real-time logs and timeline view
 
-## Supported Data Source Types
+## Supported Connector Types
 
 - **Databases**: SQL Server, PostgreSQL, MySQL
 - **Files**: CSV, Excel (XLSX), JSON

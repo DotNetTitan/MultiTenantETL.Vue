@@ -88,6 +88,7 @@
     "dashboard": "Dashboard",
     "pipelines": "Pipelines",
     "dataSources": "Datensources",
+    "connectors": "Konnektoren",
     "transformations": "Transformationen",
     "executions": "Ausführungen",
     "tenants": "Tenants",
@@ -115,7 +116,7 @@
     "title": "Dashboard",
     "totalPipelines": "Gesamte Pipelines",
     "activePipelines": "Aktive Pipelines",
-    "dataSources": "Datensources",
+    "dataSources": "Konnektoren",
     "recentExecutions": "Letzte Ausführungen",
     "viewPipelines": "Pipelines anzeigen",
     "viewActive": "Aktive anzeigen",
@@ -201,7 +202,7 @@
     "savePipeline": "Pipeline speichern"
   },
   "dataSources": {
-    "title": "Datensources",
+    "title": "Konnektoren",
     "customHeadersPlaceholder": "{\"Content-Type\": \"application/json\"}",
     "ftpHostPlaceholder": "ftp.example.com",
     "blobPath": "Blob-Pfad",

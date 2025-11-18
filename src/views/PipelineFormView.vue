@@ -91,11 +91,11 @@ onMounted(async () => {
 
 async function loadDataSources() {
   try {
-    const { fetchDataSources } = await import('@/services/dataSourceService');
-    dataSources.value = await fetchDataSources();
+    const { fetchConnectors } = await import('@/services/connectorService');
+    dataSources.value = await fetchConnectors();
   } catch (err) {
-    console.error('Error loading data sources:', err);
-    error.value = `Failed to load data sources: ${err.message}`;
+    console.error('Error loading connectors:', err);
+    error.value = `Failed to load connectors: ${err.message}`;
   }
 }
 

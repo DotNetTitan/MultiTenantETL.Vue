@@ -8,7 +8,7 @@ src/
 ├── main.js                 # Application entry point, Vuetify and Pinia setup
 ├── components/             # Reusable UI components
 │   ├── dashboard/          # Dashboard-specific components
-│   ├── datasource/         # Data source components (wizard, form, schema editor)
+│   ├── connector/          # Connector components (wizard, form, schema editor)
 │   ├── dialogs/            # Modal dialogs (confirmation, etc.)
 │   ├── executions/         # Pipeline execution components
 │   ├── form/               # Form input components
@@ -25,7 +25,7 @@ src/
 │   └── TenantSelector.vue  # Tenant switching component
 ├── composables/            # Reusable composition functions
 │   ├── useDashboard.js
-│   ├── useDataSource.js
+│   ├── useConnector.js
 │   ├── useFormValidation.js
 │   ├── useGlobalState.js
 │   ├── useLocale.js
@@ -48,7 +48,7 @@ src/
 │   ├── api.js              # Axios instance and interceptors
 │   ├── authService.js      # Authentication API calls
 │   ├── dashboardService.js # Dashboard data API calls
-│   ├── dataSourceService.js # Data source CRUD operations
+│   ├── connectorService.js # Connector CRUD operations
 │   ├── geminiService.js    # Google Gemini AI integration
 │   ├── metadataService.js  # Centralized metadata/config service
 │   ├── pipelineService.js  # Pipeline CRUD operations
@@ -63,8 +63,8 @@ src/
 │   └── tenant.js           # Tenant context state
 └── views/                  # Page-level components (route targets)
     ├── DashboardView.vue
-    ├── DataSourceFormView.vue
-    ├── DataSourcesView.vue
+    ├── ConnectorFormView.vue
+    ├── ConnectorsView.vue
     ├── ExecutionsView.vue
     ├── LoginView.vue
     ├── PipelineDetailsView.vue
@@ -80,7 +80,7 @@ src/
 
 ### Component Organization
 - **Views**: Page-level components mapped to routes
-- **Components**: Organized by feature domain (dashboard, pipeline, etc.)
+- **Components**: Organized by feature domain (dashboard, pipeline, connector, etc.)
 - **Layouts**: AuthenticatedLayout (with sidebar) and GuestLayout (login page)
 
 ### State Management

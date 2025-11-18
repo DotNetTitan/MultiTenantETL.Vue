@@ -118,8 +118,8 @@
           <v-list-item to="/pipelines" prepend-icon="mdi-pipe" rounded="lg">
             <template #title>{{ $t('nav.pipelines') }}</template>
           </v-list-item>
-          <v-list-item to="/data-sources" prepend-icon="mdi-database" rounded="lg">
-            <template #title>{{ $t('nav.dataSources') }}</template>
+          <v-list-item to="/connectors" prepend-icon="mdi-connection" rounded="lg">
+            <template #title>{{ $t('nav.connectors') }}</template>
           </v-list-item>
           <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
             <template #title>{{ $t('nav.executions') }}</template>

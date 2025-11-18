@@ -4,7 +4,7 @@ This folder contains all mock data used throughout the application for developme
 
 ## Files
 
-- **dataSources.js** - Mock data for data sources (18 sources covering all types, providers, and formats)
+- **connectors.js** - Mock data for connectors (18 connectors covering all types, providers, and formats)
 - **pipelines.js** - Mock data for pipelines and executions (5 pipelines with different statuses and schedules)
 - **transformations.js** - Mock data for transformations (12 transformations covering all 7 types)
 - **users.js** - Mock data for users (5 users with different roles)
@@ -16,7 +16,7 @@ This folder contains all mock data used throughout the application for developme
 Import mock data in service files:
 
 ```javascript
-import { mockDataSources } from '@/mocks/dataSources'
+import { mockConnectors } from '@/mocks/connectors'
 import { mockPipelines, mockExecutions } from '@/mocks/pipelines'
 import { mockTransformations } from '@/mocks/transformations'
 import { mockUsers } from '@/mocks/users'
@@ -26,21 +26,21 @@ import { mockTenants } from '@/mocks/tenants'
 Or import from the central index:
 
 ```javascript
-import { mockDataSources, mockPipelines, mockTransformations } from '@/mocks'
+import { mockConnectors, mockPipelines, mockTransformations } from '@/mocks'
 ```
 
 ## Services Using Mock Data
 
-- **dataSourceService.js** - Uses `mockDataSources`
+- **connectorService.js** - Uses `mockConnectors`
 - **pipelineService.js** - Uses `mockPipelines` and `mockExecutions`
 - **transformationService.js** - Uses `mockTransformations`
 - **userService.js** - Uses `mockUsers`
 - **tenantService.js** - Uses `mockTenants`
-- **dashboardService.js** - Uses `mockPipelines`, `mockExecutions`, and `mockDataSources` to calculate stats
+- **dashboardService.js** - Uses `mockPipelines`, `mockExecutions`, and `mockConnectors` to calculate stats
 
 ## Coverage
 
-### Data Sources (18 total)
+### Connectors (18 total)
 - **Database**: SQL Server, PostgreSQL, MySQL, Oracle
 - **File Storage**: Local, FTP, SFTP, S3, Azure Blob, Google Cloud Storage
 - **File Formats**: CSV, JSON, Excel, XML, Parquet

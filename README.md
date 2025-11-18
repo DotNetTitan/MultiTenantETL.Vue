@@ -4,9 +4,9 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 
 ## Features
 
-- 📊 **Real-time Dashboard**: Monitor pipeline status, data sources, and recent executions with interactive cards
+- 📊 **Real-time Dashboard**: Monitor pipeline status, connectors, and recent executions with interactive cards
 - 🔄 **ETL Pipeline Management**: Create, configure, and monitor data pipelines with visual field mapping
-- 🔌 **Data Source Integration**: Support for multiple data source types (Databases, CSV, Excel, JSON, REST APIs)
+- 🔌 **Connector Integration**: Support for multiple connector types (Databases, CSV, Excel, JSON, REST APIs)
 - 🔍 **Transformation Management**: Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace) and custom JavaScript/C# scripting
 - 👥 **Multi-tenant Architecture**: Secure data isolation between different organizations with tenant switching
 - 👤 **User Management**: Role-based access control with admin and user roles
@@ -85,7 +85,7 @@ src/
 ├── main.js                 # Application entry point, Vuetify and Pinia setup
 ├── components/             # Reusable UI components
 │   ├── dashboard/          # Dashboard-specific components
-│   ├── datasource/         # Data source components (wizard, form, schema editor)
+│   ├── connector/          # Connector components (wizard, form, schema editor)
 │   ├── dialogs/            # Modal dialogs (confirmation, etc.)
 │   ├── executions/         # Pipeline execution components
 │   ├── form/               # Form input components
@@ -102,7 +102,7 @@ src/
 │   └── TenantSelector.vue  # Tenant switching component
 ├── composables/            # Reusable composition functions
 │   ├── useDashboard.js
-│   ├── useDataSource.js
+│   ├── useConnector.js
 │   ├── useFormValidation.js
 │   ├── useGlobalState.js
 │   ├── useLocale.js
@@ -125,7 +125,7 @@ src/
 │   ├── api.js              # Axios instance and interceptors
 │   ├── authService.js      # Authentication API calls
 │   ├── dashboardService.js # Dashboard data API calls
-│   ├── dataSourceService.js # Data source CRUD operations
+│   ├── connectorService.js # Connector CRUD operations
 │   ├── geminiService.js    # Google Gemini AI integration
 │   ├── metadataService.js  # Centralized metadata/config service
 │   ├── pipelineService.js  # Pipeline CRUD operations
@@ -140,8 +140,8 @@ src/
 │   └── global.scss         # Global SCSS styles
 └── views/                  # Page-level components (route targets)
     ├── DashboardView.vue
-    ├── DataSourceFormView.vue
-    ├── DataSourcesView.vue
+    ├── ConnectorFormView.vue
+    ├── ConnectorsView.vue
     ├── ExecutionsView.vue
     ├── LoginView.vue
     ├── PipelineDetailsView.vue
@@ -157,7 +157,7 @@ src/
 
 ### Component Organization
 - **Views**: Page-level components mapped to routes
-- **Components**: Organized by feature domain (dashboard, pipeline, datasource, etc.)
+- **Components**: Organized by feature domain (dashboard, pipeline, connector, etc.)
 - **Layouts**: AuthenticatedLayout (with sidebar) and GuestLayout (login page)
 
 ### State Management
@@ -188,8 +188,8 @@ src/
 - Schema auto-detection and manual schema management
 - Pipeline cloning and duplication
 
-### Data Sources
-- Support for multiple data source types:
+### Connectors
+- Support for multiple connector types:
   - Databases (SQL Server, PostgreSQL, MySQL, etc.)
   - File Systems (CSV, Excel, JSON)
   - APIs (REST)
@@ -198,6 +198,7 @@ src/
 - Schema management (auto-detection and manual definition)
 - Schema versioning and change tracking
 - File preview and data validation
+- Bidirectional support (sources and destinations)
 
 ### Transformations
 - Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace)

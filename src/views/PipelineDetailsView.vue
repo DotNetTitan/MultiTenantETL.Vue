@@ -368,7 +368,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
-import { fetchDataSourceById } from '@/services/dataSourceService';
+import { fetchConnectorById } from '@/services/connectorService';
 import { fetchTransformationById } from '@/services/transformationService';
 
 const route = useRoute();

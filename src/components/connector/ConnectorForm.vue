@@ -205,7 +205,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useDataSource } from '@/composables/useDataSource';
+import { useConnector } from '@/composables/useConnector';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FormInput from '@/components/form/FormInput.vue';
 

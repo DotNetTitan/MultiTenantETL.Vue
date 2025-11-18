@@ -124,7 +124,7 @@
       </v-card-text>
     </v-card>
 
-    <!-- Create/Edit Data Source Dialog -->
+    <!-- Create/Edit Connector Dialog -->
     <v-dialog
       v-model="showCreateDialog"
       :fullscreen="isDialogFullscreen"
@@ -132,7 +132,7 @@
       persistent
       @update:model-value="handleDialogClose"
     >
-      <DataSourceWizard
+      <ConnectorWizard
         :data-source="editedDataSource"
         @save="handleWizardSave"
         @close="showCreateDialog = false"
@@ -395,7 +395,7 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          {{ $t('dataSources.deleteDataSource') }}
+          {{ $t('dataSources.deleteConnector') }}
         </v-card-title>
         <v-card-text>
           {{ $t('dataSources.deleteConfirm', { name: dataSourceToDelete?.name }) }}
@@ -594,18 +594,18 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
-import { useDataSource } from '@/composables/useDataSource';
+import { useConnector } from '@/composables/useConnector';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import { 
-  fetchDataSources as getDataSources, 
-  saveDataSource as saveDataSourceAPI, 
-  deleteDataSource as deleteDataSourceAPI, 
-  testConnection as testDataSourceConnection,
-  fetchDataSourceById
-} from '@/services/dataSourceService';
-import DataSourceWizard from '@/components/datasource/DataSourceWizard.vue';
-import SchemaEditor from '@/components/datasource/SchemaEditor.vue';
-import SchemaPreview from '@/components/datasource/SchemaPreview.vue';
+  fetchConnectors as getConnectors, 
+  saveConnector as saveConnectorAPI, 
+  deleteConnector as deleteConnectorAPI, 
+  testConnection as testConnectorConnection,
+  fetchConnectorById
+} from '@/services/connectorService';
+import ConnectorWizard from '@/components/connector/ConnectorWizard.vue';
+import SchemaEditor from '@/components/connector/SchemaEditor.vue';
+import SchemaPreview from '@/components/connector/SchemaPreview.vue';
 import SchemaChangeWarningDialog from '@/components/dialogs/SchemaChangeWarningDialog.vue';
 import { findPipelinesUsingDataSource } from '@/services/pipelineService';
 
@@ -614,7 +614,7 @@ const router = useRouter();
 const tenantStore = useTenantStore();
 const { t } = useI18n();
 
-const { validateConnection } = useDataSource();
+const { validateConnection } = useConnector();
 const { dataSourceTypes: metadataTypes } = useTranslatedMetadata();
 
 // Data table
@@ -747,7 +747,7 @@ function handleSchemaValidation(validation) {
 }
 
 function editDataSource(dataSource) {
-  router.push(`/data-sources/${dataSource.id}/edit`);
+  router.push(`/connectors/${dataSource.id}/edit`);
 }
 
 function getTypeColor(type) {
@@ -779,9 +779,9 @@ async function fetchDataSources() {
       sortBy: sortBy.value
     };
     
-    dataSources.value = await getDataSources(filters);
+    dataSources.value = await getConnectors(filters);
   } catch (error) {
-    console.error('Error fetching data sources:', error);
+    console.error('Error fetching connectors:', error);
   } finally {
     loading.value = false;
   }
@@ -834,7 +834,7 @@ async function deleteDataSource() {
   try {
     deletingDataSource.value = true;
     
-    await deleteDataSourceAPI(dataSourceToDelete.value.id);
+    await deleteConnectorAPI(dataSourceToDelete.value.id);
     
     // Remove from local array
     const index = dataSources.value.findIndex(ds => ds.id === dataSourceToDelete.value.id);
@@ -845,7 +845,7 @@ async function deleteDataSource() {
     showDeleteDialog.value = false;
     dataSourceToDelete.value = null;
   } catch (error) {
-    console.error('Error deleting data source:', error);
+    console.error('Error deleting connector:', error);
   } finally {
     deletingDataSource.value = false;
   }
@@ -917,7 +917,7 @@ async function performSave(dataSource = null) {
     savingDataSource.value = true;
     
     const dataToSave = dataSource || editedDataSource.value;
-    const savedDataSource = await saveDataSourceAPI(dataToSave);
+    const savedDataSource = await saveConnectorAPI(dataToSave);
     
     if (dataToSave.id) {
       const index = dataSources.value.findIndex(ds => ds.id === dataToSave.id);
@@ -936,7 +936,7 @@ async function performSave(dataSource = null) {
     originalSchema.value = null;
     schemaHasChanged.value = false;
   } catch (error) {
-    console.error('Error saving data source:', error);
+    console.error('Error saving connector:', error);
   } finally {
     savingDataSource.value = false;
   }
@@ -951,7 +951,7 @@ function handleSchemaWarningProceed() {
 }
 
 function createNewDataSource() {
-  router.push('/data-sources/new');
+  router.push('/connectors/new');
 }
 
 function handleDialogClose(isOpen) {
@@ -998,11 +998,11 @@ async function viewSchema(dataSource) {
     dataSourceSchema.value = null;
     schemaError.value = null;
     
-    // Fetch the full data source details to get the schema
-    const fullDataSource = await fetchDataSourceById(dataSource.id);
+    // Fetch the full connector details to get the schema
+    const fullDataSource = await fetchConnectorById(dataSource.id);
     
     if (!fullDataSource.schema || !fullDataSource.schema.fields || fullDataSource.schema.fields.length === 0) {
-      schemaError.value = 'No schema defined for this data source';
+      schemaError.value = 'No schema defined for this connector';
     } else {
       dataSourceSchema.value = fullDataSource.schema;
     }

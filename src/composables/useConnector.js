@@ -1,18 +1,18 @@
 import { ref } from 'vue';
 import axios from 'axios';
 
-export function useDataSource() {
+export function useConnector() {
   const loading = ref(false);
   const error = ref(null);
   const schema = ref(null);
   
-  const validateConnection = async (dataSource) => {
+  const validateConnection = async (connector) => {
     loading.value = true;
     error.value = null;
     
     try {
       // In real implementation, this would call your backend API
-      const response = await mockValidateConnection(dataSource);
+      const response = await mockValidateConnection(connector);
       if (response.schema) {
         schema.value = response.schema;
       }
@@ -32,13 +32,13 @@ export function useDataSource() {
     }
   };
 
-  const detectSchema = async (dataSource) => {
+  const detectSchema = async (connector) => {
     loading.value = true;
     error.value = null;
     
     try {
       // In real implementation, this would call your backend API to detect schema
-      const response = await mockDetectSchema(dataSource);
+      const response = await mockDetectSchema(connector);
       schema.value = response.schema;
       return response.schema;
     } catch (err) {
@@ -61,18 +61,18 @@ export function useDataSource() {
   };
 
   // Mock implementations for demo
-  const mockValidateConnection = async (dataSource) => {
+  const mockValidateConnection = async (connector) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Simulate different validation scenarios based on data source type
-    switch (dataSource.type) {
+    // Simulate different validation scenarios based on connector type
+    switch (connector.type) {
       case 'Database': {
-        const hasCredentials = dataSource.requiresCredentials && 
-          dataSource.credentials?.username && 
-          dataSource.credentials?.password;
+        const hasCredentials = connector.requiresCredentials && 
+          connector.credentials?.username && 
+          connector.credentials?.password;
         
-        const hasValidConfig = dataSource.database?.server && 
-          dataSource.database?.databaseName;
+        const hasValidConfig = connector.database?.server && 
+          connector.database?.databaseName;
         
         if (!hasCredentials) {
           return {
@@ -100,14 +100,14 @@ export function useDataSource() {
       }
       
       case 'API': {
-        if (!dataSource.api?.baseUrl) {
+        if (!connector.api?.baseUrl) {
           return {
             success: false,
             message: 'Missing API URL'
           };
         }
         
-        if (dataSource.api.authType !== 'None' && !dataSource.credentials) {
+        if (connector.api.authType !== 'None' && !connector.credentials) {
           return {
             success: false,
             message: 'Missing API credentials'
@@ -125,15 +125,15 @@ export function useDataSource() {
       }
       
       case 'File': {
-        if (!dataSource.file?.path) {
+        if (!connector.file?.path) {
           return {
             success: false,
             message: 'Missing file path'
           };
         }
         
-        if (dataSource.file.storageType === 'SFTP' && 
-            (!dataSource.credentials?.username || !dataSource.credentials?.password)) {
+        if (connector.file.storageType === 'SFTP' && 
+            (!connector.credentials?.username || !connector.credentials?.password)) {
           return {
             success: false,
             message: 'Missing SFTP credentials'
@@ -143,7 +143,7 @@ export function useDataSource() {
         return {
           success: true,
           message: 'File access successful',
-          schema: dataSource.file.fileType === 'CSV' ? {
+          schema: connector.file.fileType === 'CSV' ? {
             delimiter: dataSource.file.delimiter || ',',
             hasHeader: true,
             sampleColumns: ['id', 'name', 'email', 'created_at']
@@ -154,12 +154,12 @@ export function useDataSource() {
       default:
         return {
           success: false,
-          message: 'Unsupported data source type'
+          message: 'Unsupported connector type'
         };
     }
   };
 
-  const mockDetectSchema = async (dataSource) => {
+  const mockDetectSchema = async (connector) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {

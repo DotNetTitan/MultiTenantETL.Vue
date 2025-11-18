@@ -1,5 +1,5 @@
-// Mock data for data sources
-export const mockDataSources = [
+// Mock data for connectors
+export const mockConnectors = [
   {
     id: '1',
     name: 'SQL Server - Sales',

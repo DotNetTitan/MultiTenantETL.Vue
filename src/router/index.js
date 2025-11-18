@@ -41,22 +41,35 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/data-sources',
-      name: 'data-sources',
-      component: () => import('@/views/DataSourcesView.vue'),
+      path: '/connectors',
+      name: 'connectors',
+      component: () => import('@/views/ConnectorsView.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/connectors/new',
+      name: 'connector-create',
+      component: () => import('@/views/ConnectorFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/connectors/:id/edit',
+      name: 'connector-edit',
+      component: () => import('@/views/ConnectorFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    // Legacy routes for backward compatibility
+    {
+      path: '/data-sources',
+      redirect: '/connectors'
     },
     {
       path: '/data-sources/new',
-      name: 'data-source-create',
-      component: () => import('@/views/DataSourceFormView.vue'),
-      meta: { requiresAuth: true }
+      redirect: '/connectors/new'
     },
     {
       path: '/data-sources/:id/edit',
-      name: 'data-source-edit',
-      component: () => import('@/views/DataSourceFormView.vue'),
-      meta: { requiresAuth: true }
+      redirect: to => `/connectors/${to.params.id}/edit`
     },
     {
       path: '/transformations',

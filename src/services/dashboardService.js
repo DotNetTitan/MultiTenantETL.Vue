@@ -1,6 +1,6 @@
 // Dashboard service for handling dashboard-related API calls
 import { mockPipelines, mockExecutions } from '@/mocks/pipelines';
-import { mockDataSources } from '@/mocks/dataSources';
+import { mockConnectors } from '@/mocks/connectors';
 
 /**
  * Fetches dashboard data including stats and recent executions
@@ -14,7 +14,7 @@ export async function fetchDashboardData() {
     // Calculate stats from actual mock data
     const totalPipelines = mockPipelines.length;
     const activePipelines = mockPipelines.filter(p => p.status === 'Running').length;
-    const dataSources = mockDataSources.length;
+    const dataSources = mockConnectors.length;
     const recentExecutions = mockExecutions.length;
     
     const stats = {

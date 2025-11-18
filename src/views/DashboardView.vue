@@ -62,7 +62,7 @@
             class="mb-4" 
             :elevation="isHovering ? 5 : 2"
             :class="{'on-hover': isHovering}"
-            @click="$router.push('/data-sources')"
+            @click="$router.push('/connectors')"
           >
             <v-card-item>
               <v-card-title class="d-flex align-center">
@@ -75,7 +75,7 @@
               </div>
             </v-card-item>
             <v-card-actions>
-              <v-btn variant="tonal" color="info" block to="/data-sources">{{ $t('dashboard.viewSources') }}</v-btn>
+              <v-btn variant="tonal" color="info" block to="/connectors">{{ $t('dashboard.viewSources') }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-hover>
