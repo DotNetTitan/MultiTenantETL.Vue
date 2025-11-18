@@ -19,8 +19,9 @@ export const availableLocales = [
   { code: 'es', name: 'Español', flag: '🇪🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' }
+  // Temporarily disabled
+  // { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  // { code: 'pt', name: 'Português', flag: '🇵🇹' }
 ];
 
 export const defaultLocale = 'en';
