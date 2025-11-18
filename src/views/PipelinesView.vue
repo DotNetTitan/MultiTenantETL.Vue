@@ -343,7 +343,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import TransformationSelector from '@/components/pipeline/TransformationSelector.vue';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
@@ -353,6 +353,7 @@ import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 
 // Get functionality from main pipeline composable
@@ -583,6 +584,23 @@ async function viewMappings(pipeline) {
 }
 
 onMounted(async () => {
+  // Check if there's a status filter in the URL query parameter
+  if (route.query.status) {
+    const statusFromUrl = route.query.status.toLowerCase();
+    // Map URL status to internal status values
+    const statusMap = {
+      'active': 'Running',
+      'running': 'Running',
+      'idle': 'Idle',
+      'failed': 'Failed',
+      'completed': 'Completed'
+    };
+    
+    if (statusMap[statusFromUrl]) {
+      statusFilter.value = statusMap[statusFromUrl];
+    }
+  }
+  
   loadPipelines();
   setupTenantSubscription();
 });
