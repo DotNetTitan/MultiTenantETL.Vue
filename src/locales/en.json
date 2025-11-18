@@ -202,7 +202,7 @@
   },
   "connectors": {
     "title": "Connectors",
-    "customHeadersPlaceholder": "{\"Content-Type\": \"application/json\"}",
+    "customHeadersPlaceholder": "'{\"Content-Type\": \"application/json\"}'",
     "ftpHostPlaceholder": "ftp.example.com",
     "blobPath": "Blob Path",
     "blobPathPlaceholder": "folder/file.csv",
