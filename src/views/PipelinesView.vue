@@ -135,12 +135,12 @@
     >
       <PipelineWizard
         :pipeline="editedPipeline"
-        :connectors="dataSources"
+        :connectors="connectors"
         :transformations="availableTransformations"
         :timezones="timezones"
         @save="handleSavePipeline"
         @close="showCreateDialog = false"
-        @create-connector="goToCreateDataSource"
+        @create-connector="goToCreateConnector"
         @add-transformation="addTransformation"
         @toggle-fullscreen="isDialogFullscreen = $event"
       />
@@ -379,9 +379,9 @@ const {
 const {
   form,
   editedPipeline,
-  dataSources,
+  connectors,
   showTransformationSelector,
-  fetchDataSources,
+  fetchConnectors,
   prepareEditPipeline,
   resetForm,
   addTransformation,
@@ -408,7 +408,7 @@ function handleMappingValidation(result) {
   mappingValidation.value = result;
 }
 
-function getDataSourceId(sourceIdOrObject) {
+function getConnectorId(sourceIdOrObject) {
   return typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
 }
 
@@ -485,7 +485,7 @@ async function handleExecutePipeline(pipeline) {
   }
 }
 
-function goToCreateDataSource() {
+function goToCreateConnector() {
   showCreateDialog.value = false;
   router.push('/connectors?action=create');
 }

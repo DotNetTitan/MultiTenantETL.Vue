@@ -25,13 +25,13 @@
     <!-- Error State -->
     <v-alert v-else-if="error" type="error" class="mb-4">
       {{ error }}
-      <v-btn variant="text" @click="loadDataSource">{{ t('common.retry') }}</v-btn>
+      <v-btn variant="text" @click="loadConnector">{{ t('common.retry') }}</v-btn>
     </v-alert>
 
     <!-- Wizard -->
     <ConnectorWizard
       v-else
-      :connector="dataSource"
+      :connector="connector"
       :connectors="[]"
       @save="handleSave"
       @close="handleCancel"
@@ -53,7 +53,7 @@ const route = useRoute();
 
 const loading = ref(false);
 const error = ref(null);
-const dataSource = ref({
+const connector = ref({
   id: null,
   name: '',
   description: '',
@@ -68,17 +68,17 @@ const isEdit = computed(() => !!route.params.id);
 
 onMounted(() => {
   if (isEdit.value) {
-    loadDataSource();
+    loadConnector();
   }
 });
 
-async function loadDataSource() {
+async function loadConnector() {
   try {
     loading.value = true;
     error.value = null;
     const data = await fetchConnectorById(route.params.id);
     // Ensure schema property exists
-    dataSource.value = {
+    connector.value = {
       ...data,
       schema: data.schema || { fields: [] }
     };
@@ -89,9 +89,9 @@ async function loadDataSource() {
   }
 }
 
-async function handleSave(savedDataSource) {
+async function handleSave(savedConnector) {
   try {
-    await saveConnector(savedDataSource);
+    await saveConnector(savedConnector);
     router.push('/connectors');
   } catch (err) {
     error.value = `Failed to save connector: ${err.message}`;

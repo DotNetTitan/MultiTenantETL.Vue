@@ -241,7 +241,7 @@ export async function testConnection(connector) {
           success: true,
           message: 'File access successful',
           schema: connector.file.fileType === 'CSV' ? {
-            delimiter: dataSource.file.delimiter || ',',
+            delimiter: connector.file.delimiter || ',',
             hasHeader: true,
             sampleColumns: ['id', 'name', 'email', 'created_at']
           } : null

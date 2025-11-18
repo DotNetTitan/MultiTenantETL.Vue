@@ -32,7 +32,7 @@
     <PipelineWizard
       v-else
       :pipeline="pipeline"
-      :connectors="dataSources"
+      :connectors="connectors"
       :transformations="transformations"
       :timezones="timezones"
       @save="handleSave"
@@ -52,7 +52,7 @@ const route = useRoute();
 
 const loading = ref(false);
 const error = ref(null);
-const dataSources = ref([]);
+const connectors = ref([]);
 const transformations = ref([]);
 const timezones = ref([
   { name: 'UTC', value: 'UTC' },
@@ -81,7 +81,7 @@ const isEdit = computed(() => !!route.params.id);
 
 onMounted(async () => {
   await Promise.all([
-    loadDataSources(),
+    loadConnectors(),
     loadTransformations()
   ]);
   if (isEdit.value) {
@@ -89,10 +89,10 @@ onMounted(async () => {
   }
 });
 
-async function loadDataSources() {
+async function loadConnectors() {
   try {
     const { fetchConnectors } = await import('@/services/connectorService');
-    dataSources.value = await fetchConnectors();
+    connectors.value = await fetchConnectors();
   } catch (err) {
     console.error('Error loading connectors:', err);
     error.value = `Failed to load connectors: ${err.message}`;

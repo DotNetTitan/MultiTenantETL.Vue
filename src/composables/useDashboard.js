@@ -13,7 +13,7 @@ export function useDashboard() {
   const stats = ref({
     totalPipelines: 0,
     activePipelines: 0,
-    dataSources: 0,
+    connectors: 0,
     recentExecutions: 0
   });
   const statusDistribution = ref([

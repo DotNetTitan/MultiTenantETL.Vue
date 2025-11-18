@@ -81,11 +81,11 @@
             <v-card-text>
               <v-list density="compact">
                 <v-list-item
-                  v-for="(source, index) in pipeline.dataSources"
+                  v-for="(source, index) in pipeline.connectors"
                   :key="index"
                   :title="source.name"
                   :subtitle="source.type"
-                  :prepend-icon="getDataSourceIcon(source.type)"
+                  :prepend-icon="getConnectorIcon(source.type)"
                   :ripple="false"
                 >
                   <template #append>
@@ -454,7 +454,7 @@ function getStepIcon(type) {
   }
 }
 
-function getDataSourceIcon(type) {
+function getConnectorIcon(type) {
   switch (type?.toLowerCase()) {
     case 'sql':
       return 'mdi-database';
@@ -515,7 +515,7 @@ async function fetchPipelineDetails() {
       createdAt: pipelineData.createdAt,
       lastRun: pipelineData.lastRunAt,
       schedule: formatSchedule(pipelineData.schedule),
-      dataSources: [
+      connectors: [
         {
           id: pipelineData.sourceId,
           name: pipelineData.sourceName,

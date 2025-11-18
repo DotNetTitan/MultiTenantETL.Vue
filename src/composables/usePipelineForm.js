@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { usePipeline } from './usePipeline'; // To get createEmptyPipeline
-import { fetchConnectors as getDataSources } from '@/services/connectorService';
+import { fetchConnectors } from '@/services/connectorService';
 
 // Common timezones list
 const timezonesList = [
@@ -20,18 +20,18 @@ export function usePipelineForm() {
   const { createEmptyPipeline } = usePipeline(); // Get helper from main composable
 
   // State moved from PipelinesView
-  const dataSources = ref([]);
+  const connectors = ref([]);
   const showTransformationSelector = ref(false);
   const editedPipeline = ref(createEmptyPipeline());
   const form = ref(null); // Ref for the main pipeline form
   const timezones = ref(timezonesList); // Make timezones available to components
 
-  // Function to fetch data sources
-  async function fetchDataSources() {
+  // Function to fetch connectors
+  async function fetchConnectorsData() {
     try {
-      dataSources.value = await getDataSources();
+      connectors.value = await fetchConnectors();
     } catch (error) {
-      console.error('Error fetching data sources:', error);
+      console.error('Error fetching connectors:', error);
     }
   }
 
@@ -58,9 +58,9 @@ export function usePipelineForm() {
   // Function to prepare the form for editing an existing pipeline
   function prepareEditPipeline(pipeline) {
     // Clone the pipeline to avoid modifying the original directly
-    // Need to find the full source/destination objects from the fetched dataSources
-    const source = dataSources.value.find(ds => ds.id === pipeline.sourceId || ds.name === pipeline.sourceName) || null;
-    const destination = dataSources.value.find(ds => ds.id === pipeline.destinationId || ds.name === pipeline.destinationName) || null;
+    // Need to find the full source/destination objects from the fetched connectors
+    const source = connectors.value.find(c => c.id === pipeline.sourceId || c.name === pipeline.sourceName) || null;
+    const destination = connectors.value.find(c => c.id === pipeline.destinationId || c.name === pipeline.destinationName) || null;
 
     editedPipeline.value = {
       id: pipeline.id,
@@ -122,12 +122,12 @@ export function usePipelineForm() {
     // State
     form,
     editedPipeline,
-    dataSources,
+    connectors,
     showTransformationSelector,
     timezones,
 
     // Methods
-    fetchDataSources,
+    fetchConnectors: fetchConnectorsData,
     prepareEditPipeline,
     resetForm,
     addTransformation,
