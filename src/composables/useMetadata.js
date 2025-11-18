@@ -70,11 +70,11 @@ export function useMetadata() {
   }
 
   // Computed properties for easy access
-  const dataSourceTypes = computed(() => 
+  const connectorTypes = computed(() => 
     metadata.value?.dataSourceConfig?.types || []
   );
 
-  const dataSourceProviders = computed(() => 
+  const connectorProviders = computed(() => 
     metadata.value?.dataSourceConfig?.providers || {}
   );
 
@@ -115,12 +115,12 @@ export function useMetadata() {
   );
 
   /**
-   * Get providers for a specific data source type
-   * @param {string} type - Data source type (Database, API, File)
+   * Get providers for a specific connector type
+   * @param {string} type - Connector type (Database, API, File)
    * @returns {Array} List of providers
    */
   function getProvidersForType(type) {
-    return dataSourceProviders.value[type] || [];
+    return connectorProviders.value[type] || [];
   }
 
   /**
@@ -166,8 +166,8 @@ export function useMetadata() {
     getTransformationCategories,
 
     // Computed data
-    dataSourceTypes,
-    dataSourceProviders,
+    connectorTypes,
+    connectorProviders,
     directions,
     authTypes,
     fileFormats,

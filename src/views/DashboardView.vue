@@ -67,10 +67,10 @@
             <v-card-item>
               <v-card-title class="d-flex align-center">
                 <v-icon icon="mdi-database" size="x-large" class="mr-2" color="info" />
-                {{ $t('dashboard.dataSources') }}
+                {{ $t('dashboard.connectors') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
-                {{ stats.dataSources }}
+                {{ stats.connectors }}
                 <v-progress-circular v-if="loading" indeterminate size="24" width="2" class="ml-2" />
               </div>
             </v-card-item>

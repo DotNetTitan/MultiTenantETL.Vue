@@ -55,8 +55,8 @@ export function useTranslatedMetadata() {
   }
 
   // Computed properties with translations
-  const dataSourceTypes = computed(() => 
-    translateItems(metadata.dataSourceTypes.value)
+  const connectorTypes = computed(() => 
+    translateItems(metadata.connectorTypes.value)
   );
 
   const directions = computed(() => 
@@ -97,7 +97,7 @@ export function useTranslatedMetadata() {
 
   /**
    * Get translated providers for a specific type
-   * @param {string} type - Data source type
+   * @param {string} type - Connector type
    * @returns {Array} Array of provider strings (no translation needed)
    */
   function getProvidersForType(type) {
@@ -152,8 +152,8 @@ export function useTranslatedMetadata() {
     translateItems,
 
     // Translated computed data
-    dataSourceTypes,
-    dataSourceProviders: metadata.dataSourceProviders, // No translation needed
+    connectorTypes,
+    connectorProviders: metadata.connectorProviders, // No translation needed
     directions,
     authTypes,
     fileFormats,

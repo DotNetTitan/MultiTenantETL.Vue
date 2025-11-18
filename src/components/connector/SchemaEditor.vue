@@ -41,7 +41,7 @@
             <th>{{ $t('common.type') }}</th>
             <th>{{ $t('schema.uniqueId') }}</th>
             <th>{{ $t('common.required') }}</th>
-            <th>{{ $t('dataSources.nullable') }}</th>
+            <th>{{ $t('connectors.nullable') }}</th>
             <th class="text-right">{{ $t('common.actions') }}</th>
           </tr>
         </thead>

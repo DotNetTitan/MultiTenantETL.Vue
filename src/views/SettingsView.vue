@@ -333,8 +333,8 @@
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-checkbox
-                    v-model="notificationSettings.events.dataSourceDown"
-                    :label="$t('settings.dataSourceDown')"
+                    v-model="notificationSettings.events.connectorDown"
+                    :label="$t('settings.connectorDown')"
                     hide-details
                   />
                 </v-col>
@@ -461,7 +461,7 @@ const apiKeyHeaders = computed(() => [
 const dashboardViewOptions = computed(() => [
   { title: t('dashboard.totalPipelines'), value: 'pipeline-stats' },
   { title: t('dashboard.recentExecutions'), value: 'recent-executions' },
-  { title: t('dataSources.title'), value: 'data-source-health' }
+  { title: t('connectors.title'), value: 'data-source-health' }
 ]);
 
 const refreshIntervalOptions = computed(() => [
@@ -494,7 +494,7 @@ const notificationSettings = ref({
   events: {
     pipelineSuccess: false,
     pipelineFailure: true,
-    dataSourceDown: true,
+    connectorDown: true,
     quotaExceeded: true,
     systemUpdates: false
   }
@@ -564,7 +564,7 @@ async function loadUserData() {
       events: {
         pipelineSuccess: false,
         pipelineFailure: true,
-        dataSourceDown: true,
+        connectorDown: true,
         quotaExceeded: true,
         systemUpdates: false
       }

@@ -11,11 +11,11 @@ const USE_MOCK_DATA = true;
 
 // Mock metadata - simulates backend response
 const MOCK_METADATA = {
-  dataSourceConfig: {
+  connectorConfig: {
     types: [
-      { value: 'Database', labelKey: 'dataSources.database', icon: 'mdi-database' },
-      { value: 'API', labelKey: 'dataSources.api', icon: 'mdi-api' },
-      { value: 'File', labelKey: 'dataSources.file', icon: 'mdi-file-document' }
+      { value: 'Database', labelKey: 'connectors.database', icon: 'mdi-database' },
+      { value: 'API', labelKey: 'connectors.api', icon: 'mdi-api' },
+      { value: 'File', labelKey: 'connectors.file', icon: 'mdi-file-document' }
     ],
     
     providers: {
@@ -25,17 +25,17 @@ const MOCK_METADATA = {
     },
     
     directions: [
-      { value: 'source', labelKey: 'dataSources.sourceOnly', icon: 'mdi-export' },
-      { value: 'destination', labelKey: 'dataSources.destinationOnly', icon: 'mdi-import' },
-      { value: 'both', labelKey: 'dataSources.both', icon: 'mdi-swap-horizontal' }
+      { value: 'source', labelKey: 'connectors.sourceOnly', icon: 'mdi-export' },
+      { value: 'destination', labelKey: 'connectors.destinationOnly', icon: 'mdi-import' },
+      { value: 'both', labelKey: 'connectors.both', icon: 'mdi-swap-horizontal' }
     ],
     
     authTypes: [
-      { value: 'None', labelKey: 'dataSources.authNone' },
-      { value: 'Basic', labelKey: 'dataSources.authBasic' },
-      { value: 'Bearer', labelKey: 'dataSources.authBearer' },
-      { value: 'OAuth2', labelKey: 'dataSources.authOAuth2' },
-      { value: 'API Key', labelKey: 'dataSources.authApiKey' }
+      { value: 'None', labelKey: 'connectors.authNone' },
+      { value: 'Basic', labelKey: 'connectors.authBasic' },
+      { value: 'Bearer', labelKey: 'connectors.authBearer' },
+      { value: 'OAuth2', labelKey: 'connectors.authOAuth2' },
+      { value: 'API Key', labelKey: 'connectors.authApiKey' }
     ],
     
     fileFormats: [
@@ -49,26 +49,26 @@ const MOCK_METADATA = {
     writeOperations: [
       { 
         value: 'INSERT', 
-        labelKey: 'dataSources.writeOperationInsert',
-        descriptionKey: 'dataSources.insertDescription',
+        labelKey: 'connectors.writeOperationInsert',
+        descriptionKey: 'connectors.insertDescription',
         requiresPrimaryKey: false
       },
       { 
         value: 'UPDATE', 
-        labelKey: 'dataSources.writeOperationUpdate',
-        descriptionKey: 'dataSources.updateDescription',
+        labelKey: 'connectors.writeOperationUpdate',
+        descriptionKey: 'connectors.updateDescription',
         requiresPrimaryKey: true
       },
       { 
         value: 'UPSERT', 
-        labelKey: 'dataSources.writeOperationUpsert',
-        descriptionKey: 'dataSources.upsertDescription',
+        labelKey: 'connectors.writeOperationUpsert',
+        descriptionKey: 'connectors.upsertDescription',
         requiresPrimaryKey: true
       },
       { 
         value: 'BULK_INSERT', 
-        labelKey: 'dataSources.writeOperationBulkInsert',
-        descriptionKey: 'dataSources.bulkInsertDescription',
+        labelKey: 'connectors.writeOperationBulkInsert',
+        descriptionKey: 'connectors.bulkInsertDescription',
         requiresPrimaryKey: false
       }
     ],

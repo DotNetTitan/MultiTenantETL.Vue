@@ -1,14 +1,14 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTransformation } from './useTransformation';
-import { useDataSource } from './useDataSource';
+import { useConnector } from './useConnector';
 import { fetchPipelines, fetchPipelineById, savePipeline as apiSavePipeline, deletePipeline as apiDeletePipeline, executePipeline as apiExecutePipeline } from '@/services/pipelineService';
 import { useTenantStore } from '@/stores/tenant';
 
 export function usePipeline() {
   const { t } = useI18n();
   const { validateTransformation, getOutputSchema } = useTransformation();
-  const { detectSchema } = useDataSource();
+  const { detectSchema } = useConnector();
   const tenantStore = useTenantStore();
   
   // State

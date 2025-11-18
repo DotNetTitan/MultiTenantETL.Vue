@@ -1,15 +1,15 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <h1 class="text-h4 mr-4">{{ $t('dataSources.title') }}</h1>
+      <h1 class="text-h4 mr-4">{{ $t('connectors.title') }}</h1>
       <v-spacer />
       <v-btn 
         color="primary" 
-        @click="createNewDataSource"
+        @click="createNewConnector"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
         <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('dataSources.createDataSource') }}</span>
+        <span v-else>{{ $t('connectors.createConnector') }}</span>
       </v-btn>
     </div>
 
@@ -19,12 +19,12 @@
           <v-col cols="12" md="4">
             <v-text-field
               v-model="search"
-              :label="$t('dataSources.searchDataSources')"
+              :label="$t('connectors.searchConnectors')"
               prepend-inner-icon="mdi-magnify"
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchDataSources"
+              @update:model-value="fetchConnectors"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -35,7 +35,7 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchDataSources"
+              @update:model-value="fetchConnectors"
             />
           </v-col>
           <v-col cols="12" md="3">
@@ -46,14 +46,14 @@
               density="compact"
               hide-details
               class="mb-4"
-              @update:model-value="fetchDataSources"
+              @update:model-value="fetchConnectors"
             />
           </v-col>
         </v-row>
 
         <v-data-table
           :headers="headers"
-          :items="dataSources"
+          :items="connectors"
           :loading="loading"
           :items-per-page="10"
           class="mt-2"
@@ -64,7 +64,7 @@
               text-color="white"
               size="small"
             >
-              {{ $t(`dataSources.${item.type.toLowerCase()}`) }}
+              {{ $t(`connectors.${item.type.toLowerCase()}`) }}
             </v-chip>
           </template>
           <template #item.description="{ item }">
@@ -72,20 +72,30 @@
               <div>{{ item.description || '-' }}</div>
               <div v-if="item.schema && item.schema.fields && item.schema.fields.length > 0" class="text-caption text-grey">
                 <v-icon size="x-small" class="mr-1">mdi-table</v-icon>
-                {{ item.schema.fields.length }} {{ $t('dataSources.fields', item.schema.fields.length) }}
+                {{ item.schema.fields.length }} {{ $t('connectors.fields', item.schema.fields.length) }}
               </div>
             </div>
           </template>
-          <template #item.createdAt="{ item }">
-            {{ formatDate(item.createdAt) }}
+          <template #item.direction="{ item }">
+            <div class="d-flex align-center">
+              <v-icon v-if="item.isSource" size="small" color="success" class="mr-1" :title="$t('connectors.source')">
+                mdi-export
+              </v-icon>
+              <v-icon v-if="item.isDestination" size="small" color="primary" :title="$t('connectors.destination')">
+                mdi-import
+              </v-icon>
+              <span class="ml-2 text-caption">
+                {{ getDirectionLabel(item) }}
+              </span>
+            </div>
           </template>
           <template #item.actions="{ item }">
             <v-btn
               icon
               variant="text"
               size="small"
-              :title="$t('dataSources.editDataSource')"
-              @click="editDataSource(item)"
+              :title="$t('connectors.editConnector')"
+              @click="editConnector(item)"
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -94,7 +104,7 @@
               variant="text"
               size="small"
               color="info"
-              :title="$t('dataSources.viewSchema')"
+              :title="$t('connectors.viewSchema')"
               @click="viewSchema(item)"
             >
               <v-icon>mdi-table-eye</v-icon>
@@ -104,7 +114,7 @@
               variant="text"
               size="small"
               color="success"
-              :title="$t('dataSources.testConnection')"
+              :title="$t('connectors.testConnection')"
               @click="testConnection(item)"
             >
               <v-icon>mdi-connection</v-icon>
@@ -133,7 +143,7 @@
       @update:model-value="handleDialogClose"
     >
       <ConnectorWizard
-        :data-source="editedDataSource"
+        :connector="editedConnector"
         @save="handleWizardSave"
         @close="showCreateDialog = false"
         @toggle-fullscreen="isDialogFullscreen = $event"
@@ -150,14 +160,14 @@
     >
       <v-card>
         <v-card-title>
-          {{ editedDataSource.id ? $t('dataSources.editDataSource') : $t('dataSources.createDataSource') }}
+          {{ editedConnector.id ? $t('connectors.editConnector') : $t('connectors.createConnector') }}
         </v-card-title>
         <v-card-text>
-          <v-form ref="form" @submit.prevent="saveDataSource">
+          <v-form ref="form" @submit.prevent="saveConnector">
             <v-row>
               <v-col cols="12">
                 <v-text-field
-                  v-model="editedDataSource.name"
+                  v-model="editedConnector.name"
                   label="Data Source Name"
                   required
                   :rules="[v => !!v || 'Name is required']"
@@ -166,17 +176,17 @@
               
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="editedDataSource.type"
+                  v-model="editedConnector.type"
                   label="Type"
-                  :items="dataSourceTypes"
+                  :items="connectorTypes"
                   :rules="[v => !!v || 'Type is required']"
-                  @update:model-value="updateDataSourceForm"
+                  @update:model-value="updateConnectorForm"
                 />
               </v-col>
               
               <v-col cols="12" md="6">
                 <v-switch
-                  v-model="editedDataSource.isSource"
+                  v-model="editedConnector.isSource"
                   label="Can be used as source"
                   color="primary"
                   hide-details
@@ -185,7 +195,7 @@
               
               <v-col cols="12" md="6">
                 <v-switch
-                  v-model="editedDataSource.isDestination"
+                  v-model="editedConnector.isDestination"
                   label="Can be used as destination"
                   color="primary"
                   hide-details
@@ -194,7 +204,7 @@
               
               <v-col cols="12" md="6">
                 <v-switch
-                  v-model="editedDataSource.requiresCredentials"
+                  v-model="editedConnector.requiresCredentials"
                   label="Requires credentials"
                   color="primary"
                   hide-details
@@ -204,11 +214,11 @@
             </v-row>
             
             <!-- Database specific fields -->
-            <div v-if="editedDataSource.type === 'Database'">
+            <div v-if="editedConnector.type === 'Database'">
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedDataSource.database.provider"
+                    v-model="editedConnector.database.provider"
                     label="Database Provider"
                     :items="['SQL Server', 'MySQL', 'PostgreSQL', 'Oracle', 'SQLite']"
                     :rules="[v => !!v || 'Provider is required']"
@@ -216,21 +226,21 @@
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.database.server"
+                    v-model="editedConnector.database.server"
                     label="Server/Host"
                     :rules="[v => !!v || 'Server is required']"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.database.port"
+                    v-model="editedConnector.database.port"
                     label="Port"
                     type="number"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.database.databaseName"
+                    v-model="editedConnector.database.databaseName"
                     label="Database Name"
                     :rules="[v => !!v || 'Database name is required']"
                   />
@@ -239,11 +249,11 @@
             </div>
             
             <!-- File specific fields -->
-            <div v-if="editedDataSource.type === 'File'">
+            <div v-if="editedConnector.type === 'File'">
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedDataSource.file.storageType"
+                    v-model="editedConnector.file.storageType"
                     label="Storage Type"
                     :items="['Local', 'SFTP', 'S3', 'Azure Blob', 'Google Cloud Storage']"
                     :rules="[v => !!v || 'Storage type is required']"
@@ -251,22 +261,22 @@
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.file.path"
+                    v-model="editedConnector.file.path"
                     label="Path/Bucket"
                     :rules="[v => !!v || 'Path is required']"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedDataSource.file.fileType"
+                    v-model="editedConnector.file.fileType"
                     label="File Type"
                     :items="['CSV', 'JSON', 'XML', 'Excel', 'Parquet', 'Avro']"
                     :rules="[v => !!v || 'File type is required']"
                   />
                 </v-col>
-                <v-col v-if="editedDataSource.file.fileType === 'CSV'" cols="12" md="6">
+                <v-col v-if="editedConnector.file.fileType === 'CSV'" cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.file.delimiter"
+                    v-model="editedConnector.file.delimiter"
                     label="Delimiter"
                     placeholder=","
                   />
@@ -275,25 +285,25 @@
             </div>
             
             <!-- API specific fields -->
-            <div v-if="editedDataSource.type === 'API'">
+            <div v-if="editedConnector.type === 'API'">
               <v-row>
                 <v-col cols="12">
                   <v-text-field
-                    v-model="editedDataSource.api.baseUrl"
+                    v-model="editedConnector.api.baseUrl"
                     label="Base URL"
                     :rules="[v => !!v || 'Base URL is required']"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedDataSource.api.authType"
+                    v-model="editedConnector.api.authType"
                     label="Authentication Type"
                     :items="['None', 'Basic', 'Bearer Token', 'API Key', 'OAuth2']"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="editedDataSource.api.dataFormat"
+                    v-model="editedConnector.api.dataFormat"
                     label="Data Format"
                     :items="['JSON', 'XML', 'CSV']"
                     :rules="[v => !!v || 'Data format is required']"
@@ -303,38 +313,38 @@
             </div>
             
             <!-- Credentials fields -->
-            <div v-if="editedDataSource.requiresCredentials">
+            <div v-if="editedConnector.requiresCredentials">
               <v-divider class="my-4" />
               <div class="text-subtitle-1 mb-2">Credentials</div>
               
               <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.credentials.username"
+                    v-model="editedConnector.credentials.username"
                     label="Username"
                     :rules="credentialsRules.username"
                   />
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="editedDataSource.credentials.password"
+                    v-model="editedConnector.credentials.password"
                     label="Password"
                     type="password"
                     :rules="credentialsRules.password"
                   />
                 </v-col>
                 
-                <v-col v-if="editedDataSource.api?.authType === 'API Key'" cols="12">
+                <v-col v-if="editedConnector.api?.authType === 'API Key'" cols="12">
                   <v-text-field
-                    v-model="editedDataSource.credentials.apiKey"
+                    v-model="editedConnector.credentials.apiKey"
                     label="API Key"
                     :rules="[v => !!v || 'API Key is required']"
                   />
                 </v-col>
                 
-                <v-col v-if="editedDataSource.api?.authType === 'Bearer Token'" cols="12">
+                <v-col v-if="editedConnector.api?.authType === 'Bearer Token'" cols="12">
                   <v-text-field
-                    v-model="editedDataSource.credentials.token"
+                    v-model="editedConnector.credentials.token"
                     label="Bearer Token"
                     :rules="[v => !!v || 'Token is required']"
                   />
@@ -348,20 +358,20 @@
             
             <!-- Schema Preview (if fields exist) -->
             <SchemaPreview
-              v-if="editedDataSource.schema.fields && editedDataSource.schema.fields.length > 0"
-              :fields="editedDataSource.schema.fields"
+              v-if="editedConnector.schema.fields && editedConnector.schema.fields.length > 0"
+              :fields="editedConnector.schema.fields"
               class="mb-4"
             />
             
             <SchemaEditor
-              v-model="editedDataSource.schema.fields"
+              v-model="editedConnector.schema.fields"
               @validate="handleSchemaValidation"
             />
             
             <v-row>
               <v-col cols="12">
                 <v-textarea
-                  v-model="editedDataSource.description"
+                  v-model="editedConnector.description"
                   label="Description"
                   rows="2"
                 />
@@ -379,8 +389,8 @@
           </v-btn>
           <v-btn
             color="primary"
-            :loading="savingDataSource"
-            @click="saveDataSource"
+            :loading="savingConnector"
+            @click="saveConnector"
           >
             Save
           </v-btn>
@@ -395,10 +405,10 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          {{ $t('dataSources.deleteConnector') }}
+          {{ $t('connectors.deleteConnector') }}
         </v-card-title>
         <v-card-text>
-          {{ $t('dataSources.deleteConfirm', { name: dataSourceToDelete?.name }) }}
+          {{ $t('connectors.deleteConfirm', { name: connectorToDelete?.name }) }}
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -410,8 +420,8 @@
           </v-btn>
           <v-btn
             color="error"
-            :loading="deletingDataSource"
-            @click="deleteDataSource"
+            :loading="deletingConnector"
+            @click="deleteConnector"
           >
             {{ $t('common.delete') }}
           </v-btn>
@@ -426,7 +436,7 @@
     >
       <v-card>
         <v-card-title class="d-flex align-center">
-          {{ $t('dataSources.testingConnection') }}
+          {{ $t('connectors.testingConnection') }}
           <v-spacer />
           <v-btn
             icon
@@ -440,14 +450,14 @@
         <v-card-text>
           <div v-if="testingConnection" class="d-flex flex-column align-center py-4">
             <v-progress-circular indeterminate size="64" width="4" />
-            <div class="mt-4">{{ $t('dataSources.testingConnectionTo', { name: connectionTestSource?.name }) }}</div>
+            <div class="mt-4">{{ $t('connectors.testingConnectionTo', { name: connectionTestConnector?.name }) }}</div>
           </div>
           <div v-else-if="connectionTestResult" class="text-center py-4">
             <v-icon :color="connectionTestSuccess ? 'success' : 'error'" size="64">
               {{ connectionTestSuccess ? 'mdi-check-circle' : 'mdi-alert-circle' }}
             </v-icon>
             <div class="mt-4 text-h6">
-              {{ connectionTestSuccess ? $t('dataSources.connectionSuccessful') : $t('dataSources.connectionFailed') }}
+              {{ connectionTestSuccess ? $t('connectors.connectionSuccessful') : $t('connectors.connectionFailed') }}
             </div>
             <div class="mt-2">{{ connectionTestMessage }}</div>
           </div>
@@ -481,7 +491,7 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="mr-2">mdi-table-eye</v-icon>
-          {{ selectedDataSource?.name }} - {{ $t('common.schema') }}
+          {{ selectedConnector?.name }} - {{ $t('common.schema') }}
           <v-spacer />
           <v-btn
             icon
@@ -495,7 +505,7 @@
         <v-card-text>
           <div v-if="loadingSchema" class="text-center py-8">
             <v-progress-circular indeterminate color="primary" size="64" />
-            <div class="mt-4">{{ $t('dataSources.loadingSchema') }}</div>
+            <div class="mt-4">{{ $t('connectors.loadingSchema') }}</div>
           </div>
           
           <div v-else-if="schemaError" class="text-center py-8">
@@ -503,22 +513,22 @@
             <div class="mt-4 text-error">{{ schemaError }}</div>
           </div>
           
-          <div v-else-if="dataSourceSchema && dataSourceSchema.fields">
+          <div v-else-if="connectorSchema && connectorSchema.fields">
             <!-- Schema Metadata -->
             <v-card variant="outlined" class="mb-4">
               <v-card-text>
                 <v-row dense>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('dataSources.totalFields') }}</div>
-                    <div class="text-h6">{{ dataSourceSchema.fields.length }}</div>
+                    <div class="text-caption text-grey">{{ $t('connectors.totalFields') }}</div>
+                    <div class="text-h6">{{ connectorSchema.fields.length }}</div>
                   </v-col>
                   <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('dataSources.schemaVersion') }}</div>
-                    <div class="text-h6">{{ dataSourceSchema.version || 1 }}</div>
+                    <div class="text-caption text-grey">{{ $t('connectors.schemaVersion') }}</div>
+                    <div class="text-h6">{{ connectorSchema.version || 1 }}</div>
                   </v-col>
-                  <v-col v-if="dataSourceSchema.lastModified" cols="12">
-                    <div class="text-caption text-grey">{{ $t('dataSources.lastModified') }}</div>
-                    <div class="text-body-2">{{ formatDate(dataSourceSchema.lastModified) }}</div>
+                  <v-col v-if="connectorSchema.lastModified" cols="12">
+                    <div class="text-caption text-grey">{{ $t('connectors.lastModified') }}</div>
+                    <div class="text-body-2">{{ formatDate(connectorSchema.lastModified) }}</div>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -528,15 +538,15 @@
             <v-table density="comfortable" hover>
               <thead>
                 <tr>
-                  <th class="text-left">{{ $t('dataSources.fieldName') }}</th>
-                  <th class="text-left">{{ $t('dataSources.dataType') }}</th>
+                  <th class="text-left">{{ $t('connectors.fieldName') }}</th>
+                  <th class="text-left">{{ $t('connectors.dataType') }}</th>
                   <th class="text-center">{{ $t('common.required') }}</th>
-                  <th class="text-center">{{ $t('dataSources.nullable') }}</th>
+                  <th class="text-center">{{ $t('connectors.nullable') }}</th>
                   <th class="text-left">{{ $t('common.description') }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="field in dataSourceSchema.fields" :key="field.name">
+                <tr v-for="field in connectorSchema.fields" :key="field.name">
                   <td>
                     <div class="d-flex align-center">
                       <v-icon size="small" class="mr-2" color="primary">mdi-table-column</v-icon>
@@ -607,7 +617,7 @@ import ConnectorWizard from '@/components/connector/ConnectorWizard.vue';
 import SchemaEditor from '@/components/connector/SchemaEditor.vue';
 import SchemaPreview from '@/components/connector/SchemaPreview.vue';
 import SchemaChangeWarningDialog from '@/components/dialogs/SchemaChangeWarningDialog.vue';
-import { findPipelinesUsingDataSource } from '@/services/pipelineService';
+import { findPipelinesUsingConnector } from '@/services/pipelineService';
 
 const route = useRoute();
 const router = useRouter();
@@ -615,14 +625,14 @@ const tenantStore = useTenantStore();
 const { t } = useI18n();
 
 const { validateConnection } = useConnector();
-const { dataSourceTypes: metadataTypes } = useTranslatedMetadata();
+const { connectorTypes: metadataTypes } = useTranslatedMetadata();
 
 // Data table
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
   { title: t('common.type'), key: 'type', width: '120px' },
   { title: t('common.description'), key: 'description' },
-  { title: t('common.created'), key: 'createdAt', width: '150px' },
+  { title: t('connectors.direction'), key: 'direction', width: '150px' },
   { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
 ]);
 
@@ -645,11 +655,11 @@ const sortOptions = computed(() => [
   { title: t('filters.typeAsc'), value: 'type_asc' }
 ]);
 
-// Data source data
-const dataSources = ref([]);
+// Connector data
+const connectors = ref([]);
 const loading = ref(false);
-const savingDataSource = ref(false);
-const deletingDataSource = ref(false);
+const savingConnector = ref(false);
+const deletingConnector = ref(false);
 
 // Dialog controls
 const showCreateDialog = ref(false);
@@ -658,9 +668,9 @@ const showConnectionDialog = ref(false);
 const showSchemaDialog = ref(false);
 const isDialogFullscreen = ref(false);
 const showSchemaWarningDialog = ref(false);
-const dataSourceToDelete = ref(null);
-const connectionTestSource = ref(null);
-const selectedDataSource = ref(null);
+const connectorToDelete = ref(null);
+const connectionTestConnector = ref(null);
+const selectedConnector = ref(null);
 const testingConnection = ref(false);
 const connectionTestResult = ref(false);
 const connectionTestSuccess = ref(false);
@@ -669,16 +679,16 @@ const affectedPipelines = ref([]);
 const originalSchema = ref(null);
 const schemaHasChanged = ref(false);
 const loadingSchema = ref(false);
-const dataSourceSchema = ref(null);
+const connectorSchema = ref(null);
 const schemaError = ref(null);
 
 // Form data
 const form = ref(null);
-const editedDataSource = ref(createEmptyDataSource());
+const editedConnector = ref(createEmptyConnector());
 
 // Validation rules for credentials
 const credentialsRules = computed(() => {
-  if (!editedDataSource.value.requiresCredentials) {
+  if (!editedConnector.value.requiresCredentials) {
     return {
       username: [],
       password: []
@@ -691,7 +701,7 @@ const credentialsRules = computed(() => {
   };
 });
 
-function createEmptyDataSource() {
+function createEmptyConnector() {
   return {
     id: null,
     name: '',
@@ -739,15 +749,15 @@ function handleSchemaValidation(validation) {
   console.log('Schema validation:', validation);
   
   // Check if schema has changed
-  if (originalSchema.value && editedDataSource.value.schema) {
-    const currentSchemaStr = JSON.stringify(editedDataSource.value.schema.fields);
+  if (originalSchema.value && editedConnector.value.schema) {
+    const currentSchemaStr = JSON.stringify(editedConnector.value.schema.fields);
     const originalSchemaStr = JSON.stringify(originalSchema.value);
     schemaHasChanged.value = currentSchemaStr !== originalSchemaStr;
   }
 }
 
-function editDataSource(dataSource) {
-  router.push(`/connectors/${dataSource.id}/edit`);
+function editConnector(connector) {
+  router.push(`/connectors/${connector.id}/edit`);
 }
 
 function getTypeColor(type) {
@@ -763,13 +773,24 @@ function getTypeColor(type) {
   }
 }
 
+function getDirectionLabel(connector) {
+  if (connector.isSource && connector.isDestination) {
+    return t('connectors.both');
+  } else if (connector.isSource) {
+    return t('connectors.source');
+  } else if (connector.isDestination) {
+    return t('connectors.destination');
+  }
+  return '-';
+}
+
 function formatDate(dateString) {
   if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleString();
 }
 
-async function fetchDataSources() {
+async function fetchConnectors() {
   try {
     loading.value = true;
     
@@ -779,7 +800,7 @@ async function fetchDataSources() {
       sortBy: sortBy.value
     };
     
-    dataSources.value = await getConnectors(filters);
+    connectors.value = await getConnectors(filters);
   } catch (error) {
     console.error('Error fetching connectors:', error);
   } finally {
@@ -787,24 +808,24 @@ async function fetchDataSources() {
   }
 }
 
-function updateDataSourceForm() {
-  // Reset specific fields when changing data source type
-  if (editedDataSource.value.type === 'Database') {
-    editedDataSource.value.database = {
+function updateConnectorForm() {
+  // Reset specific fields when changing connector type
+  if (editedConnector.value.type === 'Database') {
+    editedConnector.value.database = {
       provider: 'SQL Server',
       server: '',
       port: '',
       databaseName: ''
     };
-  } else if (editedDataSource.value.type === 'File') {
-    editedDataSource.value.file = {
+  } else if (editedConnector.value.type === 'File') {
+    editedConnector.value.file = {
       storageType: 'Local',
       path: '',
       fileType: 'CSV',
       delimiter: ','
     };
-  } else if (editedDataSource.value.type === 'API') {
-    editedDataSource.value.api = {
+  } else if (editedConnector.value.type === 'API') {
+    editedConnector.value.api = {
       baseUrl: '',
       authType: 'None',
       dataFormat: 'JSON'
@@ -815,8 +836,8 @@ function updateDataSourceForm() {
 }
 
 function updateCredentialsFields() {
-  if (!editedDataSource.value.requiresCredentials) {
-    editedDataSource.value.credentials = {
+  if (!editedConnector.value.requiresCredentials) {
+    editedConnector.value.credentials = {
       username: '',
       password: '',
       apiKey: '',
@@ -825,55 +846,55 @@ function updateCredentialsFields() {
   }
 }
 
-function confirmDelete(dataSource) {
-  dataSourceToDelete.value = dataSource;
+function confirmDelete(connector) {
+  connectorToDelete.value = connector;
   showDeleteDialog.value = true;
 }
 
-async function deleteDataSource() {
+async function deleteConnector() {
   try {
-    deletingDataSource.value = true;
+    deletingConnector.value = true;
     
-    await deleteConnectorAPI(dataSourceToDelete.value.id);
+    await deleteConnectorAPI(connectorToDelete.value.id);
     
     // Remove from local array
-    const index = dataSources.value.findIndex(ds => ds.id === dataSourceToDelete.value.id);
+    const index = connectors.value.findIndex(c => c.id === connectorToDelete.value.id);
     if (index !== -1) {
-      dataSources.value.splice(index, 1);
+      connectors.value.splice(index, 1);
     }
     
     showDeleteDialog.value = false;
-    dataSourceToDelete.value = null;
+    connectorToDelete.value = null;
   } catch (error) {
     console.error('Error deleting connector:', error);
   } finally {
-    deletingDataSource.value = false;
+    deletingConnector.value = false;
   }
 }
 
-const validateSchema = async (dataSource) => {
+const validateSchema = async (connector) => {
   // Since we're using mock data, just return success
   return { isValid: true, errors: [] };
 };
 
-const validateDatabaseSchema = async (dataSource) => {
+const validateDatabaseSchema = async (connector) => {
   return { isValid: true, errors: [] };
 };
 
-const validateFileSchema = async (dataSource) => {
+const validateFileSchema = async (connector) => {
   return { isValid: true, errors: [] };
 };
 
-const validateApiSchema = async (dataSource) => {
+const validateApiSchema = async (connector) => {
   return { isValid: true, errors: [] };
 };
 
-async function saveDataSource() {
+async function saveConnector() {
   try {
     // Check if this is an edit and schema has changed
-    if (editedDataSource.value.id && schemaHasChanged.value) {
-      // Check if data source is used in any pipelines
-      const pipelines = await findPipelinesUsingDataSource(editedDataSource.value.id);
+    if (editedConnector.value.id && schemaHasChanged.value) {
+      // Check if connector is used in any pipelines
+      const pipelines = await findPipelinesUsingConnector(editedConnector.value.id);
       
       if (pipelines.length > 0) {
         // Show warning dialog
@@ -890,12 +911,12 @@ async function saveDataSource() {
   }
 }
 
-async function handleWizardSave(dataSource) {
+async function handleWizardSave(connector) {
   try {
     // Check if this is an edit and schema has changed
-    if (dataSource.id && schemaHasChanged.value) {
-      // Check if data source is used in any pipelines
-      const pipelines = await findPipelinesUsingDataSource(dataSource.id);
+    if (connector.id && schemaHasChanged.value) {
+      // Check if connector is used in any pipelines
+      const pipelines = await findPipelinesUsingConnector(connector.id);
       
       if (pipelines.length > 0) {
         // Show warning dialog
@@ -906,39 +927,39 @@ async function handleWizardSave(dataSource) {
     }
     
     // Proceed with save
-    await performSave(dataSource);
+    await performSave(connector);
   } catch (error) {
     console.error('Error saving data source:', error);
   }
 }
 
-async function performSave(dataSource = null) {
+async function performSave(connector = null) {
   try {
-    savingDataSource.value = true;
+    savingConnector.value = true;
     
-    const dataToSave = dataSource || editedDataSource.value;
-    const savedDataSource = await saveConnectorAPI(dataToSave);
+    const dataToSave = connector || editedConnector.value;
+    const savedConnector = await saveConnectorAPI(dataToSave);
     
     if (dataToSave.id) {
-      const index = dataSources.value.findIndex(ds => ds.id === dataToSave.id);
+      const index = connectors.value.findIndex(ds => ds.id === dataToSave.id);
       if (index !== -1) {
-        dataSources.value[index] = savedDataSource;
+        connectors.value[index] = savedConnector;
       }
     } else {
-      dataSources.value.push(savedDataSource);
+      connectors.value.push(savedconnector);
     }
     
     showCreateDialog.value = false;
     showSchemaWarningDialog.value = false;
     
     // Reset form to empty state
-    editedDataSource.value = createEmptyDataSource();
+    editedConnector.value = createEmptyConnector();
     originalSchema.value = null;
     schemaHasChanged.value = false;
   } catch (error) {
     console.error('Error saving connector:', error);
   } finally {
-    savingDataSource.value = false;
+    savingConnector.value = false;
   }
 }
 
@@ -950,34 +971,34 @@ function handleSchemaWarningProceed() {
   performSave();
 }
 
-function createNewDataSource() {
+function createNewConnector() {
   router.push('/connectors/new');
 }
 
 function handleDialogClose(isOpen) {
   if (!isOpen) {
     // Dialog is closing - reset form if not saving
-    if (!savingDataSource.value) {
-      editedDataSource.value = createEmptyDataSource();
+    if (!savingConnector.value) {
+      editedConnector.value = createEmptyConnector();
       originalSchema.value = null;
       schemaHasChanged.value = false;
     }
   }
 }
 
-async function testConnection(dataSource) {
+async function testConnection(connector) {
   try {
-    connectionTestSource.value = dataSource;
+    connectionTestConnector.value = connector;
     showConnectionDialog.value = true;
     testingConnection.value = true;
     connectionTestResult.value = false;
     
-    const result = await validateConnection(dataSource);
+    const result = await validateConnection(connector);
     
     connectionTestSuccess.value = result.success;
     connectionTestMessage.value = result.success
-      ? `Successfully connected to ${dataSource.name}`
-      : `Failed to connect to ${dataSource.name}: ${result.message}`;
+      ? `Successfully connected to ${connector.name}`
+      : `Failed to connect to ${connector.name}: ${result.message}`;
     
     connectionTestResult.value = true;
   } catch (error) {
@@ -990,21 +1011,21 @@ async function testConnection(dataSource) {
   }
 }
 
-async function viewSchema(dataSource) {
+async function viewSchema(connector) {
   try {
-    selectedDataSource.value = dataSource;
+    selectedConnector.value = connector;
     showSchemaDialog.value = true;
     loadingSchema.value = true;
-    dataSourceSchema.value = null;
+    connectorSchema.value = null;
     schemaError.value = null;
     
     // Fetch the full connector details to get the schema
-    const fullDataSource = await fetchConnectorById(dataSource.id);
+    const fullConnector = await fetchConnectorById(connector.id);
     
-    if (!fullDataSource.schema || !fullDataSource.schema.fields || fullDataSource.schema.fields.length === 0) {
+    if (!fullConnector.schema || !fullConnector.schema.fields || fullConnector.schema.fields.length === 0) {
       schemaError.value = 'No schema defined for this connector';
     } else {
-      dataSourceSchema.value = fullDataSource.schema;
+      connectorSchema.value = fullConnector.schema;
     }
   } catch (error) {
     console.error('Error loading schema:', error);
@@ -1028,7 +1049,7 @@ function getMethodColor(method) {
 let tenantSubscription = null;
 
 onMounted(async () => {
-  await fetchDataSources();
+  await fetchConnectors();
   
   // Check if we need to open the create dialog from route
   if (route.query.action === 'create') {
@@ -1038,7 +1059,7 @@ onMounted(async () => {
   // Refetch if tenant changes
   tenantSubscription = tenantStore.$subscribe(() => {
     if (tenantStore.currentTenantId) {
-      fetchDataSources();
+      fetchConnectors();
     }
   });
 });
@@ -1054,10 +1075,10 @@ onBeforeUnmount(() => {
   showDeleteDialog.value = false;
   showConnectionDialog.value = false;
   showSchemaDialog.value = false;
-  dataSourceToDelete.value = null;
-  connectionTestSource.value = null;
-  selectedDataSource.value = null;
-  editedDataSource.value = createEmptyDataSource();
+  connectorToDelete.value = null;
+  connectionTestConnector.value = null;
+  selectedConnector.value = null;
+  editedConnector.value = createEmptyConnector();
 });
 </script>
 

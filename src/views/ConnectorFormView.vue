@@ -11,15 +11,15 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
       <div>
-        <h1 class="text-h4">{{ isEdit ? t('dataSources.editDataSource') : t('dataSources.createNewDataSource') }}</h1>
-        <p class="text-caption text-grey">{{ isEdit ? t('dataSources.updateDataSourceConfiguration') : t('dataSources.configureNewDataSource') }}</p>
+        <h1 class="text-h4">{{ isEdit ? t('connectors.editConnector') : t('connectors.createNewConnector') }}</h1>
+        <p class="text-caption text-grey">{{ isEdit ? t('connectors.updateConnectorConfiguration') : t('connectors.configureNewConnector') }}</p>
       </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="mt-4">{{ t('dataSources.loadingDataSource') }}</p>
+      <p class="mt-4">{{ t('connectors.loadingConnector') }}</p>
     </div>
 
     <!-- Error State -->
@@ -31,8 +31,8 @@
     <!-- Wizard -->
     <ConnectorWizard
       v-else
-      :data-source="dataSource"
-      :data-sources="[]"
+      :connector="dataSource"
+      :connectors="[]"
       @save="handleSave"
       @close="handleCancel"
     />

@@ -12,7 +12,7 @@
         v-model="form.type"
         label="Type"
         type="select"
-        :options="dataSourceTypes"
+        :options="connectorTypes"
         :error="errors.type"
         required
         @change="handleTypeChange"
@@ -218,18 +218,18 @@ const props = defineProps({
 
 const emit = defineEmits(['save', 'cancel']);
 
-const { validateConnection, getConnectionTemplate } = useDataSource();
+const { validateConnection, getConnectionTemplate } = useConnector();
 
 // Use translated metadata service
 const {
-  dataSourceTypes: metadataTypes,
+  connectorTypes: metadataTypes,
   authTypes: metadataAuthTypes,
   fileFormats: metadataFileFormats,
   getProvidersForType
 } = useTranslatedMetadata();
 
 // Map to simple arrays for FormInput compatibility
-const dataSourceTypes = computed(() => 
+const connectorTypes = computed(() => 
   metadataTypes.value.map(type => type.value)
 );
 

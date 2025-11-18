@@ -11,22 +11,22 @@ const pageContexts = {
     details: `The Dashboard displays four key metric cards at the top:
 - Total Pipelines: Shows count of all pipelines in the system (click "VIEW PIPELINES" to see all pipelines)
 - Active Pipelines: Number of pipelines currently enabled and ready to run (click "VIEW ACTIVE" to filter active ones)
-- Data Sources: Total configured database, file, and API connections (click "VIEW SOURCES" to manage data sources)
+- Connectors: Total configured database, file, and API connections (click "VIEW CONNECTORS" to manage connectors)
 - Recent Executions: Count of pipeline runs in the last 24 hours (click "VIEW EXECUTIONS" to see all executions)
 
 Below the metrics, there are two main sections:
 1. Pipeline Status Chart: Pie chart showing distribution of pipeline statuses (Active, Inactive, Failed)
 2. Recent Executions Table: Lists the 5 most recent pipeline runs with columns for Pipeline Name, Status (Running/Completed/Failed), Start Time, Duration, and Records Processed
 
-IMPORTANT: The Dashboard is READ-ONLY for viewing metrics and monitoring. There are NO "Create Pipeline" or "Create Data Source" buttons on the Dashboard page itself. To create new items, users must navigate to the respective pages using the left sidebar menu.`,
+IMPORTANT: The Dashboard is READ-ONLY for viewing metrics and monitoring. There are NO "Create Pipeline" or "Create Connector" buttons on the Dashboard page itself. To create new items, users must navigate to the respective pages using the left sidebar menu.`,
     features: [
       'Auto-refreshes every 30 seconds (configurable in Settings)',
       'Click on any execution to view detailed logs',
       'Status badges use color coding: green (completed), blue (running), red (failed)',
       'Metrics update in real-time as pipelines execute',
       'Click "VIEW PIPELINES" button to navigate to Pipelines page where you can create new pipelines',
-      'Click "VIEW SOURCES" button to navigate to Data Sources page where you can create new data sources',
-      'Use the left sidebar menu to navigate to different pages (Pipelines, Data Sources, etc.)'
+      'Click "VIEW CONNECTORS" button to navigate to Connectors page where you can create new connectors',
+      'Use the left sidebar menu to navigate to different pages (Pipelines, Connectors, etc.)'
     ]
   },
   pipelines: {
@@ -49,8 +49,8 @@ The pipeline list shows:
 Creating a Pipeline:
 1. Click "Create Pipeline" button
 2. Enter name and description
-3. Select source data source (must have "source" or "both" direction)
-4. Select destination data source (must have "destination" or "both" direction)
+3. Select source connector (must have "source" or "both" direction)
+4. Select destination connector (must have "destination" or "both" direction)
 5. Optionally add transformations (applied in order)
 6. Map source fields to destination fields using the visual mapper
 7. Set schedule (None for manual execution only)
@@ -70,10 +70,10 @@ Field Mapping:
       'View execution history for each pipeline'
     ]
   },
-  'data-sources': {
-    title: 'Data Sources',
+  'connectors': {
+    title: 'Connectors',
     description: 'Configure connections to databases, files, and APIs',
-    details: `Data Sources represent connections to external systems. Three types are supported:
+    details: `Connectors represent connections to external systems. Three types are supported:
 
 1. DATABASE Sources:
    - Supported: SQL Server, PostgreSQL, MySQL
@@ -107,12 +107,12 @@ Schema Definition:
 - Schema validation ensures data compatibility`,
     features: [
       'Test Connection button validates credentials before saving',
-      'Clone data sources to create similar configurations',
-      'Direction setting determines if source can be used in pipelines',
-      'Write configuration only required for destination sources',
+      'Clone connectors to create similar configurations',
+      'Direction setting determines if connector can be used in pipelines',
+      'Write configuration only required for destination connectors',
       'Schema preview shows all detected fields with types',
-      'Edit existing sources to update credentials or configuration',
-      'Delete sources (only if not used in any pipeline)'
+      'Edit existing connectors to update credentials or configuration',
+      'Delete connectors (only if not used in any pipeline)'
     ]
   },
   transformations: {
@@ -197,7 +197,7 @@ Execution Details (click "View Logs"):
 - Detailed log messages with timestamps
 - Step-by-step breakdown:
   1. Initialization: Pipeline setup and validation
-  2. Source Connection: Connecting to source data source
+  2. Source Connection: Connecting to source connector
   3. Data Extraction: Reading data from source
   4. Transformation: Applying each transformation in order
   5. Destination Connection: Connecting to destination
@@ -235,13 +235,13 @@ Execution Triggers:
 User Roles:
 1. ADMIN Role:
    - Full access to all features
-   - Can manage tenants, users, pipelines, data sources, transformations
+   - Can manage tenants, users, pipelines, connectors, transformations
    - Can switch between tenants
    - Can view all execution logs
    - Can generate API keys
 
 2. USER Role:
-   - Access to pipelines, data sources, transformations, executions
+   - Access to pipelines, connectors, transformations, executions
    - Cannot manage tenants or users
    - Cannot switch tenants (locked to assigned tenant)
    - Can only view executions for their tenant
@@ -292,7 +292,7 @@ Security:
 
 What is a Tenant?
 - A tenant represents an organization or customer
-- Each tenant has completely isolated data (pipelines, data sources, executions)
+- Each tenant has completely isolated data (pipelines, connectors, executions)
 - Users are assigned to one tenant (except Admins who can switch)
 - Ensures data security in multi-customer environments
 
@@ -315,7 +315,7 @@ Creating a Tenant:
 
 Switching Tenants (Admin only):
 - Click "Switch To" button on any tenant
-- All data (pipelines, data sources, etc.) switches to that tenant's context
+- All data (pipelines, connectors, etc.) switches to that tenant's context
 - Current tenant shown in top navigation bar
 - Allows admins to manage multiple customer environments
 
@@ -327,14 +327,14 @@ Tenant Status:
 Data Isolation:
 - Each tenant's data is completely separate
 - Users can only see data for their assigned tenant
-- Pipelines cannot access data sources from other tenants
+- Pipelines cannot access connectors from other tenants
 - Executions are isolated per tenant
 - API keys are scoped to tenant`,
     features: [
       'Search tenants by name or identifier',
       'Filter by status (All, Active, Inactive)',
       'Sort by name, user count, or pipeline count',
-      'View tenant statistics (users, pipelines, data sources)',
+      'View tenant statistics (users, pipelines, connectors)',
       'Edit tenant details and contact information',
       'Delete tenants (only if no users or data exist)',
       'Tenant identifier used in API authentication'
@@ -376,7 +376,7 @@ Data Isolation:
    - Notification Types:
      * Pipeline Execution Completed
      * Pipeline Execution Failed
-     * Data Source Connection Failed
+     * Connector Connection Failed
      * System Maintenance Alerts
    - Set notification frequency (Immediate, Daily Digest, Weekly Summary)
    - Configure quiet hours (no notifications during specified times)
@@ -459,7 +459,7 @@ Application: Multi-Tenant ETL (Extract, Transform, Load) Platform
 Purpose: Move and transform data between different systems with complete tenant isolation
 
 Core Concepts:
-- Data Sources: Connections to databases (ONLY SQL Server, PostgreSQL, MySQL), files (ONLY CSV, Excel .xlsx, JSON), or REST APIs (GET/POST/PUT methods only)
+- Connectors: Connections to databases (ONLY SQL Server, PostgreSQL, MySQL), files (ONLY CSV, Excel .xlsx, JSON), or REST APIs (GET/POST/PUT methods only)
 - Pipelines: Orchestrate data movement from source → transformations → destination
 - Transformations: EXACTLY 7 types available - Filter, Map, Trim, Case Convert, Substring, Replace, Script (JavaScript/C# only)
 - Executions: Historical record of pipeline runs with detailed logs
@@ -475,7 +475,7 @@ IMPORTANT LIMITATIONS:
 Navigation:
 - Dashboard: Overview and metrics
 - Pipelines: Create and manage data flows
-- Data Sources: Configure connections
+- Connectors: Configure connections
 - Transformations: Define data modification rules
 - Executions: Monitor pipeline runs
 - Users: Manage accounts (Admin only)

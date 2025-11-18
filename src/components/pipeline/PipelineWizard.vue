@@ -13,7 +13,7 @@
           :complete="currentStep > 2"
           :value="2"
           :title="$t('pipelines.sourceAndDestination')"
-          :subtitle="$t('pipelines.selectDataSources')"
+          :subtitle="$t('pipelines.selectConnectors')"
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item

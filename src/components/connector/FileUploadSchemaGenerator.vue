@@ -67,7 +67,7 @@
                 >
                   <strong>{{ field.name }}</strong>
                   <span class="text-grey ml-1">({{ getTypeLabel(field.type) }})</span>
-                  <v-icon v-if="field.nullable" size="x-small" class="ml-1" color="grey" :title="$t('dataSources.nullable')">mdi-help-circle-outline</v-icon>
+                  <v-icon v-if="field.nullable" size="x-small" class="ml-1" color="grey" :title="$t('connectors.nullable')">mdi-help-circle-outline</v-icon>
                 </v-chip>
               </div>
               <v-divider class="my-3" />

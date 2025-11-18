@@ -387,7 +387,6 @@ export async function getDestinationConnectors() {
   }
 }
 
-// For backward compatibility with code that might use the old object-based API
 export const connectorService = {
   getAll: fetchConnectors,
   getById: fetchConnectorById,
@@ -402,12 +401,3 @@ export const connectorService = {
   getSources: getSourceConnectors,
   getDestinations: getDestinationConnectors
 };
-
-// Legacy exports for backward compatibility
-export const fetchDataSources = fetchConnectors;
-export const fetchDataSourceById = fetchConnectorById;
-export const saveDataSource = saveConnector;
-export const deleteDataSource = deleteConnector;
-export const getSourceDataSources = getSourceConnectors;
-export const getDestinationDataSources = getDestinationConnectors;
-export const dataSourceService = connectorService;

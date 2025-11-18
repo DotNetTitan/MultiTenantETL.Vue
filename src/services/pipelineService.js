@@ -273,18 +273,18 @@ export async function getExecutionById(id) {
 }
 
 /**
- * Finds all pipelines that use a specific data source
- * @param {string} dataSourceId - Data source ID
- * @returns {Promise<Array>} List of pipelines using the data source
+ * Finds all pipelines that use a specific connector
+ * @param {string} connectorId - Connector ID
+ * @returns {Promise<Array>} List of pipelines using the connector
  */
-export async function findPipelinesUsingDataSource(dataSourceId) {
+export async function findPipelinesUsingConnector(connectorId) {
   try {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    // Find pipelines where the data source is used as source or destination
+    // Find pipelines where the connector is used as source or destination
     const pipelines = mockPipelines.filter(p => 
-      p.sourceId === dataSourceId || p.destinationId === dataSourceId
+      p.sourceId === connectorId || p.destinationId === connectorId
     );
     
     // Return simplified pipeline info
@@ -292,11 +292,11 @@ export async function findPipelinesUsingDataSource(dataSourceId) {
       id: p.id,
       name: p.name,
       description: p.description,
-      usedAs: p.sourceId === dataSourceId ? 'source' : 'destination',
+      usedAs: p.sourceId === connectorId ? 'source' : 'destination',
       status: p.status
     }));
   } catch (error) {
-    console.error(`Error finding pipelines using data source ${dataSourceId}:`, error);
+    console.error(`Error finding pipelines using connector ${connectorId}:`, error);
     throw error;
   }
 }
@@ -314,5 +314,5 @@ export const pipelineService = {
   execute: executePipeline,
   getExecutions,
   getExecutionById,
-  findPipelinesUsingDataSource
+  findPipelinesUsingConnector
 };

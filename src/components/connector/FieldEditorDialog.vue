@@ -72,7 +72,7 @@
             <v-col cols="12" md="4">
               <v-checkbox
                 v-model="localField.nullable"
-                :label="$t('dataSources.nullable')"
+                :label="$t('connectors.nullable')"
                 :hint="$t('schema.nullableHint')"
                 persistent-hint
                 @update:model-value="handleNullableChange"

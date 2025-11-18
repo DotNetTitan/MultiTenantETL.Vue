@@ -14,13 +14,13 @@ export async function fetchDashboardData() {
     // Calculate stats from actual mock data
     const totalPipelines = mockPipelines.length;
     const activePipelines = mockPipelines.filter(p => p.status === 'Running').length;
-    const dataSources = mockConnectors.length;
+    const connectors = mockConnectors.length;
     const recentExecutions = mockExecutions.length;
     
     const stats = {
       totalPipelines,
       activePipelines,
-      dataSources,
+      connectors,
       recentExecutions
     };
     
