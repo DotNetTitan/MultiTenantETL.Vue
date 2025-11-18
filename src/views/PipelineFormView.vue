@@ -17,7 +17,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
+    <div v-if="loading || loadingData" class="text-center py-12">
       <v-progress-circular indeterminate color="primary" size="64" />
       <p class="mt-4">Loading pipeline...</p>
     </div>
@@ -51,6 +51,7 @@ const router = useRouter();
 const route = useRoute();
 
 const loading = ref(false);
+const loadingData = ref(true);
 const error = ref(null);
 const connectors = ref([]);
 const transformations = ref([]);
@@ -80,12 +81,17 @@ const pipeline = ref({
 const isEdit = computed(() => !!route.params.id);
 
 onMounted(async () => {
-  await Promise.all([
-    loadConnectors(),
-    loadTransformations()
-  ]);
-  if (isEdit.value) {
-    loadPipeline();
+  try {
+    loadingData.value = true;
+    await Promise.all([
+      loadConnectors(),
+      loadTransformations()
+    ]);
+    if (isEdit.value) {
+      await loadPipeline();
+    }
+  } finally {
+    loadingData.value = false;
   }
 });
 

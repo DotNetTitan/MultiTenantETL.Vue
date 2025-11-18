@@ -288,29 +288,13 @@ const destinationFieldItems = computed(() => {
 });
 
 const compatibleTransformations = computed(() => {
-  if (!localMapping.value.sourceFields || localMapping.value.sourceFields.length === 0) {
+  // If no transformations available at all, return empty
+  if (!props.transformations || props.transformations.length === 0) {
     return [];
   }
   
-  if (!localMapping.value.destinationField) {
-    return [];
-  }
-  
-  const sourceFieldObjs = props.sourceFields.filter(f => 
-    localMapping.value.sourceFields.includes(f.name)
-  );
-  
-  const destFieldObj = props.destinationFields.find(f => 
-    f.name === localMapping.value.destinationField
-  );
-  
-  return getCompatibleTransformations(
-    props.transformations,
-    localMapping.value.sourceFields,
-    destFieldObj,
-    { fields: props.sourceFields },
-    { fields: props.destinationFields }
-  );
+  // Just return all transformations - compatibility filtering was too strict
+  return props.transformations;
 });
 
 const compatibleTransformationItems = computed(() => {
