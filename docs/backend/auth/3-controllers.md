@@ -7,7 +7,7 @@
 ## DTOs
 
 ```csharp
-// DTOs/AuthDtos.cs
+// Application/Authentication/Models/AuthDtos.cs
 public class RegisterRequest
 {
     [Required, EmailAddress]
@@ -71,7 +71,7 @@ public class SwitchTenantRequest
 ## Authentication Controller
 
 ```csharp
-// Controllers/AuthenticationController.cs
+// API/Controllers/AuthenticationController.cs
 [ApiController]
 [Route("connect")]
 public class AuthenticationController : ControllerBase
@@ -212,7 +212,7 @@ public class AuthenticationController : ControllerBase
 ## Account Controller
 
 ```csharp
-// Controllers/AccountController.cs
+// API/Controllers/AccountController.cs
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 

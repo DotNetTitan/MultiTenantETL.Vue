@@ -7,7 +7,7 @@
 ## Email Service Interface
 
 ```csharp
-// Services/IEmailService.cs
+// Application/Common/Interfaces/IEmailService.cs
 public interface IEmailService
 {
     Task SendEmailConfirmationAsync(string email, string firstName, string confirmationUrl);
@@ -22,7 +22,7 @@ public interface IEmailService
 ## Azure Communication Services Implementation
 
 ```csharp
-// Services/AzureCommunicationEmailService.cs
+// Infrastructure/Email/AzureCommunicationEmailService.cs
 using Azure;
 using Azure.Communication.Email;
 
@@ -126,7 +126,7 @@ public class AzureCommunicationEmailService : IEmailService
 ## Email Templates
 
 ```csharp
-// Services/EmailTemplates.cs
+// Infrastructure/Email/EmailTemplates.cs
 public static class EmailTemplates
 {
     private static string GetBaseTemplate(string content)

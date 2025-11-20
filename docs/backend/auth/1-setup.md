@@ -34,7 +34,7 @@ dotnet add package AspNetCoreRateLimit
 ### ApplicationUser
 
 ```csharp
-// Models/ApplicationUser.cs
+// Infrastructure/Identity/ApplicationUser.cs
 using Microsoft.AspNetCore.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
@@ -54,20 +54,48 @@ public class ApplicationUser : IdentityUser<Guid>
 ### ApplicationRole
 
 ```csharp
-// Models/ApplicationRole.cs
+// Infrastructure/Identity/ApplicationRole.cs
 using Microsoft.AspNetCore.Identity;
 
 public class ApplicationRole : IdentityRole<Guid>
 {
     public string Description { get; set; }
-    public List<string> Permissions { get; set; }
+}
+```
+
+### ITenantResource
+
+```csharp
+// Domain/Interfaces/ITenantResource.cs
+public interface ITenantResource
+{
+    Guid TenantId { get; }
+}
+```
+
+### Tenant
+
+```csharp
+// Domain/Entities/Tenant.cs
+using MultiTenantETL.Domain.Interfaces;
+
+public class Tenant : ITenantResource
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Slug { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    
+    // Interface implementation
+    public Guid TenantId => Id;
 }
 ```
 
 ### UserTenant
 
 ```csharp
-// Models/UserTenant.cs
+// Infrastructure/Identity/UserTenant.cs
 public class UserTenant
 {
     public Guid UserId { get; set; }
@@ -88,7 +116,7 @@ public class UserTenant
 ### Error Code Enum
 
 ```csharp
-// Common/ErrorCodes.cs
+// Domain/Enums/AuthErrorCode.cs
 public enum AuthErrorCode
 {
     // Authentication errors
@@ -129,7 +157,7 @@ public enum AuthErrorCode
 ### Error Response Models
 
 ```csharp
-// Common/ErrorResponse.cs
+// Application/Common/Models/ErrorResponse.cs
 public class ErrorResponse
 {
     public ErrorDetail Error { get; set; }
@@ -158,7 +186,7 @@ public class ErrorDetail
 ## DbContext Configuration
 
 ```csharp
-// Data/ApplicationDbContext.cs
+// Infrastructure/Persistence/ApplicationDbContext.cs
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -329,7 +357,7 @@ app.Run();
 ## OpenIddict Client Seeding
 
 ```csharp
-// Data/DbSeeder.cs
+// Infrastructure/Data/DbSeeder.cs
 using OpenIddict.Abstractions;
 
 public static class DbSeeder

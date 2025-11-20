@@ -58,7 +58,7 @@ dashboard:read
 ### Permission Requirement
 
 ```csharp
-// Authorization/PermissionRequirement.cs
+// Application/Authorization/Requirements/PermissionRequirement.cs
 using Microsoft.AspNetCore.Authorization;
 
 public class PermissionRequirement : IAuthorizationRequirement
@@ -75,7 +75,7 @@ public class PermissionRequirement : IAuthorizationRequirement
 ### Permission Authorization Handler
 
 ```csharp
-// Authorization/PermissionAuthorizationHandler.cs
+// Application/Authorization/Handlers/PermissionAuthorizationHandler.cs
 using Microsoft.AspNetCore.Authorization;
 
 public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
@@ -138,10 +138,10 @@ public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionReq
 ### Tenant Resource Authorization
 
 ```csharp
-// Authorization/TenantResourceRequirement.cs
+// Application/Authorization/Requirements/TenantResourceRequirement.cs
 public class TenantResourceRequirement : IAuthorizationRequirement { }
 
-// Authorization/TenantResourceAuthorizationHandler.cs
+// Application/Authorization/Handlers/TenantResourceAuthorizationHandler.cs
 public class TenantResourceAuthorizationHandler : 
     AuthorizationHandler<TenantResourceRequirement, ITenantResource>
 {
@@ -169,7 +169,7 @@ public class TenantResourceAuthorizationHandler :
     }
 }
 
-// Interface for tenant-scoped resources
+// Domain/Interfaces/ITenantResource.cs
 public interface ITenantResource
 {
     Guid TenantId { get; }
@@ -181,7 +181,7 @@ public interface ITenantResource
 ## Authorization Configuration
 
 ```csharp
-// Program.cs
+// API/Program.cs
 using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -325,7 +325,7 @@ public class PipelinesController : ControllerBase
 ### Application-Level Query Filter
 
 ```csharp
-// Data/ApplicationDbContext.cs
+// Infrastructure/Persistence/ApplicationDbContext.cs
 protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
     base.OnModelCreating(modelBuilder);

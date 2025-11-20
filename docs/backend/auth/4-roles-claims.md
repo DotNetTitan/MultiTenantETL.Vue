@@ -15,7 +15,7 @@ The authentication system integrates with authorization through roles and claims
 ## User Service (Role Management)
 
 ```csharp
-// Services/UserService.cs
+// Infrastructure/Identity/UserService.cs
 public class UserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -94,7 +94,7 @@ builder.Services.AddScoped<UserService>();
 ## Role Seeding
 
 ```csharp
-// Data/RoleSeeder.cs
+// Infrastructure/Data/RoleSeeder.cs
 public static class RoleSeeder
 {
     public static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
@@ -274,7 +274,7 @@ private async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(
 Service to easily access current user's claims:
 
 ```csharp
-// Services/ICurrentUserService.cs
+// Application/Common/Interfaces/ICurrentUserService.cs
 public interface ICurrentUserService
 {
     Guid GetUserId();
@@ -285,7 +285,7 @@ public interface ICurrentUserService
     bool IsInRole(string role);
 }
 
-// Services/CurrentUserService.cs
+// Infrastructure/Identity/CurrentUserService.cs
 using System.Security.Claims;
 using System.Text.Json;
 

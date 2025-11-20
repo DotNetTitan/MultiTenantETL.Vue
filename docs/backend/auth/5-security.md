@@ -15,7 +15,7 @@ dotnet add package AspNetCoreRateLimit
 ### Configuration
 
 ```csharp
-// Program.cs
+// API/Program.cs
 using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -129,7 +129,7 @@ options.QuotaExceededResponse = async (context, rule, retryAfter) =>
 ## CORS Configuration
 
 ```csharp
-// Program.cs
+// API/Program.cs
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure CORS
@@ -196,7 +196,7 @@ builder.Services.AddCors(options =>
 ## Security Headers
 
 ```csharp
-// Create middleware
+// API/Middleware/SecurityHeadersMiddleware.cs
 public class SecurityHeadersMiddleware
 {
     private readonly RequestDelegate _next;
@@ -324,14 +324,14 @@ public class RegisterRequest
 ### Sanitization Service
 
 ```csharp
-// Services/IInputSanitizer.cs
+// Application/Common/Interfaces/IInputSanitizer.cs
 public interface IInputSanitizer
 {
     string SanitizeString(string input);
     string SanitizeHtml(string input);
 }
 
-// Services/InputSanitizer.cs
+// Infrastructure/Security/InputSanitizer.cs
 using System.Text.RegularExpressions;
 
 public class InputSanitizer : IInputSanitizer
@@ -397,7 +397,7 @@ dotnet add package Azure.Identity
 ```
 
 ```csharp
-// Program.cs
+// API/Program.cs
 using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -443,6 +443,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Custom password hasher (if needed)
 using BCrypt.Net;
 
+// Infrastructure/Identity/BcryptPasswordHasher.cs
 public class BcryptPasswordHasher : IPasswordHasher<ApplicationUser>
 {
     public string HashPassword(ApplicationUser user, string password)

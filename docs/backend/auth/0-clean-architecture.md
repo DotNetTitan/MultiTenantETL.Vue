@@ -12,6 +12,24 @@ Clean Architecture separates concerns into layers with strict dependency rules:
 - **Infrastructure** → Depends on Domain & Application
 - **Presentation (API)** → Depends on all layers (composition root)
 
+### Pragmatic Decision: Authentication in Infrastructure
+
+**Why authentication entities live in Infrastructure:**
+
+ASP.NET Core Identity is deeply coupled to Entity Framework and the framework itself. Rather than forcing awkward abstractions, we pragmatically accept that:
+
+- **`ApplicationUser`**, **`ApplicationRole`**, and **`UserTenant`** are Infrastructure concerns
+- They extend framework classes (`IdentityUser<Guid>`, `IdentityRole<Guid>`)
+- Authentication is infrastructure-level, not domain logic
+- This reduces complexity and follows the framework's natural design
+
+**What stays in Domain:**
+- Pure business entities (`Tenant`, `Pipeline`, etc.)
+- Business rules and validations
+- Domain interfaces (`ITenantResource`)
+
+This pragmatic approach balances architectural purity with real-world maintainability.
+
 ---
 
 ## Project Structure
@@ -21,19 +39,16 @@ MultiTenantETL/
 ├── src/
 │   ├── MultiTenantETL.Domain/
 │   │   ├── Entities/
-│   │   │   ├── User.cs
-│   │   │   ├── Role.cs
-│   │   │   ├── UserTenant.cs
 │   │   │   ├── Tenant.cs
 │   │   │   ├── Pipeline.cs
+│   │   │   ├── Connector.cs
 │   │   │   └── ...
 │   │   ├── ValueObjects/
 │   │   │   ├── Email.cs
-│   │   │   ├── Password.cs
 │   │   │   └── Permission.cs
 │   │   ├── Enums/
 │   │   │   ├── AuthErrorCode.cs
-│   │   │   └── RoleType.cs
+│   │   │   └── PipelineStatus.cs
 │   │   ├── Exceptions/
 │   │   │   ├── DomainException.cs
 │   │   │   ├── UnauthorizedException.cs
@@ -109,6 +124,7 @@ MultiTenantETL/
 │   │   ├── Identity/
 │   │   │   ├── ApplicationUser.cs
 │   │   │   ├── ApplicationRole.cs
+│   │   │   ├── UserTenant.cs
 │   │   │   ├── IdentityService.cs
 │   │   │   └── CurrentUserService.cs
 │   │   ├── Email/
@@ -152,29 +168,35 @@ MultiTenantETL/
 **No dependencies** - Pure business logic
 
 ```csharp
-// Entities/User.cs
+// Entities/Tenant.cs
 namespace MultiTenantETL.Domain.Entities
 {
-    public class User
+    public class Tenant : ITenantResource
     {
         public Guid Id { get; private set; }
-        public Email Email { get; private set; }
-        public string FirstName { get; private set; }
-        public string LastName { get; private set; }
-        public List<UserTenant> UserTenants { get; private set; } = new();
+        public string Name { get; private set; }
+        public string Slug { get; private set; }
+        public bool IsActive { get; private set; }
+        public DateTime CreatedAt { get; private set; }
         
-        private User() { } // For EF Core
+        // ITenantResource implementation
+        public Guid TenantId => Id;
         
-        public static User Create(Email email, string firstName, string lastName)
+        private Tenant() { } // For EF Core
+        
+        public static Tenant Create(string name, string slug)
         {
-            return new User
+            return new Tenant
             {
                 Id = Guid.NewGuid(),
-                Email = email,
-                FirstName = firstName,
-                LastName = lastName
+                Name = name,
+                Slug = slug,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
             };
         }
+        
+        public void Deactivate() => IsActive = false;
     }
 }
 
