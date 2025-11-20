@@ -20,7 +20,7 @@ Complete authentication and authorization system for Multi-Tenant ETL platform u
 This guide is split into focused modules for easier AI parsing (each file < 500 lines):
 
 ### **Architecture**
-0. **[Clean Architecture Structure](./auth/0-clean-architecture.md)**
+0. **[Clean Architecture Structure](./0-clean-architecture.md)**
    - Project organization (Domain, Application, Infrastructure, API)
    - Layer dependencies and responsibilities
    - Folder structure and file placement
@@ -28,24 +28,24 @@ This guide is split into focused modules for easier AI parsing (each file < 500 
    - Dependency injection per layer
 
 ### **Core Authentication**
-1. **[Setup & Configuration](./auth/1-setup.md)**
+1. **[Setup & Configuration](./1-setup.md)**
    - NuGet packages installation
    - Database models (ApplicationUser, ApplicationRole, UserTenant)
    - OpenIddict configuration
    - Error codes and enums
    - Application settings
 
-2. **[Email Service](./auth/2-email-service.md)**
+2. **[Email Service](./2-email-service.md)**
    - Azure Communication Services integration
    - Email templates (confirmation, reset, welcome)
    - Development mode (logging instead of sending)
 
-3. **[Controllers](./auth/3-controllers.md)**
+3. **[Controllers](./3-controllers.md)**
    - AuthenticationController (login, token refresh)
    - AccountController (registration, email confirmation, password reset)
    - All DTOs and request/response models
 
-4. **[Roles & Claims](./auth/4-roles-claims.md)**
+4. **[Roles & Claims](./4-roles-claims.md)**
    - Role seeding (Admin, Manager, User)
    - Role assignment to users
    - JWT claims population
@@ -53,14 +53,14 @@ This guide is split into focused modules for easier AI parsing (each file < 500 
    - Permission checking
 
 ### **Security & Authorization**
-5. **[Security Features](./auth/5-security.md)**
+5. **[Security Features](./5-security.md)**
    - Rate limiting (endpoint-specific)
    - CORS configuration
    - Security headers (HSTS, CSP, etc.)
    - Input validation and sanitization
    - Secrets management
 
-6. **[Authorization](./auth/6-authorization.md)**
+6. **[Authorization](./6-authorization.md)**
    - Permission matrix (complete resource permissions)
    - Authorization handlers and policies
    - Tenant isolation implementation
@@ -73,17 +73,17 @@ This guide is split into focused modules for easier AI parsing (each file < 500 
 
 ### Minimal Setup (Authentication Only)
 Read in this order:
-1. [Setup & Configuration](./auth/1-setup.md) - Get database and OpenIddict running
-2. [Controllers](./auth/3-controllers.md) - Implement login and registration
-3. [Email Service](./auth/2-email-service.md) - Add email confirmation
+1. [Setup & Configuration](./1-setup.md) - Get database and OpenIddict running
+2. [Controllers](./3-controllers.md) - Implement login and registration
+3. [Email Service](./2-email-service.md) - Add email confirmation
 
 **Result:** Working login, registration, and password reset
 
 ### Full Setup (Authentication + Authorization)
 Add these after minimal setup:
-4. [Roles & Claims](./auth/4-roles-claims.md) - Add role-based access
-5. [Authorization](./auth/6-authorization.md) - Implement permissions
-6. [Security Features](./auth/5-security.md) - Harden for production
+4. [Roles & Claims](./4-roles-claims.md) - Add role-based access
+5. [Authorization](./6-authorization.md) - Implement permissions
+6. [Security Features](./5-security.md) - Harden for production
 
 **Result:** Complete, production-ready auth/authz system
 
@@ -231,7 +231,7 @@ curl -X GET http://localhost:5000/api/pipelines \
 
 Examples: `pipelines:create`, `users:delete`, `connectors:*`, `*:read`
 
-See [Authorization](./auth/6-authorization.md) for complete matrix.
+See [Authorization](./6-authorization.md) for complete matrix.
 
 ---
 
@@ -276,10 +276,11 @@ See [Authorization](./auth/6-authorization.md) for complete matrix.
 
 ## Next Steps
 
-1. Start with **[Setup & Configuration](./auth/1-setup.md)**
-2. Follow the implementation checklist above
-3. Test each phase before moving to the next
-4. Refer to specific files as needed
+1. Start with **[Clean Architecture Structure](./0-clean-architecture.md)** - Understand project organization
+2. Then **[Setup & Configuration](./1-setup.md)** - Install and configure
+3. Follow the implementation checklist above
+4. Test each phase before moving to the next
+5. Refer to specific files as needed
 
 ---
 
@@ -287,13 +288,13 @@ See [Authorization](./auth/6-authorization.md) for complete matrix.
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| [0-clean-architecture.md](./auth/0-clean-architecture.md) | ~500 | Clean Architecture structure & layers |
-| [1-setup.md](./auth/1-setup.md) | ~450 | Installation, database, OpenIddict |
-| [2-email-service.md](./auth/2-email-service.md) | ~300 | Email implementation |
-| [3-controllers.md](./auth/3-controllers.md) | ~500 | Authentication & account controllers |
-| [4-roles-claims.md](./auth/4-roles-claims.md) | ~480 | Roles, claims, permissions |
-| [5-security.md](./auth/5-security.md) | ~470 | Rate limiting, CORS, security |
-| [6-authorization.md](./auth/6-authorization.md) | ~490 | Authorization handlers, permissions matrix |
+| [0-clean-architecture.md](./0-clean-architecture.md) | ~500 | Clean Architecture structure & layers |
+| [1-setup.md](./1-setup.md) | ~450 | Installation, database, OpenIddict |
+| [2-email-service.md](./2-email-service.md) | ~300 | Email implementation |
+| [3-controllers.md](./3-controllers.md) | ~500 | Authentication & account controllers |
+| [4-roles-claims.md](./4-roles-claims.md) | ~480 | Roles, claims, permissions |
+| [5-security.md](./5-security.md) | ~470 | Rate limiting, CORS, security |
+| [6-authorization.md](./6-authorization.md) | ~490 | Authorization handlers, permissions matrix |
 
 **Total:** ~3,200 lines split across 7 focused files
 
