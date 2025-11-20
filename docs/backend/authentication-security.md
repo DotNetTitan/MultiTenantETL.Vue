@@ -12,15 +12,13 @@ This document defines authentication and security implementation for the Multi-T
 
 - **OpenIddict** - OAuth 2.0 & OpenID Connect server
 - **ASP.NET Core Identity** - User management and authentication
-- **External OAuth Providers** - Google, Microsoft, GitHub (optional)
 
 ### Key Features
 
 ✅ **Standards-Compliant** - OAuth 2.0 / OpenID Connect  
 ✅ **Multi-Tenant** - User can belong to multiple tenants  
-✅ **External Providers** - Social login support  
 ✅ **Token Management** - Access tokens, refresh tokens, revocation  
-✅ **Built-in Security** - Account lockout, password policies, two-factor auth  
+✅ **Built-in Security** - Account lockout, password policies  
 ✅ **Production-Ready** - Battle-tested, enterprise-grade  
 
 ---
@@ -37,10 +35,7 @@ dotnet add package OpenIddict.AspNetCore
 dotnet add package OpenIddict.EntityFrameworkCore
 dotnet add package OpenIddict.Quartz
 
-# External providers (optional)
-dotnet add package Microsoft.AspNetCore.Authentication.Google
-dotnet add package Microsoft.AspNetCore.Authentication.MicrosoftAccount
-dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+
 ```
 
 ---

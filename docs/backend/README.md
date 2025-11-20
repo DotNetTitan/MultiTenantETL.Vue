@@ -8,12 +8,19 @@
 
 ### Critical Documents (Ready for Development)
 
-1. **[authentication-security.md](./authentication-security.md)** ✅
-   - JWT configuration (HS256, 15-min tokens)
-   - Password policy (BCrypt, 8+ chars, complexity)
-   - Account lockout (5 attempts, 15-min duration)
-   - CORS, rate limiting, security headers
-   - API key management
+1. **[authentication-guide.md](./authentication-guide.md)** ✅ **MAIN INDEX - START HERE**
+   - Overview of complete auth/authz system
+   - Quick start guide
+   - File structure and navigation
+   - Implementation checklist
+   - **References 7 focused modules** (each < 500 lines):
+     - [Clean Architecture Structure](./auth/0-clean-architecture.md) ⭐ **START HERE**
+     - [Setup & Configuration](./auth/1-setup.md)
+     - [Email Service](./auth/2-email-service.md)
+     - [Controllers](./auth/3-controllers.md)
+     - [Roles & Claims](./auth/4-roles-claims.md)
+     - [Security Features](./auth/5-security.md)
+     - [Authorization](./auth/6-authorization.md)
 
 2. **[authorization-matrix.md](./authorization-matrix.md)** ✅
    - Complete permissions matrix for Admin/Manager/User
