@@ -3,14 +3,7 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('users.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        @click="showCreateDialog = true"
-      >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('users.createUser') }}</span>
-      </v-btn>
+      <!-- Note: Users are created via registration endpoint, not directly -->
     </div>
 
     <v-card>
@@ -259,7 +252,15 @@ async function fetchUsers() {
 }
 
 function editUser(user) {
-  editedUser.value = { ...user };
+  // Convert roles array to single role for the form
+  const role = Array.isArray(user.roles) && user.roles.length > 0 
+    ? user.roles[0] 
+    : 'User';
+  
+  editedUser.value = { 
+    ...user,
+    role: role
+  };
   showCreateDialog.value = true;
 }
 
