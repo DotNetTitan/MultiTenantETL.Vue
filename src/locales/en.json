@@ -92,6 +92,7 @@
     "executions": "Executions",
     "tenants": "Tenants",
     "users": "Users",
+    "auditLogs": "Audit Logs",
     "settings": "Settings",
     "logout": "Logout"
   },
@@ -792,5 +793,24 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "auditLogs": {
+    "title": "Audit Logs",
+    "details": "Audit Log Details",
+    "action": "Action",
+    "user": "User",
+    "resource": "Resource",
+    "resourceType": "Resource Type",
+    "severity": "Severity",
+    "status": "Status",
+    "timestamp": "Timestamp",
+    "ipAddress": "IP Address",
+    "description": "Description",
+    "metadata": "Metadata",
+    "error": "Error",
+    "tenant": "Tenant",
+    "filterByAction": "Filter by Action",
+    "filterByResource": "Filter by Resource Type",
+    "filterBySeverity": "Filter by Severity"
   }
 }

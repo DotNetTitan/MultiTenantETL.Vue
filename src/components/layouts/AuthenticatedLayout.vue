@@ -138,6 +138,9 @@
             <v-list-item to="/users" prepend-icon="mdi-account-group" rounded="lg">
               <template #title>{{ $t('nav.users') }}</template>
             </v-list-item>
+            <v-list-item to="/audit-logs" prepend-icon="mdi-shield-check" rounded="lg">
+              <template #title>{{ $t('nav.auditLogs') }}</template>
+            </v-list-item>
             <v-list-item to="/settings" prepend-icon="mdi-cog" rounded="lg">
               <template #title>{{ $t('nav.settings') }}</template>
             </v-list-item>
