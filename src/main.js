@@ -101,4 +101,9 @@ app.use(MotionPlugin)
 // Set initial HTML lang attribute
 document.documentElement.setAttribute('lang', savedLocale)
 
+// Initialize auth store
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
+authStore.initialize()
+
 app.mount('#app')

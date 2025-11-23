@@ -6,6 +6,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      redirect: '/dashboard'
+    },
+    {
+      path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/DashboardView.vue'),
       meta: { requiresAuth: true }
@@ -14,6 +18,35 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/ForgotPasswordView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/auth/reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+      meta: { guest: true }
+    },
+    {
+      path: '/auth/confirm-email',
+      name: 'confirm-email',
+      component: () => import('@/views/ConfirmEmailView.vue'),
       meta: { guest: true }
     },
     {

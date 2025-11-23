@@ -56,9 +56,29 @@ export const useTenantStore = defineStore('tenant', () => {
     }
   }
 
-  function setCurrentTenant(tenantId) {
-    currentTenantId.value = tenantId
-    localStorage.setItem('currentTenantId', tenantId || '')
+  async function setCurrentTenant(tenantId) {
+    try {
+      loading.value = true
+      error.value = null
+      
+      // Call backend to switch tenant and get new tokens
+      const { useAuthStore } = await import('./auth')
+      const authStore = useAuthStore()
+      await authStore.switchTenant(tenantId)
+      
+      // Update local state
+      currentTenantId.value = tenantId
+      localStorage.setItem('currentTenantId', tenantId || '')
+      
+      // Reload page to refresh all data with new tenant context
+      window.location.reload()
+    } catch (err) {
+      console.error('Error switching tenant:', err)
+      error.value = 'Failed to switch tenant. Please try again.'
+      throw err
+    } finally {
+      loading.value = false
+    }
   }
 
   return {

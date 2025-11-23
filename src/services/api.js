@@ -6,15 +6,16 @@ import { useTenantStore } from '@/stores/tenant'
 // Create axios instance with configuration
 const api = axios.create(API_CONFIG)
 
-// Request interceptor
+// Request interceptor - add auth token and tenant header
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore()
     const tenantStore = useTenantStore()
 
     // Add auth token if it exists
-    if (authStore.token) {
-      config.headers.Authorization = `Bearer ${authStore.token}`
+    const token = localStorage.getItem('access_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
     }
 
     // Add tenant ID if it exists
@@ -29,37 +30,58 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor
+// Response interceptor - handle token refresh on 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const authStore = useAuthStore()
-    
+    const originalRequest = error.config
+
+    // If 401 and not already retried, try to refresh token
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        // Import auth service dynamically to avoid circular dependency
+        const { authService } = await import('./authService')
+
+        // Attempt token refresh
+        await authService.refreshToken()
+
+        // Retry original request with new token
+        const newToken = localStorage.getItem('access_token')
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+        }
+
+        return api(originalRequest)
+      } catch (refreshError) {
+        // Refresh failed - logout and redirect to login
+        const authStore = useAuthStore()
+        authStore.clearAuth()
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
+    }
+
     // Handle different error scenarios
     if (error.response) {
       // Server responded with error status
       switch (error.response.status) {
-        case 401:
-          // Unauthorized - token expired or invalid
-          await authStore.logout()
-          window.location.href = '/login'
-          break
         case 403:
-          // Forbidden - user doesn't have permission
           error.userMessage = 'You do not have permission to perform this action.'
           break
         case 404:
-          // Not found
           error.userMessage = 'The requested resource was not found.'
           break
         case 422:
-          // Validation error
           error.userMessage = error.response.data?.message || 'Validation failed. Please check your input.'
+          break
+        case 429:
+          error.userMessage = 'Too many requests. Please try again later.'
           break
         case 500:
         case 502:
         case 503:
-          // Server errors
           error.userMessage = 'A server error occurred. Please try again later.'
           break
         default:
@@ -73,7 +95,7 @@ api.interceptors.response.use(
       // Something else happened
       error.userMessage = 'An unexpected error occurred.'
     }
-    
+
     return Promise.reject(error)
   }
 )

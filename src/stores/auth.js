@@ -2,39 +2,56 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import router from '@/router'
 import { authService } from '@/services/authService'
+import { getCurrentUser, isAdmin as checkIsAdmin } from '@/utils/jwtHelper'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token') || null)
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  // State
+  const user = ref(null)
   const error = ref(null)
   const loading = ref(false)
   const apiOffline = ref(false)
 
-  const isAuthenticated = computed(() => !!token.value)
-  const isAdmin = computed(() => user.value?.isAdmin || false)
+  // Computed properties
+  const isAuthenticated = computed(() => !!user.value)
+  const isAdmin = computed(() => user.value ? checkIsAdmin() : false)
+  const token = computed(() => authService.getAccessToken()) // For backward compatibility
 
+  /**
+   * Initialize - load user from token if available
+   */
+  function initialize() {
+    if (authService.isAuthenticated()) {
+      user.value = getCurrentUser()
+    }
+  }
+
+  /**
+   * Login with email and password
+   */
   async function login(credentials) {
     try {
       loading.value = true
       error.value = null
       apiOffline.value = false
-      
+
       const response = await authService.login(credentials)
-      setUser(response.user)
-      setToken(response.token)
-      router.push('/')
+      user.value = response.user
+
+      // Navigate to dashboard after successful login
+      router.push('/dashboard')
+      return true
     } catch (err) {
       console.error('Login error:', err)
-      
-      if (err.isConnectionError || err.code === 'ERR_NETWORK' || err.code === 'ERR_CONNECTION_REFUSED') {
+
+      if (err.isNetworkError || err.code === 'ERR_NETWORK' || err.code === 'ERR_CONNECTION_REFUSED') {
         apiOffline.value = true
         error.value = 'Cannot connect to the server. Please ensure the API server is running.'
-      } else if (err.response?.status === 401) {
-        error.value = 'Invalid username or password'
+      } else if (err.response?.status === 401 || err.oauthError === 'invalid_grant') {
+        error.value = 'Invalid email or password'
       } else if (err.response?.status === 429) {
         error.value = 'Too many login attempts. Please try again later.'
       } else {
-        error.value = 'Login failed. Please try again later.'
+        error.value = err.message || 'Login failed. Please try again later.'
       }
       throw err
     } finally {
@@ -42,48 +59,181 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function logout() {
+  /**
+   * Register new user
+   */
+  async function register(userData) {
     try {
-      if (token.value) {
-        await authService.logout()
-      }
+      loading.value = true
+      error.value = null
+
+      await authService.register(userData)
+      return true
     } catch (err) {
-      // Even if logout API call fails, we still want to clear user session locally
-      console.warn('Logout error handled:', err.message)
+      console.error('Registration error:', err)
+      error.value = err.response?.data?.message || err.userMessage || 'Registration failed. Please try again.'
+      throw err
     } finally {
-      setUser(null)
-      setToken(null)
-      router.push('/login')
+      loading.value = false
     }
   }
 
+  /**
+   * Logout
+   */
+  async function logout() {
+    try {
+      // Clear state immediately to update UI
+      clearAuth()
+
+      // Navigate immediately
+      router.push('/login')
+
+      // Call backend to revoke tokens in background
+      await authService.logout()
+    } catch (err) {
+      console.warn('Logout error handled:', err.message)
+    }
+  }
+
+  /**
+   * Forgot password
+   */
+  async function forgotPassword(email) {
+    try {
+      loading.value = true
+      error.value = null
+
+      await authService.forgotPassword(email)
+      return true
+    } catch (err) {
+      console.error('Forgot password error:', err)
+      error.value = err.response?.data?.message || err.userMessage || 'Failed to send reset email.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Reset password
+   */
+  async function resetPassword(userId, token, newPassword) {
+    try {
+      loading.value = true
+      error.value = null
+
+      await authService.resetPassword(userId, token, newPassword)
+      return true
+    } catch (err) {
+      console.error('Reset password error:', err)
+      error.value = err.response?.data?.message || err.userMessage || 'Failed to reset password.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Change password (authenticated users)
+   */
+  async function changePassword(currentPassword, newPassword, confirmPassword) {
+    try {
+      loading.value = true
+      error.value = null
+
+      await authService.changePassword(currentPassword, newPassword, confirmPassword)
+      return true
+    } catch (err) {
+      console.error('Change password error:', err)
+      error.value = err.response?.data?.message || err.userMessage || 'Failed to change password.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Switch tenant
+   */
+  async function switchTenant(tenantId) {
+    try {
+      loading.value = true
+      error.value = null
+
+      await authService.switchTenant(tenantId)
+
+      // Reload user from new token
+      user.value = getCurrentUser()
+
+      return true
+    } catch (err) {
+      console.error('Tenant switch error:', err)
+      error.value = 'Failed to switch tenant. Please try again.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Clear authentication state
+   */
+  function clearAuth() {
+    user.value = null
+    authService.clearTokens()
+  }
+
+  /**
+   * Reset UI state (loading, error)
+   */
+  function resetState() {
+    loading.value = false
+    error.value = null
+    apiOffline.value = false
+  }
+
+  /**
+   * Legacy methods for backward compatibility
+   */
   function setUser(userData) {
     user.value = userData
-    if (userData) {
-      localStorage.setItem('user', JSON.stringify(userData))
-    } else {
-      localStorage.removeItem('user')
-    }
   }
 
   function setToken(newToken) {
-    token.value = newToken
-    if (newToken) {
-      localStorage.setItem('token', newToken)
-    } else {
-      localStorage.removeItem('token')
-    }
+    // Not used anymore - tokens managed by authService
+    console.warn('setToken is deprecated - use authService directly')
   }
 
+  // Initialize on store creation
+  initialize()
+
   return {
-    token,
+    // State
     user,
     error,
     loading,
     apiOffline,
+    token, // For backward compatibility
+
+    // Computed
     isAuthenticated,
     isAdmin,
+
+    // Actions
     login,
-    logout
+    register,
+    logout,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    switchTenant,
+    clearAuth,
+    resetState,
+    initialize,
+
+    // Legacy (backward compatibility)
+    setUser,
+    setToken
   }
 })

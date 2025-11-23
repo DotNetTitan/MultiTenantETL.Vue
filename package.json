@@ -12,6 +12,7 @@
     "@google/generative-ai": "^0.24.1",
     "@vueuse/motion": "^3.0.3",
     "axios": "^1.6.7",
+    "jwt-decode": "^4.0.0",
     "marked": "^17.0.0",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
