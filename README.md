@@ -22,14 +22,16 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 ## Tech Stack
 
 - **Frontend Framework**: Vue 3 with Composition API (script setup syntax)
-- **UI Framework**: Vuetify 3 (Material Design)
-- **State Management**: Pinia
-- **Router**: Vue Router with route guards
-- **Build Tool**: Vite
-- **HTTP Client**: Axios
-- **Styling**: SASS
-- **Code Highlighting**: Prism.js
+- **UI Framework**: Vuetify 3 (Material Design components)
+- **State Management**: Pinia stores (auth, tenant)
+- **Router**: Vue Router with route guards (authentication, admin roles)
+- **Build Tool**: Vite (fast dev server and optimized builds)
+- **HTTP Client**: Axios with interceptors
+- **Internationalization**: Vue I18n (6 languages: en, es, fr, de, it, pt)
+- **Styling**: SASS with CSS custom properties
+- **Code Highlighting**: Prism.js (JavaScript/C# syntax)
 - **File Processing**: PapaParse (CSV), XLSX (Excel)
+- **AI Integration**: Google Gemini AI for chatbot assistant
 
 ## Prerequisites
 
@@ -60,15 +62,29 @@ The application will be available at `http://localhost:5173`
 
 ### API Backend
 
-The frontend expects a REST API backend. Configure the API URL in `.env.production`:
+The frontend expects a REST API backend (ASP.NET Core Web API). Configure the API URL:
 
+**Development** (default in `src/config/api.js`):
+```
+http://localhost:5000/api
+```
+
+**Production** (`.env.production`):
 ```
 VITE_API_URL=https://your-api-url.com
 ```
 
-For development, the default API URL is `http://localhost:5000/api` (configured in `src/config/api.js`).
+The backend should implement OAuth 2.0 authentication with OpenIddict. See the backend README and API documentation for setup instructions.
 
-See `api-specification.md` for the complete API contract.
+### Google Gemini AI (Optional)
+
+For the AI chatbot assistant, configure your Gemini API key in `.env`:
+
+```
+VITE_GEMINI_API_KEY=your-gemini-api-key
+```
+
+Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 ## Available Scripts
 
@@ -231,11 +247,13 @@ src/
 
 ### Internationalization (i18n)
 - Full multi-language support with Vue I18n
-- Currently supports: English, Spanish, French, German, Italian, Portuguese
+- Currently supports: English (en), Spanish (es), French (fr), German (de), Italian (it), Portuguese (pt)
 - Language persistence in localStorage
 - Automatic Vuetify component translation
 - AI chatbot responds in user's selected language
-- Easy to add new languages by creating translation files
+- Metadata service provides translated dropdown options
+- Easy to add new languages by creating JSON translation files in `src/locales/`
+- Language switcher component in navigation bar
 
 ## Contributing
 
