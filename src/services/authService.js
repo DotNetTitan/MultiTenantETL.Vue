@@ -7,7 +7,18 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 // OAuth client configuration  
 const CLIENT_ID = 'multitenant-etl-postman'
 const CLIENT_SECRET = 'super-secret-oauth-key-2025-change-in-prod'
-const SCOPES = 'openid email profile roles api offline_access'
+
+// OAuth scopes
+const SCOPES = {
+  OPENID: 'openid',
+  EMAIL: 'email',
+  PROFILE: 'profile',
+  ROLES: 'roles',
+  API: 'api',
+  OFFLINE_ACCESS: 'offline_access'
+}
+
+const DEFAULT_SCOPES = `${SCOPES.OPENID} ${SCOPES.EMAIL} ${SCOPES.PROFILE} ${SCOPES.ROLES} ${SCOPES.API} ${SCOPES.OFFLINE_ACCESS}`
 
 /**
  * Authentication Service
@@ -28,7 +39,7 @@ export const authService = {
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
         grant_type: 'password',
-        scope: SCOPES
+        scope: DEFAULT_SCOPES
       })
 
       // Make token request with form-urlencoded content type
@@ -74,7 +85,7 @@ export const authService = {
 
   /**
    * Refresh access token using refresh token
-   * @returns {Promise<{accessToken: string, refreshToken: string, expiresIn: number}>}
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, idToken: string, expiresIn: number, tokenType: string}>}
    */
   async refreshToken() {
     try {
@@ -88,7 +99,7 @@ export const authService = {
         client_secret: CLIENT_SECRET,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        scope: SCOPES
+        scope: DEFAULT_SCOPES
       })
 
       const response = await fetch(`${API_BASE}/connect/token`, {
@@ -108,7 +119,11 @@ export const authService = {
 
       this.setTokens(access_token, refresh_token, id_token)
 
+      // Decode id_token to get updated user information
+      const user = getCurrentUser()
+
       return {
+        user,
         accessToken: access_token,
         refreshToken: refresh_token,
         idToken: id_token,
@@ -235,7 +250,7 @@ export const authService = {
   /**
    * Switch tenant for multi-tenant support
    * @param {string} tenantId - Tenant ID (UUID)
-   * @returns {Promise<{accessToken: string, refreshToken: string}>}
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, idToken: string}>}
    */
   async switchTenant(tenantId) {
     console.log('Switching to tenant:', tenantId, 'Type:', typeof tenantId)
@@ -246,16 +261,30 @@ export const authService = {
     try {
       const response = await api.post(API_ENDPOINTS.auth.switchTenant, payload)
 
-      // Backend updates the database but doesn't return new tokens
-      // We need to refresh the token to get updated tenant claims
+      // Backend updates the database and tells us to refresh token
       if (response.data.requiresTokenRefresh) {
-        await this.refreshToken()
+        // Refresh token to get new tokens with updated tenant claims
+        const tokenResponse = await this.refreshToken()
+        
+        return {
+          user: tokenResponse.user,
+          accessToken: tokenResponse.accessToken,
+          refreshToken: tokenResponse.refreshToken,
+          idToken: tokenResponse.idToken,
+          expiresIn: tokenResponse.expiresIn,
+          tokenType: tokenResponse.tokenType,
+          tenantName: response.data.tenantName
+        }
       }
 
+      // Fallback (shouldn't reach here)
+      const user = getCurrentUser()
       return {
-        currentTenantId: response.data.currentTenantId,
-        tenantName: response.data.tenantName,
-        message: response.data.message
+        user,
+        accessToken: this.getAccessToken(),
+        refreshToken: this.getRefreshToken(),
+        idToken: this.getIdToken(),
+        tenantName: response.data.tenantName
       }
     } catch (error) {
       console.error('Switch tenant error details:', {

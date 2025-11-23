@@ -172,10 +172,10 @@ export const useAuthStore = defineStore('auth', () => {
       loading.value = true
       error.value = null
 
-      await authService.switchTenant(tenantId)
+      const response = await authService.switchTenant(tenantId)
 
-      // Reload user from new token
-      user.value = getCurrentUser()
+      // Update user with new token data (includes updated tenant info)
+      user.value = response.user
 
       return true
     } catch (err) {

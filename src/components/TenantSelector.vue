@@ -21,11 +21,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, inject } from 'vue';
 import { useTenantStore } from '@/stores/tenant';
 
 const tenantStore = useTenantStore();
 const selectedTenantId = ref(tenantStore.currentTenantId);
+const showNotification = inject('showNotification', null);
 
 // Convert tenants array to format needed for v-select
 const tenantItems = computed(() => {
@@ -39,8 +40,24 @@ const tenantItems = computed(() => {
     }));
 });
 
-function changeTenant(tenantId) {
-  tenantStore.setCurrentTenant(tenantId);
+async function changeTenant(tenantId) {
+  try {
+    await tenantStore.setCurrentTenant(tenantId);
+    
+    // Find tenant name for notification
+    const tenant = tenantStore.tenants.find(t => t.id === tenantId);
+    const tenantName = tenant?.name || 'tenant';
+    
+    // Show success notification
+    if (showNotification) {
+      showNotification(`Switched to ${tenantName}`, 'success');
+    }
+  } catch (error) {
+    // Error is already handled in store, just show notification
+    if (showNotification) {
+      showNotification('Failed to switch tenant', 'error');
+    }
+  }
 }
 
 // Watch for current tenant changes in store

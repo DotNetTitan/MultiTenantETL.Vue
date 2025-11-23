@@ -70,8 +70,13 @@ export const useTenantStore = defineStore('tenant', () => {
       currentTenantId.value = tenantId
       localStorage.setItem('currentTenantId', tenantId || '')
       
-      // Reload page to refresh all data with new tenant context
-      window.location.reload()
+      // Navigate to dashboard with smooth transition (no page reload!)
+      const router = (await import('@/router')).default
+      if (router.currentRoute.value.path !== '/dashboard') {
+        router.push('/dashboard')
+      }
+      
+      return true
     } catch (err) {
       console.error('Error switching tenant:', err)
       error.value = 'Failed to switch tenant. Please try again.'
