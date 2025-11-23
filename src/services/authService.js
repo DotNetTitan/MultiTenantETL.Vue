@@ -6,7 +6,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
 // OAuth client configuration  
 const CLIENT_ID = 'multitenant-etl-postman'
-const CLIENT_SECRET = 'postman-secret-key-change-in-production'
+const CLIENT_SECRET = 'super-secret-oauth-key-2025-change-in-prod'
 const SCOPES = 'openid email profile roles api offline_access'
 
 /**
