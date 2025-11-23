@@ -30,10 +30,6 @@
           :items-per-page="10"
           class="mt-2"
         >
-          <template #item.contact="{ item }">
-            <div>{{ item.contactName }}</div>
-            <div class="text-caption">{{ item.contactEmail }}</div>
-          </template>
           <template #item.isActive="{ item }">
             <v-chip
               :color="item.isActive ? 'success' : 'error'"
@@ -47,6 +43,13 @@
           </template>
           <template #item.actions="{ item }">
             <v-btn
+              icon="mdi-account-multiple"
+              size="small"
+              variant="text"
+              color="primary"
+              @click="openUsersDialog(item)"
+            />
+            <v-btn
               icon="mdi-pencil"
               size="small"
               variant="text"
@@ -58,13 +61,6 @@
               variant="text"
               color="error"
               @click="confirmDelete(item)"
-            />
-            <v-btn
-              :icon="item.isActive ? 'mdi-close' : 'mdi-check'"
-              size="small"
-              variant="text"
-              :color="item.isActive ? 'error' : 'success'"
-              @click="toggleTenantStatus(item)"
             />
           </template>
         </v-data-table>
@@ -120,6 +116,29 @@
       :message="$t('tenants.deleteConfirm')"
       @confirm="deleteTenant"
     />
+
+    <!-- Tenant Users Dialog -->
+    <v-dialog v-model="showUsersDialog" max-width="800">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          {{ $t('tenants.manageUsers') }} - {{ selectedTenant?.name }}
+          <v-spacer />
+          <v-btn
+            icon
+            variant="text"
+            @click="showUsersDialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <tenant-users
+            v-if="selectedTenant"
+            :tenant-id="selectedTenant.id"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -127,16 +146,21 @@
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
+import { useAuthStore } from '@/stores/auth';
 import { tenantService } from '@/services/tenantService';
 import TableFilters from '@/components/table/TableFilters.vue';
 import TenantForm from '@/components/tenants/TenantForm.vue';
+import TenantUsers from '@/components/tenants/TenantUsers.vue';
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
+
+const authStore = useAuthStore();
 
 const loading = ref(false);
 const error = ref(null);
 const tenants = ref([]);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showUsersDialog = ref(false);
 const selectedTenant = ref(null);
 const statusFilter = ref('all');
 const sortBy = ref('name');
@@ -164,21 +188,17 @@ const sortOptions = computed(() => [
 // Data table headers
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
-  { title: t('tenants.identifier'), key: 'identifier' },
-  { title: t('tenants.contact'), key: 'contact', sortable: false },
+  { title: t('tenants.slug'), key: 'slug' },
   { title: t('common.status'), key: 'isActive', width: '120px' },
   { title: t('common.created'), key: 'createdAt', width: '180px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '150px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '200px', align: 'end' }
 ]);
 
 function createEmptyTenant() {
   return {
     name: '',
-    identifier: '',
-    description: '',
-    contactName: '',
-    contactEmail: '',
-    isActive: true
+    slug: '',
+    description: ''
   };
 }
 
@@ -203,13 +223,17 @@ function confirmDelete(tenant) {
   showDeleteDialog.value = true;
 }
 
+function openUsersDialog(tenant) {
+  selectedTenant.value = tenant;
+  showUsersDialog.value = true;
+}
+
 // Data operations with error handling
 async function fetchTenants() {
   try {
     loading.value = true;
     error.value = null;
-    const allTenants = await tenantService.getAll();
-    tenants.value = tenantService.applyFilters(allTenants, {
+    tenants.value = await tenantService.getAll({
       status: statusFilter.value,
       sort: sortBy.value
     });
@@ -259,19 +283,7 @@ async function deleteTenant() {
   }
 }
 
-async function toggleTenantStatus(tenant) {
-  try {
-    loading.value = true;
-    error.value = null;
-    await tenantService.toggleStatus(tenant.id);
-    await fetchTenants();
-  } catch (err) {
-    console.error('Error toggling tenant status:', err);
-    error.value = 'Failed to update tenant status';
-  } finally {
-    loading.value = false;
-  }
-}
+
 
 // Event handlers
 function handleFilter({ key, value }) {
@@ -287,6 +299,38 @@ function handleSort(value) {
 }
 
 onMounted(() => {
+  // Log current user info for debugging
+  console.log('Current user:', authStore.user);
+  console.log('User role:', authStore.user?.role);
+  console.log('Is admin:', authStore.isAdmin);
+  
+  // Log the actual tokens to inspect
+  const idToken = localStorage.getItem('id_token');
+  const accessToken = localStorage.getItem('access_token');
+  
+  console.log('ID Token (first 50 chars):', idToken?.substring(0, 50));
+  console.log('Access Token (first 50 chars):', accessToken?.substring(0, 50));
+  
+  if (idToken) {
+    try {
+      const decoded = JSON.parse(atob(idToken.split('.')[1]));
+      console.log('Decoded ID token:', decoded);
+      console.log('Role claim in ID token:', decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']);
+    } catch (e) {
+      console.error('Failed to decode ID token:', e);
+    }
+  }
+  
+  if (accessToken) {
+    try {
+      const decoded = JSON.parse(atob(accessToken.split('.')[1]));
+      console.log('Decoded Access token:', decoded);
+      console.log('Role claim in Access token:', decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']);
+    } catch (e) {
+      console.log('Access token is encrypted (JWE) or not a JWT - this is normal for OpenIddict');
+    }
+  }
+  
   fetchTenants();
 });
 </script>

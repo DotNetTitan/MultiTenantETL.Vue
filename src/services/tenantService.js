@@ -1,207 +1,147 @@
-import { mockTenants } from '@/mocks/tenants'
-
-// Local storage key for tenants
-const TENANTS_STORAGE_KEY = 'app_tenants'
-// Helper to get tenants from storage
-const getStoredTenants = () => {
-  const stored = localStorage.getItem(TENANTS_STORAGE_KEY)
-  return stored ? JSON.parse(stored) : mockTenants
-}
-
-// Helper to save tenants to storage
-const saveTenants = (tenants) => {
-  localStorage.setItem(TENANTS_STORAGE_KEY, JSON.stringify(tenants))
-}
-
-// Sort functions
-const sortFunctions = {
-  name_asc: (a, b) => a.name.localeCompare(b.name),
-  name_desc: (b, a) => a.name.localeCompare(b.name),
-  createdAt_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-  createdAt_desc: (b, a) => new Date(a.createdAt) - new Date(b.createdAt)
-};
+import api from './api'
 
 export const tenantService = {
-  async getAll(filters = {}, sortBy = 'name') {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    let tenants = getStoredTenants();
-    
-    // Apply filters
-    if (filters.status && filters.status !== 'all') {
-      const isActive = filters.status === 'active';
-      tenants = tenants.filter(tenant => tenant.isActive === isActive);
-    }
+  /**
+   * Get all tenants (SuperAdmin) or current user's tenants
+   */
+  async getAll(filters = {}) {
+    const params = {}
     
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      tenants = tenants.filter(tenant => 
-        tenant.name.toLowerCase().includes(searchLower) ||
-        tenant.identifier.toLowerCase().includes(searchLower) ||
-        tenant.description?.toLowerCase().includes(searchLower)
-      );
+      params.search = filters.search
+    }
+    
+    if (filters.status && filters.status !== 'all') {
+      params.isActive = filters.status === 'active'
     }
 
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      tenants.sort(sortFunctions[filters.sort]);
-    } else {
-      // Default sort by name
-      tenants.sort(sortFunctions.name_asc);
-    }
-
-    return tenants;
+    const response = await api.get('/api/Tenants', { params })
+    return response.data
   },
 
+  /**
+   * Get current user's tenants
+   */
+  async getMyTenants() {
+    const response = await api.get('/api/Tenants/my-tenants')
+    return response.data
+  },
+
+  /**
+   * Get tenant by ID
+   */
   async getById(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const tenant = getStoredTenants().find(t => t.id === id);
-    if (!tenant) {
-      const error = new Error('Tenant not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    return { ...tenant };
+    const response = await api.get(`/api/Tenants/${id}`)
+    return response.data
   },
 
+  /**
+   * Create new tenant (SuperAdmin only)
+   */
   async create(tenantData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const tenants = getStoredTenants();
-    
-    // Check if identifier is already taken
-    if (tenants.some(t => t.identifier === tenantData.identifier)) {
-      const error = new Error('Tenant identifier already exists');
-      error.response = { status: 400 };
-      throw error;
-    }
-    
-    const newTenant = {
-      ...tenantData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    tenants.push(newTenant);
-    saveTenants(tenants);
-    
-    return { ...newTenant };
+    const response = await api.post('/api/Tenants', tenantData)
+    return response.data
   },
 
+  /**
+   * Update tenant (Admin)
+   */
   async update(id, tenantData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    const tenants = getStoredTenants();
-    const index = tenants.findIndex(t => t.id === id);
-    
-    if (index === -1) {
-      const error = new Error('Tenant not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    // Check if identifier is already taken by another tenant
-    if (tenantData.identifier && 
-        tenantData.identifier !== tenants[index].identifier && 
-        tenants.some(t => t.identifier === tenantData.identifier)) {
-      const error = new Error('Tenant identifier already exists');
-      error.response = { status: 400 };
-      throw error;
-    }
-    
-    const updatedTenant = {
-      ...tenants[index],
-      ...tenantData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    tenants[index] = updatedTenant;
-    saveTenants(tenants);
-    
-    return { ...updatedTenant };
+    const response = await api.put(`/api/Tenants/${id}`, tenantData)
+    return response.data
   },
 
+  /**
+   * Delete tenant (SuperAdmin only)
+   */
   async delete(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const tenants = getStoredTenants();
-    const index = tenants.findIndex(t => t.id === id);
-    
-    if (index === -1) {
-      const error = new Error('Tenant not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    tenants.splice(index, 1);
-    saveTenants(tenants);
-    
-    return true;
+    await api.delete(`/api/Tenants/${id}`)
+    return true
   },
 
-  async toggleStatus(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    const tenants = getStoredTenants();
-    const index = tenants.findIndex(t => t.id === id);
-    
-    if (index === -1) {
-      const error = new Error('Tenant not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    const updatedTenant = {
-      ...tenants[index],
-      isActive: !tenants[index].isActive,
-      updatedAt: new Date().toISOString()
-    };
-    
-    tenants[index] = updatedTenant;
-    saveTenants(tenants);
-    
-    return { ...updatedTenant };
+  /**
+   * Get users in tenant
+   */
+  async getTenantUsers(tenantId) {
+    const response = await api.get(`/api/Tenants/${tenantId}/users`)
+    return response.data
   },
 
+  /**
+   * Add user to tenant
+   */
+  async addUserToTenant(tenantId, userId, roleCode = 'User') {
+    const response = await api.post(`/api/Tenants/${tenantId}/users`, { 
+      userId, 
+      tenantId, 
+      roleCode 
+    })
+    return response.data
+  },
+
+  /**
+   * Remove user from tenant
+   */
+  async removeUserFromTenant(tenantId, userId) {
+    await api.delete(`/api/Tenants/${tenantId}/users/${userId}`)
+    return true
+  },
+
+  /**
+   * Update user role in tenant
+   */
+  async updateUserRole(tenantId, userId, roleCode) {
+    const response = await api.put(`/api/Tenants/${tenantId}/users/${userId}/role`, { roleCode })
+    return response.data
+  },
+
+  /**
+   * Format date for display
+   */
   formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return date.toLocaleString()
   },
 
+  /**
+   * Client-side filtering and sorting (for already fetched data)
+   */
   applyFilters(tenants, filters = {}) {
-    let filtered = [...tenants];
+    let filtered = [...tenants]
     
-    // Apply status filter
     if (filters.status && filters.status !== 'all') {
-      const isActive = filters.status === 'active';
-      filtered = filtered.filter(tenant => tenant.isActive === isActive);
+      const isActive = filters.status === 'active'
+      filtered = filtered.filter(tenant => tenant.isActive === isActive)
     }
 
-    // Apply search
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
+      const searchLower = filters.search.toLowerCase()
       filtered = filtered.filter(tenant => 
-        tenant.name.toLowerCase().includes(searchLower) ||
-        tenant.identifier.toLowerCase().includes(searchLower) ||
+        tenant.name?.toLowerCase().includes(searchLower) ||
+        tenant.slug?.toLowerCase().includes(searchLower) ||
         tenant.description?.toLowerCase().includes(searchLower)
-      );
+      )
     }
     
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      filtered.sort(sortFunctions[filters.sort]);
+    if (filters.sort) {
+      const [field, order] = filters.sort.split('_')
+      filtered.sort((a, b) => {
+        let aVal = a[field]
+        let bVal = b[field]
+        
+        if (field === 'createdAt') {
+          aVal = new Date(aVal)
+          bVal = new Date(bVal)
+        }
+        
+        if (order === 'desc') {
+          return bVal > aVal ? 1 : -1
+        }
+        return aVal > bVal ? 1 : -1
+      })
     }
     
-    return filtered;
+    return filtered
   }
 }

@@ -12,13 +12,13 @@
       </v-col>
       <v-col cols="12">
         <FormInput
-          v-model="form.identifier"
-          :label="$t('forms.identifier')"
+          v-model="form.slug"
+          :label="$t('forms.slug')"
           prepend-icon="mdi-identifier"
-          :error-messages="errors.identifier"
-          :hint="$t('forms.identifierHint')"
+          :error-messages="errors.slug"
+          :hint="$t('forms.slugHint')"
           persistent-hint
-          @update:model-value="updateField('identifier', $event)"
+          @update:model-value="updateField('slug', $event)"
         />
       </v-col>
       <v-col cols="12">
@@ -29,32 +29,6 @@
           rows="2"
           prepend-icon="mdi-text"
           @update:model-value="updateField('description', $event)"
-        />
-      </v-col>
-      <v-col cols="12" md="6">
-        <FormInput
-          v-model="form.contactName"
-          :label="$t('forms.contactName')"
-          prepend-icon="mdi-account"
-          @update:model-value="updateField('contactName', $event)"
-        />
-      </v-col>
-      <v-col cols="12" md="6">
-        <FormInput
-          v-model="form.contactEmail"
-          :label="$t('forms.contactEmail')"
-          prepend-icon="mdi-email"
-          :error-messages="errors.contactEmail"
-          @update:model-value="updateField('contactEmail', $event)"
-        />
-      </v-col>
-      <v-col cols="12">
-        <v-switch
-          v-model="form.isActive"
-          :label="$t('forms.active')"
-          color="success"
-          hide-details
-          @update:model-value="updateField('isActive', $event)"
         />
       </v-col>
     </v-row>
@@ -97,13 +71,8 @@ const updateField = (field, value) => {
     case 'name':
       validateField(field, value, [required]);
       break;
-    case 'identifier':
-      validateField(field, value, [required, identifierRule]);
-      // Also check for uniqueness through API (mock for now)
-      checkIdentifierUniqueness(value);
-      break;
-    case 'contactEmail':
-      validateField(field, value, [emailRule]);
+    case 'slug':
+      validateField(field, value, [required, slugRule]);
       break;
   }
   
@@ -111,60 +80,21 @@ const updateField = (field, value) => {
 };
 
 // Custom validation rules
-const identifierRule = (value) => {
+const slugRule = (value) => {
   if (!value) return null;
-  return /^[a-z0-9-]+$/.test(value) || 'Identifier can only contain lowercase letters, numbers, and hyphens';
-};
-
-const emailRule = (value) => {
-  if (!value) return null; // Email is optional
-  return /.+@.+\..+/.test(value) || 'Email must be valid';
-};
-
-// Mock function to check identifier uniqueness
-const checkIdentifierUniqueness = async (identifier) => {
-  if (!identifier) return;
-  
-  try {
-    // In real app, this would be an API call
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Mock check - consider existing tenants
-    const existingTenant = props.existingTenants?.find(
-      t => t.identifier === identifier && t.id !== form.value.id
-    );
-    
-    if (existingTenant) {
-      errors.value.identifier = 'This identifier is already in use';
-    }
-  } catch (err) {
-    console.error('Error checking identifier uniqueness:', err);
-  }
+  return /^[a-z0-9-]+$/.test(value) || 'Slug can only contain lowercase letters, numbers, and hyphens';
 };
 
 const handleSubmit = async () => {
   const validationConfig = {
     name: { value: form.value.name, rules: [required] },
-    identifier: { value: form.value.identifier, rules: [required, identifierRule] }
+    slug: { value: form.value.slug, rules: [required, slugRule] }
   };
-
-  if (form.value.contactEmail) {
-    validationConfig.contactEmail = { value: form.value.contactEmail, rules: [emailRule] };
-  }
 
   const isValid = validateForm(validationConfig);
 
   if (isValid) {
-    try {
-      // Check identifier uniqueness one final time before submit
-      await checkIdentifierUniqueness(form.value.identifier);
-      
-      if (!errors.value.identifier) {
-        emit('submit', { ...form.value });
-      }
-    } catch (err) {
-      errors.value.submit = err.message;
-    }
+    emit('submit', { ...form.value });
   }
 };
 </script>

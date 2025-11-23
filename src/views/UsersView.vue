@@ -45,13 +45,19 @@
               {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
             </v-chip>
           </template>
-          <template #item.role="{ item }">
+          <template #item.name="{ item }">
+            {{ item.firstName }} {{ item.lastName }}
+          </template>
+          <template #item.roles="{ item }">
             <v-chip
-              :color="getRoleColor(item.role)"
+              v-for="role in item.roles"
+              :key="role"
+              :color="getRoleColor(role)"
               text-color="white"
               size="small"
+              class="mr-1"
             >
-              {{ item.role }}
+              {{ role }}
             </v-chip>
           </template>
           <template #item.createdAt="{ item }">
@@ -198,10 +204,10 @@ const { t } = useI18n();
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
   { title: t('users.email'), key: 'email' },
-  { title: t('users.role'), key: 'role', width: '120px' },
+  { title: t('users.role'), key: 'roles', width: '120px' },
   { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('common.created'), key: 'createdAt', width: '150px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '150px', align: 'end' }
 ]);
 
 // Get available roles from service
@@ -239,8 +245,7 @@ const notification = ref(null);
 async function fetchUsers() {
   try {
     loading.value = true;
-    const allUsers = await userService.getAll();
-    users.value = userService.applyFilters(allUsers, {
+    users.value = await userService.getAll({
       search: search.value,
       status: statusFilter.value,
       sort: sortBy.value
@@ -272,12 +277,7 @@ async function deleteUser() {
   try {
     deletingUser.value = true;
     await userService.delete(userToDelete.value.id);
-    
-    const index = users.value.findIndex(u => u.id === userToDelete.value.id);
-    if (index !== -1) {
-      users.value.splice(index, 1);
-    }
-    
+    await fetchUsers();
     showDeleteDialog.value = false;
     userToDelete.value = null;
     showMessage('User deleted successfully');
@@ -293,20 +293,11 @@ async function saveUser() {
   try {
     savingUser.value = true;
     
-    let savedUser;
     if (editedUser.value.id) {
-      savedUser = await userService.update(editedUser.value.id, editedUser.value);
-    } else {
-      savedUser = await userService.create(editedUser.value);
+      await userService.update(editedUser.value.id, editedUser.value);
     }
     
-    const index = users.value.findIndex(u => u.id === savedUser.id);
-    if (index !== -1) {
-      users.value[index] = savedUser;
-    } else {
-      users.value.push(savedUser);
-    }
-    
+    await fetchUsers();
     showCreateDialog.value = false;
     editedUser.value = createEmpty();
     showMessage('User saved successfully');
@@ -321,12 +312,9 @@ async function saveUser() {
 async function toggleUserStatus(user) {
   try {
     loading.value = true;
-    const updatedUser = await userService.toggleStatus(user.id);
-    const index = users.value.findIndex(u => u.id === user.id);
-    if (index !== -1) {
-      users.value[index] = updatedUser;
-    }
-    showMessage(`User ${updatedUser.name} ${updatedUser.isActive ? 'activated' : 'deactivated'} successfully`);
+    await userService.toggleStatus(user.id);
+    await fetchUsers();
+    showMessage(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
   } catch (error) {
     console.error('Error toggling user status:', error);
     showError('Failed to update user status');
@@ -363,4 +351,8 @@ onMounted(async () => {
   
   await fetchUsers();
 });
+
+// Log current user info for debugging
+console.log('Current user:', authStore.user);
+console.log('Is admin:', authStore.isAdmin);
 </script>

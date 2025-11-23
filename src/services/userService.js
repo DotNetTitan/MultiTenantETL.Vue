@@ -1,138 +1,153 @@
-import { mockUsers } from '@/mocks/users'
-// Sort functions
-const sortFunctions = {
-  name_asc: (a, b) => a.name.localeCompare(b.name),
-  name_desc: (a, b) => b.name.localeCompare(a.name),
-  email_asc: (a, b) => a.email.localeCompare(b.email),
-  email_desc: (a, b) => b.email.localeCompare(a.email),
-  role_asc: (a, b) => a.role.localeCompare(b.role),
-  role_desc: (a, b) => b.role.localeCompare(a.role),
-  created_desc: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-};
+import api from './api'
 
 export const userService = {
+  /**
+   * Get all users (Admin only)
+   */
   async getAll(filters = {}) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    let users = [...mockUsers];
+    const params = {}
     
-    // Apply search filter
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      users = users.filter(u => 
-        u.name.toLowerCase().includes(searchLower) || 
-        u.email.toLowerCase().includes(searchLower) ||
-        u.role.toLowerCase().includes(searchLower)
-      );
+      params.search = filters.search
     }
     
-    // Apply status filter
+    if (filters.email) {
+      params.email = filters.email
+    }
+    
+    if (filters.name) {
+      params.name = filters.name
+    }
+    
     if (filters.status && filters.status !== 'All') {
-      const isActive = filters.status === 'Active';
-      users = users.filter(u => u.isActive === isActive);
+      params.isActive = filters.status === 'Active'
     }
     
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      users.sort(sortFunctions[filters.sort]);
-    } else {
-      // Default sort by name
-      users.sort(sortFunctions.name_asc);
+    if (filters.tenantId) {
+      params.tenantId = filters.tenantId
     }
 
-    return users;
-  },
-
-  async create(userData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const response = await api.get('/api/Users', { params })
     
-    const newUser = {
-      ...userData,
-      id: Math.random().toString(36).substring(2, 15),
-      createdAt: new Date().toISOString(),
-      name: `${userData.firstName} ${userData.lastName}`
-    };
-
-    mockUsers.push(newUser);
-    return { ...newUser };
+    // Handle paginated response - extract users array
+    if (response.data && response.data.users) {
+      return response.data.users
+    }
+    
+    // Handle direct array response
+    return response.data
   },
 
+  /**
+   * Get current user profile
+   */
+  async getMe() {
+    const response = await api.get('/api/Users/me')
+    return response.data
+  },
+
+  /**
+   * Update current user profile
+   */
+  async updateMe(userData) {
+    const response = await api.put('/api/Users/me', userData)
+    return response.data
+  },
+
+  /**
+   * Get user by ID (Admin only)
+   */
+  async getById(id) {
+    const response = await api.get(`/api/Users/${id}`)
+    return response.data
+  },
+
+  /**
+   * Update user (SuperAdmin only)
+   */
   async update(id, userData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const index = mockUsers.findIndex(u => u.id === id);
-    if (index === -1) {
-      const error = new Error('User not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-
-    const updatedUser = {
-      ...mockUsers[index],
-      ...userData,
-      name: `${userData.firstName} ${userData.lastName}`
-    };
-    
-    mockUsers[index] = updatedUser;
-    return { ...updatedUser };
+    const response = await api.put(`/api/Users/${id}`, userData)
+    return response.data
   },
 
+  /**
+   * Delete user (SuperAdmin only)
+   */
   async delete(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    const index = mockUsers.findIndex(u => u.id === id);
-    if (index === -1) {
-      const error = new Error('User not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    mockUsers.splice(index, 1);
-    return true;
+    await api.delete(`/api/Users/${id}`)
+    return true
   },
 
+  /**
+   * Activate/deactivate user (SuperAdmin only)
+   */
+  async updateStatus(id, isActive) {
+    const response = await api.put(`/api/Users/${id}/status`, { isActive })
+    return response.data
+  },
+
+  /**
+   * Toggle user status
+   */
   async toggleStatus(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const index = mockUsers.findIndex(u => u.id === id);
-    if (index === -1) {
-      const error = new Error('User not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-
-    const updatedUser = {
-      ...mockUsers[index],
-      isActive: !mockUsers[index].isActive
-    };
-    
-    mockUsers[index] = updatedUser;
-    return { ...updatedUser };
+    // Get current user to toggle status
+    const user = await this.getById(id)
+    return await this.updateStatus(id, !user.isActive)
   },
 
+  /**
+   * Assign role to user (SuperAdmin only)
+   */
+  async assignRole(id, roleName) {
+    const response = await api.post(`/api/Users/${id}/roles`, { roleName })
+    return response.data
+  },
+
+  /**
+   * Remove role from user (SuperAdmin only)
+   */
+  async removeRole(id, roleName) {
+    await api.delete(`/api/Users/${id}/roles`, { data: { roleName } })
+    return true
+  },
+
+  /**
+   * Admin-initiated password reset (SuperAdmin only)
+   */
+  async resetPasswordAdmin(id, newPassword) {
+    const response = await api.post(`/api/Users/${id}/reset-password`, { newPassword })
+    return response.data
+  },
+
+  /**
+   * Format date for display
+   */
   formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    return date.toLocaleString()
   },
 
+  /**
+   * Get color for role badge
+   */
   getRoleColor(role) {
-    switch (role) {
-      case 'Admin':
-        return 'deep-purple';
-      case 'Manager':
-        return 'indigo';
+    switch (role?.toLowerCase()) {
+      case 'superadmin':
+        return 'red'
+      case 'tenantadmin':
+      case 'admin':
+        return 'deep-purple'
+      case 'manager':
+        return 'indigo'
       default:
-        return 'blue';
+        return 'blue'
     }
   },
 
+  /**
+   * Create empty user object
+   */
   createEmpty() {
     return {
       id: null,
@@ -141,37 +156,59 @@ export const userService = {
       email: '',
       role: 'User',
       isActive: true
-    };
+    }
   },
 
+  /**
+   * Get available roles
+   */
   getAvailableRoles() {
-    return ['Admin', 'Manager', 'User'];
+    return ['SuperAdmin', 'TenantAdmin', 'User']
   },
 
+  /**
+   * Client-side filtering and sorting (for already fetched data)
+   */
   applyFilters(users, filters = {}) {
-    let filtered = [...users];
+    let filtered = [...users]
     
-    // Apply search filter
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(user => 
-        user.name.toLowerCase().includes(searchLower) || 
-        user.email.toLowerCase().includes(searchLower) ||
-        user.role.toLowerCase().includes(searchLower)
-      );
+      const searchLower = filters.search.toLowerCase()
+      filtered = filtered.filter(user => {
+        const name = `${user.firstName} ${user.lastName}`.toLowerCase()
+        return name.includes(searchLower) || 
+               user.email?.toLowerCase().includes(searchLower)
+      })
     }
     
-    // Apply status filter
     if (filters.status && filters.status !== 'All') {
-      const isActive = filters.status === 'Active';
-      filtered = filtered.filter(user => user.isActive === isActive);
+      const isActive = filters.status === 'Active'
+      filtered = filtered.filter(user => user.isActive === isActive)
     }
 
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      filtered.sort(sortFunctions[filters.sort]);
+    if (filters.sort) {
+      const [field, order] = filters.sort.split('_')
+      filtered.sort((a, b) => {
+        let aVal, bVal
+        
+        if (field === 'name') {
+          aVal = `${a.firstName} ${a.lastName}`
+          bVal = `${b.firstName} ${b.lastName}`
+        } else if (field === 'created') {
+          aVal = new Date(a.createdAt)
+          bVal = new Date(b.createdAt)
+        } else {
+          aVal = a[field]
+          bVal = b[field]
+        }
+        
+        if (order === 'desc') {
+          return bVal > aVal ? 1 : -1
+        }
+        return aVal > bVal ? 1 : -1
+      })
     }
     
-    return filtered;
+    return filtered
   }
-};
+}
