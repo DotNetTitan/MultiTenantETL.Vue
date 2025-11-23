@@ -57,7 +57,9 @@
             {{ formatDate(item.createdAt) }}
           </template>
           <template #item.actions="{ item }">
+            <!-- TenantAdmin cannot edit SuperAdmin users -->
             <v-btn
+              v-if="!(authStore.user?.role === 'TenantAdmin' && item.roles?.includes('SuperAdmin'))"
               icon
               variant="text"
               size="small"
@@ -66,8 +68,9 @@
             >
               <v-icon>mdi-pencil</v-icon>
             </v-btn>
+            <!-- Only SuperAdmin can activate/deactivate users -->
             <v-btn
-              v-if="!item.isActive"
+              v-if="authStore.user?.role === 'SuperAdmin' && !item.isActive"
               icon
               variant="text"
               size="small"
@@ -78,7 +81,7 @@
               <v-icon>mdi-check</v-icon>
             </v-btn>
             <v-btn
-              v-else
+              v-else-if="authStore.user?.role === 'SuperAdmin' && item.isActive"
               icon
               variant="text"
               size="small"
@@ -88,7 +91,9 @@
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
+            <!-- Only SuperAdmin can delete users -->
             <v-btn
+              v-if="authStore.user?.role === 'SuperAdmin'"
               icon
               variant="text"
               size="small"

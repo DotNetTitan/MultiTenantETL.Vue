@@ -31,6 +31,15 @@
           @update:model-value="updateField('description', $event)"
         />
       </v-col>
+      <v-col v-if="form.id" cols="12">
+        <v-switch
+          v-model="form.isActive"
+          :label="$t('forms.active')"
+          color="success"
+          hide-details
+          @update:model-value="updateField('isActive', $event)"
+        />
+      </v-col>
     </v-row>
   </v-form>
 </template>

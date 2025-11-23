@@ -30,11 +30,13 @@ const selectedTenantId = ref(tenantStore.currentTenantId);
 // Convert tenants array to format needed for v-select
 const tenantItems = computed(() => {
   if (tenantStore.error) return [];
-  return tenantStore.tenants.map(tenant => ({
-    title: tenant.name,
-    value: tenant.id,
-    disabled: !tenant.isActive
-  }));
+  // Filter out inactive tenants - users shouldn't see or switch to them
+  return tenantStore.tenants
+    .filter(tenant => tenant.isActive)
+    .map(tenant => ({
+      title: tenant.name,
+      value: tenant.id
+    }));
 });
 
 function changeTenant(tenantId) {
