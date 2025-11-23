@@ -47,7 +47,18 @@ export const useAuthStore = defineStore('auth', () => {
         apiOffline.value = true
         error.value = 'Cannot connect to the server. Please ensure the API server is running.'
       } else if (err.response?.status === 401 || err.oauthError === 'invalid_grant') {
-        error.value = 'Invalid email or password'
+        // Check for specific error descriptions from OAuth
+        const errorDescription = err.response?.data?.error_description || err.message
+        
+        if (errorDescription?.includes('inactive')) {
+          error.value = 'Your account has been deactivated. Please contact your administrator.'
+        } else if (errorDescription?.includes('locked')) {
+          error.value = 'Your account is locked due to too many failed login attempts.'
+        } else if (errorDescription?.includes('not confirmed')) {
+          error.value = 'Please confirm your email address before logging in.'
+        } else {
+          error.value = 'Invalid email or password'
+        }
       } else if (err.response?.status === 429) {
         error.value = 'Too many login attempts. Please try again later.'
       } else {
