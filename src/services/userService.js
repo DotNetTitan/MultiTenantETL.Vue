@@ -112,6 +112,41 @@ export const userService = {
   },
 
   /**
+   * Get user's tenant memberships
+   */
+  async getUserTenants(id) {
+    const response = await api.get(`/api/Users/${id}/tenants`)
+    return response.data
+  },
+
+  /**
+   * Add user to tenant
+   */
+  async addUserToTenant(userId, tenantId, roleCode = 'User') {
+    const response = await api.post(`/api/Users/${userId}/tenants`, {
+      tenantId,
+      roleCode
+    })
+    return response.data
+  },
+
+  /**
+   * Remove user from tenant
+   */
+  async removeUserFromTenant(userId, tenantId) {
+    await api.delete(`/api/Users/${userId}/tenants/${tenantId}`)
+    return true
+  },
+
+  /**
+   * Update user's role in tenant
+   */
+  async updateUserTenantRole(userId, tenantId, roleCode) {
+    const response = await api.put(`/api/Users/${userId}/tenants/${tenantId}/role`, { roleCode })
+    return response.data
+  },
+
+  /**
    * Admin-initiated password reset (SuperAdmin only)
    */
   async resetPasswordAdmin(id, newPassword) {

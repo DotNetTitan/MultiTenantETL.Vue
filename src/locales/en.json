@@ -511,7 +511,9 @@
     "deleteConfirm": "Are you sure you want to delete the user \"{name}\"? This action cannot be undone.",
     "admin": "Admin",
     "user": "User",
-    "selectUser": "Select User"
+    "selectUser": "Select User",
+    "manageTenants": "Manage Tenants",
+    "addToTenant": "Add to Tenant"
   },
   "settings": {
     "title": "Settings",
@@ -764,6 +766,8 @@
   },
   "forms": {
     "tenantName": "Tenant Name",
+    "slug": "Slug",
+    "slugHint": "URL-friendly identifier (lowercase, numbers, hyphens only)",
     "identifier": "Identifier",
     "identifierHint": "Used as subdomain and in API requests",
     "contactName": "Contact Name",
@@ -773,6 +777,10 @@
     "lastName": "Last Name",
     "email": "Email",
     "role": "Role",
+    "globalRole": "Global Role",
+    "tenantRole": "Tenant Role",
+    "selectTenant": "Select Tenant",
+    "tenantMemberships": "Tenant Memberships",
     "applicationName": "Application Name",
     "defaultTheme": "Default Theme",
     "enableNotifications": "Enable Notifications",

@@ -482,13 +482,19 @@
     "searchTenants": "Tenants suchen",
     "tenantName": "Tenant-Name",
     "identifier": "Identifikator",
+    "slug": "Slug",
     "contact": "Kontakt",
     "contactName": "Kontaktname",
     "contactEmail": "Kontakt-E-Mail",
     "noTenantsFound": "Keine Tenants gefunden",
     "deleteConfirm": "Sind Sie sicher, dass Sie diesen Tenant löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "createTenant": "Tenant erstellen",
-    "isActive": "Ist aktiv"
+    "isActive": "Ist aktiv",
+    "manageUsers": "Benutzer verwalten",
+    "addUser": "Benutzer zum Tenant hinzufügen",
+    "removeUser": "Benutzer entfernen",
+    "removeUserConfirm": "Sind Sie sicher, dass Sie diesen Benutzer vom Tenant entfernen möchten?",
+    "updateRole": "Benutzerrolle aktualisieren"
   },
   "users": {
     "title": "Benutzer",
@@ -504,7 +510,10 @@
     "deactivateUser": "Benutzer deaktivieren",
     "deleteConfirm": "Sind Sie sicher, dass Sie den Benutzer \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "admin": "Admin",
-    "user": "Benutzer"
+    "user": "Benutzer",
+    "selectUser": "Benutzer auswählen",
+    "manageTenants": "Tenants verwalten",
+    "addToTenant": "Zum Tenant hinzufügen"
   },
   "settings": {
     "title": "Einstellungen",

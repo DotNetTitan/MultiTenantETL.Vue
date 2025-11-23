@@ -128,7 +128,25 @@
             v-model:user="editedUser"
             :roles="roles"
             @submit="saveUser"
+            @remove-tenant="handleRemoveTenant"
           />
+          
+          <!-- Tenant Management Section -->
+          <v-divider v-if="editedUser.id" class="my-4" />
+          <div v-if="editedUser.id" class="mt-4">
+            <div class="d-flex align-center mb-2">
+              <h3 class="text-subtitle-1">{{ $t('users.manageTenants') }}</h3>
+              <v-spacer />
+              <v-btn
+                size="small"
+                color="primary"
+                @click="showAddTenantDialog = true"
+              >
+                <v-icon class="mr-1">mdi-plus</v-icon>
+                {{ $t('users.addToTenant') }}
+              </v-btn>
+            </div>
+          </div>
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer />
@@ -160,6 +178,45 @@
     >
       {{ $t('users.deleteConfirm', { name: `${userToDelete?.firstName} ${userToDelete?.lastName}` }) }}
     </ConfirmationDialog>
+
+    <!-- Add to Tenant Dialog -->
+    <v-dialog
+      v-model="showAddTenantDialog"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title>{{ $t('users.addToTenant') }}</v-card-title>
+        <v-card-text>
+          <v-select
+            v-model="selectedTenantId"
+            :items="availableTenants"
+            item-title="name"
+            item-value="id"
+            :label="$t('forms.selectTenant')"
+            class="mb-4"
+          />
+          <v-select
+            v-model="selectedTenantRole"
+            :items="tenantRoles"
+            :label="$t('forms.tenantRole')"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="showAddTenantDialog = false">
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="addingToTenant"
+            :disabled="!selectedTenantId"
+            @click="addUserToTenant"
+          >
+            {{ $t('common.add') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Notification -->
     <AppNotification ref="notification" />
@@ -227,13 +284,21 @@ const users = ref([]);
 const loading = ref(false);
 const savingUser = ref(false);
 const deletingUser = ref(false);
+const addingToTenant = ref(false);
 
 // Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showAddTenantDialog = ref(false);
 const userToDelete = ref(null);
 const editedUser = ref(createEmpty());
 const notification = ref(null);
+
+// Tenant management
+const availableTenants = ref([]);
+const selectedTenantId = ref(null);
+const selectedTenantRole = ref('User');
+const tenantRoles = ['TenantAdmin', 'User'];
 
 async function fetchUsers() {
   try {
@@ -251,17 +316,26 @@ async function fetchUsers() {
   }
 }
 
-function editUser(user) {
-  // Convert roles array to single role for the form
-  const role = Array.isArray(user.roles) && user.roles.length > 0 
-    ? user.roles[0] 
-    : 'User';
-  
-  editedUser.value = { 
-    ...user,
-    role: role
-  };
-  showCreateDialog.value = true;
+async function editUser(user) {
+  try {
+    // Fetch full user details including tenants
+    const fullUser = await userService.getById(user.id);
+    
+    // Convert roles array to single role for the form
+    const role = Array.isArray(fullUser.roles) && fullUser.roles.length > 0 
+      ? fullUser.roles[0] 
+      : 'User';
+    
+    editedUser.value = { 
+      ...fullUser,
+      role: role,
+      tenants: fullUser.tenants || []
+    };
+    showCreateDialog.value = true;
+  } catch (error) {
+    console.error('Error loading user details:', error);
+    showError('Failed to load user details');
+  }
 }
 
 function closeCreateDialog() {
@@ -336,6 +410,63 @@ function handleSort(value) {
   fetchUsers();
 }
 
+async function handleRemoveTenant(tenantId) {
+  try {
+    loading.value = true;
+    await userService.removeUserFromTenant(editedUser.value.id, tenantId);
+    
+    // Refresh user data
+    const updatedUser = await userService.getById(editedUser.value.id);
+    editedUser.value.tenants = updatedUser.tenants || [];
+    
+    showMessage('User removed from tenant successfully');
+  } catch (error) {
+    console.error('Error removing user from tenant:', error);
+    showError('Failed to remove user from tenant');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function addUserToTenant() {
+  try {
+    addingToTenant.value = true;
+    await userService.addUserToTenant(
+      editedUser.value.id,
+      selectedTenantId.value,
+      selectedTenantRole.value
+    );
+    
+    // Refresh user data
+    const updatedUser = await userService.getById(editedUser.value.id);
+    editedUser.value.tenants = updatedUser.tenants || [];
+    
+    showAddTenantDialog.value = false;
+    selectedTenantId.value = null;
+    selectedTenantRole.value = 'User';
+    
+    showMessage('User added to tenant successfully');
+  } catch (error) {
+    console.error('Error adding user to tenant:', error);
+    showError('Failed to add user to tenant');
+  } finally {
+    addingToTenant.value = false;
+  }
+}
+
+async function fetchAvailableTenants() {
+  try {
+    const tenantService = (await import('@/services/tenantService')).tenantService;
+    const allTenants = await tenantService.getAll();
+    
+    // Filter out tenants user is already in
+    const userTenantIds = (editedUser.value.tenants || []).map(t => t.tenantId);
+    availableTenants.value = allTenants.filter(t => !userTenantIds.includes(t.id));
+  } catch (error) {
+    console.error('Error fetching tenants:', error);
+  }
+}
+
 function showMessage(message) {
   notification.value?.showNotification(message, 'success');
 }
@@ -351,9 +482,6 @@ onMounted(async () => {
   }
   
   await fetchUsers();
+  await fetchAvailableTenants();
 });
-
-// Log current user info for debugging
-console.log('Current user:', authStore.user);
-console.log('Is admin:', authStore.isAdmin);
 </script>

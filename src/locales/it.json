@@ -484,13 +484,19 @@
     "searchTenants": "Cerca Tenant",
     "tenantName": "Nome Tenant",
     "identifier": "Identificatore",
+    "slug": "Slug",
     "contact": "Contatto",
     "contactName": "Nome Contatto",
     "contactEmail": "Email Contatto",
     "noTenantsFound": "Nessun tenant trovato",
     "deleteConfirm": "Sei sicuro di voler eliminare questo tenant? Questa azione non può essere annullata.",
     "createTenant": "Crea Tenant",
-    "isActive": "È Attivo"
+    "isActive": "È Attivo",
+    "manageUsers": "Gestisci Utenti",
+    "addUser": "Aggiungi Utente al Tenant",
+    "removeUser": "Rimuovi Utente",
+    "removeUserConfirm": "Sei sicuro di voler rimuovere questo utente dal tenant?",
+    "updateRole": "Aggiorna Ruolo Utente"
   },
   "users": {
     "title": "Utenti",
@@ -506,7 +512,10 @@
     "deactivateUser": "Disattiva Utente",
     "deleteConfirm": "Sei sicuro di voler eliminare l'utente \"{name}\"? Questa azione non può essere annullata.",
     "admin": "Admin",
-    "user": "Utente"
+    "user": "Utente",
+    "selectUser": "Seleziona Utente",
+    "manageTenants": "Gestisci Tenant",
+    "addToTenant": "Aggiungi al Tenant"
   },
   "settings": {
     "title": "Impostazioni",

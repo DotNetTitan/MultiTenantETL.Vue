@@ -484,13 +484,19 @@
     "searchTenants": "Rechercher des Locataires",
     "tenantName": "Nom du Locataire",
     "identifier": "Identifiant",
+    "slug": "Slug",
     "contact": "Contact",
     "contactName": "Nom du Contact",
     "contactEmail": "Email du Contact",
     "noTenantsFound": "Aucun locataire trouvé",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce locataire? Cette action ne peut pas être annulée.",
     "createTenant": "Créer un Locataire",
-    "isActive": "Est Actif"
+    "isActive": "Est Actif",
+    "manageUsers": "Gérer les Utilisateurs",
+    "addUser": "Ajouter un Utilisateur au Locataire",
+    "removeUser": "Supprimer l'Utilisateur",
+    "removeUserConfirm": "Êtes-vous sûr de vouloir supprimer cet utilisateur du locataire?",
+    "updateRole": "Mettre à Jour le Rôle de l'Utilisateur"
   },
   "users": {
     "title": "Utilisateurs",
@@ -506,7 +512,10 @@
     "deactivateUser": "Désactiver l'utilisateur",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{name}\"? Cette action ne peut pas être annulée.",
     "admin": "Administrateur",
-    "user": "Utilisateur"
+    "user": "Utilisateur",
+    "selectUser": "Sélectionner un Utilisateur",
+    "manageTenants": "Gérer les Locataires",
+    "addToTenant": "Ajouter au Locataire"
   },
   "settings": {
     "title": "Paramètres",

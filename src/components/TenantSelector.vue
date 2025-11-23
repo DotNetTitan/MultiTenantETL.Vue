@@ -48,10 +48,44 @@ watch(() => tenantStore.currentTenantId, (newTenantId) => {
 
 onMounted(async () => {
   try {
-    await tenantStore.fetchTenants();
+    const { tenantService } = await import('@/services/tenantService');
+    const { useAuthStore } = await import('@/stores/auth');
+    const authStore = useAuthStore();
+    
+    console.log('Current user role:', authStore.user?.role);
+    
+    // Try to get all tenants if SuperAdmin, fallback to user's tenants if 403
+    if (authStore.user?.role === 'SuperAdmin') {
+      try {
+        const allTenants = await tenantService.getAll();
+        tenantStore.tenants = allTenants;
+      } catch (error) {
+        // If 403, user might not actually be SuperAdmin, fallback to their tenants
+        if (error.response?.status === 403) {
+          console.warn('SuperAdmin check failed, falling back to user tenants');
+          const userTenants = await tenantService.getMyTenants();
+          tenantStore.tenants = userTenants.map(ut => ({
+            id: ut.tenantId,
+            name: ut.tenantName,
+            slug: ut.tenantSlug,
+            isActive: ut.isActive
+          }));
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      const userTenants = await tenantService.getMyTenants();
+      tenantStore.tenants = userTenants.map(ut => ({
+        id: ut.tenantId,
+        name: ut.tenantName,
+        slug: ut.tenantSlug,
+        isActive: ut.isActive
+      }));
+    }
   } catch (error) {
-    // Error is already handled in the store
-    console.debug('Failed to fetch tenants in TenantSelector');
+    console.error('Failed to fetch tenants in TenantSelector:', error);
+    tenantStore.error = 'Failed to load tenants';
   }
 });
 </script>

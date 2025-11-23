@@ -238,20 +238,32 @@ export const authService = {
    * @returns {Promise<{accessToken: string, refreshToken: string}>}
    */
   async switchTenant(tenantId) {
-    const response = await api.post(API_ENDPOINTS.auth.switchTenant, {
-      tenantId
-    })
+    console.log('Switching to tenant:', tenantId, 'Type:', typeof tenantId)
+    
+    const payload = { tenantId }
+    console.log('Request payload:', JSON.stringify(payload))
+    
+    try {
+      const response = await api.post(API_ENDPOINTS.auth.switchTenant, payload)
 
-    // Backend should return new tokens with updated tenant claim
-    const { access_token, refresh_token, id_token, expires_in } = response.data
+      // Backend updates the database but doesn't return new tokens
+      // We need to refresh the token to get updated tenant claims
+      if (response.data.requiresTokenRefresh) {
+        await this.refreshToken()
+      }
 
-    this.setTokens(access_token, refresh_token, id_token)
-
-    return {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      idToken: id_token,
-      expiresIn: expires_in
+      return {
+        currentTenantId: response.data.currentTenantId,
+        tenantName: response.data.tenantName,
+        message: response.data.message
+      }
+    } catch (error) {
+      console.error('Switch tenant error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      })
+      throw error
     }
   },
 

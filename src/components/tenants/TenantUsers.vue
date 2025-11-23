@@ -201,7 +201,8 @@ async function fetchAvailableUsers() {
 async function addUser() {
   try {
     saving.value = true
-    await tenantService.addUserToTenant(props.tenantId, selectedUserId.value, selectedRole.value)
+    // Note: Backend expects userId, tenantId, roleCode in that order
+    await userService.addUserToTenant(selectedUserId.value, props.tenantId, selectedRole.value)
     await fetchUsers()
     await fetchAvailableUsers()
     showAddUserDialog.value = false
@@ -223,7 +224,8 @@ function openEditRole(user) {
 async function updateRole() {
   try {
     saving.value = true
-    await tenantService.updateUserRole(props.tenantId, selectedUser.value.id, editedRole.value)
+    // Use userService for consistency with backend API
+    await userService.updateUserTenantRole(selectedUser.value.userId || selectedUser.value.id, props.tenantId, editedRole.value)
     await fetchUsers()
     showEditRoleDialog.value = false
   } catch (error) {
@@ -241,7 +243,8 @@ function confirmRemove(user) {
 async function removeUser() {
   try {
     saving.value = true
-    await tenantService.removeUserFromTenant(props.tenantId, selectedUser.value.id)
+    // Use userService for consistency with backend API
+    await userService.removeUserFromTenant(selectedUser.value.userId || selectedUser.value.id, props.tenantId)
     await fetchUsers()
     showRemoveDialog.value = false
   } catch (error) {

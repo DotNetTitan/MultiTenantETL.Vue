@@ -33,10 +33,12 @@
         <v-select
           v-model="form.role"
           :items="roles"
-          :label="$t('forms.role')"
+          :label="$t('forms.globalRole')"
           prepend-icon="mdi-shield-account"
           variant="outlined"
           :error-messages="errors.role"
+          hint="Global system role"
+          persistent-hint
           @update:model-value="updateField('role', $event)"
         />
       </v-col>
@@ -48,6 +50,24 @@
           hide-details
           @update:model-value="updateField('isActive', $event)"
         />
+      </v-col>
+      <v-col v-if="form.tenants && form.tenants.length > 0" cols="12">
+        <v-card variant="outlined">
+          <v-card-title class="text-subtitle-2">
+            {{ $t('forms.tenantMemberships') }}
+          </v-card-title>
+          <v-card-text>
+            <v-chip
+              v-for="tenant in form.tenants"
+              :key="tenant.tenantId"
+              class="ma-1"
+              closable
+              @click:close="removeTenant(tenant.tenantId)"
+            >
+              {{ tenant.tenantName }} ({{ tenant.roleCode }})
+            </v-chip>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </v-form>
@@ -72,9 +92,24 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:user', 'submit']);
+const emit = defineEmits(['update:user', 'submit', 'remove-tenant']);
 const { errors, validateField, validateForm, clearErrors } = useFormValidation();
-const form = ref({ ...props.user });
+
+// Initialize form with proper role handling
+const initializeForm = (user) => {
+  const formData = { ...user };
+  
+  // Handle roles array - convert to single role for form
+  if (Array.isArray(user.roles) && user.roles.length > 0) {
+    formData.role = user.roles[0];
+  } else if (!formData.role) {
+    formData.role = 'User';
+  }
+  
+  return formData;
+};
+
+const form = ref(initializeForm(props.user));
 
 // Clear errors when form changes
 watch(() => form.value, () => {
@@ -83,8 +118,12 @@ watch(() => form.value, () => {
 
 // Watch for prop changes
 watch(() => props.user, (newValue) => {
-  form.value = { ...newValue };
+  form.value = initializeForm(newValue);
 }, { deep: true });
+
+const removeTenant = (tenantId) => {
+  emit('remove-tenant', tenantId);
+};
 
 const required = v => !!v || 'This field is required';
 const emailRule = v => {
