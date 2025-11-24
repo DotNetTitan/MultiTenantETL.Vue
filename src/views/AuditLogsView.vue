@@ -45,8 +45,7 @@
           :headers="headers"
           :items="logs"
           :loading="loading"
-          :items-per-page="pageSize"
-          hide-default-footer
+          :items-per-page="10"
           class="mt-2"
         >
           <template #item.action="{ item }">
@@ -85,68 +84,150 @@
             />
           </template>
         </v-data-table>
-
-        <div class="d-flex justify-center mt-4">
-          <v-pagination
-            v-model="currentPage"
-            :length="totalPages"
-            :total-visible="7"
-            @update:model-value="fetchLogs"
-          />
-        </div>
       </v-card-text>
     </v-card>
 
     <!-- Details Dialog -->
-    <v-dialog v-model="showDetailsDialog" max-width="800">
+    <v-dialog v-model="showDetailsDialog" max-width="900">
       <v-card v-if="selectedLog">
-        <v-card-title class="d-flex align-center">
-          {{ $t('auditLogs.details') }}
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" color="primary">mdi-file-document-outline</v-icon>
+          <span class="text-h5">{{ $t('auditLogs.details') }}</span>
           <v-spacer />
-          <v-btn icon variant="text" @click="showDetailsDialog = false">
+          <v-btn icon variant="text" color="primary" @click="showDetailsDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text>
-          <v-row dense>
+
+        <v-divider />
+
+        <v-card-text class="pa-6">
+          <!-- Action Summary -->
+          <div class="mb-4 pa-3 rounded" style="background-color: rgba(var(--v-theme-on-surface), 0.05)">
+            <div class="d-flex align-center">
+              <v-icon
+                :icon="selectedLog.success ? 'mdi-check-circle' : 'mdi-alert-circle'"
+                :color="selectedLog.success ? 'success' : 'error'"
+                class="mr-2"
+              />
+              <div class="flex-grow-1">
+                <div class="text-subtitle-1 font-weight-medium">{{ selectedLog.action }}</div>
+                <div class="text-caption text-medium-emphasis">{{ selectedLog.description }}</div>
+              </div>
+              <v-chip size="small" variant="outlined">
+                {{ selectedLog.severity }}
+              </v-chip>
+            </div>
+          </div>
+
+          <!-- Main Details -->
+          <v-row>
+            <!-- User Information -->
             <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.action') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.action }}</div>
+              <div class="mb-3">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-account</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">User Information</span>
+                </div>
+                <div class="pl-7">
+                  <div class="mb-2">
+                    <div class="text-caption text-medium-emphasis">Email</div>
+                    <div class="text-body-2">{{ selectedLog.userEmail || 'System' }}</div>
+                  </div>
+                  <div>
+                    <div class="text-caption text-medium-emphasis">IP Address</div>
+                    <div class="text-body-2">{{ selectedLog.ipAddress || '-' }}</div>
+                  </div>
+                </div>
+              </div>
             </v-col>
+
+            <!-- Resource Information -->
             <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.resourceType') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.resourceType }}</div>
+              <div class="mb-3">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-cube-outline</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">Resource Information</span>
+                </div>
+                <div class="pl-7">
+                  <div class="mb-2">
+                    <div class="text-caption text-medium-emphasis">Type</div>
+                    <div class="text-body-2">{{ selectedLog.resourceType }}</div>
+                  </div>
+                  <div v-if="selectedLog.resourceId">
+                    <div class="text-caption text-medium-emphasis">Resource ID</div>
+                    <div class="text-body-2 font-mono text-caption">{{ selectedLog.resourceId }}</div>
+                  </div>
+                </div>
+              </div>
             </v-col>
+
+            <!-- Tenant Information -->
             <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.user') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.userEmail || '-' }}</div>
+              <div class="mb-3">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-domain</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">Tenant</span>
+                </div>
+                <div class="pl-7">
+                  <div class="text-caption text-medium-emphasis">Organization</div>
+                  <div class="text-body-2">{{ selectedLog.tenantName || 'System Level' }}</div>
+                </div>
+              </div>
             </v-col>
+
+            <!-- Timestamp -->
             <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.tenant') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.tenantName || '-' }}</div>
+              <div class="mb-3">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-clock-outline</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">Timestamp</span>
+                </div>
+                <div class="pl-7">
+                  <div class="text-caption text-medium-emphasis">Occurred At</div>
+                  <div class="text-body-2">{{ auditService.formatDate(selectedLog.createdAt) }}</div>
+                </div>
+              </div>
             </v-col>
-            <v-col cols="12">
-              <div class="text-caption text-grey">{{ $t('auditLogs.description') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.description }}</div>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.ipAddress') }}</div>
-              <div class="text-body-1 mb-3">{{ selectedLog.ipAddress || '-' }}</div>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-caption text-grey">{{ $t('auditLogs.timestamp') }}</div>
-              <div class="text-body-1 mb-3">{{ auditService.formatDate(selectedLog.createdAt) }}</div>
-            </v-col>
+
+            <!-- Metadata -->
             <v-col v-if="selectedLog.metadata" cols="12">
-              <div class="text-caption text-grey">{{ $t('auditLogs.metadata') }}</div>
-              <pre class="text-body-2 pa-2 bg-grey-lighten-4 rounded">{{ selectedLog.metadata }}</pre>
+              <v-divider class="mb-3" />
+              <div class="mb-3">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="small" color="primary" class="mr-2">mdi-code-json</v-icon>
+                  <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.metadata') }}</span>
+                </div>
+                <pre class="text-body-2 pa-3 rounded overflow-auto" style="max-height: 200px; background-color: rgba(var(--v-theme-on-surface), 0.05)">{{ selectedLog.metadata }}</pre>
+              </div>
             </v-col>
+
+            <!-- Error Message -->
             <v-col v-if="selectedLog.errorMessage" cols="12">
-              <div class="text-caption text-grey">{{ $t('auditLogs.error') }}</div>
-              <div class="text-body-1 text-error">{{ selectedLog.errorMessage }}</div>
+              <v-divider class="mb-3" />
+              <div class="d-flex align-start pa-3 rounded" style="background-color: rgba(var(--v-theme-error), 0.1)">
+                <v-icon color="error" size="small" class="mr-2 mt-1">mdi-alert-circle</v-icon>
+                <div>
+                  <div class="text-subtitle-2 font-weight-medium mb-1">{{ $t('auditLogs.error') }}</div>
+                  <div class="text-body-2">{{ selectedLog.errorMessage }}</div>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </v-card-text>
+
+        <v-divider />
+        
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn
+            color="primary"
+            variant="text"
+            @click="showDetailsDialog = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -163,10 +244,6 @@ const authStore = useAuthStore()
 
 const loading = ref(false)
 const logs = ref([])
-const currentPage = ref(1)
-const pageSize = ref(50)
-const totalCount = ref(0)
-const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
 
 const filters = ref({
   action: null,
@@ -204,12 +281,12 @@ async function fetchLogs() {
     const response = await auditService.getAuditLogs({
       action: filters.value.action,
       resourceType: filters.value.resourceType,
-      page: currentPage.value,
-      pageSize: pageSize.value
+      severity: filters.value.severity,
+      page: 1,
+      pageSize: 1000 // Fetch all logs for client-side pagination
     })
     
     logs.value = response.logs
-    totalCount.value = response.totalCount
   } catch (error) {
     console.error('Error fetching audit logs:', error)
   } finally {

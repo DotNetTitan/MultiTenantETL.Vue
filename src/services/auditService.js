@@ -10,11 +10,12 @@ export const auditService = {
     if (filters.userId) params.userId = filters.userId
     if (filters.action) params.action = filters.action
     if (filters.resourceType) params.resourceType = filters.resourceType
+    if (filters.severity) params.severity = filters.severity
     if (filters.startDate) params.startDate = filters.startDate
     if (filters.endDate) params.endDate = filters.endDate
     
     params.page = filters.page || 1
-    params.pageSize = filters.pageSize || 50
+    params.pageSize = filters.pageSize || 10
 
     const response = await api.get('/api/AuditLogs', { params })
     return response.data
@@ -27,11 +28,12 @@ export const auditService = {
     const params = {}
     
     if (filters.action) params.action = filters.action
+    if (filters.severity) params.severity = filters.severity
     if (filters.startDate) params.startDate = filters.startDate
     if (filters.endDate) params.endDate = filters.endDate
     
     params.page = filters.page || 1
-    params.pageSize = filters.pageSize || 50
+    params.pageSize = filters.pageSize || 10
 
     const response = await api.get('/api/AuditLogs/my-logs', { params })
     return response.data
