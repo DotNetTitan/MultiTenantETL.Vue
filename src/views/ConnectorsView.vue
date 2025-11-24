@@ -608,9 +608,11 @@ import { useConnector } from '@/composables/useConnector';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import { 
   fetchConnectors as getConnectors, 
-  saveConnector as saveConnectorAPI, 
+  createConnector,
+  updateConnector,
   deleteConnector as deleteConnectorAPI, 
   testConnection as testConnectorConnection,
+  testExistingConnection,
   fetchConnectorById
 } from '@/services/connectorService';
 import ConnectorWizard from '@/components/connector/ConnectorWizard.vue';
@@ -800,7 +802,9 @@ async function fetchConnectors() {
       sortBy: sortBy.value
     };
     
-    connectors.value = await getConnectors(filters);
+    const result = await getConnectors(filters);
+    // Handle paginated response from API
+    connectors.value = result.connectors || result;
   } catch (error) {
     console.error('Error fetching connectors:', error);
   } finally {
@@ -938,15 +942,19 @@ async function performSave(connector = null) {
     savingConnector.value = true;
     
     const dataToSave = connector || editedConnector.value;
-    const savedConnector = await saveConnectorAPI(dataToSave);
+    let savedConnector;
     
     if (dataToSave.id) {
+      // Update existing connector
+      savedConnector = await updateConnector(dataToSave.id, dataToSave);
       const index = connectors.value.findIndex(ds => ds.id === dataToSave.id);
       if (index !== -1) {
         connectors.value[index] = savedConnector;
       }
     } else {
-      connectors.value.push(savedconnector);
+      // Create new connector
+      savedConnector = await createConnector(dataToSave);
+      connectors.value.push(savedConnector);
     }
     
     showCreateDialog.value = false;
@@ -993,7 +1001,8 @@ async function testConnection(connector) {
     testingConnection.value = true;
     connectionTestResult.value = false;
     
-    const result = await validateConnection(connector);
+    // Use the endpoint that tests existing connectors by ID
+    const result = await testExistingConnection(connector.id);
     
     connectionTestSuccess.value = result.success;
     connectionTestMessage.value = result.success
@@ -1004,7 +1013,9 @@ async function testConnection(connector) {
   } catch (error) {
     console.error('Error testing connection:', error);
     connectionTestSuccess.value = false;
-    connectionTestMessage.value = `Error testing connection: ${error.message}`;
+    // Show backend validation error if available
+    const errorMessage = error.response?.data?.message || error.response?.data?.title || error.message;
+    connectionTestMessage.value = `Error testing connection: ${errorMessage}`;
     connectionTestResult.value = true;
   } finally {
     testingConnection.value = false;

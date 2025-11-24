@@ -138,7 +138,7 @@
             <v-row v-if="connector.type === 'Database'">
               <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="connector.config.server"
+                  v-model="connector.config.host"
                   :label="t('connectors.server')"
                   :placeholder="t('connectors.serverPlaceholder')"
                   variant="outlined"
@@ -148,9 +148,9 @@
               </v-col>
               <v-col cols="12" md="6">
                 <v-text-field
-                  v-model="connector.config.port"
+                  v-model.number="connector.config.port"
                   :label="t('connectors.port')"
-                  :placeholder="t('connectors.defaultPort')"
+                  :placeholder="getDefaultPort(connector.provider).toString()"
                   variant="outlined"
                   type="number"
                 />
@@ -183,6 +183,14 @@
                   required
                 />
               </v-col>
+              <v-col cols="12" md="6">
+                <v-switch
+                  v-model="connector.config.useSsl"
+                  :label="t('connectors.useSsl')"
+                  color="primary"
+                  hide-details
+                />
+              </v-col>
               <v-col cols="12">
                 <v-switch
                   v-model="connector.config.useCustomConnectionString"
@@ -200,13 +208,36 @@
                   :rules="[v => !!v || t('validation.required', { field: t('connectors.connectionString') })]"
                 />
               </v-col>
+
+              <!-- Test Connection Button -->
+              <v-col cols="12" class="text-center mt-4">
+                <v-btn
+                  color="success"
+                  variant="outlined"
+                  prepend-icon="mdi-connection"
+                  :loading="testingConnection"
+                  :disabled="!validateConnectionConfig()"
+                  @click="testConnectionBeforeSave"
+                >
+                  {{ t('connectors.testConnection') }}
+                </v-btn>
+                <div v-if="connectionTestResult" class="mt-3">
+                  <v-alert
+                    :type="connectionTestSuccess ? 'success' : 'error'"
+                    variant="tonal"
+                    density="compact"
+                  >
+                    {{ connectionTestMessage }}
+                  </v-alert>
+                </div>
+              </v-col>
             </v-row>
 
             <!-- API Connection -->
             <v-row v-else-if="connector.type === 'API'">
               <v-col cols="12">
                 <v-text-field
-                  v-model="connector.config.url"
+                  v-model="connector.config.baseUrl"
                   :label="t('connectors.apiUrl')"
                   :placeholder="t('connectors.apiUrlPlaceholder')"
                   variant="outlined"
@@ -224,8 +255,26 @@
               </v-col>
               <v-col v-if="connector.config.authType === 'Bearer'" cols="12" md="6">
                 <v-text-field
-                  v-model="connector.config.token"
+                  v-model="connector.config.authToken"
                   :label="t('connectors.bearerToken')"
+                  type="password"
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col v-if="connector.config.authType === 'API Key'" cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.apiKeyHeader"
+                  :label="t('connectors.apiKeyHeader')"
+                  :placeholder="t('connectors.apiKeyHeaderPlaceholder')"
+                  variant="outlined"
+                  :hint="t('connectors.apiKeyHeaderHint')"
+                  persistent-hint
+                />
+              </v-col>
+              <v-col v-if="connector.config.authType === 'API Key'" cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.apiKeyValue"
+                  :label="t('connectors.apiKeyValue')"
                   type="password"
                   variant="outlined"
                 />
@@ -245,23 +294,59 @@
                   variant="outlined"
                 />
               </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model.number="connector.config.timeoutSeconds"
+                  :label="t('connectors.timeout')"
+                  type="number"
+                  variant="outlined"
+                  :hint="t('connectors.timeoutHint')"
+                  persistent-hint
+                />
+              </v-col>
+
+              <!-- Custom Headers -->
               <v-col cols="12">
                 <v-textarea
-                  v-model="connector.config.headers"
+                  v-model="customHeadersText"
                   :label="t('connectors.customHeaders')"
                   :placeholder="t('connectors.customHeadersPlaceholder')"
                   variant="outlined"
                   rows="3"
+                  :hint="t('connectors.customHeadersHint')"
+                  persistent-hint
                 />
               </v-col>
 
               <!-- API Endpoints Configuration -->
               <v-col cols="12">
-                <v-divider class="my-4" />
                 <ApiEndpointEditor
                   v-model="connector.config.endpoints"
                   :direction="connector.direction"
                 />
+              </v-col>
+
+              <!-- Test Connection Button -->
+              <v-col cols="12" class="text-center mt-4">
+                <v-btn
+                  color="success"
+                  variant="outlined"
+                  prepend-icon="mdi-connection"
+                  :loading="testingConnection"
+                  :disabled="!validateConnectionConfig()"
+                  @click="testConnectionBeforeSave"
+                >
+                  {{ t('connectors.testConnection') }}
+                </v-btn>
+                <div v-if="connectionTestResult" class="mt-3">
+                  <v-alert
+                    :type="connectionTestSuccess ? 'success' : 'error'"
+                    variant="tonal"
+                    density="compact"
+                  >
+                    {{ connectionTestMessage }}
+                  </v-alert>
+                </div>
               </v-col>
             </v-row>
 
@@ -1224,6 +1309,11 @@ const emit = defineEmits(['save', 'close', 'toggle-fullscreen']);
 const currentStep = ref(1);
 const saving = ref(false);
 const schemaValidation = ref({ isValid: true, errors: [] });
+const customHeadersText = ref('');
+const testingConnection = ref(false);
+const connectionTestResult = ref(false);
+const connectionTestSuccess = ref(false);
+const connectionTestMessage = ref('');
 
 // Use translated metadata service
 const {
@@ -1259,10 +1349,10 @@ const fileFormats = computed(() =>
   metadataFileFormats.value.map(format => format.value)
 );
 
-const httpMethods = computed(() => ({
-  source: metadataHttpMethods.value.filter(m => m.value === 'GET').map(m => m.value),
-  destination: metadataHttpMethods.value.filter(m => ['POST', 'PUT', 'PATCH'].includes(m.value)).map(m => m.value)
-}));
+const httpMethods = computed(() => {
+  // Return all methods for endpoints configuration
+  return metadataHttpMethods.value.map(m => m.value);
+});
 
 const providerOptions = computed(() => {
   return getProvidersForType(props.connector.type);
@@ -1354,33 +1444,31 @@ function getDefaultConfig(type) {
   switch (type) {
     case 'Database':
       return {
-        server: '',
-        port: '',
+        host: '',
+        port: null,
         database: '',
         username: '',
         password: '',
-        useCustomConnectionString: false,
-        connectionString: '',
-        writeConfig: {
-          tableName: '',
-          operation: 'INSERT',
-          primaryKeys: [],
-          batchSize: 1000
-        }
+        useSsl: false,
+        connectionString: null
       };
     case 'API':
       return {
-        url: '',
+        baseUrl: '',
         authType: 'None',
-        token: '',
-        username: '',
-        password: '',
-        headers: '',
+        authToken: null,
+        apiKeyHeader: null,
+        apiKeyValue: null,
+        username: null,
+        password: null,
+        headers: {},
+        queryParameters: {},
+        timeoutSeconds: 30,
         endpoints: [],
         writeConfig: {
           requestFormat: 'JSON',
           wrapInArray: false,
-          rootKey: '',
+          rootKey: null,
           batchSize: 100
         }
       };
@@ -1390,29 +1478,22 @@ function getDefaultConfig(type) {
         path: '',
         delimiter: ',',
         hasHeader: true,
+        sheetName: null,
+        encoding: 'UTF-8',
         // FTP fields
-        ftpHost: '',
-        ftpPort: '21',
-        ftpUsername: '',
-        ftpPassword: '',
+        ftpHost: null,
+        ftpPort: 21,
+        ftpUsername: null,
+        ftpPassword: null,
         // S3 fields
-        s3Bucket: '',
-        s3Region: '',
-        s3AccessKey: '',
-        s3SecretKey: '',
+        s3Bucket: null,
+        s3Region: null,
+        s3AccessKey: null,
+        s3SecretKey: null,
         // Azure Blob fields
-        azureAccountName: '',
-        azureContainer: '',
-        azureAccountKey: '',
-        writeConfig: {
-          filenamePattern: '',
-          includeHeaders: true,
-          columnOrder: [],
-          sheetName: 'Sheet1',
-          startCell: 'A1',
-          structure: 'array',
-          rootKey: ''
-        }
+        azureAccountName: null,
+        azureContainer: null,
+        azureAccountKey: null
       };
     default:
       return {};
@@ -1420,73 +1501,21 @@ function getDefaultConfig(type) {
 }
 
 function validateConnectionConfig() {
-  const { type, config, direction } = props.connector;
+  const { type, config } = props.connector;
   
   if (type === 'Database') {
     if (config.useCustomConnectionString) {
       return !!config.connectionString;
     }
-    return !!config.server && !!config.database && !!config.username && !!config.password;
+    return !!config.host && !!config.database && !!config.username && !!config.password;
   }
   
   if (type === 'API') {
-    // Check basic config
-    if (!config.url) return false;
-    
-    // Check endpoints are configured
-    if (!config.endpoints || config.endpoints.length === 0) return false;
-    
-    // Validate direction-specific endpoint requirements
-    const hasGetEndpoint = config.endpoints.some(e => e.method === 'GET');
-    const hasWriteEndpoint = config.endpoints.some(e => ['POST', 'PUT', 'PATCH'].includes(e.method));
-    
-    if (direction === 'source' && !hasGetEndpoint) {
-      return false; // Source needs at least one GET endpoint
-    }
-    
-    if (direction === 'destination' && !hasWriteEndpoint) {
-      return false; // Destination needs at least one POST/PUT/PATCH endpoint
-    }
-    
-    if (direction === 'both' && (!hasGetEndpoint || !hasWriteEndpoint)) {
-      return false; // Both needs at least one GET and one write endpoint
-    }
-    
-    // Validate each endpoint has required fields
-    return config.endpoints.every(endpoint => {
-      const hasBasics = endpoint.method && endpoint.path && endpoint.responseDataPath;
-      
-      // For write methods, also need request configuration
-      if (['POST', 'PUT', 'PATCH'].includes(endpoint.method)) {
-        return hasBasics && endpoint.requestDataPath;
-      }
-      
-      return hasBasics;
-    });
+    return !!config.baseUrl;
   }
   
   if (type === 'File') {
-    const provider = props.connector.provider;
-    if (!config.format || !provider) return false;
-    
-    // Validate provider-specific fields
-    if (provider === 'Local') {
-      return !!config.path;
-    }
-    
-    if (provider === 'FTP') {
-      return !!config.ftpHost && !!config.ftpUsername && !!config.ftpPassword && !!config.path;
-    }
-    
-    if (provider === 'S3') {
-      return !!config.s3Bucket && !!config.s3Region && !!config.s3AccessKey && !!config.s3SecretKey && !!config.path;
-    }
-    
-    if (provider === 'Azure Blob') {
-      return !!config.azureAccountName && !!config.azureContainer && !!config.azureAccountKey && !!config.path;
-    }
-    
-    return false;
+    return !!config.path;
   }
   
   return false;
@@ -1543,16 +1572,62 @@ function handleSchemaValidation(validation) {
   schemaValidation.value = validation;
 }
 
+async function testConnectionBeforeSave() {
+  testingConnection.value = true;
+  connectionTestResult.value = false;
+  
+  try {
+    const { testConnection } = await import('@/services/connectorService');
+    const result = await testConnection(props.connector);
+    
+    connectionTestSuccess.value = result.success;
+    connectionTestMessage.value = result.message;
+    connectionTestResult.value = true;
+  } catch (error) {
+    console.error('Error testing connection:', error);
+    connectionTestSuccess.value = false;
+    const errorMessage = error.response?.data?.message || error.response?.data?.title || error.message;
+    connectionTestMessage.value = `Connection test failed: ${errorMessage}`;
+    connectionTestResult.value = true;
+  } finally {
+    testingConnection.value = false;
+  }
+}
+
 async function handleSave() {
   if (!canSave.value) return;
   
   saving.value = true;
   try {
+    // Sync custom headers
+    if (props.connector.type === 'API' && customHeadersText.value) {
+      try {
+        props.connector.config.headers = JSON.parse(customHeadersText.value);
+      } catch (e) {
+        // If not valid JSON, treat as key:value pairs
+        const headers = {};
+        customHeadersText.value.split('\n').forEach(line => {
+          const [key, ...valueParts] = line.split(':');
+          if (key && valueParts.length > 0) {
+            headers[key.trim()] = valueParts.join(':').trim();
+          }
+        });
+        props.connector.config.headers = headers;
+      }
+    }
+    
     emit('save', props.connector);
   } finally {
     saving.value = false;
   }
 }
+
+// Sync custom headers from connector config
+watch(() => props.connector.config?.headers, (newHeaders) => {
+  if (newHeaders && typeof newHeaders === 'object') {
+    customHeadersText.value = JSON.stringify(newHeaders, null, 2);
+  }
+}, { immediate: true });
 
 // Initialize config if empty
 watch(() => props.connector.type, (newType) => {

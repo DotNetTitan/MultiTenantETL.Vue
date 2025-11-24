@@ -20,9 +20,9 @@ const MOCK_METADATA = {
     ],
     
     providers: {
-      Database: ['SQL Server', 'PostgreSQL', 'MySQL', 'Oracle', 'SQLite'],
-      API: ['REST', 'GraphQL', 'SOAP'],
-      File: ['Local', 'FTP', 'S3', 'Azure Blob', 'Google Cloud Storage']
+      Database: ['SqlServer', 'PostgreSQL', 'MySQL'],
+      API: ['REST'],
+      File: ['Local', 'FTP', 'S3', 'AzureBlob']
     },
     
     directions: [
@@ -36,7 +36,7 @@ const MOCK_METADATA = {
       { value: 'Basic', labelKey: 'connectors.authBasic' },
       { value: 'Bearer', labelKey: 'connectors.authBearer' },
       { value: 'OAuth2', labelKey: 'connectors.authOAuth2' },
-      { value: 'API Key', labelKey: 'connectors.authApiKey' }
+      { value: 'ApiKey', labelKey: 'connectors.authApiKey' }
     ],
     
     fileFormats: [

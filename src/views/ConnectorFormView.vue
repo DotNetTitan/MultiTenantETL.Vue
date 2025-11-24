@@ -44,7 +44,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import ConnectorWizard from '@/components/connector/ConnectorWizard.vue';
-import { fetchConnectorById, saveConnector } from '@/services/connectorService';
+import { fetchConnectorById, createConnector, updateConnector } from '@/services/connectorService';
 
 const { t } = useI18n();
 
@@ -91,7 +91,11 @@ async function loadConnector() {
 
 async function handleSave(savedConnector) {
   try {
-    await saveConnector(savedConnector);
+    if (savedConnector.id) {
+      await updateConnector(savedConnector.id, savedConnector);
+    } else {
+      await createConnector(savedConnector);
+    }
     router.push('/connectors');
   } catch (err) {
     error.value = `Failed to save connector: ${err.message}`;
