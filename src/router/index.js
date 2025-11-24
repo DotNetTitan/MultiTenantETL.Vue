@@ -160,16 +160,31 @@ router.beforeEach((to, from, next) => {
     window.dispatchEvent(new CustomEvent('route-loading-start'))
   }
 
-  // Authentication checks
+  // Authentication checks with redirect loop prevention
   if (requiresAuth && !authStore.isAuthenticated) {
     window.dispatchEvent(new CustomEvent('route-loading-end'))
-    next('/login')
+    // Prevent infinite redirect loop
+    if (to.path !== '/login') {
+      next('/login')
+    } else {
+      next()
+    }
   } else if (requiresAdmin && !authStore.isAdmin) {
     window.dispatchEvent(new CustomEvent('route-loading-end'))
-    next('/')
+    // Prevent infinite redirect loop
+    if (to.path !== '/dashboard') {
+      next('/dashboard')
+    } else {
+      next()
+    }
   } else if (isGuestRoute && authStore.isAuthenticated) {
     window.dispatchEvent(new CustomEvent('route-loading-end'))
-    next('/')
+    // Prevent infinite redirect loop
+    if (to.path !== '/dashboard') {
+      next('/dashboard')
+    } else {
+      next()
+    }
   } else {
     next()
   }
