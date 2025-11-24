@@ -110,7 +110,9 @@
     "apiOfflineReason2": "The API URL is configured correctly",
     "apiOfflineReason3": "Your network connection is working",
     "currentApiUrl": "Current API URL",
-    "secureMessage": "Secure multi-tenant data pipeline management"
+    "secureMessage": "Secure multi-tenant data pipeline management",
+    "processingLogin": "Processing Login",
+    "pleaseWait": "Please wait while we authenticate you..."
   },
   "dashboard": {
     "title": "Dashboard",

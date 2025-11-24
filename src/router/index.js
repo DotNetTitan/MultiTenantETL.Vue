@@ -50,6 +50,12 @@ const router = createRouter({
       meta: { guest: true }
     },
     {
+      path: '/auth/callback',
+      name: 'auth-callback',
+      component: () => import('@/views/AuthCallbackView.vue'),
+      meta: { guest: true }
+    },
+    {
       path: '/pipelines',
       name: 'pipelines',
       component: () => import('@/views/PipelinesView.vue'),

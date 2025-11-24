@@ -1,12 +1,19 @@
 import api from './api'
 import { API_ENDPOINTS } from '@/config/api'
 import { getCurrentUser } from '@/utils/jwtHelper'
+import { 
+  generateCodeVerifier, 
+  generateCodeChallenge, 
+  generateState, 
+  storePKCEParams, 
+  retrievePKCEParams,
+  clearPKCEParams
+} from '@/utils/pkce'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
-// OAuth client configuration  
-const CLIENT_ID = 'multitenant-etl-postman'
-const CLIENT_SECRET = 'super-secret-oauth-key-2025-change-in-prod'
+// OAuth client configuration for SPA (Public Client)
+const CLIENT_ID = 'multitenant-etl-spa'
 
 // OAuth scopes
 const SCOPES = {
@@ -22,51 +29,122 @@ const DEFAULT_SCOPES = `${SCOPES.OPENID} ${SCOPES.EMAIL} ${SCOPES.PROFILE} ${SCO
 
 /**
  * Authentication Service
- * Handles OAuth 2.0 authentication with OpenIddict backend
+ * Handles OAuth 2.0 Authorization Code Flow with PKCE
  */
 export const authService = {
   /**
-   * Login with email and password using OAuth 2.0 password grant
+   * Initiate OAuth 2.0 Authorization Code Flow with PKCE
+   * This redirects the browser to the authorization endpoint
    * @param {Object} credentials - { email, password } or { username, password }
-   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, expiresIn: number}>}
    */
-  async login(credentials) {
+  async initiateLogin(credentials) {
     try {
-      // Prepare OAuth 2.0 token request (form-urlencoded)
-      const params = new URLSearchParams({
-        username: credentials.email || credentials.username,
-        password: credentials.password,
+      // Generate PKCE parameters
+      const codeVerifier = generateCodeVerifier()
+      const codeChallenge = await generateCodeChallenge(codeVerifier)
+      const state = generateState()
+
+      // Store PKCE parameters and credentials for the callback
+      storePKCEParams(state, codeVerifier)
+      sessionStorage.setItem('login_credentials', JSON.stringify(credentials))
+
+      // Build authorization URL
+      const authParams = new URLSearchParams({
         client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        grant_type: 'password',
-        scope: DEFAULT_SCOPES
+        response_type: 'code',
+        scope: DEFAULT_SCOPES,
+        redirect_uri: `${window.location.origin}/auth/callback`,
+        state: state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        username: credentials.email || credentials.username,
+        password: credentials.password
       })
 
-      // Make token request with form-urlencoded content type
-      const response = await fetch(`${API_BASE}/connect/token`, {
+      // Redirect to authorization endpoint
+      window.location.href = `${API_BASE}/connect/authorize?${authParams.toString()}`
+    } catch (error) {
+      console.error('Login initiation error:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Handle OAuth callback - exchange authorization code for tokens
+   * Called from the callback page after redirect
+   * @param {string} code - Authorization code from URL
+   * @param {string} state - State parameter from URL
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, expiresIn: number}>}
+   */
+  async handleCallback(code, state) {
+    // Retrieve and validate PKCE parameters
+    const { state: storedState, codeVerifier } = retrievePKCEParams()
+
+    if (!storedState || storedState !== state) {
+      clearPKCEParams()
+      throw new Error('State mismatch - possible CSRF attack')
+    }
+
+    if (!codeVerifier) {
+      clearPKCEParams()
+      throw new Error('Code verifier not found')
+    }
+
+    try {
+      // Exchange authorization code for tokens
+      // Note: Authorization codes are single-use per OAuth 2.0 spec
+      // If this fails with "invalid_grant", the code was already used
+      const tokenParams = new URLSearchParams({
+        client_id: CLIENT_ID,
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: `${window.location.origin}/auth/callback`,
+        code_verifier: codeVerifier
+      })
+
+      const tokenResponse = await fetch(`${API_BASE}/connect/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: params
+        body: tokenParams
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json()
+        
+        // If code already used and we have valid tokens, consider it success
+        // This handles dev environment double-execution gracefully
+        if (errorData.error === 'invalid_grant' && this.isAuthenticated()) {
+          const user = getCurrentUser()
+          return {
+            user,
+            accessToken: this.getAccessToken(),
+            refreshToken: this.getRefreshToken(),
+            idToken: this.getIdToken(),
+            expiresIn: 900, // 15 minutes
+            tokenType: 'Bearer'
+          }
+        }
+
         throw {
-          response: { status: response.status, data: errorData },
+          response: { status: tokenResponse.status, data: errorData },
           oauthError: errorData.error,
-          message: errorData.error_description || errorData.error || 'Login failed'
+          message: errorData.error_description || errorData.error || 'Token exchange failed'
         }
       }
 
-      const data = await response.json()
+      const data = await tokenResponse.json()
       const { access_token, refresh_token, id_token, expires_in, token_type } = data
 
-      // Store tokens (access_token is encrypted JWE, id_token is readable JWT)
+      // Store tokens
       this.setTokens(access_token, refresh_token, id_token)
 
-      // Decode id_token (not access_token - it's encrypted!) to get user information
+      // Clean up session storage after successful exchange
+      clearPKCEParams()
+      sessionStorage.removeItem('login_credentials')
+
+      // Decode id_token to get user information
       const user = getCurrentUser()
 
       return {
@@ -78,9 +156,19 @@ export const authService = {
         tokenType: token_type || 'Bearer'
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('Callback handling error:', error)
+      // Clear PKCE params on error to prevent reuse attempts
+      clearPKCEParams()
       throw error
     }
+  },
+
+  /**
+   * Legacy login method for backward compatibility
+   * @deprecated Use initiateLogin instead
+   */
+  async login(credentials) {
+    return this.initiateLogin(credentials)
   },
 
   /**
@@ -96,7 +184,6 @@ export const authService = {
 
       const params = new URLSearchParams({
         client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
         scope: DEFAULT_SCOPES
@@ -154,8 +241,7 @@ export const authService = {
         const params = new URLSearchParams({
           token: refreshToken,
           token_type_hint: 'refresh_token',
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET
+          client_id: CLIENT_ID
         })
 
         await fetch(`${API_BASE}/connect/revoke`, {

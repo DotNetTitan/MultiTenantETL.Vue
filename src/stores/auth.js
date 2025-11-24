@@ -27,6 +27,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   /**
    * Login with email and password
+   * Note: This initiates OAuth Authorization Code Flow with PKCE
+   * The browser will redirect to the authorization endpoint, then to callback
    */
   async function login(credentials) {
     try {
@@ -34,12 +36,12 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = null
       apiOffline.value = false
 
-      const response = await authService.login(credentials)
-      user.value = response.user
-
-      // Navigate to dashboard after successful login
-      router.push('/dashboard')
-      return true
+      // Initiate OAuth flow - this will redirect the browser
+      // No response is returned as the browser navigates away
+      await authService.initiateLogin(credentials)
+      
+      // This code won't execute because browser redirects
+      // The callback page will handle setting the user
     } catch (err) {
       console.error('Login error:', err)
 
@@ -64,10 +66,10 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         error.value = err.message || 'Login failed. Please try again later.'
       }
-      throw err
-    } finally {
       loading.value = false
+      throw err
     }
+    // Don't set loading.value = false here because browser redirects
   }
 
   /**
