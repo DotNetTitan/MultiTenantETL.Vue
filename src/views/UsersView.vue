@@ -229,7 +229,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { userService } from '@/services/userService';
@@ -285,6 +285,7 @@ const sortOptions = computed(() => [
 ]);
 
 // Data
+const allUsers = ref([]);
 const users = ref([]);
 const loading = ref(false);
 const savingUser = ref(false);
@@ -308,17 +309,35 @@ const tenantRoles = ['TenantAdmin', 'User'];
 async function fetchUsers() {
   try {
     loading.value = true;
-    users.value = await userService.getAll({
-      search: search.value,
+    const result = await userService.getAll({
       status: statusFilter.value,
       sort: sortBy.value
     });
+    allUsers.value = result;
+    filterUsers();
   } catch (error) {
     console.error('Error fetching users:', error);
     showError('Failed to load users');
   } finally {
     loading.value = false;
   }
+}
+
+function filterUsers() {
+  let filtered = [...allUsers.value];
+  
+  // Apply search filter
+  if (search.value) {
+    const searchLower = search.value.toLowerCase();
+    filtered = filtered.filter(user => 
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.firstName?.toLowerCase().includes(searchLower) ||
+      user.lastName?.toLowerCase().includes(searchLower) ||
+      `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  users.value = filtered;
 }
 
 async function editUser(user) {
@@ -406,13 +425,13 @@ async function toggleUserStatus(user) {
 function handleFilter({ key, value }) {
   if (key === 'status') {
     statusFilter.value = value;
-    fetchUsers();
+    fetchUsers(); // Re-fetch for status changes (backend filter)
   }
 }
 
 function handleSort(value) {
   sortBy.value = value;
-  fetchUsers();
+  fetchUsers(); // Re-fetch for sorting (backend sort)
 }
 
 async function handleRemoveTenant(tenantId) {
@@ -479,6 +498,11 @@ function showMessage(message) {
 function showError(message) {
   notification.value?.showNotification(message, 'error', 5000);
 }
+
+// Watch search changes to filter locally
+watch(search, () => {
+  filterUsers();
+});
 
 onMounted(async () => {
   if (!authStore.isAdmin) {

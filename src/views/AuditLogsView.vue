@@ -9,15 +9,27 @@
         <v-row class="mb-2">
           <v-col cols="12" md="4">
             <v-text-field
+              v-model="searchQuery"
+              :label="$t('common.search')"
+              prepend-inner-icon="mdi-magnify"
+              clearable
+              density="compact"
+              hide-details
+              placeholder="Search action, user, resource..."
+            />
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-text-field
               v-model="filters.action"
               :label="$t('auditLogs.filterByAction')"
               prepend-inner-icon="mdi-filter"
               clearable
               density="compact"
+              hide-details
               @update:model-value="fetchLogs"
             />
           </v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="3">
             <v-select
               v-model="filters.resourceType"
               :items="resourceTypes"
@@ -25,10 +37,11 @@
               prepend-inner-icon="mdi-shape"
               clearable
               density="compact"
+              hide-details
               @update:model-value="fetchLogs"
             />
           </v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="2">
             <v-select
               v-model="filters.severity"
               :items="severityOptions"
@@ -36,6 +49,7 @@
               prepend-inner-icon="mdi-alert"
               clearable
               density="compact"
+              hide-details
               @update:model-value="fetchLogs"
             />
           </v-col>
@@ -234,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { auditService } from '@/services/auditService'
@@ -243,7 +257,9 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 
 const loading = ref(false)
+const allLogs = ref([])
 const logs = ref([])
+const searchQuery = ref('')
 
 const filters = ref({
   action: null,
@@ -286,7 +302,8 @@ async function fetchLogs() {
       pageSize: 1000 // Fetch all logs for client-side pagination
     })
     
-    logs.value = response.logs
+    allLogs.value = response.logs
+    filterLogs()
   } catch (error) {
     console.error('Error fetching audit logs:', error)
   } finally {
@@ -294,10 +311,33 @@ async function fetchLogs() {
   }
 }
 
+function filterLogs() {
+  let filtered = [...allLogs.value]
+  
+  // Apply search filter
+  if (searchQuery.value) {
+    const searchLower = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(log => 
+      log.action?.toLowerCase().includes(searchLower) ||
+      log.userEmail?.toLowerCase().includes(searchLower) ||
+      log.resourceType?.toLowerCase().includes(searchLower) ||
+      log.description?.toLowerCase().includes(searchLower) ||
+      log.resourceId?.toLowerCase().includes(searchLower)
+    )
+  }
+  
+  logs.value = filtered
+}
+
 function viewDetails(log) {
   selectedLog.value = log
   showDetailsDialog.value = true
 }
+
+// Watch search changes to filter locally
+watch(searchQuery, () => {
+  filterLogs()
+})
 
 onMounted(() => {
   fetchLogs()

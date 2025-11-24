@@ -8,7 +8,6 @@
         density="compact"
         hide-details
         class="mb-4"
-        @update:model-value="$emit('update:search', $event)"
       />
     </v-col>
     <template v-for="(filter, index) in filters" :key="index">
@@ -81,6 +80,11 @@ const emit = defineEmits(['update:search', 'filter', 'sort']);
 const search = ref('');
 const selectedFilters = ref({});
 const selectedSort = ref('');
+
+// Watch search changes and emit immediately
+watch(search, (newValue) => {
+  emit('update:search', newValue);
+});
 
 // Initialize selected filters
 watch(() => props.filters, (newFilters) => {

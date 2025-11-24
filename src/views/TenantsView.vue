@@ -16,6 +16,7 @@
     <v-card>
       <v-card-text>
         <table-filters
+          v-model:search="searchQuery"
           :search-label="$t('tenants.searchTenants')"
           :filters="availableFilters"
           :sort-options="sortOptions"
@@ -143,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { useAuthStore } from '@/stores/auth';
@@ -157,6 +158,7 @@ const authStore = useAuthStore();
 
 const loading = ref(false);
 const error = ref(null);
+const allTenants = ref([]);
 const tenants = ref([]);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
@@ -164,6 +166,7 @@ const showUsersDialog = ref(false);
 const selectedTenant = ref(null);
 const statusFilter = ref('all');
 const sortBy = ref('name');
+const searchQuery = ref('');
 
 const editedTenant = ref(createEmptyTenant());
 const isEditing = computed(() => !!editedTenant.value.id);
@@ -233,10 +236,11 @@ async function fetchTenants() {
   try {
     loading.value = true;
     error.value = null;
-    tenants.value = await tenantService.getAll({
+    allTenants.value = await tenantService.getAll({
       status: statusFilter.value,
       sort: sortBy.value
     });
+    filterTenants();
   } catch (err) {
     console.error('Error fetching tenants:', err);
     error.value = 'Failed to load tenants';
@@ -244,6 +248,27 @@ async function fetchTenants() {
     loading.value = false;
   }
 }
+
+function filterTenants() {
+  let filtered = [...allTenants.value];
+  
+  // Apply search filter
+  if (searchQuery.value) {
+    const searchLower = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(tenant => 
+      tenant.name?.toLowerCase().includes(searchLower) ||
+      tenant.slug?.toLowerCase().includes(searchLower) ||
+      tenant.description?.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  tenants.value = filtered;
+}
+
+// Watch search changes to filter locally
+watch(searchQuery, () => {
+  filterTenants();
+});
 
 async function saveTenant() {
   try {

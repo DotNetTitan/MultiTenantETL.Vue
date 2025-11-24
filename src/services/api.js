@@ -4,7 +4,11 @@ import { useAuthStore } from '@/stores/auth'
 import { useTenantStore } from '@/stores/tenant'
 
 // Create axios instance with configuration
-const api = axios.create(API_CONFIG)
+const api = axios.create({
+  ...API_CONFIG,
+  timeout: 30000, // 30 second timeout for all requests
+  timeoutErrorMessage: 'Request timeout - the server took too long to respond'
+})
 
 // Request interceptor - add auth token and tenant header
 api.interceptors.request.use(
@@ -36,6 +40,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Prevent infinite retry loops
+    if (originalRequest._retryCount >= 3) {
+      error.userMessage = 'Maximum retry attempts reached. Please try again later.'
+      return Promise.reject(error)
+    }
+
     // If 401 and not already retried, try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
@@ -63,37 +73,63 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle different error scenarios
-    if (error.response) {
-      // Server responded with error status
-      switch (error.response.status) {
-        case 403:
-          error.userMessage = 'You do not have permission to perform this action.'
-          break
-        case 404:
-          error.userMessage = 'The requested resource was not found.'
-          break
-        case 422:
-          error.userMessage = error.response.data?.message || 'Validation failed. Please check your input.'
-          break
-        case 429:
-          error.userMessage = 'Too many requests. Please try again later.'
-          break
-        case 500:
-        case 502:
-        case 503:
-          error.userMessage = 'A server error occurred. Please try again later.'
-          break
-        default:
-          error.userMessage = error.response.data?.message || 'An error occurred. Please try again.'
+    // Handle timeout errors
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      error.userMessage = 'Request timeout. The server is taking too long to respond. Please try again.'
+      error.isTimeout = true
+      return Promise.reject(error)
+    }
+
+    // Implement exponential backoff for 5xx errors (but only retry safe methods)
+    const isRetryableError = error.response?.status >= 500 && error.response?.status < 600
+    const isSafeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(originalRequest.method?.toUpperCase())
+    
+    if (isRetryableError && isSafeMethod && !originalRequest._retryCount) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
+      
+      if (originalRequest._retryCount <= 2) {
+        // Exponential backoff: 1s, 2s
+        const delay = Math.pow(2, originalRequest._retryCount - 1) * 1000
+        
+        await new Promise(resolve => setTimeout(resolve, delay))
+        return api(originalRequest)
       }
-    } else if (error.request) {
-      // Request made but no response received (network error)
-      error.userMessage = 'Network error. Please check your internet connection.'
-      error.isNetworkError = true
-    } else {
-      // Something else happened
-      error.userMessage = 'An unexpected error occurred.'
+    }
+
+    // Handle different error scenarios (if not already handled above)
+    if (!error.userMessage) {
+      if (error.response) {
+        // Server responded with error status
+        switch (error.response.status) {
+          case 403:
+            error.userMessage = 'You do not have permission to perform this action.'
+            break
+          case 404:
+            error.userMessage = 'The requested resource was not found.'
+            break
+          case 422:
+            error.userMessage = error.response.data?.message || 'Validation failed. Please check your input.'
+            break
+          case 429:
+            error.userMessage = 'Too many requests. Please try again later.'
+            break
+          case 500:
+          case 502:
+          case 503:
+          case 504:
+            error.userMessage = 'A server error occurred. Please try again later.'
+            break
+          default:
+            error.userMessage = error.response.data?.message || 'An error occurred. Please try again.'
+        }
+      } else if (error.request) {
+        // Request made but no response received (network error)
+        error.userMessage = 'Network error. Please check your internet connection.'
+        error.isNetworkError = true
+      } else {
+        // Something else happened
+        error.userMessage = 'An unexpected error occurred.'
+      }
     }
 
     return Promise.reject(error)
