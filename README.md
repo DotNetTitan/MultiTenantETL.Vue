@@ -74,7 +74,24 @@ http://localhost:5000/api
 VITE_API_URL=https://your-api-url.com
 ```
 
-The backend should implement OAuth 2.0 authentication with OpenIddict. See the backend README and API documentation for setup instructions.
+### Authentication
+
+The application uses **OAuth 2.0 Authorization Code Flow with PKCE** for secure authentication:
+
+- **Public Client**: No client secret required (SPA-safe)
+- **PKCE**: Proof Key for Code Exchange prevents authorization code interception
+- **OpenIddict**: Backend OAuth 2.0 server implementation
+- **Token Management**: Short-lived access tokens (15 min), long-lived refresh tokens (7 days)
+- **Security**: State parameter for CSRF protection, single-use authorization codes
+
+The authentication flow:
+1. User submits credentials
+2. Browser redirects to authorization endpoint with PKCE challenge
+3. Backend validates credentials and issues authorization code
+4. Callback page exchanges code for tokens using PKCE verifier
+5. User is authenticated and redirected to dashboard
+
+See `docs/OAUTH_PKCE.md` for detailed implementation documentation.
 
 ### Google Gemini AI (Optional)
 
@@ -139,7 +156,7 @@ src/
 │   └── index.js            # Route definitions and navigation guards
 ├── services/               # API service layer
 │   ├── api.js              # Axios instance and interceptors
-│   ├── authService.js      # Authentication API calls
+│   ├── authService.js      # OAuth 2.0 authentication with PKCE
 │   ├── dashboardService.js # Dashboard data API calls
 │   ├── connectorService.js # Connector CRUD operations
 │   ├── geminiService.js    # Google Gemini AI integration
@@ -149,12 +166,16 @@ src/
 │   ├── tenantService.js    # Tenant management API calls
 │   ├── transformationService.js # Transformation operations
 │   └── userService.js      # User management API calls
+├── utils/                  # Utility functions
+│   ├── pkce.js             # PKCE utilities for OAuth 2.0
+│   └── jwtHelper.js        # JWT token parsing and validation
 ├── stores/                 # Pinia state stores
 │   ├── auth.js             # Authentication state
 │   └── tenant.js           # Tenant context state
 ├── styles/                 # Global styles
 │   └── global.scss         # Global SCSS styles
 └── views/                  # Page-level components (route targets)
+    ├── AuthCallbackView.vue    # OAuth callback handler
     ├── DashboardView.vue
     ├── ConnectorFormView.vue
     ├── ConnectorsView.vue

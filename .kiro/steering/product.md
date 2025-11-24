@@ -9,6 +9,7 @@ Multi-tenant ETL Platform - A modern Vue 3 web application for managing Extract,
 - **Multi-source Connectors**: Databases (SQL Server, PostgreSQL, MySQL), Files (CSV, Excel, JSON), REST APIs
 - **Transformation Engine**: 6 built-in templates + custom JavaScript/C# scripting with syntax highlighting
 - **Multi-tenant Architecture**: Secure tenant isolation, tenant switching, automatic personal workspace creation
+- **Secure Authentication**: OAuth 2.0 Authorization Code Flow with PKCE for secure SPA authentication
 - **Role-based Access Control**: SuperAdmin, Admin, and User roles with permission-based authorization
 - **Execution Monitoring**: Detailed logs, timeline view, progress tracking, and execution history
 - **Schema Management**: Auto-detection, manual definition, versioning, and change tracking

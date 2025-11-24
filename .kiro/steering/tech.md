@@ -46,6 +46,23 @@ npm run lint         # Run ESLint and auto-fix issues
 
 The frontend expects a REST API backend at `http://localhost:5000/api` (see api-specification.md for full API contract). The backend should be implemented in ASP.NET Core Web API.
 
+## Authentication
+
+- **OAuth 2.0 Authorization Code Flow with PKCE** (RFC 7636)
+- **OpenIddict** backend OAuth 2.0 server
+- **Public Client**: No client secret (SPA-safe)
+- **PKCE Utilities**: `src/utils/pkce.js` for code verifier/challenge generation
+- **Token Management**: 
+  - Access tokens (15 min) - stored in localStorage
+  - Refresh tokens (7 days) - stored in localStorage
+  - ID tokens - JWT with user claims
+- **Security Features**:
+  - State parameter for CSRF protection
+  - Single-use authorization codes
+  - Code verifier proves authorization request origin
+- **Flow**: Login → Browser redirect → Authorization → Callback → Token exchange → Dashboard
+- **Implementation**: See `docs/OAUTH_PKCE.md` for detailed documentation
+
 ## Theme System
 
 - Supports light and dark themes
