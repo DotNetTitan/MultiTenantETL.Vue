@@ -111,7 +111,28 @@ export const authService = {
       })
 
       if (!tokenResponse.ok) {
-        const errorData = await tokenResponse.json()
+        let errorData
+        const contentType = tokenResponse.headers.get('content-type')
+        
+        try {
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await tokenResponse.json()
+          } else {
+            // Non-JSON response (HTML error page, plain text, etc.)
+            const text = await tokenResponse.text()
+            console.error('Non-JSON error response:', text)
+            errorData = {
+              error: 'server_error',
+              error_description: `Server returned ${tokenResponse.status}: ${tokenResponse.statusText}`
+            }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError)
+          errorData = {
+            error: 'parse_error',
+            error_description: 'Failed to parse server error response'
+          }
+        }
         
         // If code already used and we have valid tokens, consider it success
         // This handles dev environment double-execution gracefully

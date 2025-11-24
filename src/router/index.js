@@ -47,7 +47,7 @@ const router = createRouter({
       path: '/auth/confirm-email',
       name: 'confirm-email',
       component: () => import('@/views/ConfirmEmailView.vue'),
-      meta: { guest: true }
+      meta: { public: true } // Allow both authenticated and unauthenticated users
     },
     {
       path: '/auth/callback',
@@ -154,10 +154,17 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
   const isGuestRoute = to.matched.some(record => record.meta.guest)
+  const isPublicRoute = to.matched.some(record => record.meta.public)
 
   // Show loading indicator for route changes (only if navigating from another route)
   if (from.name) {
     window.dispatchEvent(new CustomEvent('route-loading-start'))
+  }
+
+  // Public routes are accessible to everyone (authenticated or not)
+  if (isPublicRoute) {
+    next()
+    return
   }
 
   // Authentication checks with redirect loop prevention

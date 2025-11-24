@@ -23,16 +23,16 @@
               </v-avatar>
               <h2 class="text-h5 font-weight-bold mb-2 text-success">Email Verified!</h2>
               <p class="text-medium-emphasis mb-6">
-                Your email has been successfully verified. You can now sign in to your account.
+                Your email has been successfully verified. You will be automatically redirected in {{ countdown }} second{{ countdown !== 1 ? 's' : '' }}, or click the button below to continue now.
               </p>
               <v-btn
                 color="primary"
                 size="large"
                 block
-                to="/login"
+                @click="handleRedirect"
                 class="text-none font-weight-bold"
               >
-                Go to Login
+                Continue Now
               </v-btn>
             </div>
 
@@ -66,13 +66,28 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import { authService } from '@/services/authService';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const loading = ref(true);
 const success = ref(false);
 const error = ref('');
+const countdown = ref(10);
+let countdownInterval = null;
+
+const handleRedirect = () => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+  if (authStore.isAuthenticated) {
+    router.push('/dashboard');
+  } else {
+    router.push('/login');
+  }
+};
 
 onMounted(async () => {
   const { userId, token } = route.query;
@@ -87,10 +102,13 @@ onMounted(async () => {
     await authService.confirmEmail(userId, token);
     success.value = true;
     
-    // Optional: Redirect to login automatically after a few seconds
-    setTimeout(() => {
-      router.push('/login');
-    }, 5000);
+    // Start countdown
+    countdownInterval = setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        handleRedirect();
+      }
+    }, 1000);
   } catch (err) {
     console.error('Email confirmation failed:', err);
     error.value = err.response?.data?.message || 'Failed to verify email. Please try again.';

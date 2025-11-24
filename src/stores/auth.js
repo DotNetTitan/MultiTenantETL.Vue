@@ -195,6 +195,8 @@ export const useAuthStore = defineStore('auth', () => {
   function clearAuth() {
     user.value = null
     authService.clearTokens()
+    // Clear tenant selection when logging out
+    localStorage.removeItem('currentTenantId')
   }
 
   /**

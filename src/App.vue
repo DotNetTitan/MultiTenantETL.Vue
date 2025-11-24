@@ -60,11 +60,12 @@
         style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999;"
       />
       
-      <authenticated-layout v-if="isAuthenticated" />
-      <guest-layout v-else />
+      <!-- Use guest layout for public routes, otherwise use auth-based layout -->
+      <guest-layout v-if="isPublicRoute || !isAuthenticated" />
+      <authenticated-layout v-else />
       
-      <!-- AI Chatbot -->
-      <ai-chatbot v-if="isAuthenticated" />
+      <!-- AI Chatbot (only for authenticated users on non-public routes) -->
+      <ai-chatbot v-if="isAuthenticated && !isPublicRoute" />
     </template>
 
     <!-- Global Notifications -->
@@ -98,6 +99,7 @@ import AiChatbot from '@/components/AiChatbot.vue';
 const authStore = useAuthStore();
 const router = useRouter();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isPublicRoute = computed(() => router.currentRoute.value.meta.public === true);
 
 // Notification system
 const notifications = ref([]);

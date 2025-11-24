@@ -83,24 +83,41 @@ onMounted(async () => {
         if (error.response?.status === 403) {
           console.warn('SuperAdmin check failed, falling back to user tenants');
           const userTenants = await tenantService.getMyTenants();
-          tenantStore.tenants = userTenants.map(ut => ({
-            id: ut.tenantId,
-            name: ut.tenantName,
-            slug: ut.tenantSlug,
-            isActive: ut.isActive
-          }));
+          tenantStore.tenants = userTenants.map(ut => {
+            const { tenantId, tenantName, tenantSlug, isActive } = ut;
+            return {
+              id: tenantId,
+              name: tenantName,
+              slug: tenantSlug,
+              isActive: isActive
+            };
+          });
         } else {
           throw error;
         }
       }
     } else {
       const userTenants = await tenantService.getMyTenants();
-      tenantStore.tenants = userTenants.map(ut => ({
-        id: ut.tenantId,
-        name: ut.tenantName,
-        slug: ut.tenantSlug,
-        isActive: ut.isActive
-      }));
+      tenantStore.tenants = userTenants.map(ut => {
+        const { tenantId, tenantName, tenantSlug, isActive } = ut;
+        return {
+          id: tenantId,
+          name: tenantName,
+          slug: tenantSlug,
+          isActive: isActive
+        };
+      });
+    }
+    
+    // Validate that current tenant ID exists in user's tenant list
+    if (tenantStore.currentTenantId) {
+      const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId);
+      if (!tenantExists) {
+        console.warn('Current tenant not found in user tenants, clearing selection');
+        localStorage.removeItem('currentTenantId');
+        tenantStore.currentTenantId = null;
+        selectedTenantId.value = null;
+      }
     }
   } catch (error) {
     console.error('Failed to fetch tenants in TenantSelector:', error);
