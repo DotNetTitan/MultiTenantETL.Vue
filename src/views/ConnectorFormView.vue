@@ -77,11 +77,52 @@ async function loadConnector() {
     loading.value = true;
     error.value = null;
     const data = await fetchConnectorById(route.params.id);
+    
     // Ensure schema property exists
-    connector.value = {
+    const loadedConnector = {
       ...data,
       schema: data.schema || { fields: [] }
     };
+    
+    // Ensure config object exists
+    if (!loadedConnector.config) {
+      loadedConnector.config = {};
+    }
+    
+    // Ensure writeConfig exists for destination/both connectors
+    if (loadedConnector.direction === 'destination' || loadedConnector.direction === 'both') {
+      if (!loadedConnector.config.writeConfig) {
+        // Initialize writeConfig based on connector type
+        if (loadedConnector.type === 'Database') {
+          loadedConnector.config.writeConfig = {
+            tableName: '',
+            operation: 'INSERT',
+            primaryKeys: [],
+            batchSize: 1000
+          };
+        } else if (loadedConnector.type === 'File') {
+          loadedConnector.config.writeConfig = {
+            writeMode: 'OVERWRITE',
+            includeHeaders: true,
+            columnOrder: [],
+            filenamePattern: '',
+            sheetName: 'Sheet1',
+            startCell: 'A1',
+            structure: 'ARRAY',
+            rootKey: null
+          };
+        } else if (loadedConnector.type === 'API') {
+          loadedConnector.config.writeConfig = {
+            requestFormat: 'JSON',
+            wrapInArray: false,
+            rootKey: null,
+            batchSize: 100
+          };
+        }
+      }
+    }
+    
+    connector.value = loadedConnector;
   } catch (err) {
     error.value = `Failed to load connector: ${err.message}`;
   } finally {

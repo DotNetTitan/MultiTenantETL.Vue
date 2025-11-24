@@ -647,7 +647,7 @@
                   </template>
                 </v-select>
               </v-col>
-              <v-col v-if="['UPDATE', 'UPSERT'].includes(connector.config.writeConfig.operation)" cols="12">
+              <v-col v-if="connector.config.writeConfig && ['UPDATE', 'UPSERT'].includes(connector.config.writeConfig.operation)" cols="12">
                 <v-combobox
                   v-model="connector.config.writeConfig.primaryKeys"
                   :items="connector.schema.fields.map(f => f.name)"
@@ -1385,6 +1385,51 @@ const showWriteConfigStep = computed(() => {
   return props.connector.direction === 'destination' || props.connector.direction === 'both';
 });
 
+// Watch for direction changes and ensure writeConfig exists
+watch(() => props.connector.direction, (newDirection) => {
+  if ((newDirection === 'destination' || newDirection === 'both') && !props.connector.config.writeConfig) {
+    ensureWriteConfig();
+  }
+}, { immediate: true });
+
+// Watch for type changes and ensure writeConfig exists if needed
+watch(() => props.connector.type, () => {
+  if (showWriteConfigStep.value && !props.connector.config.writeConfig) {
+    ensureWriteConfig();
+  }
+}, { immediate: true });
+
+function ensureWriteConfig() {
+  if (!props.connector.config.writeConfig) {
+    if (props.connector.type === 'Database') {
+      props.connector.config.writeConfig = {
+        tableName: '',
+        operation: 'INSERT',
+        primaryKeys: [],
+        batchSize: 1000
+      };
+    } else if (props.connector.type === 'File') {
+      props.connector.config.writeConfig = {
+        writeMode: 'OVERWRITE',
+        includeHeaders: true,
+        columnOrder: [],
+        filenamePattern: '',
+        sheetName: 'Sheet1',
+        startCell: 'A1',
+        structure: 'ARRAY',
+        rootKey: null
+      };
+    } else if (props.connector.type === 'API') {
+      props.connector.config.writeConfig = {
+        requestFormat: 'JSON',
+        wrapInArray: false,
+        rootKey: null,
+        batchSize: 100
+      };
+    }
+  }
+}
+
 const canProceed = computed(() => {
   switch (currentStep.value) {
     case 1:
@@ -1484,7 +1529,13 @@ function getDefaultConfig(type) {
         password: '',
         useSsl: false,
         useCustomConnectionString: false,
-        connectionString: null
+        connectionString: null,
+        writeConfig: {
+          tableName: '',
+          operation: 'INSERT',
+          primaryKeys: [],
+          batchSize: 1000
+        }
       };
     case 'API':
       return {
@@ -1527,7 +1578,17 @@ function getDefaultConfig(type) {
         // Azure Blob fields
         azureAccountName: null,
         azureContainer: null,
-        azureAccountKey: null
+        azureAccountKey: null,
+        writeConfig: {
+          writeMode: 'OVERWRITE',
+          includeHeaders: true,
+          columnOrder: [],
+          filenamePattern: '',
+          sheetName: 'Sheet1',
+          startCell: 'A1',
+          structure: 'ARRAY',
+          rootKey: null
+        }
       };
     default:
       return {};
