@@ -108,7 +108,7 @@
           <v-icon class="mr-2" color="primary">mdi-file-document-outline</v-icon>
           <span class="text-h5">{{ $t('auditLogs.details') }}</span>
           <v-spacer />
-          <v-btn icon variant="text" color="primary" @click="showDetailsDialog = false">
+          <v-btn icon variant="text" @click="showDetailsDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -235,8 +235,6 @@
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
-            color="primary"
-            variant="text"
             @click="showDetailsDialog = false"
           >
             Close
