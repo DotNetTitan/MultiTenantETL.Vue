@@ -2,12 +2,13 @@
  * Metadata Service
  * Provides configuration metadata for the application
  * 
- * TODO: Replace mock data with real API calls when backend is ready
  * API Endpoint: GET /api/metadata/*
  */
 
+import axios from './api';
+
 // Mock flag - set to false when backend is ready
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 // Mock metadata - simulates backend response
 const MOCK_METADATA = {
@@ -180,11 +181,8 @@ export async function getConnectorConfig() {
     return MOCK_METADATA.connectorConfig;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/connector-config');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/connector-config');
+  return data;
 }
 
 /**
@@ -197,11 +195,8 @@ export async function getTransformationTypes() {
     return MOCK_METADATA.transformationTypes;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/transformation-types');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/transformation-types');
+  return data;
 }
 
 /**
@@ -214,11 +209,8 @@ export async function getDataTypes() {
     return MOCK_METADATA.dataTypes;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/data-types');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/data-types');
+  return data;
 }
 
 /**
@@ -231,11 +223,8 @@ export async function getScheduleFrequencies() {
     return MOCK_METADATA.scheduleFrequencies;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/schedule-frequencies');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/schedule-frequencies');
+  return data;
 }
 
 /**
@@ -248,11 +237,8 @@ export async function getDaysOfWeek() {
     return MOCK_METADATA.daysOfWeek;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/days-of-week');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/days-of-week');
+  return data;
 }
 
 /**
@@ -265,11 +251,8 @@ export async function getAllMetadata() {
     return MOCK_METADATA;
   }
   
-  // TODO: Replace with real API call
-  // const { data } = await axios.get('/api/metadata/all');
-  // return data;
-  
-  throw new Error('Backend API not implemented yet');
+  const { data } = await axios.get('/api/metadata/all');
+  return data;
 }
 
 /**
