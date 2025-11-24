@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-chatbot">
+  <div class="ai-chatbot" :class="{ 'chatbot-hidden': !shouldShowChatbot }">
     <!-- Floating Chat Button with Hint -->
     <div v-if="!isOpen" class="chat-fab-container">
       <v-btn
@@ -231,6 +231,37 @@ import { marked } from 'marked';
 
 const route = useRoute();
 const { t } = useI18n();
+
+// Expose method to open chatbot globally
+const openChatbot = () => {
+  isOpen.value = true;
+  dismissHint();
+};
+
+// Listen for global chatbot open event
+if (typeof window !== 'undefined') {
+  window.openAiChatbot = openChatbot;
+}
+
+// Check if chatbot should be visible on current route
+const shouldShowChatbot = computed(() => {
+  const currentPath = route.path;
+  
+  // Hide on login
+  if (currentPath === '/login') return false;
+  
+  // Hide on any connector form (new or edit with ID)
+  if (currentPath.startsWith('/connectors/') && (currentPath.includes('/new') || currentPath.includes('/edit'))) {
+    return false;
+  }
+  
+  // Hide on any pipeline form (new or edit with ID)
+  if (currentPath.startsWith('/pipelines/') && (currentPath.includes('/new') || currentPath.includes('/edit'))) {
+    return false;
+  }
+  
+  return true;
+});
 const isOpen = ref(false);
 const userInput = ref('');
 const messages = ref([]);
@@ -422,6 +453,12 @@ const handleUserActivity = () => {
 watch(() => route.path, () => {
   messages.value = [];
   hintDismissed.value = false; // Reset hint dismissal on page change
+  
+  // Close chatbot when navigating to hidden routes
+  if (!shouldShowChatbot.value) {
+    isOpen.value = false;
+  }
+  
   resetHintTimer();
 });
 
@@ -460,9 +497,13 @@ onUnmounted(() => {
 <style scoped>
 .ai-chatbot {
   position: fixed;
-  bottom: 24px;
+  bottom: 80px;
   right: 24px;
-  z-index: 1000;
+  z-index: 999;
+}
+
+.ai-chatbot.chatbot-hidden .chat-fab-container {
+  display: none;
 }
 
 .chat-fab {
@@ -786,7 +827,7 @@ onUnmounted(() => {
   gap: 8px;
   cursor: pointer;
   white-space: nowrap;
-  z-index: 999;
+  z-index: 998;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 

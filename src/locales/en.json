@@ -589,6 +589,7 @@
   "chatbot": {
     "title": "Maeve",
     "needHelp": "Need help? Ask Maeve!",
+    "openAssistant": "Ask Maeve",
     "placeholder": "Ask me anything... (Shift+Enter for new line, Enter to send)",
     "thinking": "Thinking...",
     "greeting": "Hi! I'm Maeve, your AI assistant. Ask me anything about this page or the ETL platform.",

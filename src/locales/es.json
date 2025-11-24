@@ -574,6 +574,7 @@
   "chatbot": {
     "title": "Maeve",
     "needHelp": "¿Necesitas ayuda? ¡Pregúntale a Maeve!",
+    "openAssistant": "Preguntar a Maeve",
     "placeholder": "Pregúntame cualquier cosa... (Shift+Enter para nueva línea, Enter para enviar)",
     "thinking": "Pensando...",
     "greeting": "¡Hola! Soy Maeve, tu asistente de IA. Pregúntame cualquier cosa sobre esta página o la plataforma ETL.",

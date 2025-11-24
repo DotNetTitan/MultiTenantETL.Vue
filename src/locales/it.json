@@ -583,6 +583,7 @@
   "chatbot": {
     "title": "Maeve",
     "needHelp": "Hai bisogno di aiuto? Chiedi a Maeve!",
+    "openAssistant": "Chiedi a Maeve",
     "placeholder": "Chiedimi qualsiasi cosa... (Shift+Enter per nuova riga, Enter per inviare)",
     "thinking": "Sto pensando...",
     "greeting": "Ciao! Sono Maeve, la tua assistente AI. Chiedimi qualsiasi cosa su questa pagina o sulla piattaforma ETL.",

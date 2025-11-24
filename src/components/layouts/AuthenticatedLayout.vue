@@ -15,6 +15,21 @@
           <tenant-selector v-if="isAdmin" class="flex-shrink-0" />
           <language-switcher class="flex-shrink-0" />
           
+          <!-- AI Chatbot Toggle -->
+          <v-tooltip :text="$t('chatbot.openAssistant')" location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                icon
+                size="small"
+                v-bind="props"
+                class="flex-shrink-0"
+                @click="openChatbot"
+              >
+                <v-icon>mdi-robot</v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          
           <v-switch
             v-model="isDarkMode"
             hide-details
@@ -210,6 +225,12 @@ function toggleTheme() {
 
 function logout() {
   authStore.logout();
+}
+
+function openChatbot() {
+  if (window.openAiChatbot) {
+    window.openAiChatbot();
+  }
 }
 </script>
 
