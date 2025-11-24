@@ -47,6 +47,14 @@ const authStore = useAuthStore()
 const error = ref(null)
 
 onMounted(async () => {
+  // Official Vite/Vue pattern: Check if side effect already occurred
+  // If user is already authenticated, the callback was already processed
+  if (authStore.isAuthenticated) {
+    // Already processed, redirect to dashboard
+    await router.replace('/dashboard')
+    return
+  }
+
   try {
     // Extract code and state from URL query parameters
     const code = route.query.code
