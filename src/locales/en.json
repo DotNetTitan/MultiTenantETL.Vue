@@ -290,6 +290,7 @@
     "databaseName": "Database Name",
     "username": "Username",
     "password": "Password",
+    "useSsl": "Use SSL/TLS",
     "useCustomConnectionString": "Use Custom Connection String",
     "apiUrl": "API URL",
     "authenticationType": "Authentication Type",

@@ -287,6 +287,7 @@
     "databaseName": "Datenbankname",
     "username": "Benutzername",
     "password": "Passwort",
+    "useSsl": "SSL/TLS verwenden",
     "useCustomConnectionString": "Benutzerdefinierte Verbindungszeichenfolge verwenden",
     "apiUrl": "API-URL",
     "authenticationType": "Authentifizierungstyp",

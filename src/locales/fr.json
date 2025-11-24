@@ -289,6 +289,7 @@
     "databaseName": "Nom de la Base de Données",
     "username": "Nom d'utilisateur",
     "password": "Mot de passe",
+    "useSsl": "Utiliser SSL/TLS",
     "useCustomConnectionString": "Utiliser une Chaîne de Connexion Personnalisée",
     "apiUrl": "URL de l'API",
     "authenticationType": "Type d'Authentification",

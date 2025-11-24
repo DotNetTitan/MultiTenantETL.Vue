@@ -543,6 +543,29 @@
                   hide-details
                 />
               </v-col>
+
+              <!-- Test Connection Button -->
+              <v-col cols="12" class="text-center mt-4">
+                <v-btn
+                  color="success"
+                  variant="outlined"
+                  prepend-icon="mdi-connection"
+                  :loading="testingConnection"
+                  :disabled="!validateConnectionConfig()"
+                  @click="testConnectionBeforeSave"
+                >
+                  {{ t('connectors.testConnection') }}
+                </v-btn>
+                <div v-if="connectionTestResult" class="mt-3">
+                  <v-alert
+                    :type="connectionTestSuccess ? 'success' : 'error'"
+                    variant="tonal"
+                    density="compact"
+                  >
+                    {{ connectionTestMessage }}
+                  </v-alert>
+                </div>
+              </v-col>
             </v-row>
           </div>
         </v-stepper-window-item>
@@ -1435,6 +1458,16 @@ function getMethodColor(method) {
   return colors[method] || 'grey';
 }
 
+function getDefaultPort(provider) {
+  const ports = {
+    'SQL Server': 1433,
+    'SqlServer': 1433,
+    'PostgreSQL': 5432,
+    'MySQL': 3306
+  };
+  return ports[provider] || '';
+}
+
 function handleTypeChange() {
   props.connector.provider = '';
   props.connector.config = getDefaultConfig(props.connector.type);
@@ -1450,6 +1483,7 @@ function getDefaultConfig(type) {
         username: '',
         password: '',
         useSsl: false,
+        useCustomConnectionString: false,
         connectionString: null
       };
     case 'API':
