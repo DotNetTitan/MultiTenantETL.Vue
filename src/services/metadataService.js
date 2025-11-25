@@ -35,7 +35,6 @@ const MOCK_METADATA = {
       { value: 'None', labelKey: 'connectors.authNone' },
       { value: 'Basic', labelKey: 'connectors.authBasic' },
       { value: 'Bearer', labelKey: 'connectors.authBearer' },
-      { value: 'OAuth2', labelKey: 'connectors.authOAuth2' },
       { value: 'ApiKey', labelKey: 'connectors.authApiKey' }
     ],
     
