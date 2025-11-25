@@ -867,5 +867,28 @@
     "filterByAction": "Filter by Action",
     "filterByResource": "Filter by Resource Type",
     "filterBySeverity": "Filter by Severity"
+  },
+  "schema": {
+    "defineStructure": "Define the structure of your data",
+    "detectFromApi": "Detect Schema from API",
+    "detectFromApiDescription": "Call your API endpoint to automatically detect the schema from the response",
+    "selectEndpoint": "Select Endpoint",
+    "noGetEndpointsConfigured": "No GET endpoints configured. Please add at least one GET endpoint in the previous step.",
+    "detectSchema": "Detect Schema",
+    "schemaDetectionFailed": "Schema detection failed",
+    "export": "Export",
+    "import": "Import",
+    "fieldName": "Field Name",
+    "uniqueId": "Unique ID",
+    "nullable": "Nullable",
+    "noFieldsDefined": "No fields defined",
+    "addFieldsManually": "Add fields manually or upload a sample file",
+    "addField": "Add Field",
+    "summary": "{count} field(s) defined",
+    "requiredCount": "{count} required",
+    "uniqueIdentifierRequired": "Unique Identifier Required",
+    "schemaIssues": "Schema Issues",
+    "importSchema": "Import Schema",
+    "pasteJsonSchema": "Paste JSON Schema"
   }
 }

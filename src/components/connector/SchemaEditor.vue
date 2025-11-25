@@ -32,6 +32,15 @@
       @schema-generated="handleSchemaGenerated"
     />
 
+    <!-- API Schema Detector (for API connectors) -->
+    <ApiSchemaDetector
+      v-if="localFields.length === 0 && connectorType === 'API'"
+      :connector-type="connectorType"
+      :provider="provider"
+      :config="config"
+      @schema-generated="handleSchemaGenerated"
+    />
+
     <!-- File Upload Schema Generator (for File connectors or when no connector type) -->
     <FileUploadSchemaGenerator
       v-if="localFields.length === 0 && (connectorType === 'File' || !connectorType)"
@@ -239,9 +248,10 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { validateSchema } from '@/services/schemaService';
-import FieldEditorDialog from './FieldEditorDialog.vue';
-import FileUploadSchemaGenerator from './FileUploadSchemaGenerator.vue';
 import DatabaseSchemaDetector from './DatabaseSchemaDetector.vue';
+import ApiSchemaDetector from './ApiSchemaDetector.vue';
+import FileUploadSchemaGenerator from './FileUploadSchemaGenerator.vue';
+import FieldEditorDialog from './FieldEditorDialog.vue';
 
 const { t } = useI18n();
 
@@ -483,8 +493,74 @@ function importSchema() {
   }
 }
 
-function handleSchemaGenerated(fields) {
-  localFields.value = fields;
+function handleSchemaGenerated(schema) {
+  console.log('🔍 handleSchemaGenerated called with:', schema);
+  console.log('🔍 Schema type:', typeof schema, 'Is array:', Array.isArray(schema));
+  
+  // Handle both formats: array of fields or object with fields property
+  let rawFields = [];
+  
+  if (Array.isArray(schema)) {
+    console.log('✅ Schema is array, using directly');
+    rawFields = schema;
+  } else if (schema && schema.fields && Array.isArray(schema.fields)) {
+    console.log('✅ Schema has fields property, extracting fields');
+    rawFields = schema.fields;
+  } else {
+    console.error('❌ Invalid schema format received:', schema);
+    console.log('Schema keys:', schema ? Object.keys(schema) : 'null/undefined');
+    localFields.value = [];
+    return;
+  }
+  
+  console.log('🔍 Raw fields to normalize:', rawFields);
+  console.log('🔍 First field sample:', rawFields[0]);
+  
+  // Normalize fields to ensure they have required properties
+  const normalizedFields = rawFields
+    .filter(field => field && (
+      field.name || field.Name || 
+      field.fieldName || field.FieldName || 
+      field.columnName || field.ColumnName
+    )) // Filter out invalid fields
+    .map((field, index) => {
+      // Handle different field name properties (both camelCase and PascalCase)
+      const name = field.name || field.Name || 
+                   field.fieldName || field.FieldName || 
+                   field.columnName || field.ColumnName || 
+                   `field_${index + 1}`;
+      
+      // Handle different type properties
+      const type = field.type || field.Type || 
+                   field.dataType || field.DataType || 
+                   'varchar';
+      
+      // Handle nullable properties
+      const isNullable = field.nullable !== undefined ? field.nullable : 
+                         field.Nullable !== undefined ? field.Nullable :
+                         field.IsNullable !== undefined ? field.IsNullable :
+                         true;
+      
+      // Handle primary key properties
+      const isPrimaryKey = field.isPrimaryKey || field.IsPrimaryKey || 
+                          field.isUnique || field.IsUnique || 
+                          false;
+      
+      return {
+        id: field.id || field.Id || `field-${Date.now()}-${index}`,
+        name: name,
+        type: type.toLowerCase(), // Normalize to lowercase
+        isPrimaryKey: isPrimaryKey,
+        required: field.required || field.Required || (!isNullable),
+        nullable: isNullable,
+        description: field.description || field.Description || '',
+        order: field.order || field.Order || index + 1
+      };
+    });
+  
+  console.log('✅ Normalized fields:', normalizedFields);
+  console.log('✅ Setting localFields.value to', normalizedFields.length, 'fields');
+  localFields.value = normalizedFields;
 }
 </script>
 

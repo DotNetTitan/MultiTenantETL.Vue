@@ -11,7 +11,7 @@ export async function fetchSchema(connectorId) {
     // First, try to get the connector to check for manual schema
     const { fetchConnectorById } = await import('./connectorService');
     const connector = await fetchConnectorById(connectorId);
-    
+
     // If manual schema exists, use it
     if (connector.schema && connector.schema.isManual && connector.schema.fields) {
       return {
@@ -20,7 +20,7 @@ export async function fetchSchema(connectorId) {
         version: connector.schema.version || 1
       };
     }
-    
+
     // Otherwise, fall back to auto-detection
     const schema = await detectSchema(connectorId);
 
@@ -65,7 +65,7 @@ export async function fetchSchema(connectorId) {
       }));
     }
 
-    return { 
+    return {
       fields,
       isManual: false // Indicate this was auto-detected
     };
@@ -85,7 +85,7 @@ export async function saveSchema(connectorId, fields) {
   try {
     const { fetchConnectorById, saveConnector } = await import('./connectorService');
     const connector = await fetchConnectorById(connectorId);
-    
+
     // Update connector with manual schema
     const updatedConnector = {
       ...connector,
@@ -96,9 +96,9 @@ export async function saveSchema(connectorId, fields) {
         lastModified: new Date().toISOString()
       }
     };
-    
+
     await saveConnector(updatedConnector);
-    
+
     return updatedConnector.schema;
   } catch (error) {
     console.error('Error saving schema:', error);
@@ -113,13 +113,13 @@ export async function saveSchema(connectorId, fields) {
  */
 export function validateSchema(fields) {
   const errors = [];
-  
+
   // Check if at least one field is defined
   if (!fields || fields.length === 0) {
     errors.push('At least one field must be defined');
     return { isValid: false, errors };
   }
-  
+
   // Check for exactly one unique identifier
   const uniqueIdentifiers = fields.filter(f => f.isPrimaryKey || f.isUnique);
   if (uniqueIdentifiers.length === 0) {
@@ -127,45 +127,47 @@ export function validateSchema(fields) {
   } else if (uniqueIdentifiers.length > 1) {
     errors.push(`Only one field can be marked as a unique identifier. Currently marked: ${uniqueIdentifiers.map(f => f.name).join(', ')}`);
   }
-  
+
   // Check that unique identifier is also required
   uniqueIdentifiers.forEach(field => {
     if (!field.required) {
       errors.push(`Unique identifier '${field.name}' must be marked as required`);
     }
   });
-  
+
   // Check for duplicate field names
-  const fieldNames = fields.map(f => f.name.toLowerCase());
+  const fieldNames = fields
+    .filter(f => f && f.name) // Filter out fields without names
+    .map(f => f.name.toLowerCase());
   const duplicates = fieldNames.filter((name, index) => fieldNames.indexOf(name) !== index);
   const uniqueDuplicates = [...new Set(duplicates)];
-  
+
   uniqueDuplicates.forEach(name => {
     errors.push(`Duplicate field name: '${name}'`);
   });
-  
+
   // Validate each field
   fields.forEach((field, index) => {
     const fieldNum = index + 1;
-    
+
     // Check field name
     if (!field.name || field.name.trim() === '') {
       errors.push(`Field ${fieldNum}: Name is required`);
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(field.name)) {
       errors.push(`Field ${fieldNum}: Name '${field.name}' contains invalid characters. Use only letters, numbers, and underscores.`);
     }
-    
+
     // Check data type
     if (!field.type || field.type.trim() === '') {
       errors.push(`Field ${fieldNum}: Data type is required`);
     }
-    
+
     // Check Required and Nullable conflict
     if (field.required && field.nullable) {
       errors.push(`Field ${fieldNum} ('${field.name}'): Cannot be both Required and Nullable`);
     }
   });
-  
+
   return {
     isValid: errors.length === 0,
     errors
@@ -243,14 +245,14 @@ export function validateFieldMappings(mappings, sourceSchema, destinationSchema,
   // Check that unique identifiers are mapped
   const sourceUniqueId = sourceSchema.fields.find(f => f.isPrimaryKey);
   const destUniqueId = destinationSchema.fields.find(f => f.isPrimaryKey);
-  
+
   if (sourceUniqueId && destUniqueId) {
     // Check if source unique identifier is mapped to destination unique identifier
-    const uniqueIdMapping = mappings.find(m => 
-      m.destinationField === destUniqueId.name && 
+    const uniqueIdMapping = mappings.find(m =>
+      m.destinationField === destUniqueId.name &&
       m.sourceFields.includes(sourceUniqueId.name)
     );
-    
+
     if (!uniqueIdMapping) {
       errors.push(
         `Unique identifier mapping required: Source '${sourceUniqueId.name}' must be mapped to destination '${destUniqueId.name}'`
@@ -304,10 +306,10 @@ export function validateFieldMappings(mappings, sourceSchema, destinationSchema,
     }
 
     // Validate transformations if present
-    const hasValidTransformations = mapping.transformations && 
-      mapping.transformations.length > 0 && 
+    const hasValidTransformations = mapping.transformations &&
+      mapping.transformations.length > 0 &&
       mapping.transformations.some(t => t.transformationId);
-    
+
     if (hasValidTransformations) {
       // Validate each transformation in the chain
       mapping.transformations.forEach((transMapping, tIndex) => {
@@ -463,7 +465,7 @@ export function getCompatibleTransformations(
     if (trans.type === 'Map' && sourceFields.length < 2) {
       return false;
     }
-    
+
     // All other transformations are compatible
     return true;
   });
