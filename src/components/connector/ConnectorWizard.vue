@@ -391,7 +391,7 @@
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="connector.config.ftpPort"
+                    v-model.number="connector.config.ftpPort"
                     :label="t('connectors.port')"
                     placeholder="21"
                     type="number"
@@ -443,7 +443,7 @@
                 </v-col>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="connector.config.sftpPort"
+                    v-model.number="connector.config.sftpPort"
                     :label="t('connectors.port')"
                     placeholder="22"
                     type="number"
@@ -520,6 +520,16 @@
                     variant="outlined"
                     :rules="[v => !!v || t('validation.required', { field: t('connectors.secretAccessKey') })]"
                     required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.s3Endpoint"
+                    :label="t('connectors.s3Endpoint')"
+                    :placeholder="t('connectors.s3EndpointPlaceholder')"
+                    variant="outlined"
+                    :hint="t('connectors.s3EndpointHint')"
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12">
@@ -1636,6 +1646,7 @@ function getDefaultConfig(type) {
         s3Region: null,
         s3AccessKey: null,
         s3SecretKey: null,
+        s3Endpoint: null,
         // Azure Blob fields
         azureAccountName: null,
         azureContainer: null,
