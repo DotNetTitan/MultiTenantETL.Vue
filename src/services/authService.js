@@ -360,13 +360,8 @@ export const authService = {
    * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, idToken: string}>}
    */
   async switchTenant(tenantId) {
-    console.log('Switching to tenant:', tenantId, 'Type:', typeof tenantId)
-    
-    const payload = { tenantId }
-    console.log('Request payload:', JSON.stringify(payload))
-    
     try {
-      const response = await api.post(API_ENDPOINTS.auth.switchTenant, payload)
+      const response = await api.post(API_ENDPOINTS.auth.switchTenant, { tenantId })
 
       // Backend updates the database and tells us to refresh token
       if (response.data.requiresTokenRefresh) {
@@ -394,11 +389,7 @@ export const authService = {
         tenantName: response.data.tenantName
       }
     } catch (error) {
-      console.error('Switch tenant error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers
-      })
+      console.error('Switch tenant error:', error)
       throw error
     }
   },
