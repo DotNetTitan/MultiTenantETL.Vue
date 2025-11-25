@@ -429,6 +429,58 @@
                 </v-col>
               </template>
 
+              <!-- SFTP Storage -->
+              <template v-if="connector.provider === 'SFTP'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.sftpHost"
+                    :label="t('connectors.sftpHost')"
+                    :placeholder="t('connectors.sftpHostPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: 'Host' })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.sftpPort"
+                    :label="t('connectors.port')"
+                    placeholder="22"
+                    type="number"
+                    variant="outlined"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.sftpUsername"
+                    :label="t('connectors.username')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.sftpPassword"
+                    :label="t('connectors.password')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.path"
+                    :label="t('connectors.filePath')"
+                    :placeholder="t('connectors.remotePathPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.filePath') })]"
+                    required
+                  />
+                </v-col>
+              </template>
+
               <!-- S3 Storage -->
               <template v-if="connector.provider === 'S3'">
                 <v-col cols="12" md="6">
@@ -483,7 +535,7 @@
               </template>
 
               <!-- Azure Blob Storage -->
-              <template v-if="connector.provider === 'Azure Blob'">
+              <template v-if="connector.provider === 'AzureBlob'">
                 <v-col cols="12" md="6">
                   <v-text-field
                     v-model="connector.config.azureAccountName"
@@ -1574,6 +1626,11 @@ function getDefaultConfig(type) {
         ftpPort: 21,
         ftpUsername: null,
         ftpPassword: null,
+        // SFTP fields
+        sftpHost: null,
+        sftpPort: 22,
+        sftpUsername: null,
+        sftpPassword: null,
         // S3 fields
         s3Bucket: null,
         s3Region: null,

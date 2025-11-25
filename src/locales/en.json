@@ -206,7 +206,10 @@
   "connectors": {
     "title": "Connectors",
     "customHeadersPlaceholder": "Content-Type: application/json",
+    "ftpHost": "FTP Host",
     "ftpHostPlaceholder": "ftp.example.com",
+    "sftpHost": "SFTP Host",
+    "sftpHostPlaceholder": "sftp.example.com",
     "blobPath": "Blob Path",
     "blobPathPlaceholder": "folder/file.csv",
     "containerName": "Container Name",
