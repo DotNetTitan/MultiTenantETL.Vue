@@ -253,14 +253,101 @@
                   variant="outlined"
                 />
               </v-col>
-              <v-col v-if="connector.config.authType === 'Bearer'" cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.authToken"
-                  :label="t('connectors.bearerToken')"
-                  type="password"
-                  variant="outlined"
-                />
-              </v-col>
+              <!-- Bearer Token Configuration -->
+              <template v-if="connector.config.authType === 'Bearer'">
+                <v-col cols="12">
+                  <v-switch
+                    v-model="connector.config.useDynamicToken"
+                    :label="t('connectors.useDynamicToken')"
+                    color="primary"
+                    density="compact"
+                    hide-details
+                    :hint="t('connectors.useDynamicTokenHint')"
+                  />
+                </v-col>
+                
+                <!-- Static Token -->
+                <v-col v-if="!connector.config.useDynamicToken" cols="12">
+                  <v-text-field
+                    v-model="connector.config.authToken"
+                    :label="t('connectors.bearerToken')"
+                    type="password"
+                    variant="outlined"
+                    :hint="t('connectors.staticTokenHint')"
+                    persistent-hint
+                  />
+                </v-col>
+                
+                <!-- Dynamic Token Configuration -->
+                <template v-else>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="connector.config.tokenEndpointUrl"
+                      :label="t('connectors.tokenEndpointUrl')"
+                      placeholder="https://api.example.com/auth/token"
+                      variant="outlined"
+                      :rules="[v => !!v || t('validation.required', { field: t('connectors.tokenEndpointUrl') })]"
+                      required
+                    />
+                  </v-col>
+                  
+                  <v-col cols="12" md="6">
+                    <v-select
+                      v-model="connector.config.tokenEndpointMethod"
+                      :items="['POST', 'GET']"
+                      :label="t('connectors.httpMethod')"
+                      variant="outlined"
+                    />
+                  </v-col>
+                  
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="connector.config.tokenResponsePath"
+                      :label="t('connectors.tokenResponsePath')"
+                      placeholder="access_token"
+                      variant="outlined"
+                      :hint="t('connectors.tokenResponsePathHint')"
+                      persistent-hint
+                    />
+                  </v-col>
+                  
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="connector.config.tokenEndpointBody"
+                      :label="t('connectors.requestBody')"
+                      placeholder='{"client_id": "xxx", "client_secret": "yyy", "grant_type": "client_credentials"}'
+                      variant="outlined"
+                      rows="3"
+                      :hint="t('connectors.tokenRequestBodyHint')"
+                      persistent-hint
+                    />
+                  </v-col>
+                  
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="connector.config.tokenEndpointHeadersText"
+                      :label="t('connectors.requestHeaders')"
+                      placeholder='{"Content-Type": "application/json"}'
+                      variant="outlined"
+                      rows="2"
+                      :hint="t('connectors.tokenRequestHeadersHint')"
+                      persistent-hint
+                    />
+                  </v-col>
+                  
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model.number="connector.config.tokenExpirySeconds"
+                      :label="t('connectors.tokenCacheDuration')"
+                      type="number"
+                      placeholder="3600"
+                      variant="outlined"
+                      :hint="t('connectors.tokenCacheDurationHint')"
+                      persistent-hint
+                    />
+                  </v-col>
+                </template>
+              </template>
               <v-col v-if="connector.config.authType === 'API Key'" cols="12" md="6">
                 <v-text-field
                   v-model="connector.config.apiKeyHeader"
@@ -1608,6 +1695,13 @@ function getDefaultConfig(type) {
         baseUrl: '',
         authType: 'None',
         authToken: null,
+        useDynamicToken: false,
+        tokenEndpointUrl: null,
+        tokenEndpointMethod: 'POST',
+        tokenEndpointBody: null,
+        tokenEndpointHeadersText: null,
+        tokenResponsePath: 'access_token',
+        tokenExpirySeconds: null,
         apiKeyHeader: null,
         apiKeyValue: null,
         username: null,
@@ -1761,25 +1855,36 @@ async function testConnectionBeforeSave() {
   }
 }
 
+function parseHeadersFromText(headersText) {
+  if (!headersText) return {};
+  
+  try {
+    return JSON.parse(headersText);
+  } catch (e) {
+    // If not valid JSON, treat as key:value pairs
+    const headers = {};
+    headersText.split('\n').forEach(line => {
+      const [key, ...valueParts] = line.split(':');
+      if (key && valueParts.length > 0) {
+        headers[key.trim()] = valueParts.join(':').trim();
+      }
+    });
+    return headers;
+  }
+}
+
 async function handleSave() {
   if (!canSave.value) return;
   
   saving.value = true;
   try {
-    // Sync custom headers
-    if (props.connector.type === 'API' && customHeadersText.value) {
-      try {
-        props.connector.config.headers = JSON.parse(customHeadersText.value);
-      } catch (e) {
-        // If not valid JSON, treat as key:value pairs
-        const headers = {};
-        customHeadersText.value.split('\n').forEach(line => {
-          const [key, ...valueParts] = line.split(':');
-          if (key && valueParts.length > 0) {
-            headers[key.trim()] = valueParts.join(':').trim();
-          }
-        });
-        props.connector.config.headers = headers;
+    // Parse and set custom headers
+    if (props.connector.type === 'API') {
+      props.connector.config.headers = parseHeadersFromText(customHeadersText.value);
+      
+      // Parse and set token endpoint headers if using dynamic tokens
+      if (props.connector.config.useDynamicToken) {
+        props.connector.config.tokenEndpointHeaders = parseHeadersFromText(props.connector.config.tokenEndpointHeadersText);
       }
     }
     
@@ -1789,12 +1894,16 @@ async function handleSave() {
   }
 }
 
-// Sync custom headers from connector config
-watch(() => props.connector.config?.headers, (newHeaders) => {
-  if (newHeaders && typeof newHeaders === 'object') {
-    customHeadersText.value = JSON.stringify(newHeaders, null, 2);
+// Initialize text fields from connector config on load
+if (props.connector.config?.headers && typeof props.connector.config.headers === 'object') {
+  customHeadersText.value = JSON.stringify(props.connector.config.headers, null, 2);
+}
+
+if (props.connector.config?.tokenEndpointHeaders && typeof props.connector.config.tokenEndpointHeaders === 'object') {
+  if (!props.connector.config.tokenEndpointHeadersText) {
+    props.connector.config.tokenEndpointHeadersText = JSON.stringify(props.connector.config.tokenEndpointHeaders, null, 2);
   }
-}, { immediate: true });
+}
 
 // Initialize config if empty
 watch(() => props.connector.type, (newType) => {
