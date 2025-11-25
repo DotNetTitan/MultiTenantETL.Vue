@@ -74,12 +74,33 @@ export function useConnector() {
     }
   }
 
+  const detectSchemaPreview = async (type, provider, config, tableOrResourceName = null) => {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const response = await connectorService.detectSchemaPreview(type, provider, config, tableOrResourceName)
+      if (response.success && response.schema) {
+        schema.value = response.schema
+        return response.schema
+      }
+      error.value = response.message
+      return null
+    } catch (err) {
+      error.value = err.userMessage || err.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     error,
     schema,
     validateConnection,
     testExistingConnection,
-    detectSchema
+    detectSchema,
+    detectSchemaPreview
   }
 }

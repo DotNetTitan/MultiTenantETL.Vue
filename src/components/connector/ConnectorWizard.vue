@@ -587,6 +587,10 @@
             
             <SchemaEditor
               v-model="connector.schema.fields"
+              :connector-type="connector.type"
+              :connector-id="connector.id"
+              :provider="connector.provider"
+              :config="connector.config"
               @validate="handleSchemaValidation"
             />
           </div>

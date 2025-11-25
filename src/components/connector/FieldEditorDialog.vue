@@ -114,10 +114,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 
 const { t } = useI18n();
+const { dataTypes: metadataDataTypes } = useTranslatedMetadata();
 
 const props = defineProps({
   modelValue: {
@@ -136,19 +138,15 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'save']);
 
-// Data types with icons
-const dataTypes = [
-  { value: 'varchar', title: t('schema.dataTypes.string'), icon: 'mdi-text' },
-  { value: 'int', title: t('schema.dataTypes.integer'), icon: 'mdi-numeric' },
-  { value: 'bigint', title: t('schema.dataTypes.bigInteger'), icon: 'mdi-numeric' },
-  { value: 'decimal', title: t('schema.dataTypes.decimal'), icon: 'mdi-decimal' },
-  { value: 'boolean', title: t('schema.dataTypes.boolean'), icon: 'mdi-checkbox-marked' },
-  { value: 'date', title: t('schema.dataTypes.date'), icon: 'mdi-calendar' },
-  { value: 'datetime', title: t('schema.dataTypes.dateTime'), icon: 'mdi-calendar-clock' },
-  { value: 'timestamp', title: t('schema.dataTypes.timestamp'), icon: 'mdi-clock' },
-  { value: 'json', title: t('schema.dataTypes.json'), icon: 'mdi-code-json' },
-  { value: 'text', title: t('schema.dataTypes.textLong'), icon: 'mdi-text-long' }
-];
+// Get data types from metadata service and format for Vuetify select
+const dataTypes = computed(() => 
+  metadataDataTypes.value.map(dt => ({
+    value: dt.value,
+    title: dt.label, // Vuetify expects 'title' property
+    icon: dt.icon,
+    category: dt.category
+  }))
+);
 
 // Local state
 const formRef = ref(null);

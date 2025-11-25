@@ -22,9 +22,19 @@
       </v-btn>
     </div>
 
-    <!-- File Upload Schema Generator -->
+    <!-- Database Schema Detector (for Database connectors) -->
+    <DatabaseSchemaDetector
+      v-if="localFields.length === 0 && connectorType === 'Database'"
+      :connector-id="connectorId"
+      :connector-type="connectorType"
+      :provider="provider"
+      :config="config"
+      @schema-generated="handleSchemaGenerated"
+    />
+
+    <!-- File Upload Schema Generator (for File connectors or when no connector type) -->
     <FileUploadSchemaGenerator
-      v-if="localFields.length === 0"
+      v-if="localFields.length === 0 && (connectorType === 'File' || !connectorType)"
       @schema-generated="handleSchemaGenerated"
     />
 
@@ -231,6 +241,7 @@ import { useI18n } from 'vue-i18n';
 import { validateSchema } from '@/services/schemaService';
 import FieldEditorDialog from './FieldEditorDialog.vue';
 import FileUploadSchemaGenerator from './FileUploadSchemaGenerator.vue';
+import DatabaseSchemaDetector from './DatabaseSchemaDetector.vue';
 
 const { t } = useI18n();
 
@@ -242,6 +253,22 @@ const props = defineProps({
   readonly: {
     type: Boolean,
     default: false
+  },
+  connectorType: {
+    type: String,
+    default: null
+  },
+  connectorId: {
+    type: String,
+    default: null
+  },
+  provider: {
+    type: String,
+    default: null
+  },
+  config: {
+    type: Object,
+    default: null
   }
 });
 

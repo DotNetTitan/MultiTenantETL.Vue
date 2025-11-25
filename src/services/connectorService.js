@@ -163,6 +163,29 @@ export async function detectSchema(connectorId, tableOrResourceName = null) {
 }
 
 /**
+ * Detects the schema from connection configuration (for new connectors before saving)
+ * @param {string} type - Connector type (Database, File, API)
+ * @param {string} provider - Provider (SqlServer, PostgreSQL, MySQL, etc.)
+ * @param {Object} config - Connection configuration
+ * @param {string} tableOrResourceName - Table name (for databases) or resource name
+ * @returns {Promise<Object>} Schema information
+ */
+export async function detectSchemaPreview(type, provider, config, tableOrResourceName = null) {
+  try {
+    const response = await api.post('/api/connectors/detect-schema-preview', {
+      type,
+      provider,
+      config,
+      tableOrResourceName
+    })
+    return response.data
+  } catch (error) {
+    console.error(`Error detecting schema preview for ${type}/${provider}:`, error)
+    throw error
+  }
+}
+
+/**
  * Gets all active connectors (simplified list)
  * @returns {Promise<Array>} List of all active connectors
  */
@@ -214,6 +237,7 @@ export const connectorService = {
   testConnection,
   testExisting: testExistingConnection,
   detectSchema,
+  detectSchemaPreview,
   getSources: getSourceConnectors,
   getDestinations: getDestinationConnectors
 }

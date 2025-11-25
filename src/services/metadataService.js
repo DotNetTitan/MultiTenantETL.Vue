@@ -136,16 +136,18 @@ const MOCK_METADATA = {
   ],
   
   dataTypes: [
-    { value: 'string', labelKey: 'schema.dataTypes.string', icon: 'mdi-format-text' },
-    { value: 'integer', labelKey: 'schema.dataTypes.integer', icon: 'mdi-numeric' },
-    { value: 'bigInteger', labelKey: 'schema.dataTypes.bigInteger', icon: 'mdi-numeric' },
-    { value: 'decimal', labelKey: 'schema.dataTypes.decimal', icon: 'mdi-decimal' },
-    { value: 'boolean', labelKey: 'schema.dataTypes.boolean', icon: 'mdi-checkbox-marked' },
-    { value: 'date', labelKey: 'schema.dataTypes.date', icon: 'mdi-calendar' },
-    { value: 'dateTime', labelKey: 'schema.dataTypes.dateTime', icon: 'mdi-calendar-clock' },
-    { value: 'timestamp', labelKey: 'schema.dataTypes.timestamp', icon: 'mdi-clock-outline' },
-    { value: 'json', labelKey: 'schema.dataTypes.json', icon: 'mdi-code-json' },
-    { value: 'textLong', labelKey: 'schema.dataTypes.textLong', icon: 'mdi-text-long' }
+    // Fallback mock data - will be replaced by backend API
+    { value: 'varchar', label: 'String (Varchar)', icon: 'mdi-text', category: 'string' },
+    { value: 'int', label: 'Integer', icon: 'mdi-numeric', category: 'numeric' },
+    { value: 'bigint', label: 'Big Integer', icon: 'mdi-numeric', category: 'numeric' },
+    { value: 'decimal', label: 'Decimal', icon: 'mdi-decimal', category: 'numeric' },
+    { value: 'boolean', label: 'Boolean', icon: 'mdi-checkbox-marked', category: 'boolean' },
+    { value: 'date', label: 'Date', icon: 'mdi-calendar', category: 'datetime' },
+    { value: 'datetime', label: 'Date Time', icon: 'mdi-calendar-clock', category: 'datetime' },
+    { value: 'timestamp', label: 'Timestamp', icon: 'mdi-clock', category: 'datetime' },
+    { value: 'uuid', label: 'UUID/GUID', icon: 'mdi-identifier', category: 'identifier' },
+    { value: 'json', label: 'JSON', icon: 'mdi-code-json', category: 'structured' },
+    { value: 'text', label: 'Text (Long)', icon: 'mdi-text-long', category: 'string' }
   ],
   
   scheduleFrequencies: [
