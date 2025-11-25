@@ -67,6 +67,20 @@
               {{ $t(`connectors.${item.type.toLowerCase()}`) }}
             </v-chip>
           </template>
+          <template #item.provider="{ item }">
+            <v-tooltip v-if="item.provider" location="top">
+              <template #activator="{ props }">
+                <v-icon
+                  v-bind="props"
+                  :color="getProviderColor(item.provider)"
+                  :icon="getProviderIcon(item.provider)"
+                  size="24"
+                />
+              </template>
+              <span>{{ item.provider }}</span>
+            </v-tooltip>
+            <span v-else class="text-grey">-</span>
+          </template>
           <template #item.description="{ item }">
             <div>
               <div>{{ item.description || '-' }}</div>
@@ -633,6 +647,7 @@ const { connectorTypes: metadataTypes } = useTranslatedMetadata();
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
   { title: t('common.type'), key: 'type', width: '120px' },
+  { title: t('connectors.provider'), key: 'provider', width: '140px' },
   { title: t('common.description'), key: 'description' },
   { title: t('connectors.direction'), key: 'direction', width: '150px' },
   { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
@@ -773,6 +788,59 @@ function getTypeColor(type) {
     default:
       return 'grey';
   }
+}
+
+function getProviderColor(provider) {
+  const providerLower = provider?.toLowerCase() || '';
+  
+  // Database providers
+  if (providerLower.includes('postgres')) return 'blue-darken-2';
+  if (providerLower.includes('mysql')) return 'orange-darken-1';
+  if (providerLower.includes('sql server') || providerLower.includes('sqlserver')) return 'red-darken-1';
+  if (providerLower.includes('oracle')) return 'red-darken-3';
+  if (providerLower.includes('mongodb')) return 'green-darken-2';
+  if (providerLower.includes('sqlite')) return 'blue-grey-darken-1';
+  
+  // File providers
+  if (providerLower.includes('s3') || providerLower.includes('aws')) return 'orange-darken-2';
+  if (providerLower.includes('azure')) return 'blue-darken-1';
+  if (providerLower.includes('sftp') || providerLower.includes('ftp')) return 'teal-darken-1';
+  if (providerLower.includes('local')) return 'grey-darken-1';
+  if (providerLower.includes('google') || providerLower.includes('gcs')) return 'blue-darken-3';
+  
+  // API providers
+  if (providerLower.includes('rest')) return 'purple-darken-1';
+  if (providerLower.includes('graphql')) return 'pink-darken-1';
+  if (providerLower.includes('soap')) return 'indigo-darken-1';
+  
+  return 'grey-darken-1';
+}
+
+function getProviderIcon(provider) {
+  const providerLower = provider?.toLowerCase() || '';
+  
+  // Database providers
+  if (providerLower.includes('postgres')) return 'mdi-database';
+  if (providerLower.includes('mysql')) return 'mdi-database';
+  if (providerLower.includes('sql server') || providerLower.includes('sqlserver')) return 'mdi-database';
+  if (providerLower.includes('oracle')) return 'mdi-database';
+  if (providerLower.includes('mongodb')) return 'mdi-database';
+  if (providerLower.includes('sqlite')) return 'mdi-database';
+  
+  // File providers
+  if (providerLower.includes('s3') || providerLower.includes('aws')) return 'mdi-aws';
+  if (providerLower.includes('azure')) return 'mdi-microsoft-azure';
+  if (providerLower.includes('sftp')) return 'mdi-server-security';
+  if (providerLower.includes('ftp')) return 'mdi-server-network';
+  if (providerLower.includes('local')) return 'mdi-folder';
+  if (providerLower.includes('google') || providerLower.includes('gcs')) return 'mdi-google-cloud';
+  
+  // API providers
+  if (providerLower.includes('rest')) return 'mdi-api';
+  if (providerLower.includes('graphql')) return 'mdi-graphql';
+  if (providerLower.includes('soap')) return 'mdi-xml';
+  
+  return 'mdi-connection';
 }
 
 function getDirectionLabel(connector) {
@@ -1117,4 +1185,6 @@ onBeforeUnmount(() => {
 .execution-row:hover {
   background-color: rgba(var(--v-theme-primary), 0.05);
 }
+
+
 </style>
