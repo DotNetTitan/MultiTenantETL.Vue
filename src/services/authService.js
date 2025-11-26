@@ -1,6 +1,7 @@
 import api from './api'
 import { API_ENDPOINTS } from '@/config/api'
 import { getCurrentUser } from '@/utils/jwtHelper'
+import { getOAuthConfig } from '@/config/constants'
 import { 
   generateCodeVerifier, 
   generateCodeChallenge, 
@@ -11,21 +12,6 @@ import {
 } from '@/utils/pkce'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
-
-// OAuth client configuration for SPA (Public Client)
-const CLIENT_ID = 'multitenant-etl-spa'
-
-// OAuth scopes
-const SCOPES = {
-  OPENID: 'openid',
-  EMAIL: 'email',
-  PROFILE: 'profile',
-  ROLES: 'roles',
-  API: 'api',
-  OFFLINE_ACCESS: 'offline_access'
-}
-
-const DEFAULT_SCOPES = `${SCOPES.OPENID} ${SCOPES.EMAIL} ${SCOPES.PROFILE} ${SCOPES.ROLES} ${SCOPES.API} ${SCOPES.OFFLINE_ACCESS}`
 
 /**
  * Authentication Service
@@ -48,11 +34,15 @@ export const authService = {
       storePKCEParams(state, codeVerifier)
       sessionStorage.setItem('login_credentials', JSON.stringify(credentials))
 
+      // Get OAuth config from constants
+      const oauthConfig = getOAuthConfig()
+      const scopes = oauthConfig.scopes.join(' ')
+
       // Build authorization URL
       const authParams = new URLSearchParams({
-        client_id: CLIENT_ID,
+        client_id: oauthConfig.clientId,
         response_type: 'code',
-        scope: DEFAULT_SCOPES,
+        scope: scopes,
         redirect_uri: `${window.location.origin}/auth/callback`,
         state: state,
         code_challenge: codeChallenge,
@@ -62,7 +52,7 @@ export const authService = {
       })
 
       // Redirect to authorization endpoint
-      window.location.href = `${API_BASE}/connect/authorize?${authParams.toString()}`
+      window.location.href = `${API_BASE}${oauthConfig.authorizeEndpoint}?${authParams.toString()}`
     } catch (error) {
       console.error('Login initiation error:', error)
       throw error
@@ -91,18 +81,21 @@ export const authService = {
     }
 
     try {
+      // Get OAuth config from constants
+      const oauthConfig = getOAuthConfig()
+
       // Exchange authorization code for tokens
       // Note: Authorization codes are single-use per OAuth 2.0 spec
       // If this fails with "invalid_grant", the code was already used
       const tokenParams = new URLSearchParams({
-        client_id: CLIENT_ID,
+        client_id: oauthConfig.clientId,
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: `${window.location.origin}/auth/callback`,
         code_verifier: codeVerifier
       })
 
-      const tokenResponse = await fetch(`${API_BASE}/connect/token`, {
+      const tokenResponse = await fetch(`${API_BASE}${oauthConfig.tokenEndpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -203,14 +196,18 @@ export const authService = {
         throw new Error('No refresh token available')
       }
 
+      // Get OAuth config from constants
+      const oauthConfig = getOAuthConfig()
+      const scopes = oauthConfig.scopes.join(' ')
+
       const params = new URLSearchParams({
-        client_id: CLIENT_ID,
+        client_id: oauthConfig.clientId,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
-        scope: DEFAULT_SCOPES
+        scope: scopes
       })
 
-      const response = await fetch(`${API_BASE}/connect/token`, {
+      const response = await fetch(`${API_BASE}${oauthConfig.tokenEndpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -259,13 +256,16 @@ export const authService = {
 
       // Revoke refresh token if exists
       if (refreshToken) {
+        // Get OAuth config from constants
+        const oauthConfig = getOAuthConfig()
+
         const params = new URLSearchParams({
           token: refreshToken,
           token_type_hint: 'refresh_token',
-          client_id: CLIENT_ID
+          client_id: oauthConfig.clientId
         })
 
-        await fetch(`${API_BASE}/connect/revoke`, {
+        await fetch(`${API_BASE}${oauthConfig.revokeEndpoint}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'

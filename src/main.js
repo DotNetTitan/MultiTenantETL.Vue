@@ -101,9 +101,21 @@ app.use(MotionPlugin)
 // Set initial HTML lang attribute
 document.documentElement.setAttribute('lang', savedLocale)
 
+// Initialize app constants from backend
+import { initializeConstants } from '@/config/constants'
+
 // Initialize auth store
 import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-authStore.initialize()
 
-app.mount('#app')
+// Initialize constants before mounting app
+initializeConstants().then(() => {
+  const authStore = useAuthStore()
+  authStore.initialize()
+  app.mount('#app')
+}).catch(error => {
+  console.error('Failed to initialize app:', error)
+  // Mount anyway with fallback constants
+  const authStore = useAuthStore()
+  authStore.initialize()
+  app.mount('#app')
+})

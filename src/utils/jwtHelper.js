@@ -47,8 +47,9 @@ export function getUserPermissions() {
 
 /**
  * Check if user has specific permission
- * Supports wildcards: "pipelines:*", "*:read", "*:*"
- * @param {string} permission - Permission to check (format: "resource:action")
+ * Supports wildcards: "pipelines.*", "*.read", "*.*"
+ * Backend uses dot notation (e.g., "pipelines.create")
+ * @param {string} permission - Permission to check (format: "resource.action")
  * @returns {boolean}
  */
 export function hasPermission(permission) {
@@ -58,17 +59,17 @@ export function hasPermission(permission) {
     if (permissions.includes(permission)) return true
 
     // Check wildcards
-    const [resource, action] = permission.split(':')
+    const [resource, action] = permission.split('.')
     if (!resource || !action) return false
 
-    // Check resource:* (e.g., "pipelines:*")
-    if (permissions.includes(`${resource}:*`)) return true
+    // Check resource.* (e.g., "pipelines.*")
+    if (permissions.includes(`${resource}.*`)) return true
 
-    // Check *:action (e.g., "*:read")
-    if (permissions.includes(`*:${action}`)) return true
+    // Check *.action (e.g., "*.read")
+    if (permissions.includes(`*.${action}`)) return true
 
-    // Check super admin *:*
-    if (permissions.includes('*:*')) return true
+    // Check super admin *.*
+    if (permissions.includes('*.*')) return true
 
     return false
 }
@@ -88,7 +89,10 @@ export function hasRole(role) {
  * @returns {boolean}
  */
 export function isSuperAdmin() {
-    return hasRole('SuperAdmin')
+    // Use import at top of file to avoid circular dependency issues
+    // Fallback to hardcoded value if constants not loaded
+    const user = getCurrentUser()
+    return user?.role === 'SuperAdmin'
 }
 
 /**
@@ -96,6 +100,8 @@ export function isSuperAdmin() {
  * @returns {boolean}
  */
 export function isAdmin() {
+    // Use import at top of file to avoid circular dependency issues
+    // Fallback to hardcoded values if constants not loaded
     const user = getCurrentUser()
     return user?.role === 'SuperAdmin' || user?.role === 'TenantAdmin'
 }
