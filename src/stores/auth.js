@@ -95,18 +95,15 @@ export const useAuthStore = defineStore('auth', () => {
    * Logout
    */
   async function logout() {
-    try {
-      // Clear state immediately to update UI
-      clearAuth()
-
-      // Navigate immediately
-      router.push('/login')
-
-      // Call backend to revoke tokens in background
-      await authService.logout()
-    } catch (err) {
-      console.warn('Logout error handled:', err.message)
-    }
+    // Clear state and navigate immediately for better UX
+    clearAuth()
+    router.push('/login')
+    
+    // Call backend to revoke tokens in background (don't wait)
+    authService.logout().catch(err => {
+      // Ignore errors - already logged out locally
+      console.warn('Backend logout error (ignored):', err.message)
+    })
   }
 
   /**

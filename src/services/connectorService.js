@@ -26,7 +26,10 @@ export async function fetchConnectors(filters = {}) {
     
     return response.data
   } catch (error) {
-    console.error('Error fetching connectors:', error)
+    // Don't log errors for silent failures (like during logout)
+    if (!error.silent) {
+      console.error('Error fetching connectors:', error)
+    }
     throw error
   }
 }

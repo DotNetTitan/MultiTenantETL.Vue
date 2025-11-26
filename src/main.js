@@ -114,8 +114,17 @@ initializeConstants().then(() => {
   app.mount('#app')
 }).catch(error => {
   console.error('Failed to initialize app:', error)
-  // Mount anyway with fallback constants
-  const authStore = useAuthStore()
-  authStore.initialize()
-  app.mount('#app')
+  // Show error to user instead of mounting with broken state
+  document.body.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif;">
+      <div style="text-align: center; max-width: 500px; padding: 20px;">
+        <h1 style="color: #d32f2f;">Failed to Initialize Application</h1>
+        <p style="color: #666;">Could not load configuration from backend.</p>
+        <p style="color: #999; font-size: 14px;">${error.message}</p>
+        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          Retry
+        </button>
+      </div>
+    </div>
+  `
 })

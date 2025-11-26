@@ -617,6 +617,7 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
 import { useTenantStore } from '@/stores/tenant';
 import { useConnector } from '@/composables/useConnector';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
@@ -647,8 +648,13 @@ const { loadProviderMetadata, getProviderIcon, getProviderColor } = useProviderM
 
 // Initialize provider metadata and fetch connectors on mount
 onMounted(async () => {
-  await loadProviderMetadata();
-  await fetchConnectors();
+  const authStore = useAuthStore();
+  
+  // Only fetch if authenticated
+  if (authStore.isAuthenticated) {
+    await loadProviderMetadata();
+    await fetchConnectors();
+  }
 });
 
 // Data table
@@ -819,6 +825,13 @@ function formatDate(dateString) {
 }
 
 async function fetchConnectors() {
+  const authStore = useAuthStore();
+  
+  // Don't fetch if not authenticated
+  if (!authStore.isAuthenticated) {
+    return;
+  }
+  
   try {
     loading.value = true;
     
@@ -832,7 +845,10 @@ async function fetchConnectors() {
     // Handle paginated response from API
     connectors.value = result.connectors || result;
   } catch (error) {
-    console.error('Error fetching connectors:', error);
+    // Don't log errors for silent failures (like during logout)
+    if (!error.silent) {
+      console.error('Error fetching connectors:', error);
+    }
   } finally {
     loading.value = false;
   }

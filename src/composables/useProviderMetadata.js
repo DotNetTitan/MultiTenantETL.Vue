@@ -19,21 +19,21 @@ export function useProviderMetadata() {
       return providerMetadata.value
     }
 
+    loading.value = true
+    error.value = null
+    
     try {
-      loading.value = true
-      error.value = null
-      
       const config = await getConnectorConfig()
-      providerMetadata.value = config.providerMetadata || {}
       
+      if (!config.providerMetadata) {
+        throw new Error('Provider metadata not found in backend response')
+      }
+      
+      providerMetadata.value = config.providerMetadata
       return providerMetadata.value
     } catch (err) {
-      console.error('Failed to load provider metadata:', err)
       error.value = err
-      
-      // Fallback to empty object - component will use defaults
-      providerMetadata.value = {}
-      return providerMetadata.value
+      throw err
     } finally {
       loading.value = false
     }
@@ -47,20 +47,25 @@ export function useProviderMetadata() {
   function getProviderIcon(provider) {
     if (!provider) return 'mdi-connection'
     
-    const metadata = providerMetadata.value?.[provider]
+    if (!providerMetadata.value) {
+      throw new Error('Provider metadata not loaded. Call loadProviderMetadata() first.')
+    }
+    
+    const metadata = providerMetadata.value[provider]
     if (metadata?.icon) {
       return metadata.icon
     }
 
-    // Fallback: try to match by lowercase
+    // Try to match by lowercase
     const providerLower = provider.toLowerCase()
-    for (const [key, value] of Object.entries(providerMetadata.value || {})) {
+    for (const [key, value] of Object.entries(providerMetadata.value)) {
       if (key.toLowerCase() === providerLower) {
         return value.icon || 'mdi-connection'
       }
     }
 
-    // Default fallback
+    // If not found, return default
+    console.warn(`No icon found for provider: ${provider}`)
     return 'mdi-connection'
   }
 
@@ -72,20 +77,25 @@ export function useProviderMetadata() {
   function getProviderColor(provider) {
     if (!provider) return 'grey'
     
-    const metadata = providerMetadata.value?.[provider]
+    if (!providerMetadata.value) {
+      throw new Error('Provider metadata not loaded. Call loadProviderMetadata() first.')
+    }
+    
+    const metadata = providerMetadata.value[provider]
     if (metadata?.color) {
       return metadata.color
     }
 
-    // Fallback: try to match by lowercase
+    // Try to match by lowercase
     const providerLower = provider.toLowerCase()
-    for (const [key, value] of Object.entries(providerMetadata.value || {})) {
+    for (const [key, value] of Object.entries(providerMetadata.value)) {
       if (key.toLowerCase() === providerLower) {
         return value.color || 'grey'
       }
     }
 
-    // Default fallback
+    // If not found, return default
+    console.warn(`No color found for provider: ${provider}`)
     return 'grey'
   }
 

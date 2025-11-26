@@ -22,66 +22,20 @@ export async function initializeConstants() {
     return
   }
 
-  try {
-    const { data } = await axios.get('/api/metadata/app-constants')
-    
-    console.log('Backend response:', data) // Debug log
-    
-    // Handle both oAuthConfig (from backend) and oauthConfig (expected)
-    const oauthConfig = data.oAuthConfig || data.oauthConfig
-    
-    // Validate response structure
-    if (!data || !oauthConfig || !data.roles) {
-      throw new Error('Invalid response structure from backend')
-    }
-    
-    AppConstants.roles = data.roles
-    AppConstants.oauthConfig = oauthConfig
-    AppConstants.supportedLanguages = data.supportedLanguages
-    AppConstants._initialized = true
-
-    console.log('App constants initialized from backend', {
-      roles: AppConstants.roles,
-      oauthConfig: AppConstants.oauthConfig,
-      languages: AppConstants.supportedLanguages?.length
-    })
-  } catch (error) {
-    console.error('Failed to initialize app constants:', error)
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    })
-    
-    // Fallback to defaults if backend is unavailable
-    console.warn('Using fallback constants - backend unavailable or returned invalid data')
-    
-    AppConstants.roles = {
-      superAdmin: 'SuperAdmin',
-      tenantAdmin: 'TenantAdmin',
-      user: 'User',
-      viewer: 'Viewer'
-    }
-    
-    AppConstants.oauthConfig = {
-      clientId: 'multitenant-etl-spa',
-      scopes: ['openid', 'email', 'profile', 'roles', 'api', 'offline_access'],
-      authorizeEndpoint: '/connect/authorize',
-      tokenEndpoint: '/connect/token',
-      revokeEndpoint: '/connect/revoke'
-    }
-    
-    AppConstants.supportedLanguages = [
-      { code: 'en', name: 'English', nativeName: 'English' },
-      { code: 'es', name: 'Spanish', nativeName: 'Español' },
-      { code: 'fr', name: 'French', nativeName: 'Français' },
-      { code: 'de', name: 'German', nativeName: 'Deutsch' },
-      { code: 'it', name: 'Italian', nativeName: 'Italiano' },
-      { code: 'pt', name: 'Portuguese', nativeName: 'Português' }
-    ]
-    
-    AppConstants._initialized = true
+  const { data } = await axios.get('/api/metadata/app-constants')
+  
+  // Handle both oAuthConfig (from backend) and oauthConfig (expected)
+  const oauthConfig = data.oAuthConfig || data.oauthConfig
+  
+  // Validate response structure
+  if (!data || !oauthConfig || !data.roles) {
+    throw new Error('Invalid response structure from backend')
   }
+  
+  AppConstants.roles = data.roles
+  AppConstants.oauthConfig = oauthConfig
+  AppConstants.supportedLanguages = data.supportedLanguages
+  AppConstants._initialized = true
 }
 
 /**
@@ -90,7 +44,7 @@ export async function initializeConstants() {
  */
 export function getRoles() {
   if (!AppConstants._initialized) {
-    console.warn('Constants not initialized, using defaults')
+    throw new Error('Constants not initialized. Call initializeConstants() first.')
   }
   return AppConstants.roles
 }
@@ -101,23 +55,11 @@ export function getRoles() {
  */
 export function getOAuthConfig() {
   if (!AppConstants._initialized) {
-    console.warn('Constants not initialized, using defaults')
+    throw new Error('Constants not initialized. Call initializeConstants() first.')
   }
   
   if (!AppConstants.oauthConfig) {
-    console.error('OAuth config is null/undefined!', {
-      initialized: AppConstants._initialized,
-      roles: AppConstants.roles,
-      languages: AppConstants.supportedLanguages
-    })
-    // Return fallback
-    return {
-      clientId: 'multitenant-etl-spa',
-      scopes: ['openid', 'email', 'profile', 'roles', 'api', 'offline_access'],
-      authorizeEndpoint: '/connect/authorize',
-      tokenEndpoint: '/connect/token',
-      revokeEndpoint: '/connect/revoke'
-    }
+    throw new Error('OAuth config is null/undefined. Backend returned invalid data.')
   }
   
   return AppConstants.oauthConfig
@@ -129,7 +71,7 @@ export function getOAuthConfig() {
  */
 export function getSupportedLanguages() {
   if (!AppConstants._initialized) {
-    console.warn('Constants not initialized, using defaults')
+    throw new Error('Constants not initialized. Call initializeConstants() first.')
   }
   return AppConstants.supportedLanguages
 }

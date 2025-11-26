@@ -50,6 +50,17 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
+      // Check if we have a refresh token before attempting refresh
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (!refreshToken) {
+        // No refresh token - user is logged out, silently reject without error
+        // The router will handle the redirect
+        return Promise.reject({ 
+          silent: true, 
+          message: 'No authentication token' 
+        })
+      }
+
       try {
         // Import auth service dynamically to avoid circular dependency
         const { authService } = await import('./authService')
@@ -68,8 +79,16 @@ api.interceptors.response.use(
         // Refresh failed - logout and redirect to login
         const authStore = useAuthStore()
         authStore.clearAuth()
-        window.location.href = '/login'
-        return Promise.reject(refreshError)
+        
+        // Use router instead of window.location for proper SPA navigation
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+        
+        return Promise.reject({ 
+          silent: true, 
+          message: 'Token refresh failed' 
+        })
       }
     }
 
