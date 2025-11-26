@@ -269,7 +269,8 @@ const isLoading = ref(false);
 const messagesContainer = ref(null);
 const showHint = ref(false);
 const hintTimer = ref(null);
-const hintDismissed = ref(false);
+// Check sessionStorage to see if hint was already dismissed in this session
+const hintDismissed = ref(sessionStorage.getItem('chatbot-hint-dismissed') === 'true');
 const isExpanded = ref(false);
 
 // Quick suggestions based on current page
@@ -431,6 +432,8 @@ const clearHintTimer = () => {
 const dismissHint = () => {
   showHint.value = false;
   hintDismissed.value = true;
+  // Store dismissal in sessionStorage so it persists across page navigations
+  sessionStorage.setItem('chatbot-hint-dismissed', 'true');
   clearHintTimer();
 };
 
@@ -452,7 +455,7 @@ const handleUserActivity = () => {
 // Clear messages when route changes
 watch(() => route.path, () => {
   messages.value = [];
-  hintDismissed.value = false; // Reset hint dismissal on page change
+  // Don't reset hint dismissal - it should persist for the entire session
   
   // Close chatbot when navigating to hidden routes
   if (!shouldShowChatbot.value) {
