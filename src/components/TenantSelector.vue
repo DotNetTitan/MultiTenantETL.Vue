@@ -71,8 +71,6 @@ onMounted(async () => {
     const { useAuthStore } = await import('@/stores/auth');
     const authStore = useAuthStore();
     
-    console.log('Current user role:', authStore.user?.role);
-    
     // Try to get all tenants if SuperAdmin, fallback to user's tenants if 403
     if (authStore.user?.role === 'SuperAdmin') {
       try {
