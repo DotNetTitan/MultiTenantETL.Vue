@@ -4,34 +4,38 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
 
 ## Features
 
-- 📊 **Real-time Dashboard**: Monitor pipeline status, connectors, and recent executions with interactive cards
-- 🔄 **ETL Pipeline Management**: Create, configure, and monitor data pipelines with visual field mapping
-- 🔌 **Connector Integration**: Support for multiple connector types (Databases, CSV, Excel, JSON, REST APIs)
-- 🔍 **Transformation Management**: Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace) and custom JavaScript/C# scripting
-- 👥 **Multi-tenant Architecture**: Secure data isolation between different organizations with tenant switching
-- 👤 **User Management**: Role-based access control with admin and user roles
-- 🎨 **Modern UI**: Responsive design with dark/light theme support and Material Design components
-- 📱 **Mobile-Friendly**: Works seamlessly across desktop and mobile devices
-- 🔍 **Schema Management**: Auto-detection and manual schema definition with versioning
-- 📈 **Execution Monitoring**: Detailed execution logs, timeline view, and progress tracking
-- 🔐 **API Key Management**: Generate and manage API keys for programmatic access
-- 🤖 **AI Assistant**: Context-aware chatbot powered by Google Gemini AI to help users navigate and use the platform
-- 🌍 **Multi-language Support**: Full internationalization (i18n) with English, Spanish, French, German, Italian, and Portuguese translations
-- 🎯 **Metadata Service**: Centralized configuration management for dropdowns and options with translation support
+- 📊 **Real-time Dashboard**: Monitor pipeline status, connector health, and recent executions with interactive cards
+- 🔄 **ETL Pipeline Management**: Visual field mapping editor, pipeline wizard, scheduling, and automated execution
+- 🔌 **Multi-source Connectors**: Databases (SQL Server, PostgreSQL, MySQL), Files (CSV, Excel, JSON), REST APIs
+- 🔍 **Transformation Engine**: 6 built-in templates + custom JavaScript/C# scripting with syntax highlighting
+- 👥 **Multi-tenant Architecture**: Secure tenant isolation, tenant switching, automatic personal workspace creation
+- 🔐 **Secure Authentication**: OAuth 2.0 Authorization Code Flow with PKCE for secure SPA authentication
+- 👤 **Role-based Access Control**: SuperAdmin, Admin, and User roles with permission-based authorization
+- 📈 **Execution Monitoring**: Detailed logs, timeline view, progress tracking, and execution history
+- 🔍 **Schema Management**: Auto-detection, manual definition, versioning, and change tracking
+- 🔑 **API Key Management**: Generate and manage API keys for programmatic access
+- 🤖 **AI Assistant**: Context-aware chatbot powered by Google Gemini AI for user guidance
+- 🌍 **Internationalization**: Full i18n support with 6 languages (en, es, fr, de, it, pt)
+- 🎯 **Metadata Service**: Centralized configuration management with automatic translation of dropdown options
+- 🎨 **Theme Support**: Light and dark modes with Material Design components
+- 📱 **Mobile-Friendly**: Responsive design that works seamlessly across desktop and mobile devices
 
 ## Tech Stack
 
 - **Frontend Framework**: Vue 3 with Composition API (script setup syntax)
+- **Build Tool**: Vite (fast dev server and optimized builds)
 - **UI Framework**: Vuetify 3 (Material Design components)
 - **State Management**: Pinia stores (auth, tenant)
 - **Router**: Vue Router with route guards (authentication, admin roles)
-- **Build Tool**: Vite (fast dev server and optimized builds)
-- **HTTP Client**: Axios with interceptors
+- **HTTP Client**: Axios with interceptors for token management
 - **Internationalization**: Vue I18n (6 languages: en, es, fr, de, it, pt)
-- **Styling**: SASS with CSS custom properties
-- **Code Highlighting**: Prism.js (JavaScript/C# syntax)
-- **File Processing**: PapaParse (CSV), XLSX (Excel)
-- **AI Integration**: Google Gemini AI for chatbot assistant
+- **Styling**: SASS with CSS custom properties for theming
+- **Code Highlighting**: Prism.js (JavaScript/C# syntax highlighting in transformations)
+- **File Processing**: 
+  - PapaParse for CSV parsing
+  - XLSX for Excel file processing
+- **AI Integration**: Google Gemini AI for context-aware chatbot assistant
+- **Authentication**: OAuth 2.0 Authorization Code Flow with PKCE (RFC 7636)
 
 ## Prerequisites
 
@@ -65,50 +69,104 @@ The application will be available at `http://localhost:5173`
 The frontend expects a REST API backend (ASP.NET Core Web API). Configure the API URL:
 
 **Development** (default in `src/config/api.js`):
-```
-http://localhost:5000/api
+```javascript
+// Default: http://localhost:5000/api
+// Backend runs on: https://localhost:7288 or http://localhost:5244
 ```
 
-**Production** (`.env.production`):
+**Environment Variables**:
+
+Create `.env` file for development:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_GEMINI_API_KEY=your-gemini-api-key
 ```
-VITE_API_URL=https://your-api-url.com
+
+Create `.env.production` for production:
+```env
+VITE_API_URL=https://your-api-url.com/api
+VITE_GEMINI_API_KEY=your-gemini-api-key
 ```
+
+**Note**: The backend API runs on ports 7288 (HTTPS) or 5244 (HTTP) by default. Ensure CORS is configured in the backend for `http://localhost:5173`.
 
 ### Authentication
 
-The application uses **OAuth 2.0 Authorization Code Flow with PKCE** for secure authentication:
+The application uses **OAuth 2.0 Authorization Code Flow with PKCE** (RFC 7636) for secure authentication:
 
 - **Public Client**: No client secret required (SPA-safe)
-- **PKCE**: Proof Key for Code Exchange prevents authorization code interception
-- **OpenIddict**: Backend OAuth 2.0 server implementation
-- **Token Management**: Short-lived access tokens (15 min), long-lived refresh tokens (7 days)
-- **Security**: State parameter for CSRF protection, single-use authorization codes
+- **PKCE**: Proof Key for Code Exchange prevents authorization code interception attacks
+- **OpenIddict**: Backend OAuth 2.0 server (ASP.NET Core)
+- **Token Management**: 
+  - Access tokens (15 min) - stored in localStorage
+  - Refresh tokens (7 days) - stored in localStorage
+  - ID tokens - JWT with user claims
+- **Security Features**:
+  - State parameter for CSRF protection
+  - Single-use authorization codes
+  - Code verifier proves authorization request origin
+  - Automatic token refresh with Axios interceptors
 
-The authentication flow:
-1. User submits credentials
-2. Browser redirects to authorization endpoint with PKCE challenge
-3. Backend validates credentials and issues authorization code
-4. Callback page exchanges code for tokens using PKCE verifier
-5. User is authenticated and redirected to dashboard
+**Authentication Flow**:
+1. User clicks login → Redirects to `/login`
+2. User submits credentials
+3. Frontend generates PKCE code verifier and challenge
+4. Browser redirects to backend authorization endpoint with challenge
+5. Backend validates credentials and issues single-use authorization code
+6. Callback page (`/auth/callback`) exchanges code for tokens using verifier
+7. Tokens stored in localStorage, user redirected to dashboard
 
-See `docs/OAUTH_PKCE.md` for detailed implementation documentation.
+**Implementation Details**:
+- PKCE utilities: `src/utils/pkce.js` (code verifier/challenge generation)
+- Auth service: `src/services/authService.js` (OAuth flow implementation)
+- Auth store: `src/stores/auth.js` (token management, user state)
+- Callback handler: `src/views/AuthCallbackView.vue` (token exchange)
+
+See `docs/OAUTH_PKCE.md` for detailed documentation.
 
 ### Google Gemini AI (Optional)
 
-For the AI chatbot assistant, configure your Gemini API key in `.env`:
+For the AI chatbot assistant, configure your Gemini API key:
 
+**Development** (`.env`):
+```env
+VITE_GEMINI_API_KEY=your-gemini-api-key
 ```
+
+**Production** (`.env.production`):
+```env
 VITE_GEMINI_API_KEY=your-gemini-api-key
 ```
 
 Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey).
 
+**Features**:
+- Context-aware responses based on current page
+- Multi-language support (responds in user's selected language)
+- ETL pipeline guidance and troubleshooting
+- Connector configuration help
+- Transformation syntax assistance
+
 ## Available Scripts
 
-- `npm run dev` - Start development server (http://localhost:5173)
-- `npm run build` - Build for production (outputs to dist/)
-- `npm run preview` - Preview production build locally
-- `npm run lint` - Lint and fix files with ESLint
+```bash
+# Development
+npm run dev          # Start dev server on http://localhost:5173
+
+# Production
+npm run build        # Build for production (outputs to dist/)
+npm run preview      # Preview production build locally
+
+# Code Quality
+npm run lint         # Run ESLint and auto-fix issues
+```
+
+## Build Configuration
+
+- **Base path**: `/MultiTenantETL.Vue/` (configured for GitHub Pages deployment)
+- **Dev server port**: 5173
+- **Path alias**: `@` → `src/`
+- **Build tool**: Vite with optimized production builds
 
 ## Project Structure
 
@@ -213,68 +271,104 @@ src/
 - Lazy-loaded route components for better performance
 - Meta fields: `requiresAuth`, `requiresAdmin`, `guest`
 
-## Features in Detail
+## Key Features in Detail
 
-### Pipeline Management
-- Create and configure data pipelines with visual field mapping
-- Schedule automated pipeline runs
-- Monitor pipeline execution status with real-time progress
-- View detailed execution logs and timeline
-- Configure pipeline steps (Extract, Transform, Load)
-- Field mapping editor with validation
-- Schema auto-detection and manual schema management
-- Pipeline cloning and duplication
+### 🔄 Pipeline Management
+- **Visual Field Mapping**: Drag-and-drop field mapping editor with validation
+- **Pipeline Wizard**: Step-by-step pipeline creation with guided setup
+- **Scheduling**: Automated pipeline runs with configurable schedules
+- **Execution Monitoring**: Real-time progress tracking with detailed logs and timeline view
+- **Pipeline Steps**: Configure Extract, Transform, Load operations
+- **Schema Management**: Auto-detection and manual schema definition with versioning
+- **Pipeline Cloning**: Duplicate existing pipelines for quick setup
 
-### Connectors
-- Support for multiple connector types:
-  - Databases (SQL Server, PostgreSQL, MySQL, etc.)
-  - File Systems (CSV, Excel, JSON)
-  - APIs (REST)
+### 🔌 Connectors
+**Supported Types**:
+- **Databases**: SQL Server, PostgreSQL, MySQL (with connection testing and schema auto-detection)
+- **Files**: CSV (PapaParse), Excel/XLSX (XLSX library), JSON (with file preview and validation)
+- **APIs**: REST APIs with configurable endpoints, authentication, and headers
+
+**Features**:
 - Connection testing and validation
 - Secure credential management
-- Schema management (auto-detection and manual definition)
 - Schema versioning and change tracking
-- File preview and data validation
 - Bidirectional support (sources and destinations)
+- File preview and data validation
 
-### Transformations
-- Built-in transformation templates (Filter, Map, Trim, Case Convert, Substring, Replace)
-- Custom JavaScript/C# transformation scripts
-- Data mapping and value transformations
-- Field filtering with multiple operators
-- Text manipulation (trim, case conversion, substring extraction, find & replace)
-- Syntax highlighting for custom scripts
+### 🔍 Transformations
+**Built-in Templates** (6 types):
+1. **Filter**: Filter rows based on field values with operators (equals, contains, greater than, less than, starts with, ends with, etc.)
+2. **Map**: Transform field values using key-value mappings with default values
+3. **Trim**: Remove leading/trailing whitespace from text fields
+4. **Case Convert**: Convert text to uppercase, lowercase, title case, or camelCase
+5. **Substring**: Extract portions of text from fields with start/end positions
+6. **Replace**: Find and replace text or patterns (with regex support)
 
-### Multi-tenant Support
-- Secure data isolation between tenants
-- Tenant-specific configurations
-- Easy tenant management for administrators
-- Tenant switching with context preservation
-- Tenant identifier validation and uniqueness checking
+**Custom Scripts**:
+- JavaScript or C# transformation logic
+- Prism.js syntax highlighting
+- Code editor with line numbers
+- Validation and error handling
 
-### User Management
-- Role-based access control (Admin and User roles)
-- User activation/deactivation
-- Profile customization (name, email, password)
-- API key generation and management
-- User filtering and search
+### 👥 Multi-tenant Support
+- **Secure Isolation**: Complete data isolation between tenants
+- **Tenant Switching**: Seamless context switching with TenantSelector component
+- **Automatic Workspace**: Personal workspace created on registration
+- **Tenant Management**: Full CRUD operations for SuperAdmin/Admin roles
+- **Identifier Validation**: Unique tenant identifier checking
 
-### Theme Support
-- Light and dark mode with smooth transitions
-- Customizable color schemes (configurable in src/main.js)
-- CSS custom properties for consistent styling
-- Responsive design with Vuetify breakpoints
-- Mobile-friendly interface with touch-optimized controls
+### 👤 User Management
+- **Roles**: SuperAdmin, Admin, User with permission-based authorization
+- **User CRUD**: Create, read, update, delete operations
+- **Profile Management**: Name, email, password customization
+- **API Keys**: Generate and manage API keys for programmatic access
+- **User Search**: Filtering and search capabilities
+- **Activation/Deactivation**: Account status management
 
-### Internationalization (i18n)
-- Full multi-language support with Vue I18n
-- Currently supports: English (en), Spanish (es), French (fr), German (de), Italian (it), Portuguese (pt)
+### 🎨 Theme Support
+- **Light/Dark Modes**: Smooth theme transitions
+- **Customizable Colors**: Theme colors defined in `src/main.js`
+- **CSS Custom Properties**: Consistent styling across components
+- **Responsive Design**: Vuetify breakpoints for mobile/tablet/desktop
+- **Touch-Optimized**: Mobile-friendly interface
+
+### 🌍 Internationalization (i18n)
+**Supported Languages**: English (en), Spanish (es), French (fr), German (de), Italian (it), Portuguese (pt)
+
+**Features**:
+- Full UI translation coverage
 - Language persistence in localStorage
 - Automatic Vuetify component translation
 - AI chatbot responds in user's selected language
 - Metadata service provides translated dropdown options
-- Easy to add new languages by creating JSON translation files in `src/locales/`
-- Language switcher component in navigation bar
+- Language switcher in navigation bar
+- Easy to add new languages (create JSON file in `src/locales/`)
+
+**Translation Files**: `src/locales/en.json`, `es.json`, `fr.json`, `de.json`, `it.json`, `pt.json`
+
+## Backend API
+
+The frontend requires the ASP.NET Core Web API backend to be running. See the backend README at `../MultiTenantETL/README.md` for setup instructions.
+
+**Backend Repository**: Located in `../MultiTenantETL/`
+
+**Quick Start**:
+```bash
+# Terminal 1: Start backend API
+cd ../MultiTenantETL/src/MultiTenantETL.API
+dotnet run
+
+# Terminal 2: Start frontend
+cd MultiTenantETL.Vue
+npm run dev
+```
+
+**Backend Features**:
+- OAuth 2.0 Authorization Code Flow with PKCE
+- Multi-tenant architecture with complete isolation
+- Permission-based authorization
+- PostgreSQL database with EF Core
+- Email integration with Azure Communication Services
 
 ## Contributing
 
