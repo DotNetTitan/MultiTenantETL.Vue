@@ -257,9 +257,19 @@
                   <div class="d-flex align-center w-100">
                     <v-chip size="small" class="mr-2">{{ index + 1 }}</v-chip>
                     <div class="flex-grow-1">
-                      <strong>{{ mapping.sourceField }}</strong>
+                      <div>
+                        <strong>{{ mapping.sourceField }}</strong>
+                        <v-chip v-if="mapping.sourceFieldType" size="x-small" variant="tonal" class="ml-1">
+                          {{ mapping.sourceFieldType }}
+                        </v-chip>
+                      </div>
                       <v-icon class="mx-2">mdi-arrow-right</v-icon>
-                      <strong>{{ mapping.destinationField }}</strong>
+                      <div>
+                        <strong>{{ mapping.destinationField }}</strong>
+                        <v-chip v-if="mapping.destinationFieldType" size="x-small" variant="tonal" class="ml-1">
+                          {{ mapping.destinationFieldType }}
+                        </v-chip>
+                      </div>
                     </div>
                     <v-chip
                       v-if="mapping.transformation"
@@ -569,11 +579,29 @@ async function viewMappings(pipeline) {
       );
     }
     
-    // Helper to get field type from schema
+    // Helper to get field type from schema (case-insensitive)
     const getFieldType = (fieldName, schema) => {
-      if (!schema || !schema.fields) return null;
-      const field = schema.fields.find(f => f.name === fieldName);
-      return field ? field.type : null;
+      if (!schema || !fieldName) {
+        return null;
+      }
+      
+      // Handle both schema.fields and schema being the fields array directly
+      const fields = schema.fields || (Array.isArray(schema) ? schema : null);
+      
+      if (!fields || !Array.isArray(fields)) {
+        return null;
+      }
+      
+      // Case-insensitive field name matching
+      const fieldNameLower = fieldName.toLowerCase();
+      const field = fields.find(f => f.name && f.name.toLowerCase() === fieldNameLower);
+      
+      if (!field) {
+        return null;
+      }
+      
+      // Backend uses 'dataType', frontend might use 'type'
+      return field.dataType || field.type || null;
     };
     
     // Transform field mappings to match dialog format
@@ -582,9 +610,19 @@ async function viewMappings(pipeline) {
         ? mapping.sourceFields.join(', ') 
         : '';
       
-      const sourceFieldType = mapping.sourceFields && mapping.sourceFields.length === 1
-        ? getFieldType(mapping.sourceFields[0], sourceConnector.schema)
-        : null;
+      // Get types for all source fields
+      let sourceFieldType = null;
+      if (mapping.sourceFields && mapping.sourceFields.length > 0) {
+        if (mapping.sourceFields.length === 1) {
+          sourceFieldType = getFieldType(mapping.sourceFields[0], sourceConnector.schema);
+        } else {
+          // For multiple fields, show all types
+          const types = mapping.sourceFields
+            .map(field => getFieldType(field, sourceConnector.schema))
+            .filter(type => type !== null);
+          sourceFieldType = types.length > 0 ? types.join(', ') : null;
+        }
+      }
       
       const destinationFieldType = getFieldType(mapping.destinationField, destinationConnector.schema);
       
