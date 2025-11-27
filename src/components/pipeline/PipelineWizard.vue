@@ -83,16 +83,8 @@
                     :label="$t('pipelines.selectSource')"
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.sourceRequired')]"
-                  >
-                    <template #prepend-item>
-                      <v-list-item
-                        :title="$t('pipelines.createNewSource')"
-                        prepend-icon="mdi-plus"
-                        @click="$emit('create-connector')"
-                      />
-                      <v-divider class="mt-2" />
-                    </template>
-                  </v-select>
+                  />
+
                 </v-card>
               </v-col>
               <v-col cols="12" md="6">
@@ -109,16 +101,8 @@
                     :label="$t('pipelines.selectDestination')"
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.destinationRequired')]"
-                  >
-                    <template #prepend-item>
-                      <v-list-item
-                        :title="$t('pipelines.createNewDestination')"
-                        prepend-icon="mdi-plus"
-                        @click="$emit('create-connector')"
-                      />
-                      <v-divider class="mt-2" />
-                    </template>
-                  </v-select>
+                  />
+
                 </v-card>
               </v-col>
             </v-row>
@@ -412,7 +396,7 @@
         variant="elevated"
         append-icon="mdi-chevron-right"
         :disabled="!canProceed"
-        @click="currentStep++"
+        @click="handleNext"
       >
         {{ $t('common.next') }}
       </v-btn>
@@ -429,11 +413,36 @@
         <v-tooltip activator="parent" location="top">{{ $t('pipelines.savePipeline') }}</v-tooltip>
       </v-btn>
     </v-card-actions>
+
+    <!-- Connector Change Warning Dialog -->
+    <v-dialog v-model="showConnectorChangeWarning" max-width="500">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon color="warning" class="mr-2">mdi-alert</v-icon>
+          {{ $t('pipelines.connectorChangeWarning') }}
+        </v-card-title>
+        <v-card-text>
+          <p>{{ $t('pipelines.connectorChangeMessage') }}</p>
+          <p class="mt-2 text-warning">
+            <strong>{{ $t('pipelines.existingMappingsWillBeCleared') }}</strong>
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="cancelConnectorChange">
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn color="warning" @click="confirmConnectorChange">
+            {{ $t('common.continue') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FieldMappingEditor from './FieldMappingEditor.vue';
@@ -465,6 +474,28 @@ const emit = defineEmits(['save', 'close', 'create-connector', 'add-transformati
 const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
+
+// Track original connector IDs to detect changes
+const originalSourceId = ref(null);
+const originalDestinationId = ref(null);
+const showConnectorChangeWarning = ref(false);
+
+// Store original IDs on mount
+onMounted(() => {
+  originalSourceId.value = props.pipeline.sourceId;
+  originalDestinationId.value = props.pipeline.destinationId;
+});
+
+// Watch for connector changes
+watch([() => props.pipeline.sourceId, () => props.pipeline.destinationId], ([newSourceId, newDestId]) => {
+  const sourceChanged = originalSourceId.value && newSourceId !== originalSourceId.value;
+  const destChanged = originalDestinationId.value && newDestId !== originalDestinationId.value;
+  
+  // If connectors changed and there are existing mappings, show warning
+  if ((sourceChanged || destChanged) && props.pipeline.fieldMappings && props.pipeline.fieldMappings.length > 0) {
+    showConnectorChangeWarning.value = true;
+  }
+});
 
 // Use translated metadata for schedule options
 const frequencyOptions = computed(() => 
@@ -596,6 +627,36 @@ function initializeSchedule(enabled) {
   }
 }
 
+
+function handleNext() {
+  // If moving from step 2 to step 3 and connectors changed, show warning
+  if (currentStep.value === 2 && showConnectorChangeWarning.value) {
+    // Warning dialog will handle the navigation
+    return;
+  }
+  currentStep.value++;
+}
+
+function confirmConnectorChange() {
+  // Clear existing field mappings
+  props.pipeline.fieldMappings = [];
+  
+  // Update original IDs to new values
+  originalSourceId.value = props.pipeline.sourceId;
+  originalDestinationId.value = props.pipeline.destinationId;
+  
+  // Close dialog and stay on current step (Step 2)
+  showConnectorChangeWarning.value = false;
+}
+
+function cancelConnectorChange() {
+  // Revert to original connectors
+  props.pipeline.sourceId = originalSourceId.value;
+  props.pipeline.destinationId = originalDestinationId.value;
+  
+  // Close dialog
+  showConnectorChangeWarning.value = false;
+}
 
 async function handleSave() {
   saving.value = true;

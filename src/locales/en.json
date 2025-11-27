@@ -3,6 +3,7 @@
     "save": "Save",
     "configuring": "Configuring",
     "cancel": "Cancel",
+    "continue": "Continue",
     "close": "Close",
     "retry": "Retry",
     "delete": "Delete",
@@ -201,7 +202,10 @@
     "scheduledExecution": "Scheduled Execution",
     "enabled": "Enabled",
     "disabledManualOnly": "Disabled (Manual only)",
-    "savePipeline": "Save Pipeline"
+    "savePipeline": "Save Pipeline",
+    "connectorChangeWarning": "Connector Change Warning",
+    "connectorChangeMessage": "You have changed the source or destination connector. The existing field mappings are based on the previous connectors and will no longer be valid.",
+    "existingMappingsWillBeCleared": "All existing field mappings will be cleared if you continue."
   },
   "connectors": {
     "title": "Connectors",

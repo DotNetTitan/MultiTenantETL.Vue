@@ -40,20 +40,20 @@
             <h3 class="text-h6">{{ $t('pipeline.fieldMappings') }}</h3>
             <p class="text-caption text-grey">{{ $t('pipeline.mapSourceToDestination') }}</p>
           </div>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-plus"
-            @click="addMapping"
-          >
-            {{ $t('pipeline.addMapping') }}
-          </v-btn>
         </div>
 
         <div v-if="localMappings.length === 0" class="text-center py-12">
           <v-icon size="80" color="grey-lighten-2">mdi-map-marker-path</v-icon>
           <p class="mt-4 text-h6 text-grey">{{ $t('pipeline.noFieldMappings') }}</p>
           <p class="text-caption text-grey">{{ $t('pipeline.clickAddMapping') }}</p>
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-plus"
+            class="mt-4"
+            @click="addMapping"
+          >
+            {{ $t('pipeline.addMapping') }}
+          </v-btn>
         </div>
 
         <div v-else class="mappings-list">
@@ -73,6 +73,19 @@
             @move-up="moveUp(index)"
             @move-down="moveDown(index)"
           />
+          
+          <!-- Add Mapping Button at Bottom -->
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-plus"
+            block
+            variant="outlined"
+            size="large"
+            class="mt-2"
+            @click="addMapping"
+          >
+            {{ $t('pipeline.addMapping') }}
+          </v-btn>
         </div>
       </div>
 

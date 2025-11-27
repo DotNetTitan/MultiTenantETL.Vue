@@ -122,7 +122,22 @@ async function loadPipeline() {
     loading.value = true;
     error.value = null;
     const data = await fetchPipelineById(route.params.id);
-    pipeline.value = data;
+    
+    // Map backend response to frontend format
+    pipeline.value = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      sourceId: data.sourceConnectorId,
+      destinationId: data.destinationConnectorId,
+      fieldMappings: data.fieldMappings || [],
+      isScheduled: data.isScheduled,
+      schedule: data.schedule || {
+        frequency: 'Daily',
+        time: '00:00',
+        timezone: 'UTC'
+      }
+    };
   } catch (err) {
     error.value = `Failed to load pipeline: ${err.message}`;
   } finally {
