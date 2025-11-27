@@ -49,7 +49,15 @@ export function usePipeline() {
         sortBy: sortBy.value
       };
       
-      pipelines.value = await fetchPipelines(filters);
+      const pipelineList = await fetchPipelines(filters);
+      
+      // Backend returns camelCase JSON (sourceConnectorName, destinationConnectorName)
+      // Map to sourceName/destinationName for table display
+      pipelines.value = pipelineList.map(pipeline => ({
+        ...pipeline,
+        sourceName: pipeline.sourceConnectorName || 'Unknown',
+        destinationName: pipeline.destinationConnectorName || 'Unknown'
+      }));
     } catch (err) {
       error.value = err.message;
       console.error('Error loading pipelines:', err);

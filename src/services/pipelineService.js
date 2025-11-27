@@ -40,6 +40,7 @@ export async function fetchPipelines(filters = {}) {
     }
 
     const response = await api.get('/api/pipelines', { params })
+    // Backend returns PagedPipelineResponse with pipelines property (camelCase due to JSON config)
     return response.data.pipelines || []
   } catch (error) {
     console.error('Error fetching pipelines:', error);

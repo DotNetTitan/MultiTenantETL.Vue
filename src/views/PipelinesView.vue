@@ -349,6 +349,7 @@ import TransformationSelector from '@/components/pipeline/TransformationSelector
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
 import { fetchTransformations } from '@/services/transformationService';
+import { fetchPipelineById } from '@/services/pipelineService';
 import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
 
@@ -533,48 +534,89 @@ async function viewMappings(pipeline) {
     mappingsError.value = null;
     
     // Fetch the full pipeline details including mappings
-    // For now, using mock data
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const fullPipeline = await fetchPipelineById(pipeline.id);
     
-    // Mock mappings data
-    pipelineMappings.value = [
-      {
-        sourceField: 'OrderId',
-        destinationField: 'order_id',
-        sourceFieldType: 'int',
-        destinationFieldType: 'integer',
-        transformation: null
-      },
-      {
-        sourceField: 'CustomerName',
-        destinationField: 'customer_name',
-        sourceFieldType: 'varchar(100)',
-        destinationFieldType: 'string',
-        transformation: {
-          type: 'Map',
-          name: 'Name Formatter',
-          description: 'Formats customer names to title case'
+    // Fetch source and destination connectors to get schemas
+    const { fetchConnectorById } = await import('@/services/connectorService');
+    const [sourceConnector, destinationConnector] = await Promise.all([
+      fetchConnectorById(fullPipeline.sourceConnectorId),
+      fetchConnectorById(fullPipeline.destinationConnectorId)
+    ]);
+    
+    // Fetch all transformations used in mappings
+    const transformationIds = new Set();
+    (fullPipeline.fieldMappings || []).forEach(mapping => {
+      (mapping.transformations || []).forEach(t => {
+        if (t.transformationId) {
+          transformationIds.add(t.transformationId);
         }
-      },
-      {
-        sourceField: 'OrderDate',
-        destinationField: 'created_at',
-        sourceFieldType: 'datetime',
-        destinationFieldType: 'timestamp',
-        transformation: null
-      },
-      {
-        sourceField: 'TotalAmount',
-        destinationField: 'total',
-        sourceFieldType: 'decimal(18,2)',
-        destinationFieldType: 'decimal',
-        transformation: {
-          type: 'Script',
-          name: 'Currency Converter',
-          description: 'Converts amount to USD'
+      });
+    });
+    
+    // Fetch transformation details
+    const transformationsMap = new Map();
+    if (transformationIds.size > 0) {
+      const { fetchTransformationById } = await import('@/services/transformationService');
+      await Promise.all(
+        Array.from(transformationIds).map(async (id) => {
+          try {
+            const transformation = await fetchTransformationById(id);
+            transformationsMap.set(id, transformation);
+          } catch (err) {
+            console.warn(`Failed to fetch transformation ${id}:`, err);
+          }
+        })
+      );
+    }
+    
+    // Helper to get field type from schema
+    const getFieldType = (fieldName, schema) => {
+      if (!schema || !schema.fields) return null;
+      const field = schema.fields.find(f => f.name === fieldName);
+      return field ? field.type : null;
+    };
+    
+    // Transform field mappings to match dialog format
+    pipelineMappings.value = (fullPipeline.fieldMappings || []).map(mapping => {
+      const sourceField = mapping.sourceFields && mapping.sourceFields.length > 0 
+        ? mapping.sourceFields.join(', ') 
+        : '';
+      
+      const sourceFieldType = mapping.sourceFields && mapping.sourceFields.length === 1
+        ? getFieldType(mapping.sourceFields[0], sourceConnector.schema)
+        : null;
+      
+      const destinationFieldType = getFieldType(mapping.destinationField, destinationConnector.schema);
+      
+      // Get first transformation details (if any)
+      let transformation = null;
+      if (mapping.transformations && mapping.transformations.length > 0) {
+        const firstTransformationId = mapping.transformations[0].transformationId;
+        const transformationData = transformationsMap.get(firstTransformationId);
+        
+        if (transformationData) {
+          transformation = {
+            type: transformationData.type,
+            name: transformationData.name,
+            description: transformationData.description || `${mapping.transformations.length} transformation(s) applied`
+          };
+        } else {
+          transformation = {
+            type: 'Transformation',
+            name: `${mapping.transformations.length} transformation(s)`,
+            description: 'Applied transformations'
+          };
         }
       }
-    ];
+      
+      return {
+        sourceField,
+        destinationField: mapping.destinationField || '',
+        sourceFieldType,
+        destinationFieldType,
+        transformation
+      };
+    });
   } catch (error) {
     console.error('Error loading mappings:', error);
     mappingsError.value = error.message || 'Failed to load mappings';
