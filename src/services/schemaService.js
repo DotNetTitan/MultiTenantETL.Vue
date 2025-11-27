@@ -13,10 +13,11 @@ export async function fetchSchema(connectorId) {
     const connector = await fetchConnectorById(connectorId);
 
     // If manual schema exists, use it
-    if (connector.schema && connector.schema.isManual && connector.schema.fields) {
+    // Check if schema has fields array (either with isManual flag or just fields)
+    if (connector.schema && connector.schema.fields && Array.isArray(connector.schema.fields) && connector.schema.fields.length > 0) {
       return {
         fields: connector.schema.fields,
-        isManual: true,
+        isManual: connector.schema.isManual !== false, // Default to true if not specified
         version: connector.schema.version || 1
       };
     }

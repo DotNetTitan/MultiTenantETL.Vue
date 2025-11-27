@@ -1,4 +1,4 @@
-import { mockPipelines, mockExecutions } from '@/mocks/pipelines'
+import api from './api'
 
 /**
  * Fetches the list of pipelines with optional filtering
@@ -10,49 +10,37 @@ import { mockPipelines, mockExecutions } from '@/mocks/pipelines'
  */
 export async function fetchPipelines(filters = {}) {
   try {
-    // In a real app, this would be an API call with query params
-    // For now, using simulated data
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Get a copy of the mock data
-    let pipelines = [...mockPipelines];
-    
-    // Apply filters if provided
+    const params = {
+      page: filters.page || 1,
+      pageSize: filters.pageSize || 20
+    }
+
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      pipelines = pipelines.filter(p => 
-        p.name.toLowerCase().includes(searchLower) || 
-        p.description?.toLowerCase().includes(searchLower)
-      );
+      params.search = filters.search
     }
-    
+
+    if (filters.name) {
+      params.name = filters.name
+    }
+
     if (filters.status && filters.status !== 'All') {
-      pipelines = pipelines.filter(p => p.status === filters.status);
+      params.status = filters.status
     }
-    
-    // Apply sorting if provided
+
+    if (filters.isScheduled !== undefined) {
+      params.isScheduled = filters.isScheduled
+    }
+
+    if (filters.isActive !== undefined) {
+      params.isActive = filters.isActive
+    }
+
     if (filters.sortBy) {
-      const [field, direction] = filters.sortBy.split('_');
-      pipelines.sort((a, b) => {
-        let aVal = a[field];
-        let bVal = b[field];
-        
-        if (field === 'lastRun') {
-          aVal = a.lastRunAt ? new Date(a.lastRunAt).getTime() : 0;
-          bVal = b.lastRunAt ? new Date(b.lastRunAt).getTime() : 0;
-        }
-        
-        if (direction === 'asc') {
-          return aVal > bVal ? 1 : -1;
-        } else {
-          return aVal < bVal ? 1 : -1;
-        }
-      });
+      params.sortBy = filters.sortBy
     }
-    
-    return pipelines;
+
+    const response = await api.get('/api/pipelines', { params })
+    return response.data.pipelines || []
   } catch (error) {
     console.error('Error fetching pipelines:', error);
     throw error;
@@ -66,23 +54,8 @@ export async function fetchPipelines(filters = {}) {
  */
 export async function fetchPipelineById(id) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    console.log('Fetching pipeline with ID:', id);
-    console.log('Available pipelines:', mockPipelines.map(p => ({ id: p.id, name: p.name })));
-    
-    const pipeline = mockPipelines.find(p => p.id === id);
-    
-    if (!pipeline) {
-      console.error('Pipeline not found with ID:', id);
-      const error = new Error('Pipeline not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    console.log('Found pipeline:', pipeline.name);
-    return { ...pipeline };
+    const response = await api.get(`/api/pipelines/${id}`)
+    return response.data
   } catch (error) {
     console.error(`Error fetching pipeline ${id}:`, error);
     throw error;
@@ -96,38 +69,33 @@ export async function fetchPipelineById(id) {
  */
 export async function savePipeline(pipeline) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Check if it's an update or create
     if (pipeline.id) {
       // Update existing pipeline
-      const index = mockPipelines.findIndex(p => p.id === pipeline.id);
-      
-      if (index === -1) {
-        const error = new Error('Pipeline not found');
-        error.response = { status: 404 };
-        throw error;
+      const payload = {
+        name: pipeline.name,
+        description: pipeline.description || null,
+        fieldMappings: pipeline.fieldMappings || [],
+        schedule: pipeline.schedule || null,
+        isScheduled: pipeline.isScheduled || false,
+        isActive: pipeline.isActive
       }
       
-      const updatedPipeline = {
-        ...mockPipelines[index],
-        ...pipeline
-      };
-      
-      mockPipelines[index] = updatedPipeline;
-      return { ...updatedPipeline };
+      const response = await api.put(`/api/pipelines/${pipeline.id}`, payload)
+      return response.data
     } else {
       // Create new pipeline
-      const newPipeline = {
-        ...pipeline,
-        id: Math.random().toString(36).substring(2, 15),
-        createdAt: new Date().toISOString(),
-        lastRunAt: null
-      };
+      const payload = {
+        name: pipeline.name,
+        description: pipeline.description || null,
+        sourceConnectorId: pipeline.sourceId,
+        destinationConnectorId: pipeline.destinationId,
+        fieldMappings: pipeline.fieldMappings || [],
+        schedule: pipeline.schedule || null,
+        isScheduled: pipeline.isScheduled || false
+      }
       
-      mockPipelines.push(newPipeline);
-      return { ...newPipeline };
+      const response = await api.post('/api/pipelines', payload)
+      return response.data
     }
   } catch (error) {
     console.error('Error saving pipeline:', error);
@@ -142,18 +110,8 @@ export async function savePipeline(pipeline) {
  */
 export async function deletePipeline(id) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    const index = mockPipelines.findIndex(p => p.id === id);
-    if (index === -1) {
-      const error = new Error('Pipeline not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    mockPipelines.splice(index, 1);
-    return true;
+    await api.delete(`/api/pipelines/${id}`)
+    return true
   } catch (error) {
     console.error(`Error deleting pipeline ${id}:`, error);
     throw error;
@@ -167,34 +125,9 @@ export async function deletePipeline(id) {
  */
 export async function executePipeline(id) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const pipeline = mockPipelines.find(p => p.id === id);
-    if (!pipeline) {
-      const error = new Error('Pipeline not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    // Create a new execution record
-    const newExecution = {
-      id: Math.random().toString(36).substring(2, 15),
-      pipelineId: id,
-      status: 'Running', // Initial status is running
-      startTime: new Date().toISOString(),
-      endTime: null, // Will be set when execution completes
-      recordsProcessed: 0,
-      errors: []
-    };
-    
-    mockExecutions.push(newExecution);
-    
-    // Update pipeline's last run date
-    pipeline.lastRunAt = newExecution.startTime;
-    pipeline.status = 'Running';
-    
-    return { ...newExecution };
+    // TODO: This will be implemented when we add the execution engine
+    const response = await api.post(`/api/pipelines/${id}/execute`)
+    return response.data
   } catch (error) {
     console.error(`Error executing pipeline ${id}:`, error);
     throw error;
@@ -212,36 +145,27 @@ export async function executePipeline(id) {
  */
 export async function getExecutions(filters = {}) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+    // TODO: This will be implemented when we add the execution engine
+    const params = {}
     
-    let filteredExecutions = [...mockExecutions];
-    
-    // Apply pipeline filter
     if (filters.pipelineId) {
-      filteredExecutions = filteredExecutions.filter(e => e.pipelineId === filters.pipelineId);
+      params.pipelineId = filters.pipelineId
     }
     
-    // Apply status filter
     if (filters.status && filters.status !== 'All') {
-      filteredExecutions = filteredExecutions.filter(e => e.status === filters.status);
+      params.status = filters.status
     }
     
-    // Apply date filters
     if (filters.startDate) {
-      const startDate = new Date(filters.startDate);
-      filteredExecutions = filteredExecutions.filter(e => new Date(e.startTime) >= startDate);
+      params.startDate = filters.startDate
     }
     
     if (filters.endDate) {
-      const endDate = new Date(filters.endDate);
-      filteredExecutions = filteredExecutions.filter(e => new Date(e.startTime) <= endDate);
+      params.endDate = filters.endDate
     }
     
-    // Sort by date (newest first)
-    filteredExecutions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-    
-    return filteredExecutions;
+    const response = await api.get('/api/executions', { params })
+    return response.data.executions || []
   } catch (error) {
     console.error('Error getting executions:', error);
     throw error;
@@ -255,17 +179,9 @@ export async function getExecutions(filters = {}) {
  */
 export async function getExecutionById(id) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const execution = mockExecutions.find(e => e.id === id);
-    if (!execution) {
-      const error = new Error('Execution not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-    
-    return { ...execution };
+    // TODO: This will be implemented when we add the execution engine
+    const response = await api.get(`/api/executions/${id}`)
+    return response.data
   } catch (error) {
     console.error(`Error getting execution ${id}:`, error);
     throw error;
@@ -279,22 +195,14 @@ export async function getExecutionById(id) {
  */
 export async function findPipelinesUsingConnector(connectorId) {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Find pipelines where the connector is used as source or destination
-    const pipelines = mockPipelines.filter(p => 
-      p.sourceId === connectorId || p.destinationId === connectorId
-    );
-    
-    // Return simplified pipeline info
-    return pipelines.map(p => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      usedAs: p.sourceId === connectorId ? 'source' : 'destination',
-      status: p.status
-    }));
+    // This will filter pipelines by connector on the backend
+    const response = await api.get('/api/pipelines', {
+      params: {
+        sourceConnectorId: connectorId,
+        destinationConnectorId: connectorId
+      }
+    })
+    return response.data.pipelines || []
   } catch (error) {
     console.error(`Error finding pipelines using connector ${connectorId}:`, error);
     throw error;

@@ -98,7 +98,8 @@ onMounted(async () => {
 async function loadConnectors() {
   try {
     const { fetchConnectors } = await import('@/services/connectorService');
-    connectors.value = await fetchConnectors();
+    const response = await fetchConnectors({ pageSize: 100 }); // Get more connectors for selection
+    connectors.value = response.connectors || [];
   } catch (err) {
     console.error('Error loading connectors:', err);
     error.value = `Failed to load connectors: ${err.message}`;
@@ -108,7 +109,8 @@ async function loadConnectors() {
 async function loadTransformations() {
   try {
     const { fetchTransformations } = await import('@/services/transformationService');
-    transformations.value = await fetchTransformations();
+    const response = await fetchTransformations({ pageSize: 100 }); // Get more transformations for selection
+    transformations.value = Array.isArray(response) ? response : (response.transformations || []);
   } catch (err) {
     console.error('Error loading transformations:', err);
     // Don't set error here, transformations are optional
