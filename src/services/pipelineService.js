@@ -126,7 +126,6 @@ export async function deletePipeline(id) {
  */
 export async function executePipeline(id) {
   try {
-    // TODO: This will be implemented when we add the execution engine
     const response = await api.post(`/api/pipelines/${id}/execute`)
     return response.data
   } catch (error) {
@@ -142,12 +141,16 @@ export async function executePipeline(id) {
  * @param {string} filters.status - Filter by execution status
  * @param {Date} filters.startDate - Filter by execution start date (minimum)
  * @param {Date} filters.endDate - Filter by execution start date (maximum)
+ * @param {number} filters.page - Page number (default: 1)
+ * @param {number} filters.pageSize - Page size (default: 20)
  * @returns {Promise<Array>} List of execution objects
  */
 export async function getExecutions(filters = {}) {
   try {
-    // TODO: This will be implemented when we add the execution engine
-    const params = {}
+    const params = {
+      page: filters.page || 1,
+      pageSize: filters.pageSize || 20
+    }
     
     if (filters.pipelineId) {
       params.pipelineId = filters.pipelineId
@@ -165,6 +168,10 @@ export async function getExecutions(filters = {}) {
       params.endDate = filters.endDate
     }
     
+    if (filters.search) {
+      params.search = filters.search
+    }
+    
     const response = await api.get('/api/executions', { params })
     return response.data.executions || []
   } catch (error) {
@@ -180,11 +187,44 @@ export async function getExecutions(filters = {}) {
  */
 export async function getExecutionById(id) {
   try {
-    // TODO: This will be implemented when we add the execution engine
     const response = await api.get(`/api/executions/${id}`)
     return response.data
   } catch (error) {
     console.error(`Error getting execution ${id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Cancels a running execution
+ * @param {string} id - Execution ID to cancel
+ * @returns {Promise<Object>} Updated execution object
+ */
+export async function cancelExecution(id) {
+  try {
+    const response = await api.post(`/api/executions/${id}/cancel`)
+    return response.data
+  } catch (error) {
+    console.error(`Error cancelling execution ${id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Gets execution statistics
+ * @param {string} pipelineId - Optional pipeline ID to filter stats
+ * @returns {Promise<Object>} Execution statistics
+ */
+export async function getExecutionStats(pipelineId = null) {
+  try {
+    const params = {}
+    if (pipelineId) {
+      params.pipelineId = pipelineId
+    }
+    const response = await api.get('/api/executions/stats', { params })
+    return response.data
+  } catch (error) {
+    console.error('Error getting execution stats:', error);
     throw error;
   }
 }
@@ -223,5 +263,7 @@ export const pipelineService = {
   execute: executePipeline,
   getExecutions,
   getExecutionById,
+  cancelExecution,
+  getExecutionStats,
   findPipelinesUsingConnector
 };

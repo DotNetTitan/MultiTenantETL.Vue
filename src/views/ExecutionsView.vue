@@ -387,48 +387,14 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import axios from 'axios';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
+import { getExecutions } from '@/services/pipelineService';
 
 const { t } = useI18n();
 
 const tenantStore = useTenantStore();
 const theme = useTheme();
-
-// Import mock data from centralized location
-import { mockExecutions as mockExecutionsData } from '@/mocks/pipelines';
-
-// Transform mock data to match view format
-const mockExecutions = mockExecutionsData.map(exec => {
-  const duration = exec.endTime 
-    ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
-    : Date.now() - new Date(exec.startTime).getTime();
-  
-  // Format logs from array to string
-  let logsText = '';
-  if (exec.logs && exec.logs.length > 0) {
-    logsText = exec.logs.map(log => 
-      `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
-    ).join('\n');
-  } else {
-    logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
-  }
-  
-  return {
-    id: exec.id,
-    pipelineName: exec.pipelineName,
-    pipelineId: exec.pipelineId,
-    status: exec.status,
-    startTime: exec.startTime,
-    endTime: exec.endTime,
-    duration: duration,
-    rowsProcessed: exec.recordsProcessed || 0,
-    progressPercent: exec.status === 'Completed' ? 100 : (exec.status === 'Running' ? 50 : 0),
-    logs: logsText,
-    errors: exec.errors || []
-  };
-});
 
 // Data table
 const headers = computed(() => [
@@ -667,28 +633,47 @@ function getTimeRangeFilter() {
 async function fetchExecutions() {
   try {
     loading.value = true;
-    // In real implementation this will be an API call
-    await new Promise(resolve => setTimeout(resolve, 500));
     
-    let filteredExecutions = [...mockExecutions];
+    // Call real API
+    const filters = {
+      search: search.value || undefined,
+      status: statusFilter.value !== 'All' ? statusFilter.value : undefined,
+      page: 1,
+      pageSize: 100 // Get more records for client-side filtering
+    };
     
-    // Apply filters
-    if (search.value) {
-      const searchLower = search.value.toLowerCase();
-      filteredExecutions = filteredExecutions.filter(e => 
-        e.pipelineName.toLowerCase().includes(searchLower) || 
-        e.id.toLowerCase().includes(searchLower)
-      );
-    }
-
-    if (statusFilter.value !== 'All') {
-      filteredExecutions = filteredExecutions.filter(e => e.status === statusFilter.value);
-    }
+    const apiExecutions = await getExecutions(filters);
     
-    executions.value = filteredExecutions;
+    // Transform API response to match view format
+    executions.value = apiExecutions.map(exec => {
+      // Format logs from array to string
+      let logsText = '';
+      if (exec.logs && exec.logs.length > 0) {
+        logsText = exec.logs.map(log => 
+          `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
+        ).join('\n');
+      } else {
+        logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
+      }
+      
+      return {
+        id: exec.id,
+        pipelineName: exec.pipelineName,
+        pipelineId: exec.pipelineId,
+        status: exec.status,
+        startTime: exec.startTime,
+        endTime: exec.endTime,
+        duration: exec.duration,
+        rowsProcessed: exec.recordsProcessed || 0,
+        progressPercent: exec.progressPercent || 0,
+        logs: logsText,
+        errors: []
+      };
+    });
   } catch (error) {
     console.error('Error fetching executions:', error);
-    // This will be replaced with proper error handling when real API is integrated
+    executions.value = [];
+    // TODO: Show error notification to user
   } finally {
     loading.value = false;
   }
@@ -718,17 +703,16 @@ async function confirmCancelExecution() {
   try {
     cancelling.value = true;
     
-    // In a real app, this would be an actual API call
-    // await axios.post(`/api/pipeline-executions/${executionToCancel.value.id}/cancel`);
-    
-    // For now, using simulated response
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Call the real API to cancel execution
+    const { cancelExecution: cancelExecutionApi } = await import('@/services/pipelineService');
+    const updatedExecution = await cancelExecutionApi(executionToCancel.value.id);
     
     // Update the status in the local array
     const execution = executions.value.find(e => e.id === executionToCancel.value.id);
     if (execution) {
-      execution.status = 'Cancelled';
-      execution.endTime = new Date().toISOString();
+      execution.status = updatedExecution.status;
+      execution.endTime = updatedExecution.endTime;
+      execution.duration = updatedExecution.duration;
       
       // If this execution is currently shown in details dialog, update it
       if (selectedExecution.value && selectedExecution.value.id === execution.id) {
@@ -740,6 +724,7 @@ async function confirmCancelExecution() {
     executionToCancel.value = null;
   } catch (error) {
     console.error('Error cancelling execution:', error);
+    // TODO: Show error notification to user
   } finally {
     cancelling.value = false;
   }
