@@ -223,14 +223,14 @@
                   <v-col cols="6">
                     <div class="text-caption text-grey">{{ $t('pipelines.source') }}</div>
                     <div class="text-body-1">
-                      <v-icon size="small" class="mr-1">mdi-database</v-icon>
+                      <v-icon size="small" color="blue" class="mr-1">mdi-database</v-icon>
                       {{ selectedPipeline?.sourceName }}
                     </div>
                   </v-col>
                   <v-col cols="6">
                     <div class="text-caption text-grey">{{ $t('pipelines.destination') }}</div>
                     <div class="text-body-1">
-                      <v-icon size="small" class="mr-1">mdi-database</v-icon>
+                      <v-icon size="small" color="green" class="mr-1">mdi-database</v-icon>
                       {{ selectedPipeline?.destinationName }}
                     </div>
                   </v-col>

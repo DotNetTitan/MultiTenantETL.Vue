@@ -84,10 +84,15 @@
                   v-for="(source, index) in pipeline.connectors"
                   :key="index"
                   :title="source.name"
-                  :subtitle="source.type"
-                  :prepend-icon="getConnectorIcon(source.type)"
+                  :subtitle="source.direction === 'source' ? 'Source' : 'Destination'"
                   :ripple="false"
                 >
+                  <template #prepend>
+                    <v-icon 
+                      :icon="getConnectorIcon(source.type)"
+                      :color="source.direction === 'source' ? 'blue' : 'green'"
+                    />
+                  </template>
                   <template #append>
                     <v-chip
                       :color="source.isConnected ? 'success' : 'error'"
@@ -523,12 +528,14 @@ async function fetchPipelineDetails() {
           id: pipelineData.sourceConnectorId,
           name: pipelineData.sourceConnectorName,
           type: 'Source',
+          direction: 'source',
           isConnected: true
         },
         {
           id: pipelineData.destinationConnectorId,
           name: pipelineData.destinationConnectorName,
           type: 'Destination',
+          direction: 'destination',
           isConnected: true
         }
       ],
