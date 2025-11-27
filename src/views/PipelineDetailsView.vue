@@ -506,6 +506,9 @@ async function fetchPipelineDetails() {
     // Fetch pipeline from service
     const pipelineData = await fetchPipelineById(route.params.id);
     
+    // Build pipeline steps (async operation)
+    const steps = await buildPipelineSteps(pipelineData);
+    
     // Transform the data to match the view's expected format
     pipeline.value = {
       id: pipelineData.id,
@@ -517,19 +520,19 @@ async function fetchPipelineDetails() {
       schedule: formatSchedule(pipelineData.schedule),
       connectors: [
         {
-          id: pipelineData.sourceId,
-          name: pipelineData.sourceName,
+          id: pipelineData.sourceConnectorId,
+          name: pipelineData.sourceConnectorName,
           type: 'Source',
           isConnected: true
         },
         {
-          id: pipelineData.destinationId,
-          name: pipelineData.destinationName,
+          id: pipelineData.destinationConnectorId,
+          name: pipelineData.destinationConnectorName,
           type: 'Destination',
           isConnected: true
         }
       ],
-      steps: buildPipelineSteps(pipelineData)
+      steps: steps
     };
     
     await fetchRecentExecutions();
@@ -561,69 +564,74 @@ function formatSchedule(schedule) {
   return 'Manual';
 }
 
-function buildPipelineSteps(pipelineData) {
+async function buildPipelineSteps(pipelineData) {
   const steps = [];
+  let stepId = 1;
   
-  // Extract step
+  // Extract step from source
   steps.push({
-    id: '1',
-    name: `Extract ${pipelineData.sourceName}`,
+    id: `step-${stepId++}`,
+    name: `Extract from ${pipelineData.sourceConnectorName || 'Source'}`,
     type: 'Extract',
-    description: `Pull data from ${pipelineData.sourceName}`
-  });
-  
-  // Extract Product Data step (if there's a second source)
-  steps.push({
-    id: '2',
-    name: 'Extract Product Data',
-    type: 'Extract',
-    description: 'Pull product details from Product API'
+    description: `Pull data from ${pipelineData.sourceConnectorName || 'undefined'}`
   });
   
   // Transform steps based on field mappings
-  if (pipelineData.fieldMappings && pipelineData.fieldMappings.length > 0) {
-    pipelineData.fieldMappings.forEach((mapping, index) => {
-      if (mapping.transformations && mapping.transformations.length > 0) {
-        steps.push({
-          id: `t${index + 1}`,
-          name: `Transform ${mapping.destinationField}`,
-          type: 'Transform',
-          description: `Apply transformations to ${mapping.sourceFields.join(', ')}`
-        });
+  if (pipelineData.fieldMappings && Array.isArray(pipelineData.fieldMappings) && pipelineData.fieldMappings.length > 0) {
+    // Group transformations by type
+    const transformationsByType = new Map();
+    
+    for (const mapping of pipelineData.fieldMappings) {
+      if (mapping.transformations && Array.isArray(mapping.transformations) && mapping.transformations.length > 0) {
+        for (const trans of mapping.transformations) {
+          try {
+            // Fetch transformation details
+            const transformationDetails = await fetchTransformationById(trans.transformationId);
+            
+            const key = transformationDetails.type;
+            if (!transformationsByType.has(key)) {
+              transformationsByType.set(key, {
+                type: transformationDetails.type,
+                name: transformationDetails.name,
+                fields: []
+              });
+            }
+            
+            transformationsByType.get(key).fields.push(mapping.destinationField);
+          } catch (error) {
+            console.warn(`Failed to fetch transformation ${trans.transformationId}:`, error);
+          }
+        }
       }
+    }
+    
+    // Create steps for each transformation type
+    for (const [type, info] of transformationsByType) {
+      steps.push({
+        id: `step-${stepId++}`,
+        name: info.name,
+        type: 'Transform',
+        description: `Apply ${type} to ${info.fields.length} field(s): ${info.fields.slice(0, 3).join(', ')}${info.fields.length > 3 ? '...' : ''}`
+      });
+    }
+  }
+  
+  // If no transformations, show a placeholder
+  if (steps.length === 1) {
+    steps.push({
+      id: `step-${stepId++}`,
+      name: 'No Transformations',
+      type: 'Transform',
+      description: 'Data will be loaded without transformations'
     });
   }
   
-  // Join step
+  // Load step to destination
   steps.push({
-    id: '3',
-    name: 'Join Sales and Products',
-    type: 'Transform',
-    description: 'Join sales transactions with product details'
-  });
-  
-  // Filter step
-  steps.push({
-    id: '4',
-    name: 'Filter Invalid Transactions',
-    type: 'Transform',
-    description: 'Remove transactions with invalid product IDs or amounts'
-  });
-  
-  // Aggregate step
-  steps.push({
-    id: '5',
-    name: 'Aggregate by Region',
-    type: 'Transform',
-    description: 'Calculate sales totals by region and product category'
-  });
-  
-  // Load step
-  steps.push({
-    id: '6',
-    name: `Load to ${pipelineData.destinationName}`,
+    id: `step-${stepId++}`,
+    name: `Load to ${pipelineData.destinationConnectorName || 'Destination'}`,
     type: 'Load',
-    description: `Load processed data to ${pipelineData.destinationName}`
+    description: `Load processed data to ${pipelineData.destinationConnectorName || 'undefined'}`
   });
   
   return steps;
