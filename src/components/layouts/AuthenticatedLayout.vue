@@ -207,7 +207,7 @@ const appBarColor = computed(() =>
 
 // User data computed properties
 const userName = computed(() => authStore.user?.name || 'User');
-const userRole = computed(() => authStore.isAdmin ? 'Administrator' : 'User');
+const userRole = computed(() => authStore.user?.role || 'User');
 const userInitials = computed(() => {
   const name = userName.value;
   if (!name) return 'U';
