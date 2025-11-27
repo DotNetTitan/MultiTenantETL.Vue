@@ -733,8 +733,8 @@ const highlightedScript = computed(() => {
 async function fetchTransformations() {
   try {
     loading.value = true;
-    const allTransformations = await transformationService.getAll();
-    transformations.value = transformationService.applyFilters(allTransformations, {
+    // Pass filters directly to API - server-side filtering
+    transformations.value = await transformationService.getAll({
       search: search.value,
       type: typeFilter.value,
       sort: sortBy.value

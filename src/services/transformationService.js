@@ -1,6 +1,6 @@
-import { mockTransformations } from '@/mocks/transformations'
+import api from './api'
 
-// Mock columns based on actual data sources
+// Mock columns based on actual data sources (will be replaced with schema-based columns later)
 const mockColumns = [
   // From SQL Server - Sales (Data Source 1)
   'OrderId', 'CustomerId', 'OrderDate', 'TotalAmount', 'Status',
@@ -13,104 +13,67 @@ const mockColumns = [
 // Transformation types
 const transformationTypes = ['Filter', 'Map', 'Script', 'Trim', 'Case Convert', 'Substring', 'Replace']
 
-// Sort functions
-const sortFunctions = {
-  name_asc: (a, b) => a.name.localeCompare(b.name),
-  name_desc: (a, b) => b.name.localeCompare(a.name),
-  type_asc: (a, b) => a.type.localeCompare(b.type),
-  created_desc: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-  created_asc: (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-};
-
 export const transformationService = {
   async getAll(filters = {}) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const params = {
+      page: filters.page || 1,
+      pageSize: filters.pageSize || 20
+    }
 
-    let transformations = [...mockTransformations];
-
-    // Apply filters
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      transformations = transformations.filter(t =>
-        t.name.toLowerCase().includes(searchLower) ||
-        t.description?.toLowerCase().includes(searchLower)
-      );
+      params.search = filters.search
+    }
+
+    if (filters.name) {
+      params.name = filters.name
     }
 
     if (filters.type && filters.type !== 'All') {
-      transformations = transformations.filter(t => t.type === filters.type);
+      params.type = filters.type
     }
 
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      transformations.sort(sortFunctions[filters.sort]);
+    if (filters.sort) {
+      params.sort = filters.sort
     }
 
-    return transformations;
+    const response = await api.get('/api/transformations', { params })
+    
+    // Return just the transformations array for backward compatibility
+    // The paginated response has: { transformations, totalCount, page, pageSize, totalPages }
+    return response.data.transformations || []
   },
 
   async getById(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    const transformation = mockTransformations.find(t => t.id === id);
-    if (!transformation) {
-      const error = new Error('Transformation not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-
-    return { ...transformation };
+    const response = await api.get(`/api/transformations/${id}`)
+    return response.data
   },
 
   async create(transformationData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const payload = {
+      name: transformationData.name,
+      description: transformationData.description || null,
+      type: transformationData.type,
+      config: transformationData.config
+    }
 
-    const newTransformation = {
-      ...transformationData,
-      id: Math.random().toString(36).substring(2, 15),
-      createdAt: new Date().toISOString()
-    };
-
-    mockTransformations.push(newTransformation);
-    return { ...newTransformation };
+    const response = await api.post('/api/transformations', payload)
+    return response.data
   },
 
   async update(id, transformationData) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    const index = mockTransformations.findIndex(t => t.id === id);
-    if (index === -1) {
-      const error = new Error('Transformation not found');
-      error.response = { status: 404 };
-      throw error;
+    const payload = {
+      name: transformationData.name,
+      description: transformationData.description || null,
+      config: transformationData.config
     }
 
-    const updatedTransformation = {
-      ...mockTransformations[index],
-      ...transformationData
-    };
-
-    mockTransformations[index] = updatedTransformation;
-    return { ...updatedTransformation };
+    const response = await api.put(`/api/transformations/${id}`, payload)
+    return response.data
   },
 
   async delete(id) {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-
-    const index = mockTransformations.findIndex(t => t.id === id);
-    if (index === -1) {
-      const error = new Error('Transformation not found');
-      error.response = { status: 404 };
-      throw error;
-    }
-
-    mockTransformations.splice(index, 1);
-    return true;
+    await api.delete(`/api/transformations/${id}`)
+    return true
   },
 
   async clone(transformation) {
@@ -168,28 +131,9 @@ export const transformationService = {
   },
 
   applyFilters(transformations, filters = {}) {
-    let filtered = [...transformations];
-
-    // Apply search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(t =>
-        t.name.toLowerCase().includes(searchLower) ||
-        t.description?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply type filter
-    if (filters.type && filters.type !== 'All') {
-      filtered = filtered.filter(t => t.type === filters.type);
-    }
-
-    // Apply sorting
-    if (filters.sort && sortFunctions[filters.sort]) {
-      filtered.sort(sortFunctions[filters.sort]);
-    }
-
-    return filtered;
+    // This method is kept for backward compatibility but filtering is now done server-side
+    // It can be used for additional client-side filtering if needed
+    return transformations
   }
 }
 
