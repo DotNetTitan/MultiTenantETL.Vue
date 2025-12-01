@@ -191,6 +191,41 @@
                   hide-details
                 />
               </v-col>
+              
+              <!-- Source/Both: Table Name or Query -->
+              <template v-if="connector.direction === 'source' || connector.direction === 'both'">
+                <v-col cols="12">
+                  <v-switch
+                    v-model="connector.config.useCustomQuery"
+                    :label="t('connectors.useCustomQuery')"
+                    color="primary"
+                    hide-details
+                    :hint="t('connectors.useCustomQueryHint')"
+                  />
+                </v-col>
+                <v-col v-if="!connector.config.useCustomQuery" cols="12">
+                  <v-text-field
+                    v-model="connector.config.tableName"
+                    :label="t('connectors.tableName')"
+                    :placeholder="t('connectors.tableNamePlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.tableName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col v-else cols="12">
+                  <v-textarea
+                    v-model="connector.config.query"
+                    :label="t('connectors.customQuery')"
+                    :placeholder="t('connectors.customQueryPlaceholder')"
+                    variant="outlined"
+                    rows="4"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.customQuery') })]"
+                    required
+                  />
+                </v-col>
+              </template>
+              
               <v-col cols="12">
                 <v-switch
                   v-model="connector.config.useCustomConnectionString"
@@ -1089,6 +1124,20 @@
                       </template>
                       <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
                       <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.config.tableName">
+                      <template #prepend>
+                        <v-icon>mdi-table</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.tableName') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.tableName }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.config.query">
+                      <template #prepend>
+                        <v-icon>mdi-code-braces</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.customQuery') }}</v-list-item-title>
+                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.query"></v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="connector.config.useCustomConnectionString">
                       <template #prepend>

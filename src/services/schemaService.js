@@ -330,9 +330,9 @@ export function validateFieldMappings(mappings, sourceSchema, destinationSchema,
         const sourceField = sourceSchema.fields.find(f => f.name === mapping.sourceFields[0]);
 
         if (sourceField && destField && !isTypeCompatible(sourceField.type, destField.type)) {
-          warnings.push(
-            `Mapping ${mappingNum}: Type mismatch (${sourceField.type} → ${destField.type}). ` +
-            `Consider adding a transformation.`
+          errors.push(
+            `Mapping ${mappingNum}: Incompatible types - cannot map ${sourceField.type} to ${destField.type}. ` +
+            `Add a transformation to convert the data type.`
           );
         }
       }

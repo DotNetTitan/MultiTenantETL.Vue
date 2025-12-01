@@ -142,6 +142,7 @@
                       :label="$t('pipeline.selectTransformation')"
                       density="compact"
                       hide-details
+                      @update:model-value="(value) => onTransformationSelected(value, trans)"
                     >
                       <template #item="{ item, props }">
                         <v-list-item v-bind="props">
@@ -338,12 +339,31 @@ const validationErrors = computed(() => {
 });
 
 // Transformation chain methods
+function onTransformationSelected(transformationId, trans) {
+  if (!transformationId) return;
+  
+  const fullTransformation = props.transformations.find(t => t.id === transformationId);
+  if (fullTransformation) {
+    // Snapshot the full transformation config
+    trans.type = fullTransformation.type;
+    trans.name = fullTransformation.name;
+    
+    // Deep clone config if it exists, otherwise use empty object
+    if (fullTransformation.config) {
+      trans.config = JSON.parse(JSON.stringify(fullTransformation.config));
+    } else {
+      trans.config = {};
+    }
+  }
+}
 function addTransformation() {
   if (!localMapping.value.transformations) {
     localMapping.value.transformations = [];
   }
   localMapping.value.transformations.push({
     transformationId: null,
+    type: '',
+    name: '',
     config: {},
     order: localMapping.value.transformations.length + 1
   });
