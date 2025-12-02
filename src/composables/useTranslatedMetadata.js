@@ -136,6 +136,29 @@ export function useTranslatedMetadata() {
     return Array.from(categoryKeys).map(key => t(key));
   }
 
+  /**
+   * Get translated options for a specific metadata type
+   * @param {string} type - Metadata type name (e.g., 'transformationTypes', 'connectorTypes')
+   * @returns {Array} Translated options
+   */
+  function getTranslatedOptions(type) {
+    const typeMap = {
+      connectorTypes,
+      directions,
+      authTypes,
+      fileFormats,
+      writeOperations,
+      httpMethods,
+      transformationTypes,
+      dataTypes,
+      scheduleFrequencies,
+      daysOfWeek
+    };
+
+    const options = typeMap[type];
+    return options ? options.value : [];
+  }
+
   return {
     // State from original metadata
     loading: metadata.loading,
@@ -148,6 +171,7 @@ export function useTranslatedMetadata() {
     getWriteOperationsRequiringKey,
     getTransformationsByCategory,
     getTransformationCategories,
+    getTranslatedOptions,
     translateItem,
     translateItems,
 

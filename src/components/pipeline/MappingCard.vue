@@ -105,109 +105,30 @@
 
         <!-- Transformations Chain -->
         <v-col cols="12">
-          <div class="d-flex align-center mb-2">
-            <span class="text-subtitle-2">{{ $t('pipeline.transformationsOptional') }}</span>
-            <v-spacer />
-            <v-btn
-              size="small"
-              variant="text"
-              prepend-icon="mdi-plus"
-              :disabled="!canAddTransformation"
-              @click="addTransformation"
-            >
-              {{ $t('pipeline.addTransformation') }}
-            </v-btn>
-          </div>
-          
-          <div v-if="!localMapping.transformations || localMapping.transformations.length === 0" class="text-caption text-grey pa-3 text-center">
-            {{ $t('pipeline.noTransformations') }}
-          </div>
-          
-          <div v-else class="transformations-chain">
-            <v-card
-              v-for="(trans, tIndex) in localMapping.transformations"
-              :key="tIndex"
-              variant="outlined"
-              class="mb-2"
-            >
-              <v-card-text class="py-2">
-                <v-row dense align="center">
-                  <v-col cols="1" class="text-center">
-                    <v-chip size="small" color="primary">{{ tIndex + 1 }}</v-chip>
-                  </v-col>
-                  <v-col cols="9">
-                    <v-select
-                      v-model="trans.transformationId"
-                      :items="compatibleTransformationItems"
-                      :label="$t('pipeline.selectTransformation')"
-                      density="compact"
-                      hide-details
-                      @update:model-value="(value) => onTransformationSelected(value, trans)"
-                    >
-                      <template #item="{ item, props }">
-                        <v-list-item v-bind="props">
-                          <template #prepend>
-                            <v-avatar :color="getTransformationColor(item.raw.type)" size="28">
-                              <v-icon color="white" size="small">
-                                {{ getTransformationIcon(item.raw.type) }}
-                              </v-icon>
-                            </v-avatar>
-                          </template>
-                          <template #title>
-                            {{ item.title }}
-                          </template>
-                          <template #subtitle>
-                            <v-chip size="x-small" class="mt-1" variant="tonal">{{ item.raw.type }}</v-chip>
-                          </template>
-                        </v-list-item>
-                      </template>
-                    </v-select>
-                  </v-col>
-                  <v-col cols="2" class="text-right">
-                    <v-btn
-                      icon
-                      variant="text"
-                      size="small"
-                      :disabled="tIndex === 0"
-                      @click="moveTransformationUp(tIndex)"
-                    >
-                      <v-icon size="small">mdi-arrow-up</v-icon>
-                    </v-btn>
-                    <v-btn
-                      icon
-                      variant="text"
-                      size="small"
-                      :disabled="tIndex === localMapping.transformations.length - 1"
-                      @click="moveTransformationDown(tIndex)"
-                    >
-                      <v-icon size="small">mdi-arrow-down</v-icon>
-                    </v-btn>
-                    <v-btn
-                      icon
-                      variant="text"
-                      size="small"
-                      color="error"
-                      @click="removeTransformation(tIndex)"
-                    >
-                      <v-icon size="small">mdi-close</v-icon>
-                    </v-btn>
-                  </v-col>
-                  
-                  <!-- Transformation Config -->
-                  <v-col v-if="getTransformationById(trans.transformationId) && needsConfig(trans.transformationId)" cols="12">
-                    <v-text-field
-                      v-if="getTransformationById(trans.transformationId).type === 'Map'"
-                      v-model="trans.config.separator"
-                      :label="$t('pipeline.separator')"
-                      :hint="$t('pipeline.separatorHint')"
-                      persistent-hint
-                      density="compact"
-                    />
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </div>
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                <div class="d-flex align-center">
+                  <v-icon class="mr-2">mdi-vector-polyline</v-icon>
+                  <span>{{ $t('pipeline.transformationsOptional') }}</span>
+                  <v-chip
+                    v-if="localMapping.transformations && localMapping.transformations.length > 0"
+                    size="small"
+                    class="ml-2"
+                    color="primary"
+                  >
+                    {{ localMapping.transformations.length }}
+                  </v-chip>
+                </div>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <TransformationChainEditor
+                  v-model="localMapping.transformations"
+                  :source-fields="localMapping.sourceFields"
+                />
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
         </v-col>
       </v-row>
     </v-card-text>
@@ -217,7 +138,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getCompatibleTransformations } from '@/services/schemaService';
+import TransformationChainEditor from './TransformationChainEditor.vue';
 
 const { t } = useI18n();
 
@@ -254,13 +175,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:mapping', 'remove', 'move-up', 'move-down']);
 
-// Use props.mapping directly with v-model binding
-const localMapping = ref({ ...props.mapping });
-
-// Watch local changes and emit
-watch(localMapping, (newVal) => {
-  emit('update:mapping', { ...newVal });
-}, { deep: true });
+// Use computed with getter/setter for proper v-model behavior
+const localMapping = computed({
+  get: () => props.mapping,
+  set: (value) => {
+    emit('update:mapping', value);
+  }
+});
 
 // Computed properties
 const sourceFieldItems = computed(() => {
@@ -287,174 +208,6 @@ const destinationFieldItems = computed(() => {
     raw: field
   }));
 });
-
-const compatibleTransformations = computed(() => {
-  // If no transformations available at all, return empty
-  if (!props.transformations || props.transformations.length === 0) {
-    return [];
-  }
-  
-  // Just return all transformations - compatibility filtering was too strict
-  return props.transformations;
-});
-
-const compatibleTransformationItems = computed(() => {
-  return compatibleTransformations.value.map(trans => ({
-    title: trans.name,
-    value: trans.id,
-    type: trans.type,
-    description: trans.description || '',
-    raw: trans
-  }));
-});
-
-const canAddTransformation = computed(() => {
-  const hasSourceFields = localMapping.value.sourceFields && localMapping.value.sourceFields.length > 0;
-  const hasDestinationField = !!localMapping.value.destinationField;
-  return hasSourceFields && hasDestinationField;
-});
-
-const validationErrors = computed(() => {
-  const errors = [];
-  
-  const hasSourceFields = localMapping.value.sourceFields && localMapping.value.sourceFields.length > 0;
-  const hasDestinationField = !!localMapping.value.destinationField;
-  
-  // Don't show ANY errors until BOTH fields have been filled at least once
-  if (!hasSourceFields || !hasDestinationField) {
-    return [];
-  }
-  
-  // Check if multiple source fields require at least one transformation with a valid selection
-  if (localMapping.value.sourceFields.length > 1) {
-    const hasValidTransformation = localMapping.value.transformations && 
-      localMapping.value.transformations.some(t => t.transformationId);
-    
-    if (!hasValidTransformation) {
-      errors.push('Multiple source fields require at least one transformation');
-    }
-  }
-  
-  return errors;
-});
-
-// Transformation chain methods
-function onTransformationSelected(transformationId, trans) {
-  if (!transformationId) return;
-  
-  const fullTransformation = props.transformations.find(t => t.id === transformationId);
-  if (fullTransformation) {
-    // Snapshot the full transformation config
-    trans.type = fullTransformation.type;
-    trans.name = fullTransformation.name;
-    
-    // Deep clone config if it exists, otherwise use empty object
-    if (fullTransformation.config) {
-      trans.config = JSON.parse(JSON.stringify(fullTransformation.config));
-    } else {
-      trans.config = {};
-    }
-  }
-}
-function addTransformation() {
-  if (!localMapping.value.transformations) {
-    localMapping.value.transformations = [];
-  }
-  localMapping.value.transformations.push({
-    transformationId: null,
-    type: '',
-    name: '',
-    config: {},
-    order: localMapping.value.transformations.length + 1
-  });
-}
-
-function removeTransformation(index) {
-  localMapping.value.transformations.splice(index, 1);
-  // Update order
-  localMapping.value.transformations.forEach((t, i) => {
-    t.order = i + 1;
-  });
-}
-
-function moveTransformationUp(index) {
-  if (index > 0) {
-    const temp = localMapping.value.transformations[index];
-    localMapping.value.transformations[index] = localMapping.value.transformations[index - 1];
-    localMapping.value.transformations[index - 1] = temp;
-    // Update order
-    localMapping.value.transformations.forEach((t, i) => {
-      t.order = i + 1;
-    });
-  }
-}
-
-function moveTransformationDown(index) {
-  if (index < localMapping.value.transformations.length - 1) {
-    const temp = localMapping.value.transformations[index];
-    localMapping.value.transformations[index] = localMapping.value.transformations[index + 1];
-    localMapping.value.transformations[index + 1] = temp;
-    // Update order
-    localMapping.value.transformations.forEach((t, i) => {
-      t.order = i + 1;
-    });
-  }
-}
-
-function getTransformationById(id) {
-  if (!id) return null;
-  return props.transformations.find(t => t.id === id);
-}
-
-function needsConfig(transformationId) {
-  const trans = getTransformationById(transformationId);
-  if (!trans) return false;
-  return trans.type === 'Map';
-}
-
-// Helper functions
-function getTransformationColor(type) {
-  const colors = {
-    'Filter': 'blue',
-    'Map': 'green',
-    'Aggregation': 'orange',
-    'Script': 'purple',
-    'Join': 'teal',
-    'Trim': 'cyan',
-    'Case Convert': 'indigo',
-    'Substring': 'pink',
-    'Replace': 'amber',
-    'Split': 'lime'
-  };
-  return colors[type] || 'grey';
-}
-
-function getTransformationIcon(type) {
-  const icons = {
-    'Filter': 'mdi-filter',
-    'Map': 'mdi-map',
-    'Aggregation': 'mdi-chart-bar',
-    'Script': 'mdi-code-braces',
-    'Join': 'mdi-link-variant',
-    'Trim': 'mdi-content-cut',
-    'Case Convert': 'mdi-format-letter-case',
-    'Substring': 'mdi-format-text',
-    'Replace': 'mdi-find-replace',
-    'Split': 'mdi-call-split'
-  };
-  return icons[type] || 'mdi-cog';
-}
-
-// Ensure arrays are initialized
-if (!localMapping.value.sourceFields) {
-  localMapping.value.sourceFields = [];
-}
-if (!localMapping.value.destinationField) {
-  localMapping.value.destinationField = '';
-}
-if (!localMapping.value.transformations) {
-  localMapping.value.transformations = [];
-}
 </script>
 
 <style scoped>

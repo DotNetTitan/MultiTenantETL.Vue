@@ -292,11 +292,11 @@
                             :key="idx"
                             size="x-small"
                             variant="outlined"
-                            :color="getTransformationColor(getTransformationType(trans.transformationId))"
+                            :color="getTransformationColor(trans.type)"
                             class="mr-1"
                           >
-                            <v-icon start size="x-small">{{ getTransformationIcon(getTransformationType(trans.transformationId)) }}</v-icon>
-                            {{ idx + 1 }}. {{ getTransformationName(trans.transformationId) }}
+                            <v-icon start size="x-small">{{ getTransformationIcon(trans.type) }}</v-icon>
+                            {{ idx + 1 }}. {{ trans.type }}
                           </v-chip>
                         </div>
                         <span v-else class="text-grey">{{ $t('common.none') }}</span>
