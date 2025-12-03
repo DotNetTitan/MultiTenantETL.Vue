@@ -77,7 +77,7 @@
                   </div>
                   <v-select
                     v-model="pipeline.sourceId"
-                    :items="connectors"
+                    :items="sourceConnectors"
                     item-title="name"
                     item-value="id"
                     :label="$t('pipelines.selectSource')"
@@ -95,7 +95,7 @@
                   </div>
                   <v-select
                     v-model="pipeline.destinationId"
-                    :items="connectors"
+                    :items="destinationConnectors"
                     item-title="name"
                     item-value="id"
                     :label="$t('pipelines.selectDestination')"
@@ -510,6 +510,15 @@ const dayOfWeekOptions = computed(() =>
     title: day.label,
     value: day.value
   }))
+);
+
+// Filter connectors by direction for source/destination dropdowns
+const sourceConnectors = computed(() => 
+  props.connectors.filter(c => c.direction === 'source' || c.direction === 'both' || c.isSource)
+);
+
+const destinationConnectors = computed(() => 
+  props.connectors.filter(c => c.direction === 'destination' || c.direction === 'both' || c.isDestination)
 );
 
 const canProceed = computed(() => {

@@ -881,6 +881,7 @@
     "convertSchema": "Convert Schema",
     "selectTransformation": "Select Transformation",
     "separator": "Separator",
-    "separatorHint": "Character to use when combining multiple fields"
+    "separatorHint": "Character to use when combining multiple fields",
+    "mappingIssues": "Mapping Issues"
   }
 }

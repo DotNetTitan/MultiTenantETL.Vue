@@ -307,19 +307,22 @@ export function validateFieldMappings(mappings, sourceSchema, destinationSchema,
     }
 
     // Validate transformations if present
+    // Support both inline transformations (with type) and referenced transformations (with transformationId)
     const hasValidTransformations = mapping.transformations &&
       mapping.transformations.length > 0 &&
-      mapping.transformations.some(t => t.transformationId);
+      mapping.transformations.some(t => t.transformationId || t.type);
 
     if (hasValidTransformations) {
       // Validate each transformation in the chain
       mapping.transformations.forEach((transMapping, tIndex) => {
+        // For referenced transformations, check if they exist
         if (transMapping.transformationId) {
           const trans = transformations.find(t => t.id === transMapping.transformationId);
           if (!trans) {
             errors.push(`Mapping ${mappingNum}: Transformation ${tIndex + 1} not found`);
           }
         }
+        // Inline transformations with 'type' are valid as-is
       });
     } else {
       // No transformation - check constraints
