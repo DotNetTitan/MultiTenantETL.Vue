@@ -29,8 +29,8 @@
                 color="primary"
                 size="large"
                 block
-                @click="handleRedirect"
                 class="text-none font-weight-bold"
+                @click="handleRedirect"
               >
                 Continue Now
               </v-btn>

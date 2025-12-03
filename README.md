@@ -288,6 +288,14 @@ src/
 - **Files**: CSV (PapaParse), Excel/XLSX (XLSX library), JSON (with file preview and validation)
 - **APIs**: REST APIs with configurable endpoints, authentication, and headers
 
+**File Storage Providers**:
+- **Local**: Server-side file system paths (backend server's file system, not user's browser)
+- **FTP/SFTP**: Remote file servers with authentication
+- **S3**: Amazon S3 cloud storage with bucket/region configuration
+- **Azure Blob**: Azure Blob Storage with container support
+
+> **Note**: The "Local" file provider works with files on the backend server's file system. For uploading files from your browser to detect schema, use the "Upload Sample File" feature in the Schema step of the Connector Wizard. See [docs/connectors/FRONTEND_IMPLEMENTATION.md](docs/connectors/FRONTEND_IMPLEMENTATION.md) for details.
+
 **Features**:
 - Connection testing and validation
 - Secure credential management

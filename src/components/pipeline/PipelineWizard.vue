@@ -84,7 +84,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.sourceRequired')]"
                   />
-
                 </v-card>
               </v-col>
               <v-col cols="12" md="6">
@@ -102,7 +101,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.destinationRequired')]"
                   />
-
                 </v-card>
               </v-col>
             </v-row>
