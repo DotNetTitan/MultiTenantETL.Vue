@@ -151,7 +151,7 @@
                       </div>
                     </td>
                     <td>{{ formatDate(execution.startTime) }}</td>
-                    <td>{{ formatDuration(execution.duration) }}</td>
+                    <td>{{ formatDuration(execution.durationMs) }}</td>
                     <td>
                       <v-chip
                         size="small"

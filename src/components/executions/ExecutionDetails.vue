@@ -30,7 +30,7 @@
           <div class="text-subtitle-2 mb-1">Duration</div>
           <div class="d-flex align-center">
             <v-icon icon="mdi-timer" class="mr-2" />
-            {{ formatDuration(execution.duration) }}
+            {{ formatDuration(execution.durationMs) }}
           </div>
         </v-col>
         <v-col cols="12" md="6">

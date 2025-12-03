@@ -74,7 +74,7 @@
             {{ item.endTime ? formatDate(item.endTime) : '-' }}
           </template>
           <template #item.duration="{ item }">
-            {{ formatDuration(item.duration) }}
+            {{ formatDuration(item.durationMs) }}
           </template>
           <template #item.actions="{ item }">
             <v-btn
@@ -183,7 +183,7 @@
                               <v-icon class="mr-2">mdi-timer-outline</v-icon>
                             </template>
                             <v-list-item-title>{{ $t('dashboard.duration') }}</v-list-item-title>
-                            <v-list-item-subtitle>{{ formatDuration(selectedExecution.duration) }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{ formatDuration(selectedExecution.durationMs) }}</v-list-item-subtitle>
                           </v-list-item>
                         
                           <v-divider></v-divider>

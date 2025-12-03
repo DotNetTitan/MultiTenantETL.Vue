@@ -174,7 +174,7 @@
                       </v-chip>
                     </td>
                     <td>{{ formatDate(execution.startTime) }}</td>
-                    <td>{{ formatDuration(execution.duration) }}</td>
+                    <td>{{ formatDuration(execution.durationMs) }}</td>
                     <td>{{ execution.rowsProcessed?.toLocaleString() || 'N/A' }}</td>
                     <td>
                       <v-btn
@@ -243,7 +243,7 @@
               <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</p>
               
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Duration</div>
-              <p>{{ formatDuration(selectedExecution.duration) }}</p>
+              <p>{{ formatDuration(selectedExecution.durationMs) }}</p>
               
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Rows Processed</div>
               <p>{{ selectedExecution.rowsProcessed?.toLocaleString() || 'N/A' }}</p>
