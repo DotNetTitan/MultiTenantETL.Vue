@@ -188,151 +188,13 @@
     </v-card>
 
     <!-- Create/Edit Schedule Dialog -->
-    <v-dialog
+    <ScheduleDialog
       v-model="showDialog"
-      max-width="700px"
-      persistent
-    >
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          {{ editingSchedule?.id ? $t('schedules.editSchedule') : $t('schedules.createSchedule') }}
-          <v-spacer />
-          <v-btn
-            icon
-            variant="text"
-            @click="closeDialog"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="formRef" @submit.prevent="saveScheduleData">
-            <v-row>
-              <!-- Pipeline Selection (only for new schedules) -->
-              <v-col v-if="!editingSchedule?.id" cols="12">
-                <v-autocomplete
-                  v-model="editingSchedule.pipelineId"
-                  :label="$t('schedules.selectPipeline')"
-                  :items="pipelines"
-                  item-title="name"
-                  item-value="id"
-                  :rules="[v => !!v || $t('schedules.validation.pipelineRequired')]"
-                  :loading="loadingPipelines"
-                  prepend-inner-icon="mdi-pipe"
-                />
-              </v-col>
-
-              <!-- Pipeline Name (read-only for existing schedules) -->
-              <v-col v-else cols="12">
-                <v-text-field
-                  :model-value="editingSchedule.pipelineName"
-                  :label="$t('schedules.pipeline')"
-                  readonly
-                  prepend-inner-icon="mdi-pipe"
-                />
-              </v-col>
-
-              <!-- Cron Expression with Presets -->
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="editingSchedule.cronExpression"
-                  :label="$t('schedules.cronExpression')"
-                  :hint="$t('schedules.cronExpressionHint')"
-                  :rules="cronRules"
-                  :error-messages="cronValidation.isValid === false ? [cronValidation.errorMessage] : []"
-                  persistent-hint
-                  @update:model-value="debouncedValidateCron"
-                />
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="selectedPreset"
-                  :label="$t('schedules.presets.title')"
-                  :items="cronPresets"
-                  item-title="text"
-                  item-value="value"
-                  clearable
-                  @update:model-value="applyPreset"
-                />
-              </v-col>
-
-              <!-- Cron Validation Feedback -->
-              <v-col v-if="cronValidation.isValid && cronValidation.description" cols="12">
-                <v-alert type="success" variant="tonal" density="compact">
-                  <div class="font-weight-medium">{{ cronValidation.description }}</div>
-                  <div v-if="cronValidation.nextExecutions?.length" class="mt-2">
-                    <div class="text-caption text-grey-darken-1">{{ $t('schedules.nextExecutions') }}:</div>
-                    <ul class="text-caption ml-4">
-                      <li v-for="(exec, idx) in cronValidation.nextExecutions.slice(0, 3)" :key="idx">
-                        {{ formatDate(exec) }}
-                      </li>
-                    </ul>
-                  </div>
-                </v-alert>
-              </v-col>
-
-              <v-col v-if="cronValidation.isValid === false && cronValidation.errorMessage" cols="12">
-                <v-alert type="error" variant="tonal" density="compact">
-                  {{ cronValidation.errorMessage }}
-                </v-alert>
-              </v-col>
-
-              <!-- Timezone -->
-              <v-col cols="12" md="6">
-                <v-autocomplete
-                  v-model="editingSchedule.timezone"
-                  :label="$t('schedules.timezone')"
-                  :items="commonTimezones"
-                  item-title="title"
-                  item-value="value"
-                  :rules="[v => !!v || $t('schedules.validation.timezoneRequired')]"
-                  @update:model-value="debouncedValidateCron"
-                />
-              </v-col>
-
-              <!-- Active Status -->
-              <v-col cols="12" md="6">
-                <v-switch
-                  v-model="editingSchedule.isActive"
-                  :label="editingSchedule.isActive ? $t('schedules.enabled') : $t('schedules.disabled')"
-                  color="success"
-                />
-              </v-col>
-
-              <!-- Description -->
-              <v-col cols="12">
-                <v-textarea
-                  v-model="editingSchedule.description"
-                  :label="$t('schedules.description')"
-                  :placeholder="$t('schedules.descriptionPlaceholder')"
-                  rows="2"
-                  counter="500"
-                  :rules="[v => !v || v.length <= 500 || 'Max 500 characters']"
-                />
-              </v-col>
-            </v-row>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="text"
-            @click="closeDialog"
-          >
-            {{ $t('common.cancel') }}
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="saving"
-            :disabled="cronValidation.isValid === false"
-            @click="saveScheduleData"
-          >
-            {{ $t('common.save') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      :schedule="editingSchedule"
+      :pipelines="pipelines"
+      :loading-pipelines="loadingPipelines"
+      @saved="onScheduleSaved"
+    />
 
     <!-- Delete Confirmation Dialog -->
     <v-dialog
@@ -399,27 +261,18 @@ import { useI18n } from 'vue-i18n'
 import { useSchedule } from '@/composables/useSchedule'
 import { useGlobalState } from '@/composables/useGlobalState'
 import { fetchPipelines } from '@/services/pipelineService'
+import ScheduleDialog from '@/components/schedules/ScheduleDialog.vue'
 
 const { t } = useI18n()
 const { showSuccess, showError } = useGlobalState()
 const {
   schedules,
   loading,
-  saving,
-  error,
   pagination,
-  cronValidation,
-  validating,
-  commonTimezones,
-  cronPresets,
   loadSchedules,
-  saveNewSchedule,
-  saveSchedule,
   removeSchedule,
   toggleScheduleActive,
   runScheduleNow,
-  validateCron,
-  getStatusColor: getScheduleStatusColor,
   formatDate,
   formatRelativeTime,
   createEmptySchedule
@@ -432,11 +285,9 @@ const sortBy = ref('next_run_asc')
 const showDialog = ref(false)
 const showDeleteDialog = ref(false)
 const showTriggerDialog = ref(false)
-const editingSchedule = ref(createEmptySchedule())
+const editingSchedule = ref(null)
 const scheduleToDelete = ref(null)
 const scheduleToTrigger = ref(null)
-const selectedPreset = ref(null)
-const formRef = ref(null)
 const deleting = ref(false)
 const togglingId = ref(null)
 const triggeringId = ref(null)
@@ -469,11 +320,6 @@ const sortOptions = computed(() => [
   { title: t('schedules.sortPipelineAsc'), value: 'pipeline_asc' }
 ])
 
-const cronRules = computed(() => [
-  v => !!v || t('schedules.validation.cronRequired'),
-  v => (v && v.trim().split(/\s+/).length === 6) || t('schedules.validation.cronInvalid')
-])
-
 // Methods
 async function fetchSchedulesList() {
   await loadSchedules({
@@ -499,40 +345,22 @@ async function loadPipelinesList() {
 }
 
 function openCreateDialog() {
-  editingSchedule.value = createEmptySchedule()
-  selectedPreset.value = null
-  cronValidation.value = { isValid: null, errorMessage: null, description: null, nextExecutions: [] }
+  editingSchedule.value = null
   showDialog.value = true
   loadPipelinesList()
 }
 
 function editSchedule(schedule) {
-  editingSchedule.value = {
-    id: schedule.id,
-    pipelineId: schedule.pipelineId,
-    pipelineName: schedule.pipelineName,
-    cronExpression: schedule.cronExpression,
-    timezone: schedule.timezone,
-    description: schedule.description || '',
-    isActive: schedule.isActive
-  }
-  selectedPreset.value = null
-  // Validate the existing cron
-  validateCron(schedule.cronExpression, schedule.timezone)
+  editingSchedule.value = { ...schedule }
   showDialog.value = true
 }
 
-function closeDialog() {
-  showDialog.value = false
-  editingSchedule.value = createEmptySchedule()
-  selectedPreset.value = null
-}
-
-function applyPreset(presetValue) {
-  if (presetValue) {
-    editingSchedule.value.cronExpression = presetValue
-    debouncedValidateCron()
-  }
+function onScheduleSaved() {
+  showSuccess(
+    editingSchedule.value?.id ? t('schedules.updateSuccess') : t('schedules.createSuccess'),
+    t('schedules.title')
+  )
+  fetchSchedulesList()
 }
 
 // Debounced functions
@@ -542,46 +370,6 @@ function debouncedFetch() {
   searchTimeout = setTimeout(() => {
     fetchSchedulesList()
   }, 300)
-}
-
-let cronTimeout = null
-function debouncedValidateCron() {
-  if (cronTimeout) clearTimeout(cronTimeout)
-  cronTimeout = setTimeout(() => {
-    if (editingSchedule.value.cronExpression && editingSchedule.value.timezone) {
-      validateCron(editingSchedule.value.cronExpression, editingSchedule.value.timezone)
-    }
-  }, 500)
-}
-
-async function saveScheduleData() {
-  const { valid } = await formRef.value.validate()
-  if (!valid || cronValidation.value.isValid === false) return
-
-  try {
-    if (editingSchedule.value.id) {
-      await saveSchedule(editingSchedule.value.id, {
-        cronExpression: editingSchedule.value.cronExpression,
-        timezone: editingSchedule.value.timezone,
-        description: editingSchedule.value.description,
-        isActive: editingSchedule.value.isActive
-      })
-      showSuccess(t('schedules.updateSuccess'), t('schedules.title'))
-    } else {
-      await saveNewSchedule({
-        pipelineId: editingSchedule.value.pipelineId,
-        cronExpression: editingSchedule.value.cronExpression,
-        timezone: editingSchedule.value.timezone,
-        description: editingSchedule.value.description,
-        isActive: editingSchedule.value.isActive
-      })
-      showSuccess(t('schedules.createSuccess'), t('schedules.title'))
-    }
-    closeDialog()
-    fetchSchedulesList()
-  } catch (err) {
-    showError(err.response?.data?.message || err.message || t('schedules.saveError'), t('common.error'))
-  }
 }
 
 function confirmDelete(schedule) {

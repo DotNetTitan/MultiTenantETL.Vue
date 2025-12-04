@@ -207,7 +207,14 @@
     "savePipeline": "Save Pipeline",
     "connectorChangeWarning": "Connector Change Warning",
     "connectorChangeMessage": "You have changed the source or destination connector. The existing field mappings are based on the previous connectors and will no longer be valid.",
-    "existingMappingsWillBeCleared": "All existing field mappings will be cleared if you continue."
+    "existingMappingsWillBeCleared": "All existing field mappings will be cleared if you continue.",
+    "scheduleAfterSave": "Schedule After Saving",
+    "scheduleAfterSaveDescription": "You can configure a schedule for this pipeline after saving it. Schedules allow your pipeline to run automatically at specified times.",
+    "scheduleAfterSaveShort": "Save the pipeline first to configure a schedule",
+    "continueToReview": "Continue to Review",
+    "pipelineSchedule": "Pipeline Schedule",
+    "noScheduleConfigured": "No schedule configured for this pipeline",
+    "manageAllSchedules": "Manage All Schedules"
   },
   "connectors": {
     "title": "Connectors",
@@ -516,7 +523,14 @@
     "completed": "Completed",
     "failed": "Failed",
     "cancelled": "Cancelled",
-    "idle": "Idle"
+    "idle": "Idle",
+    "logsCopied": "Logs copied to clipboard",
+    "cancelSuccess": "Execution cancelled successfully",
+    "errors": {
+      "loadFailed": "Failed to load executions",
+      "cancelFailed": "Failed to cancel execution",
+      "copyLogsFailed": "Failed to copy logs to clipboard"
+    }
   },
   "tenants": {
     "title": "Tenants",
@@ -538,7 +552,11 @@
     "addUser": "Add User to Tenant",
     "removeUser": "Remove User",
     "removeUserConfirm": "Are you sure you want to remove this user from the tenant?",
-    "updateRole": "Update User Role"
+    "updateRole": "Update User Role",
+    "switchSuccess": "Switched to {name}",
+    "errors": {
+      "switchFailed": "Failed to switch tenant"
+    }
   },
   "users": {
     "title": "Users",
@@ -557,7 +575,22 @@
     "user": "User",
     "selectUser": "Select User",
     "manageTenants": "Manage Tenants",
-    "addToTenant": "Add to Tenant"
+    "addToTenant": "Add to Tenant",
+    "deleteSuccess": "User deleted successfully",
+    "saveSuccess": "User saved successfully",
+    "activateSuccess": "User activated successfully",
+    "deactivateSuccess": "User deactivated successfully",
+    "addToTenantSuccess": "User added to tenant successfully",
+    "removeFromTenantSuccess": "User removed from tenant successfully",
+    "errors": {
+      "loadFailed": "Failed to load users",
+      "loadDetailsFailed": "Failed to load user details",
+      "deleteFailed": "Failed to delete user",
+      "saveFailed": "Failed to save user",
+      "statusUpdateFailed": "Failed to update user status",
+      "addToTenantFailed": "Failed to add user to tenant",
+      "removeFromTenantFailed": "Failed to remove user from tenant"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -863,6 +896,10 @@
     "mapping": "Mapping {number}",
     "sourceFields": "Source Fields",
     "destinationField": "Destination Field",
+    "destinationFields": "Destination Fields",
+    "searchSourceFields": "Search source fields...",
+    "searchDestinationFields": "Search destination fields...",
+    "mapped": "mapped",
     "selectMultipleFields": "Select multiple fields to combine",
     "loadingSchemas": "Loading schemas...",
     "viewSourceDestFields": "View Source & Destination Fields",

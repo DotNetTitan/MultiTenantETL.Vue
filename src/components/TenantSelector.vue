@@ -21,12 +21,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, inject } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useTenantStore } from '@/stores/tenant';
+import { useGlobalState } from '@/composables/useGlobalState';
+import { useI18n } from 'vue-i18n';
 
 const tenantStore = useTenantStore();
 const selectedTenantId = ref(tenantStore.currentTenantId);
-const showNotification = inject('showNotification', null);
+const { showSuccess, showError } = useGlobalState();
+const { t } = useI18n();
 
 // Convert tenants array to format needed for v-select
 const tenantItems = computed(() => {
@@ -49,14 +52,10 @@ async function changeTenant(tenantId) {
     const tenantName = tenant?.name || 'tenant';
     
     // Show success notification
-    if (showNotification) {
-      showNotification(`Switched to ${tenantName}`, 'success');
-    }
+    showSuccess(t('tenants.switchSuccess', { name: tenantName }), t('tenants.title'));
   } catch (error) {
     // Error is already handled in store, just show notification
-    if (showNotification) {
-      showNotification('Failed to switch tenant', 'error');
-    }
+    showError(t('tenants.errors.switchFailed'), t('common.error'));
   }
 }
 

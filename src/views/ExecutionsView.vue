@@ -390,8 +390,10 @@ import { useI18n } from 'vue-i18n';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
 import { getExecutions } from '@/services/pipelineService';
+import { useGlobalState } from '@/composables/useGlobalState';
 
 const { t } = useI18n();
+const { showSuccess, showError, showInfo } = useGlobalState();
 
 const tenantStore = useTenantStore();
 const theme = useTheme();
@@ -469,11 +471,11 @@ function copyLogs() {
   if (selectedExecution.value?.logs) {
     navigator.clipboard.writeText(selectedExecution.value.logs)
       .then(() => {
-        // Could add a toaster notification here
-        console.log('Logs copied to clipboard');
+        showInfo(t('executions.logsCopied'), t('executions.title'));
       })
       .catch(err => {
         console.error('Failed to copy logs: ', err);
+        showError(t('executions.errors.copyLogsFailed'), t('common.error'));
       });
   }
 }
@@ -673,7 +675,7 @@ async function fetchExecutions() {
   } catch (error) {
     console.error('Error fetching executions:', error);
     executions.value = [];
-    // TODO: Show error notification to user
+    showError(t('executions.errors.loadFailed'), t('common.error'));
   } finally {
     loading.value = false;
   }
@@ -722,9 +724,10 @@ async function confirmCancelExecution() {
     
     showCancelDialog.value = false;
     executionToCancel.value = null;
+    showSuccess(t('executions.cancelSuccess'), t('executions.title'));
   } catch (error) {
     console.error('Error cancelling execution:', error);
-    // TODO: Show error notification to user
+    showError(t('executions.errors.cancelFailed'), t('common.error'));
   } finally {
     cancelling.value = false;
   }

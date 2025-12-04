@@ -47,8 +47,9 @@ export function useProviderMetadata() {
   function getProviderIcon(provider) {
     if (!provider) return 'mdi-connection'
     
+    // Return default if metadata not loaded yet (will update on next render after load)
     if (!providerMetadata.value) {
-      throw new Error('Provider metadata not loaded. Call loadProviderMetadata() first.')
+      return 'mdi-connection'
     }
     
     const metadata = providerMetadata.value[provider]
@@ -77,8 +78,9 @@ export function useProviderMetadata() {
   function getProviderColor(provider) {
     if (!provider) return 'grey'
     
+    // Return default if metadata not loaded yet (will update on next render after load)
     if (!providerMetadata.value) {
-      throw new Error('Provider metadata not loaded. Call loadProviderMetadata() first.')
+      return 'grey'
     }
     
     const metadata = providerMetadata.value[provider]

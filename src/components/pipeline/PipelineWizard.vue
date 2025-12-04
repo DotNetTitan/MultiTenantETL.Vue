@@ -129,73 +129,95 @@
         <!-- Step 4: Schedule -->
         <v-stepper-window-item :value="4">
           <div class="pa-6">
-            <v-switch
-              v-model="pipeline.isScheduled"
-              :label="$t('pipelines.enableScheduledExecution')"
-              color="primary"
-              class="mb-4"
-              @update:model-value="initializeSchedule"
-            />
+            <div class="text-center py-8" v-if="!pipeline.id">
+              <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-calendar-clock</v-icon>
+              <div class="text-h6 mb-2">{{ $t('pipelines.scheduleAfterSave') }}</div>
+              <div class="text-body-2 text-grey mb-4">
+                {{ $t('pipelines.scheduleAfterSaveDescription') }}
+              </div>
+              <v-btn
+                color="primary"
+                variant="outlined"
+                prepend-icon="mdi-arrow-right"
+                @click="currentStep = 5"
+              >
+                {{ $t('pipelines.continueToReview') }}
+              </v-btn>
+            </div>
             
-            <v-expand-transition>
-              <v-card v-if="pipeline.isScheduled" variant="outlined" class="pa-4">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-select
-                      v-model="pipeline.schedule.frequency"
-                      :label="$t('pipelines.frequency')"
-                      :items="frequencyOptions"
-                      variant="outlined"
-                    />
-                  </v-col>
-                  <v-col v-if="pipeline.schedule.frequency !== 'Custom'" cols="12" md="6">
-                    <v-text-field
-                      v-model="pipeline.schedule.time"
-                      :label="$t('pipelines.time')"
-                      type="time"
-                      variant="outlined"
-                      :hint="$t('pipelines.timeFormat24h')"
-                      persistent-hint
-                    />
-                  </v-col>
-                  <v-col v-if="pipeline.schedule.frequency === 'Weekly'" cols="12" md="6">
-                    <v-select
-                      v-model="pipeline.schedule.dayOfWeek"
-                      :label="$t('pipelines.dayOfWeek')"
-                      :items="dayOfWeekOptions"
-                      variant="outlined"
-                    />
-                  </v-col>
-                  <v-col v-if="pipeline.schedule.frequency === 'Monthly'" cols="12" md="6">
-                    <v-select
-                      v-model="pipeline.schedule.dayOfMonth"
-                      :label="$t('pipelines.dayOfMonth')"
-                      :items="Array.from({length: 31}, (_, i) => i + 1)"
-                      variant="outlined"
-                    />
-                  </v-col>
-                  <v-col v-if="pipeline.schedule.frequency === 'Custom'" cols="12">
-                    <v-text-field
-                      v-model="pipeline.schedule.cronExpression"
-                      :label="$t('pipelines.cronExpression')"
-                      variant="outlined"
-                      :hint="$t('pipelines.cronExpressionHint')"
-                      persistent-hint
-                    />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-select
-                      v-model="pipeline.schedule.timezone"
-                      :label="$t('pipelines.timezone')"
-                      :items="timezones"
-                      item-title="name"
-                      item-value="value"
-                      variant="outlined"
-                    />
-                  </v-col>
-                </v-row>
+            <div v-else>
+              <v-card variant="outlined" class="mb-4">
+                <v-card-title class="d-flex align-center">
+                  <v-icon class="mr-2">mdi-calendar-clock</v-icon>
+                  {{ $t('pipelines.pipelineSchedule') }}
+                  <v-spacer />
+                  <v-btn
+                    v-if="!pipelineSchedule"
+                    color="primary"
+                    variant="tonal"
+                    size="small"
+                    prepend-icon="mdi-plus"
+                    @click="openScheduleDialog"
+                  >
+                    {{ $t('schedules.createSchedule') }}
+                  </v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <div v-if="loadingSchedules" class="text-center py-4">
+                    <v-progress-circular indeterminate color="primary" />
+                  </div>
+                  <div v-else-if="!pipelineSchedule" class="text-center py-4">
+                    <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-calendar-blank</v-icon>
+                    <div class="text-body-2 text-grey">{{ $t('pipelines.noScheduleConfigured') }}</div>
+                  </div>
+                  <div v-else>
+                    <v-list density="compact">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon :color="pipelineSchedule.isActive ? 'success' : 'grey'">
+                            {{ pipelineSchedule.isActive ? 'mdi-clock-check' : 'mdi-clock-outline' }}
+                          </v-icon>
+                        </template>
+                        <v-list-item-title>
+                          <code class="text-primary">{{ pipelineSchedule.cronExpression }}</code>
+                          <v-chip size="x-small" :color="pipelineSchedule.isActive ? 'success' : 'grey'" class="ml-2">
+                            {{ pipelineSchedule.isActive ? $t('schedules.active') : $t('schedules.inactive') }}
+                          </v-chip>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ pipelineSchedule.timezone }}
+                          <span v-if="pipelineSchedule.description"> - {{ pipelineSchedule.description }}</span>
+                        </v-list-item-subtitle>
+                        <v-list-item-subtitle v-if="pipelineSchedule.nextRun">
+                          {{ $t('schedules.nextRun') }}: {{ formatScheduleDate(pipelineSchedule.nextRun) }}
+                        </v-list-item-subtitle>
+                        <template #append>
+                          <v-btn
+                            icon
+                            variant="text"
+                            size="small"
+                            :title="$t('common.edit')"
+                            @click="openScheduleDialog"
+                          >
+                            <v-icon>mdi-pencil</v-icon>
+                          </v-btn>
+                          <v-btn
+                            icon
+                            variant="text"
+                            size="small"
+                            color="error"
+                            :title="$t('common.delete')"
+                            @click="confirmDeleteSchedule"
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                  </div>
+                </v-card-text>
               </v-card>
-            </v-expand-transition>
+            </div>
           </div>
         </v-stepper-window-item>
 
@@ -318,58 +340,35 @@
                 {{ $t('pipelines.schedule') }}
               </v-card-title>
               <v-card-text>
-                <v-list density="compact">
+                <div v-if="!pipeline.id" class="text-center py-4">
+                  <v-icon color="grey-lighten-1" class="mb-2">mdi-information-outline</v-icon>
+                  <div class="text-body-2 text-grey">{{ $t('pipelines.scheduleAfterSaveShort') }}</div>
+                </div>
+                <div v-else-if="loadingSchedules" class="text-center py-4">
+                  <v-progress-circular indeterminate size="24" color="primary" />
+                </div>
+                <div v-else-if="!pipelineSchedule" class="text-center py-4">
+                  <v-icon color="grey-lighten-1" class="mb-2">mdi-calendar-blank</v-icon>
+                  <div class="text-body-2 text-grey">{{ $t('pipelines.noScheduleConfigured') }}</div>
+                </div>
+                <v-list v-else density="compact">
                   <v-list-item>
                     <template #prepend>
-                      <v-icon>{{ pipeline.isScheduled ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
+                      <v-icon :color="pipelineSchedule.isActive ? 'success' : 'grey'">
+                        {{ pipelineSchedule.isActive ? 'mdi-clock-check' : 'mdi-clock-outline' }}
+                      </v-icon>
                     </template>
-                    <v-list-item-title>{{ $t('pipelines.scheduledExecution') }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ pipeline.isScheduled ? $t('pipelines.enabled') : $t('pipelines.disabledManualOnly') }}</v-list-item-subtitle>
+                    <v-list-item-title>
+                      <code>{{ pipelineSchedule.cronExpression }}</code>
+                      <v-chip size="x-small" :color="pipelineSchedule.isActive ? 'success' : 'grey'" class="ml-2">
+                        {{ pipelineSchedule.isActive ? $t('schedules.active') : $t('schedules.inactive') }}
+                      </v-chip>
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      {{ pipelineSchedule.timezone }}
+                      <span v-if="pipelineSchedule.description"> - {{ pipelineSchedule.description }}</span>
+                    </v-list-item-subtitle>
                   </v-list-item>
-                  <template v-if="pipeline.isScheduled && pipeline.schedule">
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-clock-outline</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.frequency') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ getFrequencyLabel(pipeline.schedule.frequency) }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="pipeline.schedule.frequency !== 'Custom' && pipeline.schedule.time">
-                      <template #prepend>
-                        <v-icon>mdi-clock</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.time') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ pipeline.schedule.time }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="pipeline.schedule.frequency === 'Weekly' && pipeline.schedule.dayOfWeek">
-                      <template #prepend>
-                        <v-icon>mdi-calendar-week</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.dayOfWeek') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ getDayOfWeekLabel(pipeline.schedule.dayOfWeek) }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="pipeline.schedule.frequency === 'Monthly' && pipeline.schedule.dayOfMonth">
-                      <template #prepend>
-                        <v-icon>mdi-calendar-month</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.dayOfMonth') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ pipeline.schedule.dayOfMonth }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="pipeline.schedule.frequency === 'Custom' && pipeline.schedule.cronExpression">
-                      <template #prepend>
-                        <v-icon>mdi-code-braces</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.cronExpression') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ pipeline.schedule.cronExpression }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="pipeline.schedule.timezone">
-                      <template #prepend>
-                        <v-icon>mdi-earth</v-icon>
-                      </template>
-                      <v-list-item-title>{{ $t('pipelines.timezone') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ getTimezoneName(pipeline.schedule.timezone) }}</v-list-item-subtitle>
-                    </v-list-item>
-                  </template>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -438,17 +437,50 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Schedule Create/Edit Dialog -->
+    <ScheduleDialog
+      v-model="showScheduleDialog"
+      :schedule="editingSchedule"
+      :pipeline-id="props.pipeline.id"
+      :pipeline-name="props.pipeline.name"
+      :show-pipeline-selector="false"
+      @saved="onScheduleSaved"
+    />
+
+    <!-- Delete Schedule Confirmation Dialog -->
+    <v-dialog v-model="showDeleteScheduleDialog" max-width="500">
+      <v-card>
+        <v-card-title>{{ $t('schedules.deleteSchedule') }}</v-card-title>
+        <v-card-text>{{ $t('schedules.deleteConfirm') }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="showDeleteScheduleDialog = false">
+            {{ $t('common.cancel') }}
+          </v-btn>
+          <v-btn color="error" :loading="deletingSchedule" @click="deleteScheduleConfirmed">
+            {{ $t('common.delete') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
+import { useSchedule } from '@/composables/useSchedule';
+import { useGlobalState } from '@/composables/useGlobalState';
 import FieldMappingEditor from './FieldMappingEditor.vue';
+import ScheduleDialog from '@/components/schedules/ScheduleDialog.vue';
 
 const { t } = useI18n();
-const { scheduleFrequencies, daysOfWeek } = useTranslatedMetadata();
+const { 
+  loadScheduleForPipeline, 
+  removeSchedule
+} = useSchedule();
+const { showSuccess, showError } = useGlobalState();
 
 const props = defineProps({
   pipeline: {
@@ -480,11 +512,78 @@ const originalSourceId = ref(null);
 const originalDestinationId = ref(null);
 const showConnectorChangeWarning = ref(false);
 
+// Schedule-related state (one schedule per pipeline)
+const pipelineSchedule = ref(null);
+const loadingSchedules = ref(false);
+const showScheduleDialog = ref(false);
+const showDeleteScheduleDialog = ref(false);
+const editingSchedule = ref(null);
+const deletingSchedule = ref(false);
+
 // Store original IDs on mount
-onMounted(() => {
+onMounted(async () => {
   originalSourceId.value = props.pipeline.sourceId;
   originalDestinationId.value = props.pipeline.destinationId;
+  
+  // Load schedule if editing an existing pipeline
+  if (props.pipeline.id) {
+    await fetchPipelineSchedule();
+  }
 });
+
+// Fetch schedule for this pipeline (one per pipeline)
+async function fetchPipelineSchedule() {
+  if (!props.pipeline.id) return;
+  
+  loadingSchedules.value = true;
+  try {
+    pipelineSchedule.value = await loadScheduleForPipeline(props.pipeline.id);
+  } catch (error) {
+    console.error('Failed to load schedule:', error);
+    pipelineSchedule.value = null;
+  } finally {
+    loadingSchedules.value = false;
+  }
+}
+
+function openScheduleDialog() {
+  // If schedule exists, edit it; otherwise create new
+  editingSchedule.value = pipelineSchedule.value ? { ...pipelineSchedule.value } : null;
+  showScheduleDialog.value = true;
+}
+
+async function onScheduleSaved() {
+  showSuccess(
+    editingSchedule.value?.id ? t('schedules.updateSuccess') : t('schedules.createSuccess'),
+    t('schedules.title')
+  );
+  await fetchPipelineSchedule();
+}
+
+function confirmDeleteSchedule() {
+  showDeleteScheduleDialog.value = true;
+}
+
+async function deleteScheduleConfirmed() {
+  if (!pipelineSchedule.value) return;
+  
+  deletingSchedule.value = true;
+  try {
+    await removeSchedule(pipelineSchedule.value.id);
+    showSuccess(t('schedules.deleteSuccess'), t('schedules.title'));
+    showDeleteScheduleDialog.value = false;
+    pipelineSchedule.value = null;
+  } catch (error) {
+    showError(error.message || t('schedules.deleteError'), t('common.error'));
+  } finally {
+    deletingSchedule.value = false;
+  }
+}
+
+function formatScheduleDate(dateString) {
+  if (!dateString) return '-';
+  return new Date(dateString).toLocaleString();
+}
 
 // Watch for connector changes
 watch([() => props.pipeline.sourceId, () => props.pipeline.destinationId], ([newSourceId, newDestId]) => {
@@ -496,21 +595,6 @@ watch([() => props.pipeline.sourceId, () => props.pipeline.destinationId], ([new
     showConnectorChangeWarning.value = true;
   }
 });
-
-// Use translated metadata for schedule options
-const frequencyOptions = computed(() => 
-  scheduleFrequencies.value.map(freq => ({
-    title: freq.label,
-    value: freq.value
-  }))
-);
-
-const dayOfWeekOptions = computed(() => 
-  daysOfWeek.value.map(day => ({
-    title: day.label,
-    value: day.value
-  }))
-);
 
 // Filter connectors by direction for source/destination dropdowns
 const sourceConnectors = computed(() => 
@@ -597,45 +681,6 @@ function getTransformationIcon(type) {
   };
   return icons[type] || 'mdi-cog';
 }
-
-function getTimezoneName(timezoneValue) {
-  const timezone = props.timezones.find(tz => tz.value === timezoneValue);
-  return timezone?.name || timezoneValue;
-}
-
-function getFrequencyLabel(frequency) {
-  const frequencyMap = {
-    'Daily': t('pipelines.daily'),
-    'Weekly': t('pipelines.weekly'),
-    'Monthly': t('pipelines.monthly'),
-    'Custom': t('pipelines.custom')
-  };
-  return frequencyMap[frequency] || frequency;
-}
-
-function getDayOfWeekLabel(day) {
-  const dayMap = {
-    'Monday': t('pipelines.monday'),
-    'Tuesday': t('pipelines.tuesday'),
-    'Wednesday': t('pipelines.wednesday'),
-    'Thursday': t('pipelines.thursday'),
-    'Friday': t('pipelines.friday'),
-    'Saturday': t('pipelines.saturday'),
-    'Sunday': t('pipelines.sunday')
-  };
-  return dayMap[day] || day;
-}
-
-function initializeSchedule(enabled) {
-  if (enabled && !props.pipeline.schedule) {
-    props.pipeline.schedule = {
-      frequency: 'Daily',
-      time: '00:00',
-      timezone: 'UTC'
-    };
-  }
-}
-
 
 function handleNext() {
   // If moving from step 2 to step 3 and connectors changed, show warning

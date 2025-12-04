@@ -89,64 +89,27 @@
       </div>
     </div>
 
-    <!-- Scheduling -->
+    <!-- Schedule Info (read-only, managed separately) -->
     <div class="border rounded-lg p-4">
-      <v-row align="center" class="mb-4">
+      <v-row align="center">
         <v-col>
-          <h3 class="text-lg font-medium">Schedule</h3>
+          <h3 class="text-lg font-medium">{{ $t('pipelines.schedule') }}</h3>
         </v-col>
         <v-col cols="auto">
-          <v-switch
-            v-model="form.isScheduled"
-            label="Schedule this pipeline"
+          <v-btn
+            v-if="form.id"
             color="primary"
-            hide-details
-          ></v-switch>
+            variant="tonal"
+            size="small"
+            :to="{ name: 'schedules' }"
+            prepend-icon="mdi-calendar-clock"
+          >
+            {{ $t('pipelines.manageAllSchedules') }}
+          </v-btn>
         </v-col>
       </v-row>
-
-      <div v-if="form.isScheduled" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <FormInput
-            v-model="form.schedule.frequency"
-            label="Frequency"
-            type="select"
-            :options="scheduleFrequencies"
-            :error="errors.frequency"
-            required
-          />
-
-          <FormInput
-            v-if="form.schedule.frequency !== 'Custom'"
-            v-model="form.schedule.time"
-            label="Time"
-            type="time"
-            :error="errors.time"
-            required
-          />
-        </div>
-
-        <div v-if="form.schedule.frequency === 'Custom'">
-          <FormInput
-            v-model="form.schedule.cronExpression"
-            label="Cron Expression"
-            :error="errors.cronExpression"
-            required
-            placeholder="* * * * *"
-          />
-          <div class="text-sm text-gray-600 mt-1">
-            Format: Minute Hour Day Month DayOfWeek
-          </div>
-        </div>
-
-        <FormInput
-          v-model="form.schedule.timezone"
-          label="Timezone"
-          type="select"
-          :options="timezones"
-          :error="errors.timezone"
-          required
-        />
+      <div class="text-body-2 text-grey mt-2">
+        {{ form.id ? $t('pipelines.scheduleAfterSaveShort').replace('Save the pipeline first to configure', 'Use the Schedules page to configure') : $t('pipelines.scheduleAfterSaveShort') }}
       </div>
     </div>
 
@@ -241,7 +204,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { usePipeline } from '@/composables/usePipeline';
-import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import FormInput from '@/components/form/FormInput.vue';
 import TransformationList from './TransformationList.vue';
 import TransformationDialog from './TransformationDialog.vue';
@@ -265,13 +227,8 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel', 'notify']);
 
 const { validatePipeline, errorStrategies } = usePipeline();
-const { scheduleFrequencies: metadataFrequencies } = useTranslatedMetadata();
 
-const scheduleFrequencies = computed(() => 
-  metadataFrequencies.value.map(freq => freq.value)
-);
 const logLevels = ['ERROR', 'WARN', 'INFO', 'DEBUG'];
-const timezones = Intl.supportedValuesOf('timeZone');
 
 const form = ref({
   name: '',
@@ -279,13 +236,6 @@ const form = ref({
   sourceId: '',
   destinationId: '',
   transformations: [],
-  isScheduled: false,
-  schedule: {
-    frequency: 'Daily',
-    time: '00:00',
-    cronExpression: '',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  },
   errorStrategy: 'STOP',
   errorConfig: {
     maxRetries: 3,
@@ -342,26 +292,6 @@ const validateForm = () => {
     }
   }
 
-  // Validate schedule if enabled
-  if (form.value.isScheduled) {
-    if (!form.value.schedule.frequency) {
-      newErrors.frequency = 'Schedule frequency is required';
-    }
-    if (form.value.schedule.frequency === 'Custom') {
-      if (!form.value.schedule.cronExpression) {
-        newErrors.cronExpression = 'Cron expression is required';
-      }
-      // Add basic cron expression validation here if needed
-    } else {
-      if (!form.value.schedule.time) {
-        newErrors.scheduleTime = 'Schedule time is required';
-      }
-    }
-    if (!form.value.schedule.timezone) {
-      newErrors.timezone = 'Timezone is required';
-    }
-  }
-
   errors.value = newErrors;
   return Object.keys(newErrors).length === 0;
 };
@@ -384,20 +314,7 @@ const availableDependencies = computed(() =>
 
 const isFormValid = computed(() => {
   const baseFields = ['name', 'sourceId', 'destinationId', 'errorStrategy'];
-  
-  if (!baseFields.every(field => form.value[field])) return false;
-
-  if (form.value.isScheduled) {
-    if (!form.value.schedule.frequency) return false;
-    if (form.value.schedule.frequency === 'Custom') {
-      if (!form.value.schedule.cronExpression) return false;
-    } else {
-      if (!form.value.schedule.time) return false;
-    }
-    if (!form.value.schedule.timezone) return false;
-  }
-
-  return true;
+  return baseFields.every(field => form.value[field]);
 });
 
 watch(() => form.value.sourceId, async (newSourceId) => {
@@ -511,187 +428,4 @@ const getMockSchema = (sourceId) => {
     ]
   };
 };
-
-const validateSchedule = (schedule) => {
-  const errors = [];
-  
-  if (!schedule.frequency) {
-    errors.push('Schedule frequency is required');
-    return errors;
-  }
-
-  switch (schedule.frequency) {
-    case 'Custom':
-      if (!schedule.cronExpression?.trim()) {
-        errors.push('Cron expression is required');
-      } else if (!isValidCronExpression(schedule.cronExpression)) {
-        errors.push('Invalid cron expression format');
-      }
-      break;
-
-    case 'Hourly':
-      if (!schedule.minute || schedule.minute < 0 || schedule.minute > 59) {
-        errors.push('Minute must be between 0 and 59');
-      }
-      break;
-
-    case 'Daily':
-    case 'Weekly':
-    case 'Monthly':
-      if (!schedule.time) {
-        errors.push('Time is required');
-      } else if (!isValidTimeFormat(schedule.time)) {
-        errors.push('Invalid time format');
-      }
-      
-      if (schedule.frequency === 'Weekly' && !schedule.dayOfWeek) {
-        errors.push('Day of week is required');
-      }
-      
-      if (schedule.frequency === 'Monthly' && !schedule.dayOfMonth) {
-        errors.push('Day of month is required');
-      }
-      break;
-  }
-
-  if (!schedule.timezone) {
-    errors.push('Timezone is required');
-  } else if (!Intl.supportedValuesOf('timeZone').includes(schedule.timezone)) {
-    errors.push('Invalid timezone');
-  }
-
-  return errors;
-};
-
-const isValidCronExpression = (cron) => {
-  const cronRegex = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|(\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]))) (\*|([0-9]|1[0-9]|2[0-3])|(\*\/([0-9]|1[0-9]|2[0-3]))) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|(\*\/([1-9]|1[0-9]|2[0-9]|3[0-1]))) (\*|([1-9]|1[0-2])|(\*\/([1-9]|1[0-2]))) (\*|([0-6])|(\*\/([0-6])))$/;
-  return cronRegex.test(cron.trim());
-};
-
-const isValidTimeFormat = (time) => {
-  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-  return timeRegex.test(time.trim());
-};
-
-const getNextExecutions = (schedule, count = 5) => {
-  if (!schedule.frequency) return [];
-
-  const now = new Date();
-  const executions = [];
-  let date = new Date(now);
-
-  try {
-    switch (schedule.frequency) {
-      case 'Hourly':
-        for (let i = 0; i < count; i++) {
-          date = new Date(date);
-          date.setMinutes(schedule.minute || 0);
-          date.setSeconds(0);
-          date.setMilliseconds(0);
-          if (date <= now) {
-            date.setHours(date.getHours() + 1);
-          }
-          executions.push(new Date(date));
-          date.setHours(date.getHours() + 1);
-        }
-        break;
-
-      case 'Daily':
-        const [hours, minutes] = schedule.time.split(':');
-        for (let i = 0; i < count; i++) {
-          date = new Date(date);
-          date.setHours(parseInt(hours));
-          date.setMinutes(parseInt(minutes));
-          date.setSeconds(0);
-          date.setMilliseconds(0);
-          if (date <= now) {
-            date.setDate(date.getDate() + 1);
-          }
-          executions.push(new Date(date));
-          date.setDate(date.getDate() + 1);
-        }
-        break;
-
-      case 'Weekly':
-        const targetDay = parseInt(schedule.dayOfWeek);
-        const [weeklyHours, weeklyMinutes] = schedule.time.split(':');
-        for (let i = 0; i < count; i++) {
-          date = new Date(date);
-          date.setHours(parseInt(weeklyHours));
-          date.setMinutes(parseInt(weeklyMinutes));
-          date.setSeconds(0);
-          date.setMilliseconds(0);
-          
-          // Adjust to next occurrence of target day
-          while (date.getDay() !== targetDay || date <= now) {
-            date.setDate(date.getDate() + 1);
-          }
-          executions.push(new Date(date));
-          date.setDate(date.getDate() + 7);
-        }
-        break;
-
-      case 'Monthly':
-        const monthlyTargetDay = parseInt(schedule.dayOfMonth);
-        const [monthlyHours, monthlyMinutes] = schedule.time.split(':');
-        for (let i = 0; i < count; i++) {
-          date = new Date(date);
-          date.setDate(monthlyTargetDay);
-          date.setHours(parseInt(monthlyHours));
-          date.setMinutes(parseInt(monthlyMinutes));
-          date.setSeconds(0);
-          date.setMilliseconds(0);
-          
-          if (date <= now || date.getDate() !== monthlyTargetDay) { // Check if we overflowed to next month
-            date.setDate(1); // Reset to first day
-            date.setMonth(date.getMonth() + 1); // Go to next month
-            date.setDate(monthlyTargetDay); // Try setting target day again
-          }
-          executions.push(new Date(date));
-          date.setMonth(date.getMonth() + 1);
-        }
-        break;
-
-      case 'Custom':
-        // For custom cron expressions, we'd use a cron parser library
-        // This is a placeholder for demonstration
-        executions.push(new Date(now.getTime() + 3600000)); // +1 hour
-        executions.push(new Date(now.getTime() + 7200000)); // +2 hours
-        executions.push(new Date(now.getTime() + 10800000)); // +3 hours
-        executions.push(new Date(now.getTime() + 14400000)); // +4 hours
-        executions.push(new Date(now.getTime() + 18000000)); // +5 hours
-        break;
-    }
-  } catch (err) {
-    console.error('Error calculating next executions:', err);
-    return [];
-  }
-
-  // Convert all dates to the selected timezone
-  return executions.map(date => {
-    try {
-      return new Date(date.toLocaleString('en-US', { timeZone: schedule.timezone }));
-    } catch {
-      return date;
-    }
-  });
-};
-
-const nextExecutions = computed(() => {
-  if (!form.value.isScheduled) return [];
-  return getNextExecutions(form.value.schedule);
-});
-
-watch(() => [form.value.isScheduled, form.value.schedule], () => {
-  if (form.value.isScheduled) {
-    const scheduleErrors = validateSchedule(form.value.schedule);
-    if (scheduleErrors.length > 0) {
-      errors.value.schedule = scheduleErrors;
-    } else {
-      delete errors.value.schedule;
-    }
-  } else {
-    delete errors.value.schedule;
-  }
-}, { deep: true });
 </script>

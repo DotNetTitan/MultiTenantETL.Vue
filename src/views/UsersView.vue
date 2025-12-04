@@ -222,9 +222,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Notification -->
-    <AppNotification ref="notification" />
   </div>
 </template>
 
@@ -238,7 +235,7 @@ import { userService } from '@/services/userService';
 import TableFilters from '@/components/table/TableFilters.vue';
 import UserForm from '@/components/users/UserForm.vue';
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
-import AppNotification from '@/components/notifications/AppNotification.vue';
+import { useGlobalState } from '@/composables/useGlobalState';
 
 // Destructure methods from service
 const {
@@ -298,7 +295,9 @@ const showDeleteDialog = ref(false);
 const showAddTenantDialog = ref(false);
 const userToDelete = ref(null);
 const editedUser = ref(createEmpty());
-const notification = ref(null);
+
+// Global notification
+const { showSuccess, showError } = useGlobalState();
 
 // Tenant management
 const availableTenants = ref([]);
@@ -317,7 +316,7 @@ async function fetchUsers() {
     filterUsers();
   } catch (error) {
     console.error('Error fetching users:', error);
-    showError('Failed to load users');
+    showError(t('users.errors.loadFailed'), t('common.error'));
   } finally {
     loading.value = false;
   }
@@ -358,7 +357,7 @@ async function editUser(user) {
     showCreateDialog.value = true;
   } catch (error) {
     console.error('Error loading user details:', error);
-    showError('Failed to load user details');
+    showError(t('users.errors.loadDetailsFailed'), t('common.error'));
   }
 }
 
@@ -379,10 +378,10 @@ async function deleteUser() {
     await fetchUsers();
     showDeleteDialog.value = false;
     userToDelete.value = null;
-    showMessage('User deleted successfully');
+    showSuccess(t('users.deleteSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error deleting user:', error);
-    showError('Failed to delete user');
+    showError(t('users.errors.deleteFailed'), t('common.error'));
   } finally {
     deletingUser.value = false;
   }
@@ -399,10 +398,10 @@ async function saveUser() {
     await fetchUsers();
     showCreateDialog.value = false;
     editedUser.value = createEmpty();
-    showMessage('User saved successfully');
+    showSuccess(t('users.saveSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error saving user:', error);
-    showError('Failed to save user');
+    showError(t('users.errors.saveFailed'), t('common.error'));
   } finally {
     savingUser.value = false;
   }
@@ -413,10 +412,13 @@ async function toggleUserStatus(user) {
     loading.value = true;
     await userService.toggleStatus(user.id);
     await fetchUsers();
-    showMessage(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
+    showSuccess(
+      user.isActive ? t('users.deactivateSuccess') : t('users.activateSuccess'),
+      t('users.title')
+    );
   } catch (error) {
     console.error('Error toggling user status:', error);
-    showError('Failed to update user status');
+    showError(t('users.errors.statusUpdateFailed'), t('common.error'));
   } finally {
     loading.value = false;
   }
@@ -443,10 +445,10 @@ async function handleRemoveTenant(tenantId) {
     const updatedUser = await userService.getById(editedUser.value.id);
     editedUser.value.tenants = updatedUser.tenants || [];
     
-    showMessage('User removed from tenant successfully');
+    showSuccess(t('users.removeFromTenantSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error removing user from tenant:', error);
-    showError('Failed to remove user from tenant');
+    showError(t('users.errors.removeFromTenantFailed'), t('common.error'));
   } finally {
     loading.value = false;
   }
@@ -469,10 +471,10 @@ async function addUserToTenant() {
     selectedTenantId.value = null;
     selectedTenantRole.value = 'User';
     
-    showMessage('User added to tenant successfully');
+    showSuccess(t('users.addToTenantSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error adding user to tenant:', error);
-    showError('Failed to add user to tenant');
+    showError(t('users.errors.addToTenantFailed'), t('common.error'));
   } finally {
     addingToTenant.value = false;
   }
@@ -489,14 +491,6 @@ async function fetchAvailableTenants() {
   } catch (error) {
     console.error('Error fetching tenants:', error);
   }
-}
-
-function showMessage(message) {
-  notification.value?.showNotification(message, 'success');
-}
-
-function showError(message) {
-  notification.value?.showNotification(message, 'error', 5000);
 }
 
 // Watch search changes to filter locally

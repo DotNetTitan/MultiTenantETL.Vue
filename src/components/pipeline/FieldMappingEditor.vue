@@ -35,58 +35,66 @@
 
       <!-- Mappings List -->
       <div class="mb-4">
-        <div class="d-flex align-center mb-3">
-          <div>
-            <h3 class="text-h6">{{ $t('pipeline.fieldMappings') }}</h3>
-            <p class="text-caption text-grey">{{ $t('pipeline.mapSourceToDestination') }}</p>
-          </div>
-        </div>
+        <v-expansion-panels v-model="mappingsExpanded">
+          <v-expansion-panel value="mappings">
+            <v-expansion-panel-title>
+              <div class="d-flex align-center">
+                <v-icon class="mr-2">mdi-map-marker-path</v-icon>
+                <div>
+                  <span class="text-h6">{{ $t('pipeline.fieldMappings') }}</span>
+                  <span class="text-caption text-grey ml-2">({{ localMappings.length }} {{ localMappings.length === 1 ? 'mapping' : 'mappings' }})</span>
+                </div>
+              </div>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <div v-if="localMappings.length === 0" class="text-center py-8">
+                <v-icon size="64" color="grey-lighten-2">mdi-map-marker-path</v-icon>
+                <p class="mt-4 text-body-1 text-grey">{{ $t('pipeline.noFieldMappings') }}</p>
+                <p class="text-caption text-grey">{{ $t('pipeline.clickAddMapping') }}</p>
+                <v-btn
+                  color="primary"
+                  prepend-icon="mdi-plus"
+                  class="mt-4"
+                  @click="addMapping"
+                >
+                  {{ $t('pipeline.addMapping') }}
+                </v-btn>
+              </div>
 
-        <div v-if="localMappings.length === 0" class="text-center py-12">
-          <v-icon size="80" color="grey-lighten-2">mdi-map-marker-path</v-icon>
-          <p class="mt-4 text-h6 text-grey">{{ $t('pipeline.noFieldMappings') }}</p>
-          <p class="text-caption text-grey">{{ $t('pipeline.clickAddMapping') }}</p>
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-plus"
-            class="mt-4"
-            @click="addMapping"
-          >
-            {{ $t('pipeline.addMapping') }}
-          </v-btn>
-        </div>
-
-        <div v-else class="mappings-list">
-          <MappingCard
-            v-for="(mapping, index) in localMappings"
-            :key="mapping.id"
-            :mapping="mapping"
-            :source-fields="sourceSchema.fields || []"
-            :destination-fields="destinationSchema.fields || []"
-            :transformations="transformations"
-            :index="index"
-            :can-move-up="index > 0"
-            :can-move-down="index < localMappings.length - 1"
-            class="mb-3"
-            @update:mapping="updateMapping(index, $event)"
-            @remove="removeMapping(index)"
-            @move-up="moveUp(index)"
-            @move-down="moveDown(index)"
-          />
-          
-          <!-- Add Mapping Button at Bottom -->
-          <v-btn
-            color="primary"
-            prepend-icon="mdi-plus"
-            block
-            variant="outlined"
-            size="large"
-            class="mt-2"
-            @click="addMapping"
-          >
-            {{ $t('pipeline.addMapping') }}
-          </v-btn>
-        </div>
+              <div v-else class="mappings-list">
+                <MappingCard
+                  v-for="(mapping, index) in localMappings"
+                  :key="mapping.id"
+                  :mapping="mapping"
+                  :source-fields="sourceSchema.fields || []"
+                  :destination-fields="destinationSchema.fields || []"
+                  :transformations="transformations"
+                  :index="index"
+                  :can-move-up="index > 0"
+                  :can-move-down="index < localMappings.length - 1"
+                  class="mb-3"
+                  @update:mapping="updateMapping(index, $event)"
+                  @remove="removeMapping(index)"
+                  @move-up="moveUp(index)"
+                  @move-down="moveDown(index)"
+                />
+                
+                <!-- Add Mapping Button at Bottom -->
+                <v-btn
+                  color="primary"
+                  prepend-icon="mdi-plus"
+                  block
+                  variant="outlined"
+                  size="large"
+                  class="mt-2"
+                  @click="addMapping"
+                >
+                  {{ $t('pipeline.addMapping') }}
+                </v-btn>
+              </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </div>
 
       <!-- Validation Summary (show below mappings, only if there are errors and at least one mapping) -->
@@ -194,6 +202,7 @@ const showConversionDialog = ref(false);
 const convertingSchema = ref(false);
 const autoDetectedSourceId = ref(null);
 const autoDetectedDestinationId = ref(null);
+const mappingsExpanded = ref(null); // null = collapsed by default
 const validationResult = ref({
   isValid: true,
   errors: [],
