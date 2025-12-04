@@ -26,91 +26,91 @@
                 :error="errors.email"
                 class="mb-4"
               />
-              <FormInput
-                v-model="password"
-                :label="$t('auth.password')"
-                type="password"
-                prepend-inner-icon="mdi-lock"
-                variant="outlined"
-                :error="errors.password"
-                class="mb-2"
-              />
-              <v-checkbox
-                v-model="rememberMe"
-                :label="$t('auth.rememberMe')"
-                color="primary"
-                hide-details
-                class="mb-4"
-              />
+            <FormInput
+              v-model="password"
+              :label="$t('auth.password')"
+              type="password"
+              prepend-inner-icon="mdi-lock"
+              variant="outlined"
+              :error="errors.password"
+              class="mb-2"
+            />
+            <v-checkbox
+              v-model="rememberMe"
+              :label="$t('auth.rememberMe')"
+              color="primary"
+              hide-details
+              class="mb-4"
+            />
             
-              <!-- Regular error alert -->
-              <v-alert
-                v-if="authStore.error && !authStore.apiOffline"
-                type="error"
-                variant="tonal"
-                class="mb-4"
-                density="compact"
-              >
-                {{ authStore.error }}
-              </v-alert>
+            <!-- Regular error alert -->
+            <v-alert
+              v-if="authStore.error && !authStore.apiOffline"
+              type="error"
+              variant="tonal"
+              class="mb-4"
+              density="compact"
+            >
+              {{ authStore.error }}
+            </v-alert>
             
-              <!-- Enhanced error alert for API server offline -->
-              <v-alert
-                v-if="authStore.apiOffline"
-                type="warning"
-                variant="tonal"
-                icon="mdi-connection"
-                :title="$t('auth.connectionError')"
-                class="mb-4"
-              >
-                <p>{{ $t('auth.apiOfflineMessage') }}</p>
-                <ul class="ml-4 mt-2">
-                  <li>{{ $t('auth.apiOfflineReason1') }}</li>
-                  <li>{{ $t('auth.apiOfflineReason2') }}</li>
-                  <li>{{ $t('auth.apiOfflineReason3') }}</li>
-                </ul>
-                <p class="mt-2 text-caption">
-                  {{ $t('auth.currentApiUrl') }}: {{ apiUrl }}
-                </p>
-              </v-alert>
+            <!-- Enhanced error alert for API server offline -->
+            <v-alert
+              v-if="authStore.apiOffline"
+              type="warning"
+              variant="tonal"
+              icon="mdi-connection"
+              :title="$t('auth.connectionError')"
+              class="mb-4"
+            >
+              <p>{{ $t('auth.apiOfflineMessage') }}</p>
+              <ul class="ml-4 mt-2">
+                <li>{{ $t('auth.apiOfflineReason1') }}</li>
+                <li>{{ $t('auth.apiOfflineReason2') }}</li>
+                <li>{{ $t('auth.apiOfflineReason3') }}</li>
+              </ul>
+              <p class="mt-2 text-caption">
+                {{ $t('auth.currentApiUrl') }}: {{ apiUrl }}
+              </p>
+            </v-alert>
 
-              <v-btn
-                color="primary"
-                size="large"
-                block
-                :loading="authStore.loading"
-                :disabled="authStore.loading || !email || !password || !!errors.email || !!errors.password"
-                class="text-none font-weight-bold"
-                elevation="2"
-                @click="handleLogin"
-              >
-                {{ $t('auth.login') }}
-              </v-btn>
+            <v-btn
+              color="primary"
+              size="large"
+              block
+              :loading="authStore.loading"
+              :disabled="authStore.loading || !email || !password || !!errors.email || !!errors.password"
+              class="text-none font-weight-bold"
+              elevation="2"
+              @click="handleLogin"
+            >
+              {{ $t('auth.login') }}
+            </v-btn>
 
-              <div class="mt-4 text-center">
-                <router-link to="/forgot-password" class="text-primary text-decoration-none">
-                  Forgot password?
-                </router-link>
-              </div>
-              <div class="text-center mt-2">
-                <span class="text-medium-emphasis">Don't have an account?</span>
-                <router-link to="/register" class="text-primary text-decoration-none ml-1">
-                  Sign up
-                </router-link>
-              </div>
-            </v-form>
-          </v-card-text>
-        </v-card>
+            <div class="mt-4 text-center">
+              <router-link to="/forgot-password" class="text-primary text-decoration-none">
+                Forgot password?
+              </router-link>
+            </div>
+            <div class="text-center mt-2">
+              <span class="text-medium-emphasis">Don't have an account?</span>
+              <router-link to="/register" class="text-primary text-decoration-none ml-1">
+                Sign up
+              </router-link>
+            </div>
+          </v-form>
+        </v-card-text>
+      </v-card>
 
-        <!-- Footer Info -->
-        <div class="text-center mt-6">
-          <p class="text-caption text-medium-emphasis">
-            {{ $t('auth.secureMessage') }}
-          </p>
-        </div>
-      </v-col>
-    </v-row>
-  </div>
+      <!-- Footer Info -->
+      <div class="text-center mt-6">
+        <p class="text-caption text-medium-emphasis">
+          {{ $t('auth.secureMessage') }}
+        </p>
+      </div>
+    </v-col>
+  </v-row>
+</div>
 </template>
 
 <script setup>

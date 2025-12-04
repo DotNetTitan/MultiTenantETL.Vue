@@ -22,7 +22,7 @@ const MOCK_METADATA = {
     providers: {
       Database: ['SqlServer', 'PostgreSQL', 'MySQL'],
       API: ['REST'],
-      File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob']
+      File: ['FTP', 'SFTP', 'S3', 'AzureBlob']
     },
     
     directions: [

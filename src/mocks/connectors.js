@@ -273,46 +273,6 @@ export const mockConnectors = [
     requiresCredentials: true
   },
   {
-    id: '10',
-    name: 'Local CSV Files',
-    description: 'Local file system for CSV data files',
-    type: 'File',
-    provider: 'Local',
-    direction: 'both',
-    createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'CSV',
-      path: 'C:/data/exports',
-      delimiter: ',',
-      hasHeader: true,
-      writeConfig: {
-        filenamePattern: 'export_{date}.csv',
-        includeHeaders: true,
-        columnOrder: ['id', 'name', 'value', 'date']
-      }
-    },
-    file: {
-      storageType: 'Local',
-      path: 'C:/data/exports',
-      fileType: 'CSV',
-      delimiter: ','
-    },
-    isSource: true,
-    isDestination: true,
-    requiresCredentials: false,
-    schema: {
-      fields: [
-        { name: 'id', type: 'integer', required: true, nullable: false, description: 'Record ID' },
-        { name: 'name', type: 'string', required: true, nullable: false, description: 'Record name' },
-        { name: 'value', type: 'decimal', required: false, nullable: true, description: 'Numeric value' },
-        { name: 'date', type: 'date', required: true, nullable: false, description: 'Record date' }
-      ],
-      version: 1,
-      isManual: true,
-      lastModified: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  },
-  {
     id: '11',
     name: 'AWS S3 Bucket',
     description: 'Amazon S3 bucket for data lake storage',
@@ -544,39 +504,6 @@ export const mockConnectors = [
       version: 1,
       isManual: false,
       lastModified: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  },
-  {
-    id: '18',
-    name: 'XML Data Files',
-    description: 'Local XML files for legacy system integration',
-    type: 'File',
-    provider: 'Local',
-    direction: 'source',
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'XML',
-      path: 'C:/data/imports/xml',
-      xmlRootElement: 'Records',
-      xmlRecordElement: 'Record'
-    },
-    file: {
-      storageType: 'Local',
-      path: 'C:/data/imports/xml',
-      fileType: 'XML'
-    },
-    isSource: true,
-    isDestination: false,
-    requiresCredentials: false,
-    schema: {
-      fields: [
-        { name: 'RecordId', type: 'string', required: true, nullable: false, description: 'Record ID' },
-        { name: 'RecordType', type: 'string', required: true, nullable: false, description: 'Record type' },
-        { name: 'Data', type: 'textLong', required: false, nullable: true, description: 'Record data' }
-      ],
-      version: 1,
-      isManual: true,
-      lastModified: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
     }
   }
 ];
