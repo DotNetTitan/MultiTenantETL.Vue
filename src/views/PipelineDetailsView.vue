@@ -374,7 +374,6 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
 import { fetchConnectorById } from '@/services/connectorService';
-import { fetchTransformationById } from '@/services/transformationService';
 
 const route = useRoute();
 const router = useRouter();
@@ -514,6 +513,16 @@ async function fetchPipelineDetails() {
     // Build pipeline steps (async operation)
     const steps = await buildPipelineSteps(pipelineData);
     
+    // Fetch executions first to get lastRun if not available from pipeline data
+    await fetchRecentExecutions();
+    
+    // Determine lastRun: use pipeline's lastRunAt, or fallback to most recent execution
+    let lastRun = pipelineData.lastRunAt;
+    if (!lastRun && recentExecutions.value.length > 0) {
+      // Get the most recent execution's start time
+      lastRun = recentExecutions.value[0].startTime;
+    }
+    
     // Transform the data to match the view's expected format
     pipeline.value = {
       id: pipelineData.id,
@@ -521,8 +530,8 @@ async function fetchPipelineDetails() {
       description: pipelineData.description,
       status: pipelineData.status,
       createdAt: pipelineData.createdAt,
-      lastRun: pipelineData.lastRunAt,
-      schedule: formatSchedule(pipelineData.schedule),
+      lastRun: lastRun,
+      schedule: formatSchedule(pipelineData.schedule, pipelineData.isScheduled),
       connectors: [
         {
           id: pipelineData.sourceConnectorId,
@@ -541,8 +550,6 @@ async function fetchPipelineDetails() {
       ],
       steps: steps
     };
-    
-    await fetchRecentExecutions();
   } catch (error) {
     console.error('Error fetching pipeline details:', error);
   } finally {
@@ -550,8 +557,9 @@ async function fetchPipelineDetails() {
   }
 }
 
-function formatSchedule(schedule) {
-  if (!schedule) return 'Manual';
+function formatSchedule(schedule, isScheduled) {
+  // If pipeline is not scheduled, return Manual
+  if (!isScheduled || !schedule) return 'Manual';
   
   const freq = schedule.frequency;
   const time = schedule.time || '00:00';
@@ -591,23 +599,22 @@ async function buildPipelineSteps(pipelineData) {
     for (const mapping of pipelineData.fieldMappings) {
       if (mapping.transformations && Array.isArray(mapping.transformations) && mapping.transformations.length > 0) {
         for (const trans of mapping.transformations) {
-          try {
-            // Fetch transformation details
-            const transformationDetails = await fetchTransformationById(trans.transformationId);
-            
-            const key = transformationDetails.type;
-            if (!transformationsByType.has(key)) {
-              transformationsByType.set(key, {
-                type: transformationDetails.type,
-                name: transformationDetails.name,
-                fields: []
-              });
-            }
-            
-            transformationsByType.get(key).fields.push(mapping.destinationField);
-          } catch (error) {
-            console.warn(`Failed to fetch transformation ${trans.transformationId}:`, error);
+          // Transformations are now embedded directly in field mappings
+          // They have properties: id, type, order, config, isEnabled
+          if (!trans.isEnabled) continue;
+          
+          const transType = trans.type || 'Unknown';
+          const key = transType;
+          
+          if (!transformationsByType.has(key)) {
+            transformationsByType.set(key, {
+              type: transType,
+              name: transType, // Use type as name since transformations are inline
+              fields: []
+            });
           }
+          
+          transformationsByType.get(key).fields.push(mapping.destinationField);
         }
       }
     }
@@ -616,7 +623,7 @@ async function buildPipelineSteps(pipelineData) {
     for (const [type, info] of transformationsByType) {
       steps.push({
         id: `step-${stepId++}`,
-        name: info.name,
+        name: `${info.name} Transformation`,
         type: 'Transform',
         description: `Apply ${type} to ${info.fields.length} field(s): ${info.fields.slice(0, 3).join(', ')}${info.fields.length > 3 ? '...' : ''}`
       });
@@ -649,8 +656,13 @@ async function fetchRecentExecutions() {
     // Fetch executions from service
     const executions = await getExecutions({ pipelineId: route.params.id });
     
+    // Sort executions by startTime descending (most recent first)
+    const sortedExecutions = [...executions].sort((a, b) => 
+      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
+    
     // Transform execution data to match view format
-    recentExecutions.value = executions.map(exec => {
+    recentExecutions.value = sortedExecutions.map(exec => {
       const duration = exec.endTime 
         ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
         : Date.now() - new Date(exec.startTime).getTime();
