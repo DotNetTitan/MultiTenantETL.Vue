@@ -27,18 +27,18 @@ export function useGlobalState() {
     // Error handling
     handleError,
     
-    // Convenience methods
-    showSuccess: (message, timeout = 5000) => {
-      showNotification?.(message, 'success', timeout)
+    // Convenience methods with optional title
+    showSuccess: (message, title = 'Success', timeout = 5000) => {
+      showNotification?.(message, 'success', timeout, title)
     },
-    showError: (message, timeout = 7000) => {
-      showNotification?.(message, 'error', timeout)
+    showError: (message, title = 'Error', timeout = 7000) => {
+      showNotification?.(message, 'error', timeout, title)
     },
-    showWarning: (message, timeout = 6000) => {
-      showNotification?.(message, 'warning', timeout)
+    showWarning: (message, title = 'Warning', timeout = 6000) => {
+      showNotification?.(message, 'warning', timeout, title)
     },
-    showInfo: (message, timeout = 5000) => {
-      showNotification?.(message, 'info', timeout)
+    showInfo: (message, title = 'Info', timeout = 5000) => {
+      showNotification?.(message, 'info', timeout, title)
     }
   }
 }

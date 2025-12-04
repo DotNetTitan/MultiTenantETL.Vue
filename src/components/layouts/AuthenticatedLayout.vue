@@ -137,6 +137,9 @@
           <v-list-item to="/connectors" prepend-icon="mdi-connection" rounded="lg">
             <template #title>{{ $t('nav.connectors') }}</template>
           </v-list-item>
+          <v-list-item to="/schedules" prepend-icon="mdi-calendar-clock" rounded="lg">
+            <template #title>{{ $t('nav.schedules') }}</template>
+          </v-list-item>
           <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
             <template #title>{{ $t('nav.executions') }}</template>
           </v-list-item>

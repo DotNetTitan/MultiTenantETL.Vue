@@ -68,20 +68,28 @@
       <ai-chatbot v-if="isAuthenticated && !isPublicRoute" />
     </template>
 
-    <!-- Global Notifications -->
+    <!-- Global Notifications - Elegant Toast Style -->
     <div class="notifications-container">
       <TransitionGroup name="notification">
-        <v-alert
+        <div
           v-for="notification in notifications"
           :key="notification.id"
-          :type="notification.type"
-          variant="tonal"
-          closable
-          class="notification-alert ma-2"
-          @click:close="removeNotification(notification.id)"
+          class="toast-notification"
+          :class="`toast-${notification.type}`"
         >
-          {{ notification.message }}
-        </v-alert>
+          <div class="toast-icon">
+            <v-icon :color="getNotificationColor(notification.type)">
+              {{ getNotificationIcon(notification.type) }}
+            </v-icon>
+          </div>
+          <div class="toast-content">
+            <div class="toast-title">{{ notification.title || getNotificationTitle(notification.type) }}</div>
+            <div class="toast-message">{{ notification.message }}</div>
+          </div>
+          <button class="toast-close" @click="removeNotification(notification.id)">
+            <v-icon size="18">mdi-close</v-icon>
+          </button>
+        </div>
       </TransitionGroup>
     </div>
   </v-app>
@@ -116,12 +124,13 @@ const globalErrorMessage = ref('An unexpected error occurred. Please reload the 
 const errorCount = ref(0);
 const maxErrorsBeforeBoundary = 3;
 
-const showNotification = (message, type = 'info', timeout = 5000) => {
+const showNotification = (message, type = 'info', timeout = 5000, title = null) => {
   const id = Date.now();
   notifications.value.push({
     id,
     message,
-    type
+    type,
+    title
   });
 
   if (timeout > 0) {
@@ -133,6 +142,37 @@ const showNotification = (message, type = 'info', timeout = 5000) => {
 
 const removeNotification = (id) => {
   notifications.value = notifications.value.filter(n => n.id !== id);
+};
+
+// Helper functions for notification styling
+const getNotificationIcon = (type) => {
+  switch (type) {
+    case 'success': return 'mdi-check-circle';
+    case 'error': return 'mdi-alert-circle';
+    case 'warning': return 'mdi-alert';
+    case 'info': return 'mdi-information';
+    default: return 'mdi-information';
+  }
+};
+
+const getNotificationColor = (type) => {
+  switch (type) {
+    case 'success': return '#4CAF50';
+    case 'error': return '#F44336';
+    case 'warning': return '#FF9800';
+    case 'info': return '#2196F3';
+    default: return '#2196F3';
+  }
+};
+
+const getNotificationTitle = (type) => {
+  switch (type) {
+    case 'success': return 'Success';
+    case 'error': return 'Error';
+    case 'warning': return 'Warning';
+    case 'info': return 'Info';
+    default: return 'Notification';
+  }
 };
 
 const showGlobalLoading = (message = 'Loading...') => {
@@ -837,14 +877,72 @@ provide('handleError', handleError);
 
 .notifications-container {
   position: fixed;
-  top: 16px;
+  top: 50%;
   right: 16px;
+  transform: translateY(-50%);
   z-index: 9999;
-  max-width: 400px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.notification-alert {
-  margin-bottom: 8px;
+.toast-notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(var(--v-border-color), 0.1);
+  min-width: 320px;
+  backdrop-filter: blur(10px);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: rgb(var(--v-theme-on-surface));
+  margin-bottom: 4px;
+}
+
+.toast-message {
+  font-size: 13px;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  line-height: 1.4;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toast-close:hover {
+  background: rgba(var(--v-theme-on-surface), 0.1);
+  color: rgba(var(--v-theme-on-surface), 0.8);
 }
 
 .notification-enter-active,

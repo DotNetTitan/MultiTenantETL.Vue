@@ -43,5 +43,14 @@ export const API_ENDPOINTS = {
   connectors: {
     base: '/api/connectors',
     byId: (id) => `/api/connectors/${id}`
+  },
+  schedules: {
+    base: '/api/schedules',
+    byId: (id) => `/api/schedules/${id}`,
+    byPipelineId: (pipelineId) => `/api/schedules/pipeline/${pipelineId}`,
+    enable: (id) => `/api/schedules/${id}/enable`,
+    disable: (id) => `/api/schedules/${id}/disable`,
+    trigger: (id) => `/api/schedules/${id}/trigger`,
+    validateCron: '/api/schedules/validate-cron'
   }
 }
