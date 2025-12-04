@@ -32,8 +32,8 @@
 - Added missing i18n translations
 
 ✅ **Documentation**
-- Created `docs/OAUTH_PKCE.md` with complete implementation guide
-- Created `IMPLEMENTATION_SUMMARY.md` with flow explanation
+- Created `docs/guides/oauth-pkce.md` with complete implementation guide
+- Created `docs/guides/oauth-implementation-summary.md` with flow explanation
 - Includes testing instructions and cURL examples
 
 ## How It Works
@@ -115,7 +115,7 @@
 ### New Files
 - `MultiTenantETL.Vue/src/utils/pkce.js`
 - `MultiTenantETL.Vue/src/views/AuthCallbackView.vue`
-- `MultiTenantETL.Vue/docs/OAUTH_PKCE.md`
+- `MultiTenantETL.Vue/docs/guides/oauth-pkce.md`
 
 ## Next Steps (Optional)
 
