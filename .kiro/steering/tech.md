@@ -61,7 +61,7 @@ The frontend expects a REST API backend at `http://localhost:5000/api` (see api-
   - Single-use authorization codes
   - Code verifier proves authorization request origin
 - **Flow**: Login → Browser redirect → Authorization → Callback → Token exchange → Dashboard
-- **Implementation**: See `docs/OAUTH_PKCE.md` for detailed documentation
+- **Implementation**: See `docs/guides/oauth-pkce.md` for detailed documentation
 
 ## Theme System
 
