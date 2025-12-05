@@ -73,7 +73,7 @@
           <template #item.endTime="{ item }">
             {{ item.endTime ? formatDate(item.endTime) : '-' }}
           </template>
-          <template #item.duration="{ item }">
+          <template #item.durationMs="{ item }">
             {{ formatDuration(item.durationMs) }}
           </template>
           <template #item.actions="{ item }">
@@ -404,7 +404,7 @@ const headers = computed(() => [
   { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('dashboard.startTime'), key: 'startTime', width: '150px' },
   { title: t('executions.endTime'), key: 'endTime', width: '150px' },
-  { title: t('dashboard.duration'), key: 'duration', width: '100px' },
+  { title: t('dashboard.duration'), key: 'durationMs', width: '100px' },
   { title: t('dashboard.rowsProcessed'), key: 'rowsProcessed', width: '120px' },
   { title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' }
 ]);
@@ -598,22 +598,24 @@ function formatDate(dateString, includeSeconds = false) {
 }
 
 function formatDuration(milliseconds) {
-  if (!milliseconds) {
+  if (!milliseconds && milliseconds !== 0) {
     return '-';
   }
   
   const seconds = Math.floor(milliseconds / 1000);
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-  
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) {
-    return `${minutes}m ${seconds % 60}s`;
-  }
-  
   const hours = Math.floor(minutes / 60);
-  return `${hours}h ${minutes % 60}m`;
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes % 60}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds % 60}s`;
+  } else if (seconds > 0) {
+    return `${seconds}s`;
+  } else {
+    // Show milliseconds for sub-second durations
+    return `${milliseconds}ms`;
+  }
 }
 
 function getTimeRangeFilter() {
@@ -665,7 +667,7 @@ async function fetchExecutions() {
         status: exec.status,
         startTime: exec.startTime,
         endTime: exec.endTime,
-        duration: exec.duration,
+        durationMs: exec.durationMs,
         rowsProcessed: exec.recordsProcessed || 0,
         progressPercent: exec.progressPercent || 0,
         logs: logsText,

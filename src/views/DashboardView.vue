@@ -2,6 +2,7 @@
   <div>
     <h1 class="text-h4 mb-6">{{ $t('dashboard.title') }}</h1>
     
+    <!-- Top Stats Cards -->
     <v-row>
       <v-col cols="12" md="6" lg="3">
         <v-hover v-slot="{ isHovering, props }">
@@ -18,8 +19,8 @@
                 {{ $t('dashboard.totalPipelines') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
-                {{ stats.totalPipelines }}
-                <v-progress-circular v-if="loading" indeterminate size="24" width="2" class="ml-2" />
+                <span v-if="!loading">{{ stats.totalPipelines }}</span>
+                <v-progress-circular v-else indeterminate size="24" width="2" class="ml-2" />
               </div>
             </v-card-item>
             <v-card-actions>
@@ -44,8 +45,8 @@
                 {{ $t('dashboard.activePipelines') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
-                {{ stats.activePipelines }}
-                <v-progress-circular v-if="loading" indeterminate size="24" width="2" class="ml-2" />
+                <span v-if="!loading">{{ stats.activePipelines }}</span>
+                <v-progress-circular v-else indeterminate size="24" width="2" class="ml-2" />
               </div>
             </v-card-item>
             <v-card-actions>
@@ -70,8 +71,8 @@
                 {{ $t('dashboard.connectors') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
-                {{ stats.connectors }}
-                <v-progress-circular v-if="loading" indeterminate size="24" width="2" class="ml-2" />
+                <span v-if="!loading">{{ stats.connectors }}</span>
+                <v-progress-circular v-else indeterminate size="24" width="2" class="ml-2" />
               </div>
             </v-card-item>
             <v-card-actions>
@@ -96,8 +97,8 @@
                 {{ $t('dashboard.recentExecutions') }}
               </v-card-title>
               <div class="text-h2 text-center my-3">
-                {{ stats.recentExecutions }}
-                <v-progress-circular v-if="loading" indeterminate size="24" width="2" class="ml-2" />
+                <span v-if="!loading">{{ stats.totalExecutions }}</span>
+                <v-progress-circular v-else indeterminate size="24" width="2" class="ml-2" />
               </div>
             </v-card-item>
             <v-card-actions>
@@ -159,7 +160,7 @@
                         text-color="white"
                         :prepend-icon="getStatusIcon(execution.status)"
                       >
-                        {{ $t(`executions.${execution.status.toLowerCase()}`) }}
+                        {{ $t(`executions.${execution.status?.toLowerCase()}`) }}
                       </v-chip>
                     </td>
                     <td>{{ execution.rowsProcessed?.toLocaleString() || '-' }}</td>
@@ -183,7 +184,6 @@
               <v-progress-circular indeterminate size="32" width="3" />
             </div>
             <v-sheet v-else height="250" class="d-flex align-center justify-center">
-              <!-- Chart placeholder - In a real app, this would be a chart component -->
               <div class="text-center w-100">
                 <div class="text-subtitle-1 mb-4">{{ $t('dashboard.pipelineStatusDistribution') }}</div>
                 <v-row>
@@ -212,7 +212,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useDashboard } from '@/composables/useDashboard';
 
 const {
@@ -220,17 +220,34 @@ const {
   stats,
   recentExecutions,
   statusDistribution,
+  hasRunningExecutions,
   getStatusColor,
   getStatusIcon,
   formatDate,
   formatDuration,
   loadDashboardData,
+  refreshStats,
   setupTenantSubscription
 } = useDashboard();
+
+let refreshInterval = null;
 
 onMounted(() => {
   loadDashboardData();
   setupTenantSubscription();
+  
+  // Auto-refresh every 30 seconds if there are running executions
+  refreshInterval = setInterval(() => {
+    if (hasRunningExecutions.value) {
+      refreshStats();
+    }
+  }, 30000);
+});
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+  }
 });
 </script>
 
