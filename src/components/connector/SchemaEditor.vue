@@ -175,12 +175,12 @@
       <!-- Unique Identifier Validation -->
       <v-card v-if="uniqueIdentifierErrors.length > 0" variant="outlined" color="error" class="mb-3">
         <v-card-text class="py-3">
-          <div class="d-flex align-center">
-            <v-icon color="error" class="mr-3">mdi-key-alert</v-icon>
+          <div class="d-flex align-start">
+            <v-icon color="error" class="mr-3 mt-1">mdi-key-alert</v-icon>
             <div class="flex-grow-1">
               <div class="text-subtitle-2 mb-1">{{ $t('schema.uniqueIdentifierRequired') }}</div>
-              <div class="text-caption">
-                {{ uniqueIdentifierErrors[0] }}
+              <div v-for="(error, idx) in uniqueIdentifierErrors" :key="idx" class="text-caption mb-1">
+                • {{ error }}
               </div>
             </div>
           </div>

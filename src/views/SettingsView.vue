@@ -235,12 +235,25 @@
                   {{ $t('settings.role') }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
+                  <template v-if="userDetails?.roles && userDetails.roles.length > 0">
+                    <v-chip
+                      v-for="role in userDetails.roles"
+                      :key="role"
+                      :color="getRoleColor(role)"
+                      size="small"
+                      variant="flat"
+                      class="mr-1"
+                    >
+                      {{ role }}
+                    </v-chip>
+                  </template>
                   <v-chip
-                    :color="getRoleColor(userDetails?.roles?.[0] || authStore.user?.role)"
+                    v-else
+                    :color="getRoleColor(authStore.user?.role)"
                     size="small"
                     variant="flat"
                   >
-                    {{ userDetails?.roles?.[0] || authStore.user?.role }}
+                    {{ authStore.user?.role }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
