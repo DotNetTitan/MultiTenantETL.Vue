@@ -122,7 +122,7 @@ The application uses **OAuth 2.0 Authorization Code Flow with PKCE** (RFC 7636) 
 - Auth store: `src/stores/auth.js` (token management, user state)
 - Callback handler: `src/views/AuthCallbackView.vue` (token exchange)
 
-See `docs/OAUTH_PKCE.md` for detailed documentation.
+See [OAuth PKCE Documentation](docs/guides/oauth-pkce.md) for detailed documentation.
 
 ### Google Gemini AI (Optional)
 
@@ -369,6 +369,35 @@ npm run dev
 - Permission-based authorization
 - PostgreSQL database with EF Core
 - Email integration with Azure Communication Services
+
+## Documentation
+
+Detailed documentation is organized in the `docs/` folder:
+
+### Guides
+- [OAuth PKCE Implementation](docs/guides/oauth-pkce.md) - OAuth 2.0 Authorization Code Flow with PKCE
+- [Configuration Constants](docs/guides/configuration-constants.md) - Backend-driven configuration system
+- [Quick Start](docs/guides/quick-start.md) - Quick start for using app constants
+- [Troubleshooting](docs/guides/troubleshooting.md) - Common issues and solutions
+
+### API Reference
+- [API Index](docs/api/README.md) - Complete API specification index
+- [Connectors API](docs/api/connectors-api.md) - Data source and destination management
+- [Pipelines API](docs/api/pipelines-api.md) - ETL pipeline configuration
+- [Transformations API](docs/api/transformations-api.md) - Data transformation logic
+- [Executions API](docs/api/executions-api.md) - Pipeline execution tracking
+- [Dashboard API](docs/api/dashboard-api.md) - Dashboard statistics
+- [Metadata API](docs/api/metadata-api.md) - Centralized configuration
+
+### Backend Development
+- [Backend Overview](docs/backend/README.md) - Backend documentation status and setup
+- [Authentication Guide](docs/backend/auth/authentication-guide.md) - Complete auth/authz implementation
+- [Authorization Matrix](docs/backend/authorization-matrix.md) - Permission-based access control
+- [Background Jobs](docs/backend/background-jobs.md) - Hangfire configuration
+- [Real-time SignalR](docs/backend/realtime-signalr.md) - WebSocket implementation
+
+### Features
+- [Dynamic Token Generation](docs/features/dynamic-token-generation.md) - API connector token management
 
 ## Contributing
 
