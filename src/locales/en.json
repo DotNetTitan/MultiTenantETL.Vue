@@ -90,7 +90,6 @@
     "dashboard": "Dashboard",
     "pipelines": "Pipelines",
     "connectors": "Connectors",
-    "transformations": "Transformations",
     "schedules": "Schedules",
     "executions": "Executions",
     "tenants": "Tenants",

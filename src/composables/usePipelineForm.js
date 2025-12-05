@@ -21,7 +21,6 @@ export function usePipelineForm() {
 
   // State moved from PipelinesView
   const connectors = ref([]);
-  const showTransformationSelector = ref(false);
   const editedPipeline = ref(createEmptyPipeline());
   const form = ref(null); // Ref for the main pipeline form
   const timezones = ref(timezonesList); // Make timezones available to components
@@ -94,44 +93,16 @@ export function usePipelineForm() {
     }
   }
 
-  // --- Transformation Management ---
-
-  function addTransformation() {
-    // NEW: Open selector instead of creation dialog
-    showTransformationSelector.value = true;
-  }
-
-  function selectExistingTransformation(transformation) {
-    // Add the selected transformation to the pipeline
-    editedPipeline.value.transformations.push({
-      ...transformation,
-      executionOrder: editedPipeline.value.transformations.length + 1
-    });
-    showTransformationSelector.value = false;
-  }
-
-  function removeTransformation(index) {
-    editedPipeline.value.transformations.splice(index, 1);
-    // Update execution order for remaining transformations
-    editedPipeline.value.transformations.forEach((t, i) => {
-      t.executionOrder = i + 1;
-    });
-  }
-
   return {
     // State
     form,
     editedPipeline,
     connectors,
-    showTransformationSelector,
     timezones,
 
     // Methods
     fetchConnectors: fetchConnectorsData,
     prepareEditPipeline,
     resetForm,
-    addTransformation,
-    selectExistingTransformation,
-    removeTransformation,
   };
 }

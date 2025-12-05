@@ -88,7 +88,6 @@
     "dashboard": "Dashboard",
     "pipelines": "Pipelines",
     "connectors": "Konnektoren",
-    "transformations": "Transformationen",
     "executions": "Ausführungen",
     "tenants": "Tenants",
     "users": "Benutzer",

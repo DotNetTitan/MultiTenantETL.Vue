@@ -186,14 +186,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Transformation Selector Dialog -->
-    <TransformationSelector
-      v-model="showTransformationSelector"
-      :exclude-ids="editedPipeline.transformations.map(t => t.id).filter(Boolean)"
-      @select="selectExistingTransformation"
-      @close="showTransformationSelector = false"
-    />
-
     <!-- Field Mappings Viewer Dialog -->
     <v-dialog
       v-model="showMappingsDialog"
@@ -364,10 +356,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import TransformationSelector from '@/components/pipeline/TransformationSelector.vue';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
-import { fetchTransformations } from '@/services/transformationService';
 import { fetchPipelineById } from '@/services/pipelineService';
 import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
@@ -401,28 +391,14 @@ const {
   form,
   editedPipeline,
   connectors,
-  showTransformationSelector,
   fetchConnectors,
   prepareEditPipeline,
   resetForm,
-  addTransformation,
-  selectExistingTransformation,
-  removeTransformation,
   timezones
 } = usePipelineForm();
 
 // Field mapping state
-const availableTransformations = ref([]);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
-
-// Load transformations for field mapping
-onMounted(async () => {
-  try {
-    availableTransformations.value = await fetchTransformations();
-  } catch (error) {
-    console.error('Error loading transformations:', error);
-  }
-});
 
 // Field mapping methods
 function handleMappingValidation(result) {
@@ -528,8 +504,17 @@ function getTransformationColor(type) {
     'Map': 'green',
     'Aggregation': 'orange',
     'Script': 'purple',
-    'Join': 'teal'
+    'Join': 'teal',
+    'Trim': 'cyan',
+    'Case Convert': 'indigo',
+    'Substring': 'pink',
+    'Replace': 'amber',
+    'Split': 'lime'
   };
+  // Handle multiple types (e.g., "Script, Map") - use first type's color or 'primary' for mixed
+  if (type && type.includes(', ')) {
+    return 'primary';
+  }
   return colors[type] || 'grey';
 }
 
@@ -539,8 +524,17 @@ function getTransformationIcon(type) {
     'Map': 'mdi-map',
     'Aggregation': 'mdi-chart-bar',
     'Script': 'mdi-code-braces',
-    'Join': 'mdi-link-variant'
+    'Join': 'mdi-link-variant',
+    'Trim': 'mdi-content-cut',
+    'Case Convert': 'mdi-format-letter-case',
+    'Substring': 'mdi-contain',
+    'Replace': 'mdi-find-replace',
+    'Split': 'mdi-call-split'
   };
+  // Handle multiple types (e.g., "Script, Map") - use generic transform icon
+  if (type && type.includes(', ')) {
+    return 'mdi-vector-polyline';
+  }
   return icons[type] || 'mdi-cog';
 }
 
@@ -561,32 +555,6 @@ async function viewMappings(pipeline) {
       fetchConnectorById(fullPipeline.sourceConnectorId),
       fetchConnectorById(fullPipeline.destinationConnectorId)
     ]);
-    
-    // Fetch all transformations used in mappings
-    const transformationIds = new Set();
-    (fullPipeline.fieldMappings || []).forEach(mapping => {
-      (mapping.transformations || []).forEach(t => {
-        if (t.transformationId) {
-          transformationIds.add(t.transformationId);
-        }
-      });
-    });
-    
-    // Fetch transformation details
-    const transformationsMap = new Map();
-    if (transformationIds.size > 0) {
-      const { fetchTransformationById } = await import('@/services/transformationService');
-      await Promise.all(
-        Array.from(transformationIds).map(async (id) => {
-          try {
-            const transformation = await fetchTransformationById(id);
-            transformationsMap.set(id, transformation);
-          } catch (err) {
-            console.warn(`Failed to fetch transformation ${id}:`, err);
-          }
-        })
-      );
-    }
     
     // Helper to get field type from schema (case-insensitive)
     const getFieldType = (fieldName, schema) => {
@@ -635,25 +603,22 @@ async function viewMappings(pipeline) {
       
       const destinationFieldType = getFieldType(mapping.destinationField, destinationConnector.schema);
       
-      // Get first transformation details (if any)
+      // Get transformation details from inline transformations
       let transformation = null;
       if (mapping.transformations && mapping.transformations.length > 0) {
-        const firstTransformationId = mapping.transformations[0].transformationId;
-        const transformationData = transformationsMap.get(firstTransformationId);
+        // Get all unique transformation types
+        const uniqueTypes = [...new Set(mapping.transformations.map(t => t.type).filter(Boolean))];
+        const typeDisplay = uniqueTypes.length > 0 ? uniqueTypes.join(', ') : 'Transformation';
         
-        if (transformationData) {
-          transformation = {
-            type: transformationData.type,
-            name: transformationData.name,
-            description: transformationData.description || `${mapping.transformations.length} transformation(s) applied`
-          };
-        } else {
-          transformation = {
-            type: 'Transformation',
-            name: `${mapping.transformations.length} transformation(s)`,
-            description: 'Applied transformations'
-          };
-        }
+        transformation = {
+          type: typeDisplay,
+          name: uniqueTypes.length === 1 
+            ? (mapping.transformations[0].name || typeDisplay)
+            : `${mapping.transformations.length} transformations`,
+          description: mapping.transformations.length > 1 
+            ? `${mapping.transformations.length} transformation(s) applied: ${typeDisplay}` 
+            : (mapping.transformations[0].description || `${typeDisplay} transformation`)
+        };
       }
       
       return {

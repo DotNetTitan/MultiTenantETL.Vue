@@ -87,9 +87,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "pipelines": "Pipeline",
-    "connectors": "Sorgenti Dati",
     "connectors": "Connettori",
-    "transformations": "Trasformazioni",
     "executions": "Esecuzioni",
     "tenants": "Tenant",
     "users": "Utenti",

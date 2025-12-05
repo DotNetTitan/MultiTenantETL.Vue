@@ -117,7 +117,6 @@
               v-model="pipeline.fieldMappings"
               :source-id="getConnectorId(pipeline.sourceId)"
               :destination-id="getConnectorId(pipeline.destinationId)"
-              :transformations="transformations"
               @validate="handleMappingValidation"
             />
             <v-alert v-else type="info" variant="tonal">
@@ -491,17 +490,13 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  transformations: {
-    type: Array,
-    default: () => []
-  },
   timezones: {
     type: Array,
     default: () => []
   }
 });
 
-const emit = defineEmits(['save', 'close', 'create-connector', 'add-transformation', 'toggle-fullscreen']);
+const emit = defineEmits(['save', 'close', 'create-connector', 'toggle-fullscreen']);
 
 const currentStep = ref(1);
 const saving = ref(false);
@@ -638,16 +633,6 @@ function getConnectorName(sourceIdOrObject) {
   const id = typeof sourceIdOrObject === 'string' ? sourceIdOrObject : sourceIdOrObject?.id;
   const connector = props.connectors.find(c => c.id === id);
   return connector?.name || 'Unknown';
-}
-
-function getTransformationName(transformationId) {
-  const transformation = props.transformations.find(t => t.id === transformationId);
-  return transformation?.name || 'Unknown';
-}
-
-function getTransformationType(transformationId) {
-  const transformation = props.transformations.find(t => t.id === transformationId);
-  return transformation?.type || '';
 }
 
 function getTransformationColor(type) {

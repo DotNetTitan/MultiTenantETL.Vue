@@ -33,7 +33,6 @@
       v-else
       :pipeline="pipeline"
       :connectors="connectors"
-      :transformations="transformations"
       :timezones="timezones"
       @save="handleSave"
       @close="handleCancel"
@@ -54,7 +53,6 @@ const loading = ref(false);
 const loadingData = ref(true);
 const error = ref(null);
 const connectors = ref([]);
-const transformations = ref([]);
 const timezones = ref([
   { name: 'UTC', value: 'UTC' },
   { name: 'Eastern Time (ET)', value: 'America/New_York' },
@@ -83,10 +81,7 @@ const isEdit = computed(() => !!route.params.id);
 onMounted(async () => {
   try {
     loadingData.value = true;
-    await Promise.all([
-      loadConnectors(),
-      loadTransformations()
-    ]);
+    await loadConnectors();
     if (isEdit.value) {
       await loadPipeline();
     }
@@ -103,17 +98,6 @@ async function loadConnectors() {
   } catch (err) {
     console.error('Error loading connectors:', err);
     error.value = `Failed to load connectors: ${err.message}`;
-  }
-}
-
-async function loadTransformations() {
-  try {
-    const { fetchTransformations } = await import('@/services/transformationService');
-    const response = await fetchTransformations({ pageSize: 100 }); // Get more transformations for selection
-    transformations.value = Array.isArray(response) ? response : (response.transformations || []);
-  } catch (err) {
-    console.error('Error loading transformations:', err);
-    // Don't set error here, transformations are optional
   }
 }
 

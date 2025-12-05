@@ -111,12 +111,6 @@ const router = createRouter({
       redirect: to => `/connectors/${to.params.id}/edit`
     },
     {
-      path: '/transformations',
-      name: 'transformations',
-      component: () => import('@/views/TransformationsView.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/schedules',
       name: 'schedules',
       component: () => import('@/views/SchedulesView.vue'),

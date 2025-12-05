@@ -143,9 +143,6 @@
           <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
             <template #title>{{ $t('nav.executions') }}</template>
           </v-list-item>
-          <v-list-item to="/transformations" prepend-icon="mdi-transfer" rounded="lg">
-            <template #title>{{ $t('nav.transformations') }}</template>
-          </v-list-item>
           
           <template v-if="isAdmin">
             <v-list-subheader>{{ $t('common.administration') }}</v-list-subheader>

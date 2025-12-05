@@ -68,7 +68,6 @@
                   :mapping="mapping"
                   :source-fields="sourceSchema.fields || []"
                   :destination-fields="destinationSchema.fields || []"
-                  :transformations="transformations"
                   :index="index"
                   :can-move-up="index > 0"
                   :can-move-down="index < localMappings.length - 1"
@@ -180,10 +179,6 @@ const props = defineProps({
     required: true
   },
   modelValue: {
-    type: Array,
-    default: () => []
-  },
-  transformations: {
     type: Array,
     default: () => []
   }
@@ -357,8 +352,7 @@ function validateMappings() {
   const result = validateFieldMappings(
     completeMappings,
     sourceSchema.value,
-    destinationSchema.value,
-    props.transformations
+    destinationSchema.value
   );
   
   validationResult.value = result;

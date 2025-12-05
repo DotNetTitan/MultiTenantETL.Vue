@@ -155,10 +155,6 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  transformations: {
-    type: Array,
-    default: () => []
-  },
   index: {
     type: Number,
     required: true
