@@ -68,7 +68,16 @@
             </v-chip>
           </template>
           <template #item.lastRunAt="{ item }">
-            {{ item.lastRunAt ? formatDate(item.lastRunAt) : 'Never' }}
+            {{ item.lastRunAt ? formatDate(item.lastRunAt) : $t('pipelines.never') }}
+          </template>
+          <template #item.isScheduled="{ item }">
+            <v-icon
+              v-if="item.isScheduled"
+              icon="mdi-check"
+              color="success"
+              size="small"
+            />
+            <span v-else class="text-grey">—</span>
           </template>
           <template #item.actions="{ item }">
             <v-btn
