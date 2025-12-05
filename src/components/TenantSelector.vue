@@ -108,12 +108,24 @@ onMounted(async () => {
     
     // Validate that current tenant ID exists in user's tenant list
     if (tenantStore.currentTenantId) {
-      const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId);
+      const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId && t.isActive);
       if (!tenantExists) {
-        console.warn('Current tenant not found in user tenants, clearing selection');
         localStorage.removeItem('currentTenantId');
         tenantStore.currentTenantId = null;
         selectedTenantId.value = null;
+      }
+    }
+    
+    // Auto-select the first active tenant if none is currently selected
+    // Only update local state - don't call API to avoid unnecessary tenant switch logs
+    if (!tenantStore.currentTenantId && tenantStore.tenants.length > 0) {
+      const firstActiveTenant = tenantStore.tenants.find(t => t.isActive);
+      if (firstActiveTenant) {
+        console.log('Auto-selecting first active tenant (local only):', firstActiveTenant.name);
+        // Set locally without calling backend API
+        tenantStore.currentTenantId = firstActiveTenant.id;
+        localStorage.setItem('currentTenantId', firstActiveTenant.id);
+        selectedTenantId.value = firstActiveTenant.id;
       }
     }
   } catch (error) {
