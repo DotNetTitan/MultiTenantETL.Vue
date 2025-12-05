@@ -19,8 +19,8 @@
         <v-expansion-panel>
           <v-expansion-panel-title>
             <div class="d-flex align-center">
-              <v-icon class="mr-2">mdi-table-eye</v-icon>
-              <span>{{ $t('pipeline.viewSourceDestFields') }}</span>
+              <v-icon size="24" class="mr-2">mdi-table-eye</v-icon>
+              <span class="text-h6">{{ $t('pipeline.viewSourceDestFields') }}</span>
             </div>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -39,7 +39,7 @@
           <v-expansion-panel value="mappings">
             <v-expansion-panel-title>
               <div class="d-flex align-center">
-                <v-icon class="mr-2">mdi-map-marker-path</v-icon>
+                <v-icon size="24" class="mr-2">mdi-map-marker-path</v-icon>
                 <div>
                   <span class="text-h6">{{ $t('pipeline.fieldMappings') }}</span>
                   <span class="text-caption text-grey ml-2">({{ localMappings.length }} {{ localMappings.length === 1 ? 'mapping' : 'mappings' }})</span>
