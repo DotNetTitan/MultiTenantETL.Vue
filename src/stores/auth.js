@@ -82,16 +82,16 @@ export const useAuthStore = defineStore('auth', () => {
    * Logout
    */
   async function logout() {
-    // Set logging out state FIRST to immediately hide authenticated content
+    // Set logging out state to make isAuthenticated false, allowing navigation to guest route
     loggingOut.value = true
     
-    // Clear state
-    clearAuth()
-    
-    // Navigate to login
+    // Navigate to login page
     await router.push('/login')
     
-    // Reset logging out state after navigation completes
+    // Clear auth state after navigation completes
+    clearAuth()
+    
+    // Reset logging out state
     loggingOut.value = false
     
     // Call backend to revoke tokens in background (don't wait)

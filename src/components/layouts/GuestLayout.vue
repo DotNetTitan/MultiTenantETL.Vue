@@ -26,7 +26,7 @@
 
     <v-main>
       <v-container fluid class="fill-height">
-        <router-view />
+        <router-view v-if="!route.meta.requiresAuth" />
       </v-container>
     </v-main>
   </v-layout>
@@ -35,8 +35,10 @@
 <script setup>
 import { computed } from 'vue';
 import { useTheme } from 'vuetify';
+import { useRoute } from 'vue-router';
 
 const theme = useTheme();
+const route = useRoute();
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
 const isDarkMode = computed({
