@@ -10,9 +10,10 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref(null)
   const loading = ref(false)
   const apiOffline = ref(false)
+  const loggingOut = ref(false)
 
   // Computed properties
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value && !loggingOut.value)
   const isAdmin = computed(() => user.value ? checkIsAdmin() : false)
   const token = computed(() => authService.getAccessToken()) // For backward compatibility
 
@@ -26,19 +27,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Login with email and password
-   * Note: This initiates OAuth Authorization Code Flow with PKCE
-   * The browser will redirect to the authorization endpoint, then to callback
+   * Login - initiates OAuth Authorization Code Flow with PKCE
+   * The browser will redirect to the authorization endpoint, then to backend login page
+   * After successful login, backend redirects back with authorization code
    */
-  async function login(credentials) {
+  async function login() {
     try {
       loading.value = true
       error.value = null
       apiOffline.value = false
 
-      // Initiate OAuth flow - this will redirect the browser
-      // No response is returned as the browser navigates away
-      await authService.initiateLogin(credentials)
+      // Initiate OAuth flow - this will redirect the browser to /connect/authorize
+      // Backend will then redirect to its login page at /auth/login
+      // After successful authentication, user is redirected back to SPA /auth/callback
+      await authService.initiateLogin()
       
       // This code won't execute because browser redirects
       // The callback page will handle setting the user
@@ -48,21 +50,6 @@ export const useAuthStore = defineStore('auth', () => {
       if (err.isNetworkError || err.code === 'ERR_NETWORK' || err.code === 'ERR_CONNECTION_REFUSED') {
         apiOffline.value = true
         error.value = 'Cannot connect to the server. Please ensure the API server is running.'
-      } else if (err.response?.status === 401 || err.oauthError === 'invalid_grant') {
-        // Check for specific error descriptions from OAuth
-        const errorDescription = err.response?.data?.error_description || err.message
-        
-        if (errorDescription?.includes('inactive')) {
-          error.value = 'Your account has been deactivated. Please contact your administrator.'
-        } else if (errorDescription?.includes('locked')) {
-          error.value = 'Your account is locked due to too many failed login attempts.'
-        } else if (errorDescription?.includes('not confirmed')) {
-          error.value = 'Please confirm your email address before logging in.'
-        } else {
-          error.value = 'Invalid email or password'
-        }
-      } else if (err.response?.status === 429) {
-        error.value = 'Too many login attempts. Please try again later.'
       } else {
         error.value = err.message || 'Login failed. Please try again later.'
       }
@@ -95,9 +82,17 @@ export const useAuthStore = defineStore('auth', () => {
    * Logout
    */
   async function logout() {
-    // Clear state and navigate immediately for better UX
+    // Set logging out state FIRST to immediately hide authenticated content
+    loggingOut.value = true
+    
+    // Clear state
     clearAuth()
-    router.push('/login')
+    
+    // Navigate to login
+    await router.push('/login')
+    
+    // Reset logging out state after navigation completes
+    loggingOut.value = false
     
     // Call backend to revoke tokens in background (don't wait)
     authService.logout().catch(err => {
@@ -226,6 +221,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     loading,
     apiOffline,
+    loggingOut,
     token, // For backward compatibility
 
     // Computed

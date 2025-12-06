@@ -16,29 +16,36 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 /**
  * Authentication Service
  * Handles OAuth 2.0 Authorization Code Flow with PKCE
+ * 
+ * Flow:
+ * 1. User clicks login -> initiateLogin() redirects to /connect/authorize
+ * 2. Backend redirects to its login page at /auth/login
+ * 3. User enters credentials on backend login page
+ * 4. Backend authenticates and redirects back to /connect/authorize
+ * 5. OpenIddict issues authorization code, redirects to SPA /auth/callback
+ * 6. SPA exchanges code for tokens using PKCE code_verifier
  */
 export const authService = {
   /**
    * Initiate OAuth 2.0 Authorization Code Flow with PKCE
    * This redirects the browser to the authorization endpoint
-   * @param {Object} credentials - { email, password } or { username, password }
+   * The backend will then redirect to its login page if not authenticated
    */
-  async initiateLogin(credentials) {
+  async initiateLogin() {
     try {
       // Generate PKCE parameters
       const codeVerifier = generateCodeVerifier()
       const codeChallenge = await generateCodeChallenge(codeVerifier)
       const state = generateState()
 
-      // Store PKCE parameters and credentials for the callback
+      // Store PKCE parameters for the callback (code_verifier is secret, never sent to server)
       storePKCEParams(state, codeVerifier)
-      sessionStorage.setItem('login_credentials', JSON.stringify(credentials))
 
       // Get OAuth config from constants
       const oauthConfig = getOAuthConfig()
       const scopes = oauthConfig.scopes.join(' ')
 
-      // Build authorization URL
+      // Build authorization URL - NO credentials in URL (proper OAuth flow)
       const authParams = new URLSearchParams({
         client_id: oauthConfig.clientId,
         response_type: 'code',
@@ -46,12 +53,11 @@ export const authService = {
         redirect_uri: `${window.location.origin}/auth/callback`,
         state: state,
         code_challenge: codeChallenge,
-        code_challenge_method: 'S256',
-        username: credentials.email || credentials.username,
-        password: credentials.password
+        code_challenge_method: 'S256'
       })
 
       // Redirect to authorization endpoint
+      // Backend will redirect to login page if user is not authenticated
       window.location.href = `${API_BASE}${oauthConfig.authorizeEndpoint}?${authParams.toString()}`
     } catch (error) {
       throw error
