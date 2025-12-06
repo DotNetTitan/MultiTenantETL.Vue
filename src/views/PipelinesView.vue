@@ -123,7 +123,7 @@
               variant="text"
               size="small"
               color="success"
-              :disabled="item.status === 'Running'"
+              :disabled="item.status === 'Running' || !item.isActive"
               :title="$t('pipelines.executePipeline')"
               @click="handleExecutePipeline(item)"
             >
