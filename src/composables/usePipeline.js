@@ -2,7 +2,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTransformation } from './useTransformation';
 import { useConnector } from './useConnector';
-import { fetchPipelines, fetchPipelineById, savePipeline as apiSavePipeline, deletePipeline as apiDeletePipeline, executePipeline as apiExecutePipeline } from '@/services/pipelineService';
+import { fetchPipelines, fetchPipelineById, savePipeline as apiSavePipeline, deletePipeline as apiDeletePipeline, executePipeline as apiExecutePipeline, togglePipelineStatus as apiTogglePipelineStatus } from '@/services/pipelineService';
 import { useTenantStore } from '@/stores/tenant';
 
 export function usePipeline() {
@@ -133,6 +133,23 @@ export function usePipeline() {
     }
   };
 
+  // Toggle pipeline active status
+  const togglePipelineStatus = async (id) => {
+    try {
+      const result = await apiTogglePipelineStatus(id);
+      // Update the pipeline in the local state after successful toggle
+      const pipeline = pipelines.value.find(p => p.id === id);
+      if (pipeline) {
+        pipeline.isActive = result.isActive;
+      }
+      return result;
+    } catch (err) {
+      error.value = err.message;
+      console.error(`Error toggling pipeline status ${id}:`, err);
+      throw err;
+    }
+  };
+
   // Create an empty pipeline object
   const createEmptyPipeline = () => {
     return {
@@ -144,6 +161,7 @@ export function usePipeline() {
       transformations: [],
       fieldMappings: [], // NEW: Field mappings array
       isScheduled: false,
+      isActive: true, // Default to active when creating new pipeline
       schedule: {
         frequency: 'Daily',
         time: '00:00',
@@ -356,6 +374,7 @@ export function usePipeline() {
     savePipeline,
     deletePipeline,
     executePipeline,
+    togglePipelineStatus,
     createEmptyPipeline,
     setupTenantSubscription,
     

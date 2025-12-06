@@ -43,7 +43,6 @@ export async function fetchPipelines(filters = {}) {
     // Backend returns PagedPipelineResponse with pipelines property (camelCase due to JSON config)
     return response.data.pipelines || []
   } catch (error) {
-    console.error('Error fetching pipelines:', error);
     throw error;
   }
 }
@@ -58,7 +57,6 @@ export async function fetchPipelineById(id) {
     const response = await api.get(`/api/pipelines/${id}`)
     return response.data
   } catch (error) {
-    console.error(`Error fetching pipeline ${id}:`, error);
     throw error;
   }
 }
@@ -92,14 +90,14 @@ export async function savePipeline(pipeline) {
         destinationConnectorId: pipeline.destinationId,
         fieldMappings: pipeline.fieldMappings || [],
         schedule: pipeline.schedule || null,
-        isScheduled: pipeline.isScheduled || false
+        isScheduled: pipeline.isScheduled || false,
+        isActive: pipeline.isActive ?? true  // Default to active when creating
       }
       
       const response = await api.post('/api/pipelines', payload)
       return response.data
     }
   } catch (error) {
-    console.error('Error saving pipeline:', error);
     throw error;
   }
 }
@@ -114,7 +112,20 @@ export async function deletePipeline(id) {
     await api.delete(`/api/pipelines/${id}`)
     return true
   } catch (error) {
-    console.error(`Error deleting pipeline ${id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Toggles the active status of a pipeline
+ * @param {string} id - Pipeline ID to toggle
+ * @returns {Promise<Object>} Updated pipeline object
+ */
+export async function togglePipelineStatus(id) {
+  try {
+    const response = await api.post(`/api/pipelines/${id}/toggle-status`)
+    return response.data
+  } catch (error) {
     throw error;
   }
 }
@@ -129,7 +140,6 @@ export async function executePipeline(id) {
     const response = await api.post(`/api/pipelines/${id}/execute`)
     return response.data
   } catch (error) {
-    console.error(`Error executing pipeline ${id}:`, error);
     throw error;
   }
 }
@@ -175,7 +185,6 @@ export async function getExecutions(filters = {}) {
     const response = await api.get('/api/executions', { params })
     return response.data.executions || []
   } catch (error) {
-    console.error('Error getting executions:', error);
     throw error;
   }
 }
@@ -190,7 +199,6 @@ export async function getExecutionById(id) {
     const response = await api.get(`/api/executions/${id}`)
     return response.data
   } catch (error) {
-    console.error(`Error getting execution ${id}:`, error);
     throw error;
   }
 }
@@ -205,7 +213,6 @@ export async function cancelExecution(id) {
     const response = await api.post(`/api/executions/${id}/cancel`)
     return response.data
   } catch (error) {
-    console.error(`Error cancelling execution ${id}:`, error);
     throw error;
   }
 }
@@ -224,7 +231,6 @@ export async function getExecutionStats(pipelineId = null) {
     const response = await api.get('/api/executions/stats', { params })
     return response.data
   } catch (error) {
-    console.error('Error getting execution stats:', error);
     throw error;
   }
 }
@@ -245,7 +251,6 @@ export async function findPipelinesUsingConnector(connectorId) {
     })
     return response.data.pipelines || []
   } catch (error) {
-    console.error(`Error finding pipelines using connector ${connectorId}:`, error);
     throw error;
   }
 }

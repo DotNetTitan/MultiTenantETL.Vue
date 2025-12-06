@@ -30,9 +30,6 @@ export async function fetchSchedules(params = {}) {
     const response = await api.get(url)
     return response.data
   } catch (error) {
-    if (!error.silent) {
-      console.error('Error fetching schedules:', error)
-    }
     throw error
   }
 }
@@ -47,7 +44,6 @@ export async function fetchScheduleById(id) {
     const response = await api.get(`/api/schedules/${id}`)
     return response.data
   } catch (error) {
-    console.error(`Error fetching schedule ${id}:`, error)
     throw error
   }
 }
@@ -66,7 +62,6 @@ export async function fetchScheduleByPipelineId(pipelineId) {
     if (error.response?.status === 404) {
       return null
     }
-    console.error(`Error fetching schedule for pipeline ${pipelineId}:`, error)
     throw error
   }
 }
@@ -92,7 +87,6 @@ export async function createSchedule(schedule) {
     })
     return response.data
   } catch (error) {
-    console.error('Error creating schedule:', error)
     throw error
   }
 }
@@ -117,7 +111,6 @@ export async function updateSchedule(id, schedule) {
     })
     return response.data
   } catch (error) {
-    console.error(`Error updating schedule ${id}:`, error)
     throw error
   }
 }
@@ -131,7 +124,6 @@ export async function deleteSchedule(id) {
   try {
     await api.delete(`/api/schedules/${id}`)
   } catch (error) {
-    console.error(`Error deleting schedule ${id}:`, error)
     throw error
   }
 }
@@ -146,7 +138,6 @@ export async function enableSchedule(id) {
     const response = await api.post(`/api/schedules/${id}/enable`)
     return response.data
   } catch (error) {
-    console.error(`Error enabling schedule ${id}:`, error)
     throw error
   }
 }
@@ -161,7 +152,6 @@ export async function disableSchedule(id) {
     const response = await api.post(`/api/schedules/${id}/disable`)
     return response.data
   } catch (error) {
-    console.error(`Error disabling schedule ${id}:`, error)
     throw error
   }
 }
@@ -176,7 +166,6 @@ export async function triggerSchedule(id) {
     const response = await api.post(`/api/schedules/${id}/trigger`)
     return response.data
   } catch (error) {
-    console.error(`Error triggering schedule ${id}:`, error)
     throw error
   }
 }
@@ -195,7 +184,6 @@ export async function validateCronExpression(cronExpression, timezone = 'UTC') {
     })
     return response.data
   } catch (error) {
-    console.error('Error validating cron expression:', error)
     // Return a validation result instead of throwing
     return {
       isValid: false,

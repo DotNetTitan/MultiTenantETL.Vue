@@ -42,7 +42,7 @@
         <v-stepper-window-item :value="1">
           <div class="pa-6">
             <v-row>
-              <v-col cols="12" md="8">
+              <v-col cols="12">
                 <v-text-field
                   v-model="pipeline.name"
                   :label="$t('pipelines.pipelineName')"
@@ -59,6 +59,14 @@
                   :placeholder="$t('pipelines.descriptionPlaceholder')"
                   variant="outlined"
                   rows="3"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-switch
+                  v-model="pipeline.isActive"
+                  :label="$t('common.active')"
+                  color="success"
+                  hide-details
                 />
               </v-col>
             </v-row>

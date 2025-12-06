@@ -79,6 +79,16 @@
             />
             <span v-else class="text-grey">—</span>
           </template>
+          <template #item.isActive="{ item }">
+            <v-switch
+              :model-value="item.isActive"
+              color="success"
+              hide-details
+              density="compact"
+              :disabled="item.status === 'Running'"
+              @update:model-value="handleToggleActive(item)"
+            />
+          </template>
           <template #item.actions="{ item }">
             <v-btn
               icon
@@ -381,6 +391,7 @@ const {
   savePipeline,
   deletePipeline,
   executePipeline,
+  togglePipelineStatus,
   getStatusColor,
   formatDate,
   setupTenantSubscription
@@ -417,6 +428,7 @@ const headers = computed(() => [
   { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('pipelines.lastRun'), key: 'lastRunAt', width: '150px' },
   { title: t('pipelines.scheduled'), key: 'isScheduled', width: '100px' },
+  { title: t('common.active'), key: 'isActive', sortable: false, width: '100px' },
   { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
 ]);
 
@@ -479,6 +491,14 @@ async function handleExecutePipeline(pipeline) {
     await executePipeline(pipeline.id);
   } catch (error) {
     console.error('Error executing pipeline:', error);
+  }
+}
+
+async function handleToggleActive(pipeline) {
+  try {
+    await togglePipelineStatus(pipeline.id);
+  } catch (error) {
+    console.error('Error toggling pipeline status:', error);
   }
 }
 

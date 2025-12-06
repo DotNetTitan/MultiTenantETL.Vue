@@ -72,6 +72,7 @@ export function usePipelineForm() {
       transformations: JSON.parse(JSON.stringify(pipeline.transformations || [])), // Deep clone transformations
       fieldMappings: JSON.parse(JSON.stringify(pipeline.fieldMappings || [])), // Deep clone field mappings
       isScheduled: pipeline.isScheduled,
+      isActive: pipeline.isActive ?? true, // Preserve active status, default to true if not set
       schedule: pipeline.schedule ? { 
         ...pipeline.schedule,
         // Ensure timezone exists, default to UTC if not present

@@ -417,7 +417,6 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
       
       // Exponential backoff: 1s, 2s, 4s
       const delay = initialDelay * Math.pow(2, attempt);
-      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -518,8 +517,6 @@ CRITICAL - DO NOT HALLUCINATE:
       const response = result.response;
       return response.text();
     } catch (error) {
-      console.error('Error getting Gemini response:', error);
-      
       // More specific error handling
       if (error.message?.includes('503') || error.message?.includes('overloaded')) {
         throw new Error('The AI service is currently overloaded. Retrying...');

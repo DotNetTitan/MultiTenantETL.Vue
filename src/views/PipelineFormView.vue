@@ -69,6 +69,7 @@ const pipeline = ref({
   transformations: [],
   fieldMappings: [],
   isScheduled: false,
+  isActive: true,
   schedule: {
     frequency: 'Daily',
     time: '00:00',
@@ -116,6 +117,7 @@ async function loadPipeline() {
       destinationId: data.destinationConnectorId,
       fieldMappings: data.fieldMappings || [],
       isScheduled: data.isScheduled,
+      isActive: data.isActive ?? true,
       schedule: data.schedule || {
         frequency: 'Daily',
         time: '00:00',

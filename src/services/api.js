@@ -118,16 +118,30 @@ api.interceptors.response.use(
     // Handle different error scenarios (if not already handled above)
     if (!error.userMessage) {
       if (error.response) {
+        // Backend uses ProblemDetails format: { status, title, detail, instance, type, traceId }
+        const data = error.response.data
+        // For 400 errors, use detail (contains specific validation message) if available
+        // For other errors, use title (generic category)
+        const errorMessage = error.response.status === 400 
+          ? (data?.detail || data?.title || 'Invalid request.')
+          : (data?.title || 'An error occurred. Please try again.')
+        
         // Server responded with error status
         switch (error.response.status) {
+          case 400:
+            error.userMessage = errorMessage
+            break
           case 403:
-            error.userMessage = 'You do not have permission to perform this action.'
+            error.userMessage = errorMessage || 'You do not have permission to perform this action.'
             break
           case 404:
-            error.userMessage = 'The requested resource was not found.'
+            error.userMessage = errorMessage || 'The requested resource was not found.'
+            break
+          case 409:
+            error.userMessage = errorMessage
             break
           case 422:
-            error.userMessage = error.response.data?.message || 'Validation failed. Please check your input.'
+            error.userMessage = errorMessage
             break
           case 429:
             error.userMessage = 'Too many requests. Please try again later.'
@@ -139,7 +153,7 @@ api.interceptors.response.use(
             error.userMessage = 'A server error occurred. Please try again later.'
             break
           default:
-            error.userMessage = error.response.data?.message || 'An error occurred. Please try again.'
+            error.userMessage = errorMessage
         }
       } else if (error.request) {
         // Request made but no response received (network error)

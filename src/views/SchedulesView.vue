@@ -404,7 +404,7 @@ async function toggleActive(schedule) {
     )
     fetchSchedulesList()
   } catch (err) {
-    showError(err.message || t('schedules.toggleError'), t('common.error'))
+    showError(err.userMessage || err.message || t('schedules.toggleError'), t('common.error'))
   } finally {
     togglingId.value = null
   }

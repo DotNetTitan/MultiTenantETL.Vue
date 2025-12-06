@@ -54,7 +54,6 @@ export const authService = {
       // Redirect to authorization endpoint
       window.location.href = `${API_BASE}${oauthConfig.authorizeEndpoint}?${authParams.toString()}`
     } catch (error) {
-      console.error('Login initiation error:', error)
       throw error
     }
   },
@@ -113,14 +112,12 @@ export const authService = {
           } else {
             // Non-JSON response (HTML error page, plain text, etc.)
             const text = await tokenResponse.text()
-            console.error('Non-JSON error response:', text)
             errorData = {
               error: 'server_error',
               error_description: `Server returned ${tokenResponse.status}: ${tokenResponse.statusText}`
             }
           }
         } catch (parseError) {
-          console.error('Failed to parse error response:', parseError)
           errorData = {
             error: 'parse_error',
             error_description: 'Failed to parse server error response'
@@ -170,7 +167,6 @@ export const authService = {
         tokenType: token_type || 'Bearer'
       }
     } catch (error) {
-      console.error('Callback handling error:', error)
       // Clear PKCE params on error to prevent reuse attempts
       clearPKCEParams()
       throw error
@@ -236,7 +232,6 @@ export const authService = {
         tokenType: token_type || 'Bearer'
       }
     } catch (error) {
-      console.error('Token refresh error:', error)
       throw error
     }
   },
@@ -274,7 +269,6 @@ export const authService = {
         })
       }
     } catch (error) {
-      console.error('Logout error:', error)
       // Don't throw - logout should always succeed locally
     } finally {
       this.clearTokens()
@@ -389,7 +383,6 @@ export const authService = {
         tenantName: response.data.tenantName
       }
     } catch (error) {
-      console.error('Switch tenant error:', error)
       throw error
     }
   },

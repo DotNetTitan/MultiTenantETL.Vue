@@ -26,10 +26,6 @@ export async function fetchConnectors(filters = {}) {
     
     return response.data
   } catch (error) {
-    // Don't log errors for silent failures (like during logout)
-    if (!error.silent) {
-      console.error('Error fetching connectors:', error)
-    }
     throw error
   }
 }
@@ -44,7 +40,6 @@ export async function fetchConnectorById(id) {
     const response = await api.get(`/api/connectors/${id}`)
     return response.data
   } catch (error) {
-    console.error(`Error fetching connector ${id}:`, error)
     throw error
   }
 }
@@ -67,7 +62,6 @@ export async function createConnector(connector) {
     })
     return response.data
   } catch (error) {
-    console.error('Error creating connector:', error)
     throw error
   }
 }
@@ -90,7 +84,6 @@ export async function updateConnector(id, connector) {
     })
     return response.data
   } catch (error) {
-    console.error('Error updating connector:', error)
     throw error
   }
 }
@@ -105,7 +98,6 @@ export async function deleteConnector(id) {
     await api.delete(`/api/connectors/${id}`)
     return true
   } catch (error) {
-    console.error(`Error deleting connector ${id}:`, error)
     throw error
   }
 }
@@ -122,11 +114,9 @@ export async function testConnection(connector) {
       provider: connector.provider,
       config: connector.config
     };
-    console.log('Test connection payload:', payload);
     const response = await api.post('/api/connectors/test-connection', payload)
     return response.data
   } catch (error) {
-    console.error('Error testing connection:', error)
     throw error
   }
 }
@@ -141,7 +131,6 @@ export async function testExistingConnection(id) {
     const response = await api.post(`/api/connectors/${id}/test`)
     return response.data
   } catch (error) {
-    console.error(`Error testing connector ${id}:`, error)
     throw error
   }
 }
@@ -160,7 +149,6 @@ export async function detectSchema(connectorId, tableOrResourceName = null) {
     })
     return response.data
   } catch (error) {
-    console.error(`Error detecting schema for connector ${connectorId}:`, error)
     throw error
   }
 }
@@ -183,7 +171,6 @@ export async function detectSchemaPreview(type, provider, config, tableOrResourc
     })
     return response.data
   } catch (error) {
-    console.error(`Error detecting schema preview for ${type}/${provider}:`, error)
     throw error
   }
 }
@@ -197,7 +184,6 @@ export async function getAllConnectors() {
     const response = await api.get('/api/connectors')
     return response.data
   } catch (error) {
-    console.error('Error fetching all connectors:', error)
     throw error
   }
 }
@@ -211,7 +197,6 @@ export async function getSourceConnectors() {
     const connectors = await getAllConnectors()
     return connectors.filter(c => c.isSource)
   } catch (error) {
-    console.error('Error fetching source connectors:', error)
     throw error
   }
 }
@@ -225,7 +210,6 @@ export async function getDestinationConnectors() {
     const connectors = await getAllConnectors()
     return connectors.filter(c => c.isDestination)
   } catch (error) {
-    console.error('Error fetching destination connectors:', error)
     throw error
   }
 }

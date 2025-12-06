@@ -265,7 +265,7 @@ export function cacheMetadata(metadata) {
     localStorage.setItem('app-metadata', JSON.stringify(metadata));
     localStorage.setItem('app-metadata-timestamp', Date.now().toString());
   } catch (error) {
-    console.warn('Failed to cache metadata:', error);
+    // Failed to cache metadata
   }
 }
 
@@ -291,7 +291,6 @@ export function getCachedMetadata(maxAge = 3600000) {
     
     return JSON.parse(cached);
   } catch (error) {
-    console.warn('Failed to get cached metadata:', error);
     return null;
   }
 }

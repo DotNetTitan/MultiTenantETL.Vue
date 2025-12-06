@@ -71,7 +71,6 @@ export async function fetchSchema(connectorId) {
       isManual: false // Indicate this was auto-detected
     };
   } catch (error) {
-    console.error('Error fetching schema:', error);
     throw error;
   }
 }
@@ -102,7 +101,6 @@ export async function saveSchema(connectorId, fields) {
 
     return updatedConnector.schema;
   } catch (error) {
-    console.error('Error saving schema:', error);
     throw error;
   }
 }

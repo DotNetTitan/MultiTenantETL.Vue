@@ -13,7 +13,6 @@ async function fetchPipelineStats() {
       pipelines: response.data.pipelines || []
     }
   } catch (error) {
-    console.error('Error fetching pipeline stats:', error)
     return { totalCount: 0, pipelines: [] }
   }
 }
@@ -29,7 +28,6 @@ async function fetchActivePipelinesCount() {
     })
     return response.data.totalCount || 0
   } catch (error) {
-    console.error('Error fetching active pipelines count:', error)
     return 0
   }
 }
@@ -46,7 +44,6 @@ async function fetchConnectorCount() {
     })
     return response.data.totalCount || 0
   } catch (error) {
-    console.error('Error fetching connector count:', error)
     return 0
   }
 }
@@ -62,7 +59,6 @@ async function fetchScheduleCount() {
     })
     return response.data.totalCount || 0
   } catch (error) {
-    console.error('Error fetching schedule count:', error)
     return 0
   }
 }
@@ -76,7 +72,6 @@ async function fetchExecutionStats() {
     const response = await api.get('/api/executions/stats')
     return response.data
   } catch (error) {
-    console.error('Error fetching execution stats:', error)
     return {
       totalExecutions: 0,
       runningExecutions: 0,
@@ -107,7 +102,6 @@ async function fetchRecentExecutions(limit = 5) {
     })
     return response.data.executions || []
   } catch (error) {
-    console.error('Error fetching recent executions:', error)
     return []
   }
 }
@@ -182,7 +176,6 @@ export async function fetchDashboardData() {
       recentExecutions: recentExecutionsData 
     }
   } catch (error) {
-    console.error('Error fetching dashboard data:', error)
     throw error
   }
 }
