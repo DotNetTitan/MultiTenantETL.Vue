@@ -295,20 +295,17 @@
                       class="log-entry"
                       :class="`log-${log.level?.toLowerCase()}`"
                     >
-                      <div class="log-header">
-                        <span class="log-timestamp">{{ formatDate(log.timestamp, false, true) }}</span>
-                        <v-chip
-                          size="small"
-                          :color="getLogLevelColor(log.level)"
-                          variant="flat"
-                          class="log-level-chip"
-                        >
-                          {{ log.level }}
-                        </v-chip>
-                        <span class="log-source">{{ log.source }}</span>
+                      <div class="log-row">
+                        <div class="log-left">
+                          <span class="log-timestamp">{{ formatDate(log.timestamp, true) }}</span>
+                        </div>
+                        <div class="log-message">{{ formatLogSingleLine(log) }}</div>
+                        <div class="log-right">
+                          <v-chip size="small" :color="getLogLevelColor(log.level)" text-color="white" class="log-level-chip">
+                            {{ log.level }}
+                          </v-chip>
+                        </div>
                       </div>
-                      <div class="log-message">{{ log.message }}</div>
-                      <div v-if="log.details" class="log-details">{{ log.details }}</div>
                     </div>
                   </div>
                 </v-card>
@@ -512,7 +509,7 @@ function getLogLevelColor(level) {
 function copyLogs() {
   if (selectedExecution.value?.logs && selectedExecution.value.logs.length > 0) {
     const logText = selectedExecution.value.logs
-      .map(log => `[${formatDate(log.timestamp, false, true)}] ${log.level} ${log.source}: ${log.message}${log.details ? '\n  ' + log.details : ''}`)
+      .map(log => `[${formatDate(log.timestamp, true)}] ${log.level}: ${formatLogSingleLine(log)}`)
       .join('\n');
     
     navigator.clipboard.writeText(logText)
@@ -524,6 +521,13 @@ function copyLogs() {
         showError(t('executions.errors.copyLogsFailed'), t('common.error'));
       });
   }
+}
+
+// Single-line formatter for message + details
+function formatLogSingleLine(log) {
+  const msg = (log.message || '').toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim();
+  const details = log.details ? (' — ' + log.details.toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim()) : '';
+  return `${msg}${details}`;
 }
 
 // Format time for timeline display
@@ -1001,12 +1005,21 @@ async function confirmCancelExecution() {
   border-left: 3px solid rgb(var(--v-theme-info));
 }
 
-.log-header {
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-left {
+  flex: 0 0 170px; /* fixed-ish column for timestamp */
+}
+
+.log-right {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
 }
 
 .log-timestamp {
@@ -1016,8 +1029,9 @@ async function confirmCancelExecution() {
 }
 
 .log-level-chip {
-  font-size: 0.7rem;
-  height: 20px;
+  font-size: 0.72rem;
+  height: 22px;
+  min-width: 56px;
 }
 
 .log-source {
@@ -1028,17 +1042,13 @@ async function confirmCancelExecution() {
 
 .log-message {
   color: rgb(var(--v-theme-on-surface));
-  word-break: break-word;
-  margin-bottom: 2px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.log-details {
-  color: rgb(var(--v-theme-on-surface-variant));
-  font-size: 0.8rem;
-  margin-left: 12px;
-  border-left: 2px solid rgb(var(--v-theme-surface-variant));
-  padding-left: 8px;
-  word-break: break-word;
-}
+/* details are merged into the single-line representation */
+.log-details { display: none; } 
 
 </style>

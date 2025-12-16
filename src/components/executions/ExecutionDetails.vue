@@ -62,13 +62,15 @@
                 class="log-entry"
                 :class="`log-${log.level?.toLowerCase()}`"
               >
-                <div class="log-header">
-                  <span class="log-timestamp">{{ formatLogDate(log.timestamp) }}</span>
-                  <span class="log-level" :class="`level-${log.level?.toLowerCase()}`">{{ log.level }}</span>
-                  <span class="log-source">{{ log.source }}</span>
+                <div class="log-row">
+                  <div class="log-left">
+                    <span class="log-timestamp">{{ formatLogDate(log.timestamp) }}</span>
+                  </div>
+                  <div class="log-message">{{ formatLogSingleLine(log) }}</div>
+                  <div class="log-right">
+                    <v-chip size="small" :color="getLogLevelColor(log.level)" text-color="white" class="log-level-chip">{{ log.level }}</v-chip>
+                  </div>
                 </div>
-                <div class="log-message">{{ log.message }}</div>
-                <div v-if="log.details" class="log-details">{{ log.details }}</div>
               </div>
             </div>
           </v-card-text>
@@ -150,11 +152,35 @@ function formatErrorRate(rate) {
   return `${(rate * 100).toFixed(2)}%`;
 }
 
+function getLogLevelColor(level) {
+  if (!level) return 'primary';
+  switch (level.toLowerCase()) {
+    case 'error':
+      return 'error';
+    case 'warn':
+    case 'warning':
+      return 'warning';
+    case 'info':
+      return 'info';
+    case 'debug':
+      return 'grey';
+    default:
+      return 'primary';
+  }
+}
+
 function formatLogDate(timestamp) {
   if (!timestamp) return '';
   const date = new Date(timestamp);
   return date.toLocaleString();
 }
+
+// Single-line formatter for messages + details
+function formatLogSingleLine(log) {
+  const msg = (log.message || '').toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim();
+  const details = log.details ? (' — ' + log.details.toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim()) : '';
+  return `${msg}${details}`;
+}  
 </script>
 
 <style scoped>
@@ -196,12 +222,21 @@ function formatLogDate(timestamp) {
   background-color: rgba(33, 150, 243, 0.1);
 }
 
-.log-header {
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-left {
+  flex: 0 0 170px;
+}
+
+.log-right {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
 }
 
 .log-timestamp {
@@ -216,6 +251,17 @@ function formatLogDate(timestamp) {
   font-weight: bold;
   text-transform: uppercase;
 }
+
+.log-message {
+  color: #e0e0e0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* details merged into the message; hidden */
+.log-details { display: none; }
 
 .log-level.level-error {
   background-color: #f44336;
@@ -238,23 +284,15 @@ function formatLogDate(timestamp) {
   color: white;
 }
 
-.log-source {
-  color: #64b5f6;
-  font-weight: 600;
-  font-size: 0.8rem;
-}
+
 
 .log-message {
   color: #e0e0e0;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.log-details {
-  color: #bbb;
-  font-size: 0.8rem;
-  margin-left: 12px;
-  border-left: 2px solid #555;
-  padding-left: 8px;
-  word-break: break-word;
-}
+/* details merged into message; keep hidden */
+.log-details { display: none; }
 </style>
