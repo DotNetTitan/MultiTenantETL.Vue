@@ -332,28 +332,25 @@
                       v-for="(step, index) in getExecutionSteps()"
                       :key="index"
                       :dot-color="step.color"
-                      :size="step.important ? 'x-small' : 'x-small'"
-                      :icon="step.important ? step.icon : undefined"
-                      :icon-color="step.important ? 'white' : undefined"
+                      :icon="step.icon"
                       class="app-timeline-item"
+                      :class="`timeline-${step.level}`"
                     >
                       <template #opposite>
                         <div class="text-caption text-grey timeline-time">{{ formatTimelineTime(step.time) }}</div>
                       </template>
                     
-                      <v-card variant="outlined" :color="step.color + '-lighten-5'" class="app-timeline-card" density="compact">
-                        <v-card-title class="text-subtitle-2 pb-1 pt-2 px-3 d-flex align-center">
-                          <v-icon :color="step.color" size="small" class="mr-2">
-                            {{ step.icon }}
-                          </v-icon>
-                          <span class="timeline-title">{{ step.title }}</span>
-                        </v-card-title>
-                        <v-card-text v-if="step.description" class="pt-0 pb-2 px-3">
-                          <p class="text-body-2 timeline-description">{{ step.description }}</p>
+                      <v-card variant="outlined" class="app-timeline-card" :class="`card-${step.level}`" density="compact">
+                        <v-card-text class="pa-2 d-flex align-center" style="gap: 12px;">
+                          <v-icon size="18" :color="step.color">{{ step.icon }}</v-icon>
+                          <div class="timeline-text">
+                            <div class="timeline-title">{{ step.title }}</div>
+                            <div v-if="step.description" class="timeline-desc">{{ step.description }}</div>
+                          </div>
                         </v-card-text>
                       </v-card>
                     </v-timeline-item>
-                  </v-timeline>
+                  </v-timeline> 
                 </div>
               </v-card-text>
             </v-window-item>
@@ -408,7 +405,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
@@ -545,46 +542,61 @@ function getExecutionSteps() {
   if (!selectedExecution.value || !selectedExecution.value.logs || selectedExecution.value.logs.length === 0) return [];
   
   return selectedExecution.value.logs.map((log, index) => {
-    // Determine step type and icon based on log level and message content
+    // Determine step type, icon and level based on log level and message content
     let color = 'primary';
     let icon = 'mdi-information';
-    let important = false;
+    let level = (log.level || '').toLowerCase() || 'info';
     
-    const message = log.message?.toLowerCase() || '';
-    const level = log.level?.toLowerCase() || '';
-    
-    if (level === 'error') {
+    const message = (log.message || '').toLowerCase();
+
+      // If message mentions failed counts, only mark error when failed > 0
+    const failedMatch = message.match(/(\d+)\s+failed/);
+    // Prefer source-based mapping for specific components like FieldMapping/DataReader/DataWriter
+    const source = (log.source || '').toLowerCase();
+    if (source.includes('field') || source.includes('fieldmapping')) {
+      color = 'purple';
+      icon = 'mdi-autorenew';
+      level = 'info';
+    } else if (source.includes('datareader')) {
+      color = 'teal';
+      icon = 'mdi-database-export';
+      level = 'info';
+    } else if (source.includes('datawriter')) {
+      color = 'indigo';
+      icon = 'mdi-database-import';
+      level = 'info';
+    } else if (failedMatch && parseInt(failedMatch[1], 10) > 0) {
       color = 'error';
       icon = 'mdi-alert-circle';
-      important = true;
+      level = 'error';
+    } else if (level === 'error' || message.includes('error')) {
+      color = 'error';
+      icon = 'mdi-alert-circle';
+      level = 'error';
     } else if (level === 'warn' || level === 'warning') {
       color = 'warning';
       icon = 'mdi-alert';
-      important = true;
-    } else if (message.includes('starting') || message.includes('started')) {
-      color = 'blue';
-      icon = 'mdi-play-circle';
-      important = true;
-    } else if (message.includes('extracted') || message.includes('extraction')) {
-      color = 'cyan';
-      icon = 'mdi-database-export';
-    } else if (message.includes('transformation') || message.includes('transform')) {
-      color = 'purple';
-      icon = 'mdi-autorenew';
-    } else if (message.includes('loading') || message.includes('load')) {
-      color = 'indigo';
-      icon = 'mdi-database-import';
-    } else if (message.includes('successfully') || message.includes('completed')) {
+      level = 'warning';
+    } else if (message.includes('completed') || message.includes('success') || message.includes('succeeded')) {
       color = 'success';
       icon = 'mdi-check-circle';
-      important = true;
-    } else if (message.includes('cancelled')) {
-      color = 'warning';
-      icon = 'mdi-stop-circle';
-      important = true;
-    } else if (message.includes('processing batch') || message.includes('batch')) {
+      level = 'success';
+    } else if (message.includes('starting') || message.includes('started')) {
+      color = 'info';
+      icon = 'mdi-play-circle';
+      level = 'info';
+    } else if (message.includes('read') || message.includes('extracted')) {
       color = 'teal';
+      icon = 'mdi-database-export';
+      level = 'info';
+    } else if (message.includes('writing') || message.includes('write')) {
+      color = 'indigo';
+      icon = 'mdi-database-import';
+      level = 'info';
+    } else if (message.includes('batch')) {
+      color = 'primary';
       icon = 'mdi-buffer';
+      level = level || 'info';
     }
     
     return {
@@ -593,10 +605,21 @@ function getExecutionSteps() {
       description: log.details,
       color,
       icon,
-      important
+      level
     };
   });
 }
+
+function scrollToFirstError() {
+  try {
+    const el = document.querySelector('.app-timeline-item.timeline-error');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } catch (e) {
+    // ignore
+  }
+} 
 
 function getStatusColor(status) {
   switch (status?.toLowerCase()) {
@@ -726,11 +749,15 @@ async function viewExecutionDetails(execution) {
     const detailedExecution = await getExecutionById(execution.id);
     selectedExecution.value = detailedExecution;
     showDetailsDialog.value = true;
+
+    // Wait for DOM update then scroll to first error (if any)
+    await nextTick();
+    scrollToFirstError();
   } catch (error) {
     console.error('Failed to fetch execution details:', error);
     showError(t('executions.errors.fetchDetailsFailed'), t('common.error'));
   }
-}
+} 
 
 function cancelExecution(execution) {
   executionToCancel.value = execution;
@@ -956,14 +983,33 @@ async function confirmCancelExecution() {
 
 /* Timeline cards */
 :deep(.app-timeline-card) {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  transition: all 0.2s ease;
+  border-left: 3px solid rgba(0,0,0,0.1);
+  transition: all 0.18s ease;
+  background: rgba(var(--v-theme-surface), 0.02);
 }
 
 :deep(.app-timeline-card:hover) {
-  border-left-color: rgb(var(--v-theme-secondary));
-  box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
+  border-left-color: rgba(var(--v-theme-secondary), 0.7);
+  box-shadow: 0 6px 18px rgba(var(--v-theme-on-surface), 0.08);
 }
+
+:deep(.app-timeline-card .timeline-title) {
+  font-weight: 600;
+}
+
+:deep(.app-timeline-card .timeline-desc) {
+  font-size: 0.9rem;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+:deep(.card-error) { border-left-color: rgb(var(--v-theme-error)); }
+:deep(.card-warning) { border-left-color: rgb(var(--v-theme-warning)); }
+:deep(.card-success) { border-left-color: rgb(var(--v-theme-success)); }
+:deep(.card-info) { border-left-color: rgb(var(--v-theme-info)); }
+
+/* Make timeline container scrollable */
+.timeline-scrollable-container { max-height: 350px; overflow-y: auto; padding-right: 8px; }
+
 
 /* Make execution dialog consistent between themes */
 :deep(.v-dialog > .v-card) {
