@@ -51,11 +51,26 @@
 
       <v-divider class="my-4" />
 
-      <div v-if="execution.log" class="mt-4">
+      <div v-if="execution.logs && execution.logs.length > 0" class="mt-4">
         <div class="text-subtitle-2 mb-2">Execution Log</div>
         <v-card class="bg-grey-darken-4">
           <v-card-text>
-            <pre class="execution-log">{{ execution.log }}</pre>
+            <div class="execution-logs">
+              <div
+                v-for="(log, index) in execution.logs"
+                :key="index"
+                class="log-entry"
+                :class="`log-${log.level?.toLowerCase()}`"
+              >
+                <div class="log-header">
+                  <span class="log-timestamp">{{ formatLogDate(log.timestamp) }}</span>
+                  <span class="log-level" :class="`level-${log.level?.toLowerCase()}`">{{ log.level }}</span>
+                  <span class="log-source">{{ log.source }}</span>
+                </div>
+                <div class="log-message">{{ log.message }}</div>
+                <div v-if="log.details" class="log-details">{{ log.details }}</div>
+              </div>
+            </div>
           </v-card-text>
         </v-card>
       </div>
@@ -134,6 +149,12 @@ function formatErrorRate(rate) {
   if (!rate) return '0%';
   return `${(rate * 100).toFixed(2)}%`;
 }
+
+function formatLogDate(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleString();
+}
 </script>
 
 <style scoped>
@@ -143,5 +164,97 @@ function formatErrorRate(rate) {
   color: #e0e0e0;
   font-size: 0.875rem;
   line-height: 1.4;
+}
+
+.execution-logs {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.log-error {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.log-entry.log-warn,
+.log-entry.log-warning {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.log-entry.log-info {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.log-timestamp {
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.log-level {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.log-level.level-error {
+  background-color: #f44336;
+  color: white;
+}
+
+.log-level.level-warn,
+.log-level.level-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.log-level.level-info {
+  background-color: #2196f3;
+  color: white;
+}
+
+.log-level.level-debug {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.log-source {
+  color: #64b5f6;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.log-message {
+  color: #e0e0e0;
+  word-break: break-word;
+}
+
+.log-details {
+  color: #bbb;
+  font-size: 0.8rem;
+  margin-left: 12px;
+  border-left: 2px solid #555;
+  padding-left: 8px;
+  word-break: break-word;
 }
 </style>

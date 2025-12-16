@@ -284,7 +284,33 @@
                   variant="outlined"
                   class="logs-container custom-scrollbar"
                 >
-                  <pre class="logs-content">{{ selectedExecution.logs || $t('executions.noLogsAvailable') }}</pre>
+                  <div v-if="!selectedExecution.logs || selectedExecution.logs.length === 0" class="pa-4 text-center">
+                    <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-text-box-outline</v-icon>
+                    <div class="text-body-1 text-grey">{{ $t('executions.noLogsAvailable') }}</div>
+                  </div>
+                  <div v-else class="logs-entries">
+                    <div
+                      v-for="(log, index) in selectedExecution.logs"
+                      :key="index"
+                      class="log-entry"
+                      :class="`log-${log.level?.toLowerCase()}`"
+                    >
+                      <div class="log-header">
+                        <span class="log-timestamp">{{ formatDate(log.timestamp, false, true) }}</span>
+                        <v-chip
+                          size="small"
+                          :color="getLogLevelColor(log.level)"
+                          variant="flat"
+                          class="log-level-chip"
+                        >
+                          {{ log.level }}
+                        </v-chip>
+                        <span class="log-source">{{ log.source }}</span>
+                      </div>
+                      <div class="log-message">{{ log.message }}</div>
+                      <div v-if="log.details" class="log-details">{{ log.details }}</div>
+                    </div>
+                  </div>
                 </v-card>
               </v-card-text>
             </v-window-item>
@@ -389,7 +415,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
-import { getExecutions } from '@/services/pipelineService';
+import { getExecutions, getExecutionById } from '@/services/pipelineService';
 import { useGlobalState } from '@/composables/useGlobalState';
 
 const { t } = useI18n();
@@ -467,9 +493,29 @@ function getStatusIcon(status) {
   }
 }
 
+function getLogLevelColor(level) {
+  switch (level?.toLowerCase()) {
+    case 'error':
+      return 'error';
+    case 'warn':
+    case 'warning':
+      return 'warning';
+    case 'info':
+      return 'info';
+    case 'debug':
+      return 'grey';
+    default:
+      return 'primary';
+  }
+}
+
 function copyLogs() {
-  if (selectedExecution.value?.logs) {
-    navigator.clipboard.writeText(selectedExecution.value.logs)
+  if (selectedExecution.value?.logs && selectedExecution.value.logs.length > 0) {
+    const logText = selectedExecution.value.logs
+      .map(log => `[${formatDate(log.timestamp, false, true)}] ${log.level} ${log.source}: ${log.message}${log.details ? '\n  ' + log.details : ''}`)
+      .join('\n');
+    
+    navigator.clipboard.writeText(logText)
       .then(() => {
         showInfo(t('executions.logsCopied'), t('executions.title'));
       })
@@ -483,9 +529,8 @@ function copyLogs() {
 // Format time for timeline display
 function formatTimelineTime(timeString) {
   try {
-    // Extract time portion from "[2025-03-14 22:15:01]" format
-    const matches = timeString.match(/\d{2}:\d{2}:\d{2}/);
-    return matches ? matches[0] : timeString;
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
     return timeString;
   }
@@ -493,82 +538,60 @@ function formatTimelineTime(timeString) {
 
 // Improve the getExecutionSteps function for better timeline display
 function getExecutionSteps() {
-  if (!selectedExecution.value || !selectedExecution.value.logs) return [];
+  if (!selectedExecution.value || !selectedExecution.value.logs || selectedExecution.value.logs.length === 0) return [];
   
-  // Parse logs to extract timeline events
-  const logs = selectedExecution.value.logs || '';
-  const lines = logs.split('\n');
-  
-  const steps = [];
-  
-  // Parse each log line to create timeline events
-  lines.forEach(line => {
-    if (!line.trim()) return;
+  return selectedExecution.value.logs.map((log, index) => {
+    // Determine step type and icon based on log level and message content
+    let color = 'primary';
+    let icon = 'mdi-information';
+    let important = false;
     
-    // Extract timestamp and message
-    const match = line.match(/\[(.*?)\]\s*(.*)/);
-    if (match) {
-      const time = match[1];
-      const message = match[2];
-      
-      // Determine step type and icon
-      let color = 'primary';
-      let icon = 'mdi-information';
-      let important = false;
-      
-      if (message.toLowerCase().includes('starting')) {
-        color = 'blue';
-        icon = 'mdi-play-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('extracted')) {
-        color = 'cyan';
-        icon = 'mdi-database-export';
-      } else if (message.toLowerCase().includes('transformation')) {
-        color = 'purple';
-        icon = 'mdi-autorenew';
-      } else if (message.toLowerCase().includes('loading')) {
-        color = 'indigo';
-        icon = 'mdi-database-import';
-      } else if (message.toLowerCase().includes('successfully')) {
-        color = 'success';
-        icon = 'mdi-check-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('error') || message.toLowerCase().includes('fail')) {
-        color = 'error';
-        icon = 'mdi-alert-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('cancelled')) {
-        color = 'warning';
-        icon = 'mdi-stop-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('processing batch')) {
-        color = 'teal';
-        icon = 'mdi-buffer';
-      }
-      
-      // Create a title from the message
-      let title = message;
-      let description = '';
-      
-      // If the message has a colon, split into title and description
-      if (message.includes(':')) {
-        const parts = message.split(':');
-        title = parts[0].trim();
-        description = parts.slice(1).join(':').trim();
-      }
-      
-      steps.push({
-        time,
-        title,
-        description,
-        color,
-        icon,
-        important
-      });
+    const message = log.message?.toLowerCase() || '';
+    const level = log.level?.toLowerCase() || '';
+    
+    if (level === 'error') {
+      color = 'error';
+      icon = 'mdi-alert-circle';
+      important = true;
+    } else if (level === 'warn' || level === 'warning') {
+      color = 'warning';
+      icon = 'mdi-alert';
+      important = true;
+    } else if (message.includes('starting') || message.includes('started')) {
+      color = 'blue';
+      icon = 'mdi-play-circle';
+      important = true;
+    } else if (message.includes('extracted') || message.includes('extraction')) {
+      color = 'cyan';
+      icon = 'mdi-database-export';
+    } else if (message.includes('transformation') || message.includes('transform')) {
+      color = 'purple';
+      icon = 'mdi-autorenew';
+    } else if (message.includes('loading') || message.includes('load')) {
+      color = 'indigo';
+      icon = 'mdi-database-import';
+    } else if (message.includes('successfully') || message.includes('completed')) {
+      color = 'success';
+      icon = 'mdi-check-circle';
+      important = true;
+    } else if (message.includes('cancelled')) {
+      color = 'warning';
+      icon = 'mdi-stop-circle';
+      important = true;
+    } else if (message.includes('processing batch') || message.includes('batch')) {
+      color = 'teal';
+      icon = 'mdi-buffer';
     }
+    
+    return {
+      time: log.timestamp,
+      title: `${log.source}: ${log.message}`,
+      description: log.details,
+      color,
+      icon,
+      important
+    };
   });
-  
-  return steps;
 }
 
 function getStatusColor(status) {
@@ -693,9 +716,16 @@ const handleRefresh = () => {
 };
 
 
-function viewExecutionDetails(execution) {
-  selectedExecution.value = { ...execution };
-  showDetailsDialog.value = true;
+async function viewExecutionDetails(execution) {
+  try {
+    // Fetch detailed execution data including logs
+    const detailedExecution = await getExecutionById(execution.id);
+    selectedExecution.value = detailedExecution;
+    showDetailsDialog.value = true;
+  } catch (error) {
+    console.error('Failed to fetch execution details:', error);
+    showError(t('executions.errors.fetchDetailsFailed'), t('common.error'));
+  }
 }
 
 function cancelExecution(execution) {
@@ -936,4 +966,79 @@ async function confirmCancelExecution() {
   border-radius: var(--app-border-radius);
   overflow: hidden;
 }
+
+/* Log entries styling */
+.logs-entries {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 12px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.log-error {
+  background-color: rgba(var(--v-theme-error), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-error));
+}
+
+.log-entry.log-warn,
+.log-entry.log-warning {
+  background-color: rgba(var(--v-theme-warning), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-warning));
+}
+
+.log-entry.log-info {
+  background-color: rgba(var(--v-theme-info), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-info));
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.log-timestamp {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.log-level-chip {
+  font-size: 0.7rem;
+  height: 20px;
+}
+
+.log-source {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.log-message {
+  color: rgb(var(--v-theme-on-surface));
+  word-break: break-word;
+  margin-bottom: 2px;
+}
+
+.log-details {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.8rem;
+  margin-left: 12px;
+  border-left: 2px solid rgb(var(--v-theme-surface-variant));
+  padding-left: 8px;
+  word-break: break-word;
+}
+
 </style>
