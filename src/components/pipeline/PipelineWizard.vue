@@ -92,7 +92,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.sourceRequired')]"
                   />
-
                 </v-card>
               </v-col>
               <v-col cols="12" md="6">
@@ -110,7 +109,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.destinationRequired')]"
                   />
-
                 </v-card>
               </v-col>
             </v-row>
@@ -136,7 +134,7 @@
         <!-- Step 4: Schedule -->
         <v-stepper-window-item :value="4">
           <div class="pa-6">
-            <div class="text-center py-8" v-if="!pipeline.id">
+            <div v-if="!pipeline.id" class="text-center py-8">
               <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-calendar-clock</v-icon>
               <div class="text-h6 mb-2">{{ $t('pipelines.scheduleAfterSave') }}</div>
               <div class="text-body-2 text-grey mb-4">

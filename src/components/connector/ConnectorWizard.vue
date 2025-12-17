@@ -350,7 +350,7 @@
                     <v-textarea
                       v-model="connector.config.tokenEndpointBody"
                       :label="t('connectors.requestBody')"
-                      placeholder='{"client_id": "xxx", "client_secret": "yyy", "grant_type": "client_credentials"}'
+                      placeholder="{&quot;client_id&quot;: &quot;xxx&quot;, &quot;client_secret&quot;: &quot;yyy&quot;, &quot;grant_type&quot;: &quot;client_credentials&quot;}"
                       variant="outlined"
                       rows="3"
                       :hint="t('connectors.tokenRequestBodyHint')"
@@ -362,7 +362,7 @@
                     <v-textarea
                       v-model="connector.config.tokenEndpointHeadersText"
                       :label="t('connectors.requestHeaders')"
-                      placeholder='{"Content-Type": "application/json"}'
+                      placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
                       variant="outlined"
                       rows="2"
                       :hint="t('connectors.tokenRequestHeadersHint')"
@@ -1710,7 +1710,8 @@ function getDefaultPort(provider) {
     'SQL Server': 1433,
     'SqlServer': 1433,
     'PostgreSQL': 5432,
-    'MySQL': 3306
+    'MySQL': 3306,
+    'Oracle': 1521
   };
   return ports[provider] || '';
 }

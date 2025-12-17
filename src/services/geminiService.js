@@ -467,7 +467,7 @@ Core Concepts:
 
 IMPORTANT LIMITATIONS:
 - Script transformations support ONLY JavaScript and C# (NOT Python, Ruby, or any other language)
-- Database support is ONLY SQL Server, PostgreSQL, and MySQL (NOT Oracle, MongoDB, etc.)
+- Database support is ONLY SQL Server, PostgreSQL, MySQL, and Oracle (NOT MongoDB, etc.)
 - File formats are ONLY CSV, Excel (.xlsx), and JSON (NOT XML, Parquet, Avro, etc.)
 - HTTP methods for APIs are ONLY GET, POST, PUT (NOT DELETE, PATCH, etc.)
 
@@ -492,7 +492,7 @@ Navigation:
 
 CRITICAL - DO NOT HALLUCINATE:
 - ONLY suggest JavaScript or C# for script transformations (NEVER Python, Ruby, etc.)
-- ONLY mention SQL Server, PostgreSQL, or MySQL for databases (NEVER Oracle, MongoDB, etc.)
+- ONLY mention SQL Server, PostgreSQL, MySQL, or Oracle for databases (NEVER MongoDB, etc.)
 - ONLY mention CSV, Excel, or JSON for files (NEVER XML, Parquet, etc.)
 - ONLY mention the 7 transformation types listed above (NEVER suggest custom plugins, extensions, etc.)
 - If a user asks about unsupported features, politely explain what IS supported instead
