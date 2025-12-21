@@ -159,6 +159,14 @@ npm run preview      # Preview production build locally
 
 # Code Quality
 npm run lint         # Run ESLint and auto-fix issues
+
+# Testing
+npm run test:all     # Run all tests (services, composables, components)
+npm run test:services    # Run service layer tests (115 tests)
+npm run test:composables # Run composable tests (331 tests)
+npm run test:components  # Run component tests (18 tests)
+npm run test:coverage    # Run tests with coverage report
+npm run test:ui          # Run tests in UI mode
 ```
 
 ## Build Configuration

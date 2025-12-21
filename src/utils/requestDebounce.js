@@ -5,6 +5,9 @@
 
 const pendingRequests = new Map()
 
+// Export for testing
+export { pendingRequests }
+
 /**
  * Debounce function calls with automatic cleanup
  * @param {Function} func - Function to debounce

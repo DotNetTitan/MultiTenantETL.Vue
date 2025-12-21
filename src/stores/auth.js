@@ -14,7 +14,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Computed properties
   const isAuthenticated = computed(() => !!user.value && !loggingOut.value)
-  const isAdmin = computed(() => user.value ? checkIsAdmin() : false)
+  const isAdmin = computed(() => {
+    if (!user.value) return false
+    return user.value.role === 'SuperAdmin' || user.value.role === 'TenantAdmin'
+  })
   const token = computed(() => authService.getAccessToken()) // For backward compatibility
 
   /**
