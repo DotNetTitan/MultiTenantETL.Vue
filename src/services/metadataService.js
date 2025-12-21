@@ -112,7 +112,7 @@ const MOCK_METADATA = {
       descriptionKey: 'transformations.trimDescription'
     },
     { 
-      value: 'Case', 
+      value: 'CaseConvert', 
       labelKey: 'transformations.case',
       icon: 'mdi-format-letter-case', 
       categoryKey: 'transformations.categoryText',
