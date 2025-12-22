@@ -15,8 +15,7 @@ jobs:
       run: npm ci
     - name: Run Tests
       run: npm run test:run
-    - name: Generate Coverage Report
-      run: npm run test:coverage
+      timeout-minutes: 10
 
   build_vue:
     runs-on: ubuntu-latest

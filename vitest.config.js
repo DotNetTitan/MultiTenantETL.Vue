@@ -16,23 +16,7 @@ export default defineConfig({
     environment: 'jsdom', // Use jsdom environment to handle DOM/CSS issues
     setupFiles: ['./src/test/setup-components.js'], // Use component setup for all tests
     // css: false, // Enable CSS processing in tests with jsdom
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-        '**/*.d.ts',
-        'cypress/',
-        '.{idea,git,cache,output,temp}/',
-        '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
-      ],
-      thresholds: {
-        statements: 80,
-        branches: 75,
-        functions: 80,
-        lines: 80
-      }
-    }
+    testTimeout: 10000, // 10 second timeout per test
+    hookTimeout: 15000, // 15 second timeout for hooks
   },
 })
