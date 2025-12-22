@@ -4,6 +4,51 @@
 
 The frontend has been fully integrated with the backend Connector API. All connector operations now use real API calls instead of mock data.
 
+## Snowflake Support
+
+### Database Provider Support
+- **Added Snowflake** to the list of supported database providers
+- Updated mock metadata to include `Snowflake` in Database providers array
+
+### Snowflake-Specific Configuration
+Snowflake connectors use different connection parameters than traditional databases:
+
+**Snowflake Config:**
+```javascript
+{
+  account: 'your-account.snowflakecomputing.com',
+  warehouse: 'COMPUTE_WH',
+  database: 'ANALYTICS_DB',
+  schema: 'PUBLIC',
+  username: 'your_username',
+  password: 'your_password',
+  role: 'ACCOUNTADMIN'  // Optional
+}
+```
+
+**Key Differences from Traditional Databases:**
+- No `host`/`port` - uses `account` URL instead
+- No `useSsl` - SSL is always enabled for Snowflake
+- Additional `warehouse`, `schema`, and optional `role` fields
+
+### Form Validation
+- **Snowflake-specific validation** checks for account, warehouse, database, schema, username, and password
+- **Provider-aware validation** switches validation rules based on selected provider
+- **Dynamic form fields** show/hide appropriate fields based on provider selection
+
+### UI Components
+- **Conditional rendering** in ConnectorWizard shows Snowflake fields when Snowflake is selected
+- **Provider-specific placeholders** guide users with appropriate examples
+- **Multi-language support** includes Snowflake field labels in all supported languages
+
+### Error Handling
+Added specific error messages for common Snowflake connection issues:
+- Invalid account URL
+- Warehouse not found
+- Database/schema not found
+- Insufficient privileges
+- Session expired
+
 ## Changes Made
 
 ### 1. Service Layer (`src/services/connectorService.js`)

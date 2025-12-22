@@ -20,7 +20,7 @@ const MOCK_METADATA = {
     ],
     
     providers: {
-      Database: ['SqlServer', 'PostgreSQL', 'MySQL'],
+      Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake'],
       API: ['REST'],
       File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob']
     },

@@ -136,61 +136,137 @@
             
             <!-- Database Connection -->
             <v-row v-if="connector.type === 'Database'">
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.host"
-                  :label="t('connectors.server')"
-                  :placeholder="t('connectors.serverPlaceholder')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.server') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model.number="connector.config.port"
-                  :label="t('connectors.port')"
-                  :placeholder="getDefaultPort(connector.provider).toString()"
-                  variant="outlined"
-                  type="number"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.database"
-                  :label="t('connectors.databaseName')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.username"
-                  :label="t('connectors.username')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.password"
-                  :label="t('connectors.password')"
-                  type="password"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-switch
-                  v-model="connector.config.useSsl"
-                  :label="t('connectors.useSsl')"
-                  color="primary"
-                  hide-details
-                />
-              </v-col>
+              <!-- Snowflake Configuration -->
+              <template v-if="connector.provider === 'Snowflake'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.account"
+                    :label="t('connectors.snowflakeAccount')"
+                    :placeholder="t('connectors.snowflakeAccountPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeAccount') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.warehouse"
+                    :label="t('connectors.snowflakeWarehouse')"
+                    :placeholder="t('connectors.snowflakeWarehousePlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeWarehouse') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    :placeholder="t('connectors.snowflakeDatabasePlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.schema"
+                    :label="t('connectors.snowflakeSchema')"
+                    :placeholder="t('connectors.snowflakeSchemaPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeSchema') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.username"
+                    :label="t('connectors.username')"
+                    :placeholder="t('connectors.snowflakeUsernamePlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.password"
+                    :label="t('connectors.password')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.role"
+                    :label="t('connectors.snowflakeRole')"
+                    :placeholder="t('connectors.snowflakeRolePlaceholder')"
+                    variant="outlined"
+                    :hint="t('connectors.snowflakeRoleHint')"
+                  />
+                </v-col>
+              </template>
+              
+              <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
+              <template v-else>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.host"
+                    :label="t('connectors.server')"
+                    :placeholder="t('connectors.serverPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.server') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="connector.config.port"
+                    :label="t('connectors.port')"
+                    :placeholder="getDefaultPort(connector.provider).toString()"
+                    variant="outlined"
+                    type="number"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.username"
+                    :label="t('connectors.username')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.password"
+                    :label="t('connectors.password')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-switch
+                    v-model="connector.config.useSsl"
+                    :label="t('connectors.useSsl')"
+                    color="primary"
+                    hide-details
+                  />
+                </v-col>
+              </template>
               
               <!-- Source/Both: Table Name or Query -->
               <template v-if="connector.direction === 'source' || connector.direction === 'both'">
@@ -1601,6 +1677,13 @@ watch(() => props.connector.type, () => {
   }
 }, { immediate: true });
 
+// Watch for provider changes and ensure config is properly initialized
+watch(() => props.connector.provider, (newProvider) => {
+  if (newProvider && props.connector.type === 'Database') {
+    ensureDatabaseConfig(newProvider);
+  }
+}, { immediate: true });
+
 function ensureWriteConfig() {
   if (!props.connector.config.writeConfig) {
     if (props.connector.type === 'Database') {
@@ -1629,6 +1712,32 @@ function ensureWriteConfig() {
         batchSize: 100
       };
     }
+  }
+}
+
+function ensureDatabaseConfig(provider) {
+  if (provider === 'Snowflake') {
+    // Ensure Snowflake-specific fields exist
+    if (!props.connector.config.account) props.connector.config.account = '';
+    if (!props.connector.config.warehouse) props.connector.config.warehouse = '';
+    if (!props.connector.config.schema) props.connector.config.schema = '';
+    if (!props.connector.config.role) props.connector.config.role = '';
+    
+    // Remove fields not used by Snowflake
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.useSsl;
+  } else {
+    // Ensure traditional database fields exist for other providers
+    if (!props.connector.config.host) props.connector.config.host = '';
+    if (!props.connector.config.port) props.connector.config.port = getDefaultPort(provider);
+    if (!props.connector.config.useSsl) props.connector.config.useSsl = false;
+    
+    // Remove Snowflake-specific fields
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
   }
 }
 
@@ -1711,7 +1820,8 @@ function getDefaultPort(provider) {
     'SqlServer': 1433,
     'PostgreSQL': 5432,
     'MySQL': 3306,
-    'Oracle': 1521
+    'Oracle': 1521,
+    'Snowflake': '' // Snowflake doesn't use traditional ports
   };
   return ports[provider] || '';
 }
@@ -1812,12 +1922,20 @@ function getDefaultConfig(type) {
 }
 
 function validateConnectionConfig() {
-  const { type, config } = props.connector;
+  const { type, provider, config } = props.connector;
   
   if (type === 'Database') {
     if (config.useCustomConnectionString) {
       return !!config.connectionString;
     }
+    
+    // Snowflake-specific validation
+    if (provider === 'Snowflake') {
+      return !!config.account && !!config.warehouse && !!config.database && 
+             !!config.schema && !!config.username && !!config.password;
+    }
+    
+    // Other database providers
     return !!config.host && !!config.database && !!config.username && !!config.password;
   }
   
