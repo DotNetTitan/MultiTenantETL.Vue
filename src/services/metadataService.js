@@ -20,7 +20,7 @@ const MOCK_METADATA = {
     ],
 
     providers: {
-      Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake', 'BigQuery', 'Redshift'],
+      Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake', 'BigQuery', 'Redshift', 'MongoDb'],
       API: ['REST'],
       File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob', 'GCS']
     },
@@ -33,6 +33,7 @@ const MOCK_METADATA = {
       Snoflake: { icon: 'mdi-snowflake', color: '#00B0FF' }, // Alias for typo
       BigQuery: { icon: 'mdi-google-cloud', color: '#4285F4' },
       Redshift: { icon: 'mdi-database', color: '#FF9900' },
+      MongoDb: { icon: 'mdi-database', color: '#4DB33D' },
       REST: { icon: 'mdi-api', color: '#FFB300' },
       Local: { icon: 'mdi-folder', color: '#757575' },
       FTP: { icon: 'mdi-server-network', color: '#5C6BC0' },

@@ -247,6 +247,49 @@
                 </v-col>
               </template>
               
+              <!-- MongoDB Provider -->
+              <template v-else-if="connector.provider === 'MongoDb'">
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="connector.config.connectionString"
+                    :label="t('connectors.connectionString')"
+                    :placeholder="t('connectors.mongodbConnectionStringPlaceholder')"
+                    variant="outlined"
+                    rows="2"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.connectionString') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.collectionName"
+                    :label="t('connectors.collectionName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.collectionName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col v-if="connector.direction === 'source' || connector.direction === 'both'" cols="12">
+                  <v-textarea
+                    v-model="connector.config.filterJson"
+                    :label="t('connectors.filterJson')"
+                    :placeholder="t('connectors.filterJsonPlaceholder')"
+                    variant="outlined"
+                    rows="3"
+                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
+                  />
+                </v-col>
+              </template>
+              
               <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
               <template v-else>
                 <v-col cols="12" md="6">
@@ -306,8 +349,8 @@
                 </v-col>
               </template>
               
-              <!-- Source/Both: Table Name or Query -->
-              <template v-if="connector.direction === 'source' || connector.direction === 'both'">
+              <!-- Source/Both: Table Name or Query (Excluded for MongoDB) -->
+              <template v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.provider !== 'MongoDb'">
                 <v-col cols="12">
                   <v-switch
                     v-model="connector.config.useCustomQuery"
@@ -1314,6 +1357,29 @@
                         <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
+                    <template v-else-if="connector.provider === 'MongoDb'">
+                      <v-list-item v-if="connector.config.connectionString">
+                        <template #prepend>
+                          <v-icon>mdi-link-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.connectionString') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate" v-text="connector.config.connectionString"></v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database-cog</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.collectionName') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.collectionName }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.filterJson">
+                        <template #prepend>
+                          <v-icon>mdi-filter-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.filterJson') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.filterJson }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                     <template v-else>
                       <v-list-item>
                         <template #prepend>
@@ -1913,6 +1979,27 @@ function ensureDatabaseConfig(provider) {
         props.connector.config.writeConfig && !props.connector.config.writeConfig.tableName) {
       // Logic for mandatory table name is mostly handled by validateWriteConfig
     }
+  } else if (provider === 'MongoDb') {
+    // Ensure MongoDB-specific fields exist
+    if (!props.connector.config.connectionString) props.connector.config.connectionString = '';
+    if (!props.connector.config.database) props.connector.config.database = '';
+    if (!props.connector.config.collectionName) props.connector.config.collectionName = '';
+    if (!props.connector.config.filterJson) props.connector.config.filterJson = '';
+
+    // Remove fields not used by MongoDB
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.location;
+    delete props.connector.config.jsonCredentials;
   } else {
     // Ensure traditional database fields exist for other providers
     if (!props.connector.config.host) props.connector.config.host = '';
@@ -2147,6 +2234,15 @@ function validateConnectionConfig() {
         return basicValid && isValidJson(config.jsonCredentials);
       }
       return basicValid;
+    }
+    
+    // MongoDB-specific validation
+    if (provider === 'MongoDb') {
+      const basicMongoValid = !!config.connectionString && !!config.database && !!config.collectionName;
+      if (config.filterJson) {
+        return basicMongoValid && isValidJson(config.filterJson);
+      }
+      return basicMongoValid;
     }
     
     // Other database providers
