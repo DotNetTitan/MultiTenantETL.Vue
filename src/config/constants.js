@@ -12,6 +12,20 @@ export const AppConstants = {
   _initialized: false
 }
 
+export const ConnectorProviders = {
+  SqlServer: 'SqlServer',
+  PostgreSQL: 'PostgreSQL',
+  MySQL: 'MySQL',
+  Snowflake: 'Snowflake',
+  BigQuery: 'BigQuery',
+  REST: 'REST',
+  Local: 'Local',
+  FTP: 'FTP',
+  SFTP: 'SFTP',
+  S3: 'S3',
+  AzureBlob: 'AzureBlob'
+}
+
 /**
  * Initialize constants from backend
  * Should be called once during app startup

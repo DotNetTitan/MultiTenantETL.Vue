@@ -209,6 +209,44 @@
                 </v-col>
               </template>
               
+              <!-- BigQuery Provider -->
+              <template v-else-if="connector.provider === 'BigQuery'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.projectId"
+                    :label="t('connectors.bigQueryProjectId')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bigQueryProjectId') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.datasetId"
+                    :label="t('connectors.bigQueryDatasetId')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bigQueryDatasetId') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.location"
+                    :label="t('connectors.bigQueryLocation')"
+                    variant="outlined"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="connector.config.jsonCredentials"
+                    :label="t('connectors.bigQueryJsonCredentials')"
+                    variant="outlined"
+                    rows="4"
+                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
+                  />
+                </v-col>
+              </template>
+              
               <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
               <template v-else>
                 <v-col cols="12" md="6">
@@ -1173,34 +1211,96 @@
                 <v-list density="compact">
                   <!-- Database Connection Details -->
                   <template v-if="connector.type === 'Database'">
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-server</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.server') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.server }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="connector.config.port">
-                      <template #prepend>
-                        <v-icon>mdi-network</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.port') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.port }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-database</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.database') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-account</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
-                    </v-list-item>
+                    <template v-if="connector.provider === 'BigQuery'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-google-cloud</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.bigQueryProjectId') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.projectId }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.bigQueryDatasetId') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.datasetId }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.location">
+                        <template #prepend>
+                          <v-icon>mdi-map-marker</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.bigQueryLocation') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.location }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-else-if="connector.provider === 'Snowflake'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-snowflake</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.snowflakeAccount') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.account }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-warehouse</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.snowflakeWarehouse') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.warehouse }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.databaseName') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-schema</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.snowflakeSchema') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.schema }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-account</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-else>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-server</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.server') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.host }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.port">
+                        <template #prepend>
+                          <v-icon>mdi-network</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.port') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.port }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.database') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-account</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                     <v-list-item v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.config.tableName">
                       <template #prepend>
                         <v-icon>mdi-table</v-icon>
@@ -1727,17 +1827,40 @@ function ensureDatabaseConfig(provider) {
     delete props.connector.config.host;
     delete props.connector.config.port;
     delete props.connector.config.useSsl;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.jsonCredentials;
+  } else if (provider === 'BigQuery') {
+    // Ensure BigQuery-specific fields exist
+    if (!props.connector.config.projectId) props.connector.config.projectId = '';
+    if (!props.connector.config.datasetId) props.connector.config.datasetId = '';
+    if (!props.connector.config.location) props.connector.config.location = '';
+    
+    // Remove fields not used by BigQuery
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.database;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
   } else {
     // Ensure traditional database fields exist for other providers
     if (!props.connector.config.host) props.connector.config.host = '';
     if (!props.connector.config.port) props.connector.config.port = getDefaultPort(provider);
     if (!props.connector.config.useSsl) props.connector.config.useSsl = false;
     
-    // Remove Snowflake-specific fields
+    // Remove Snowflake/BigQuery-specific fields
     delete props.connector.config.account;
     delete props.connector.config.warehouse;
     delete props.connector.config.schema;
     delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.jsonCredentials;
   }
 }
 
@@ -1821,9 +1944,19 @@ function getDefaultPort(provider) {
     'PostgreSQL': 5432,
     'MySQL': 3306,
     'Oracle': 1521,
-    'Snowflake': '' // Snowflake doesn't use traditional ports
+    'Snowflake': '', // Snowflake doesn't use traditional ports
+    'BigQuery': '' // BigQuery doesn't use traditional ports
   };
   return ports[provider] || '';
+}
+
+function isValidJson(str) {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function handleTypeChange() {
@@ -1933,6 +2066,15 @@ function validateConnectionConfig() {
     if (provider === 'Snowflake') {
       return !!config.account && !!config.warehouse && !!config.database && 
              !!config.schema && !!config.username && !!config.password;
+    }
+    
+    // BigQuery-specific validation
+    if (provider === 'BigQuery') {
+      const basicValid = !!config.projectId && !!config.datasetId;
+      if (config.jsonCredentials) {
+        return basicValid && isValidJson(config.jsonCredentials);
+      }
+      return basicValid;
     }
     
     // Other database providers

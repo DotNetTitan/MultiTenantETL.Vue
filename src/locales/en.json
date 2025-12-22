@@ -334,6 +334,10 @@
     "snowflakeRole": "Role (Optional)",
     "snowflakeRolePlaceholder": "ACCOUNTADMIN",
     "snowflakeRoleHint": "Snowflake role to use for the connection",
+    "bigQueryProjectId": "Project ID",
+    "bigQueryDatasetId": "Dataset ID",
+    "bigQueryLocation": "Location (Optional)",
+    "bigQueryJsonCredentials": "JSON Credentials (Optional)",
     "username": "Username",
     "password": "Password",
     "useSsl": "Use SSL/TLS",
@@ -715,7 +719,8 @@
     "minLength": "{field} must be at least {length} characters",
     "maxLength": "{field} must be at most {length} characters",
     "passwordMatch": "Passwords do not match",
-    "passwordRequirements": "Password must contain at least one uppercase letter and one number"
+    "passwordRequirements": "Password must contain at least one uppercase letter and one number",
+    "invalidJson": "Invalid JSON format"
   },
   "filters": {
     "allTypes": "All Types",
@@ -862,7 +867,6 @@
     "cancelAction": "Cancel",
     "proceedAnyway": "Proceed Anyway"
   },
-
   "auditLogs": {
     "title": "Audit Logs",
     "details": "Audit Log Details",

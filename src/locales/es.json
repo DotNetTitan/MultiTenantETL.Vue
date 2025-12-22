@@ -296,7 +296,6 @@
     "connectionSuccessful": "Conexión Exitosa",
     "connectionFailed": "Conexión Fallida",
     "type": "Tipo",
-    "direction": "Dirección",
     "server": "Servidor",
     "port": "Puerto",
     "databaseName": "Nombre de Base de Datos",
@@ -311,6 +310,10 @@
     "snowflakeRole": "Rol (Opcional)",
     "snowflakeRolePlaceholder": "ACCOUNTADMIN",
     "snowflakeRoleHint": "Rol de Snowflake a usar para la conexión",
+    "bigQueryProjectId": "ID del Proyecto",
+    "bigQueryDatasetId": "ID del Dataset",
+    "bigQueryLocation": "Ubicación (Opcional)",
+    "bigQueryJsonCredentials": "Credenciales JSON (Opcional)",
     "username": "Usuario",
     "password": "Contraseña",
     "useSsl": "Usar SSL/TLS",
@@ -616,7 +619,8 @@
     "minLength": "{field} debe tener al menos {length} caracteres",
     "maxLength": "{field} debe tener como máximo {length} caracteres",
     "passwordMatch": "Las contraseñas no coinciden",
-    "passwordRequirements": "La contraseña debe contener al menos una letra mayúscula y un número"
+    "passwordRequirements": "La contraseña debe contener al menos una letra mayúscula y un número",
+    "invalidJson": "Formato JSON inválido"
   },
   "filters": {
     "allTypes": "Todos los Tipos",
