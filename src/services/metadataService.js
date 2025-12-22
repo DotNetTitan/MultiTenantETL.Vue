@@ -22,7 +22,7 @@ const MOCK_METADATA = {
     providers: {
       Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake', 'BigQuery'],
       API: ['REST'],
-      File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob']
+      File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob', 'GCS']
     },
 
     providerMetadata: {
@@ -37,7 +37,8 @@ const MOCK_METADATA = {
       FTP: { icon: 'mdi-server-network', color: '#5C6BC0' },
       SFTP: { icon: 'mdi-server-network', color: '#3F51B5' },
       S3: { icon: 'mdi-aws', color: '#FF9900' },
-      AzureBlob: { icon: 'mdi-microsoft-azure', color: '#0089D6' }
+      AzureBlob: { icon: 'mdi-microsoft-azure', color: '#0089D6' },
+      GCS: { icon: 'mdi-google-cloud', color: '#FBBC04' }
     },
 
     directions: [

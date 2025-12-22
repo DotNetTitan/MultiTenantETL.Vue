@@ -780,7 +780,7 @@
                 </v-col>
               </template>
 
-              <!-- Azure Blob Storage -->
+              <!-- AzureBlob Storage -->
               <template v-if="connector.provider === 'AzureBlob'">
                 <v-col cols="12" md="6">
                   <v-text-field
@@ -819,6 +819,49 @@
                     :placeholder="t('connectors.blobPathPlaceholder')"
                     variant="outlined"
                     :rules="[v => !!v || t('validation.required', { field: t('connectors.blobPath') })]"
+                    required
+                  />
+                </v-col>
+              </template>
+              
+              <!-- GCS Storage -->
+              <template v-if="connector.provider === 'GCS'">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.gcsBucket"
+                    :label="t('connectors.gcsBucket')"
+                    :placeholder="t('connectors.gcsBucketPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.gcsBucket') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.gcsProjectId"
+                    :label="t('connectors.gcsProjectId')"
+                    :placeholder="t('connectors.gcsProjectIdPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.gcsProjectId') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="connector.config.gcsJsonCredentials"
+                    :label="t('connectors.gcsJsonCredentials')"
+                    variant="outlined"
+                    rows="4"
+                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.path"
+                    :label="t('connectors.filePath')"
+                    placeholder="e.g., path/to/file.csv"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.filePath') })]"
                     required
                   />
                 </v-col>
@@ -1363,7 +1406,7 @@
                         <v-icon v-if="connector.provider === 'Local'">mdi-folder</v-icon>
                         <v-icon v-else-if="connector.provider === 'FTP'">mdi-server-network</v-icon>
                         <v-icon v-else-if="connector.provider === 'S3'">mdi-aws</v-icon>
-                        <v-icon v-else-if="connector.provider === 'Azure Blob'">mdi-microsoft-azure</v-icon>
+                        <v-icon v-else-if="connector.provider === 'AzureBlob'">mdi-microsoft-azure</v-icon>
                         <v-icon v-else>mdi-cloud</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.storageProvider') }}</v-list-item-title>
@@ -1408,7 +1451,23 @@
                         <v-list-item-subtitle>{{ connector.config.s3Region }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
-                    <template v-if="connector.provider === 'Azure Blob'">
+                    <template v-if="connector.provider === 'GCS'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-bucket</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.gcsBucket') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.gcsBucket }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-google-cloud</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.gcsProjectId') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.gcsProjectId }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-if="connector.provider === 'AzureBlob'">
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-table-large</v-icon>
@@ -1846,7 +1905,14 @@ function ensureDatabaseConfig(provider) {
     delete props.connector.config.account;
     delete props.connector.config.warehouse;
     delete props.connector.config.schema;
+    delete props.connector.config.schema;
     delete props.connector.config.role;
+    
+    // Ensure table name is required if destination
+    if ((props.connector.direction === 'destination' || props.connector.direction === 'both') && 
+        props.connector.config.writeConfig && !props.connector.config.writeConfig.tableName) {
+      // Logic for mandatory table name is mostly handled by validateWriteConfig
+    }
   } else {
     // Ensure traditional database fields exist for other providers
     if (!props.connector.config.host) props.connector.config.host = '';
@@ -2034,10 +2100,14 @@ function getDefaultConfig(type) {
         s3AccessKey: null,
         s3SecretKey: null,
         s3Endpoint: null,
-        // Azure Blob fields
+        // AzureBlob fields
         azureAccountName: null,
         azureContainer: null,
         azureAccountKey: null,
+        // GCS fields
+        gcsBucket: null,
+        gcsProjectId: null,
+        gcsJsonCredentials: null,
         writeConfig: {
           writeMode: 'OVERWRITE',
           includeHeaders: true,
@@ -2086,7 +2156,15 @@ function validateConnectionConfig() {
   }
   
   if (type === 'File') {
-    return !!config.path;
+    const basicValid = !!config.path;
+    if (provider === 'GCS') {
+      const gcsValid = !!config.gcsBucket && !!config.gcsProjectId;
+      if (config.gcsJsonCredentials) {
+        return gcsValid && basicValid && isValidJson(config.gcsJsonCredentials);
+      }
+      return gcsValid && basicValid;
+    }
+    return basicValid;
   }
   
   return false;

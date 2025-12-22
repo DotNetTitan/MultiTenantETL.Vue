@@ -23,7 +23,8 @@ export const ConnectorProviders = {
   FTP: 'FTP',
   SFTP: 'SFTP',
   S3: 'S3',
-  AzureBlob: 'AzureBlob'
+  AzureBlob: 'AzureBlob',
+  GCS: 'GCS'
 }
 
 /**
@@ -37,15 +38,15 @@ export async function initializeConstants() {
   }
 
   const { data } = await axios.get('/api/metadata/app-constants')
-  
+
   // Handle both oAuthConfig (from backend) and oauthConfig (expected)
   const oauthConfig = data.oAuthConfig || data.oauthConfig
-  
+
   // Validate response structure
   if (!data || !oauthConfig || !data.roles) {
     throw new Error('Invalid response structure from backend')
   }
-  
+
   AppConstants.roles = data.roles
   AppConstants.oauthConfig = oauthConfig
   AppConstants.supportedLanguages = data.supportedLanguages
@@ -71,11 +72,11 @@ export function getOAuthConfig() {
   if (!AppConstants._initialized) {
     throw new Error('Constants not initialized. Call initializeConstants() first.')
   }
-  
+
   if (!AppConstants.oauthConfig) {
     throw new Error('OAuth config is null/undefined. Backend returned invalid data.')
   }
-  
+
   return AppConstants.oauthConfig
 }
 
