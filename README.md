@@ -1,5 +1,7 @@
 # Multi-tenant ETL Platform
 
+[![CI](https://github.com/DotNetTitan/MultiTenantETL.Vue/workflows/Build%20Vue/badge.svg)](https://github.com/DotNetTitan/MultiTenantETL.Vue/actions)
+
 A modern, responsive web application for managing ETL (Extract, Transform, Load) pipelines across multiple tenants. Built with Vue 3 and Vite.
 
 ## Features
@@ -36,6 +38,45 @@ A modern, responsive web application for managing ETL (Extract, Transform, Load)
   - XLSX for Excel file processing
 - **AI Integration**: Google Gemini AI for context-aware chatbot assistant
 - **Authentication**: OAuth 2.0 Authorization Code Flow with PKCE (RFC 7636)
+
+## Testing
+
+This project uses **Vitest** for unit testing with comprehensive test coverage across all components, composables, services, and stores.
+
+### Running Tests
+
+```bash
+# Run all tests once
+npm run test:run
+
+# Run tests in watch mode
+npm run test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run specific test suites
+npm run test:services      # Test services layer
+npm run test:composables   # Test composables
+npm run test:components    # Test components
+npm run test:stores        # Test Pinia stores
+```
+
+### Test Structure
+
+- **Services**: API service functions and business logic
+- **Composables**: Vue composables for shared logic
+- **Components**: Vue components with interaction testing
+- **Stores**: Pinia store state management and actions
+- **Utils**: Utility functions and helpers
+
+### CI/CD
+
+Tests are automatically run on every push via GitHub Actions. The CI pipeline:
+1. Runs the complete test suite
+2. Generates coverage reports
+3. Builds the application
+4. Deploys to GitHub Pages (if on main branch)
 
 ## Prerequisites
 
