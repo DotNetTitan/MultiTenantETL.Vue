@@ -1926,6 +1926,7 @@ function ensureDatabaseConfig(provider) {
     delete props.connector.config.role;
     delete props.connector.config.projectId;
     delete props.connector.config.datasetId;
+    delete props.connector.config.location;
     delete props.connector.config.jsonCredentials;
   }
 }
@@ -2011,7 +2012,8 @@ function getDefaultPort(provider) {
     'MySQL': 3306,
     'Oracle': 1521,
     'Snowflake': '', // Snowflake doesn't use traditional ports
-    'BigQuery': '' // BigQuery doesn't use traditional ports
+    'BigQuery': '', // BigQuery doesn't use traditional ports
+    'Redshift': 5439
   };
   return ports[provider] || '';
 }

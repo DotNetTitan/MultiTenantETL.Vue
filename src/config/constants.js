@@ -18,6 +18,7 @@ export const ConnectorProviders = {
   MySQL: 'MySQL',
   Snowflake: 'Snowflake',
   BigQuery: 'BigQuery',
+  Redshift: 'Redshift',
   REST: 'REST',
   Local: 'Local',
   FTP: 'FTP',
