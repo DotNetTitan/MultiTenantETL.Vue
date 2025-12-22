@@ -25,6 +25,7 @@ vi.mock('pinia', async () => {
   const actual = await vi.importActual('pinia')
   return {
     ...actual,
+    defineStore: vi.fn((name, setup) => setup),
     createPinia: vi.fn(() => ({
       use: vi.fn(),
       install: vi.fn()

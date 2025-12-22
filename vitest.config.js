@@ -13,9 +13,9 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'node', // Use node environment to avoid DOM/CSS issues
-    setupFiles: ['./src/test/setup.js'], // Use original setup for composables
-    css: false, // Disable CSS processing in tests
+    environment: 'jsdom', // Use jsdom environment to handle DOM/CSS issues
+    setupFiles: ['./src/test/setup-components.js'], // Use component setup for all tests
+    // css: false, // Enable CSS processing in tests with jsdom
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

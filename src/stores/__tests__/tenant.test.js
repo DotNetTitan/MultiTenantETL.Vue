@@ -4,6 +4,8 @@ import { useTenantStore } from '../tenant'
 import { tenantService } from '@/services/tenantService'
 
 // Mock dependencies
+const mockSwitchTenant = vi.fn()
+
 vi.mock('@/services/tenantService', () => ({
   tenantService: {
     getAll: vi.fn(),
@@ -13,7 +15,7 @@ vi.mock('@/services/tenantService', () => ({
 
 vi.mock('../auth', () => ({
   useAuthStore: vi.fn(() => ({
-    switchTenant: vi.fn()
+    switchTenant: mockSwitchTenant
   }))
 }))
 
@@ -223,14 +225,11 @@ describe('useTenantStore', () => {
     const tenantId = 'tenant-1'
 
     it('should switch tenant successfully', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
-      mockAuthStore.switchTenant.mockResolvedValue()
+      mockSwitchTenant.mockResolvedValue()
 
       const result = await store.setCurrentTenant(tenantId)
 
-      expect(useAuthStore).toHaveBeenCalled()
-      expect(mockAuthStore.switchTenant).toHaveBeenCalledWith(tenantId)
+      expect(mockSwitchTenant).toHaveBeenCalledWith(tenantId)
       expect(store.currentTenantId.value).toBe(tenantId)
       expect(localStorageMock.setItem).toHaveBeenCalledWith('currentTenantId', tenantId)
       expect(result).toBe(true)
@@ -239,9 +238,7 @@ describe('useTenantStore', () => {
     })
 
     it('should navigate to dashboard when not already there', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
-      mockAuthStore.switchTenant.mockResolvedValue()
+      mockSwitchTenant.mockResolvedValue()
 
       const router = (await import('@/router')).default
       router.currentRoute.value.path = '/tenants'
@@ -252,9 +249,7 @@ describe('useTenantStore', () => {
     })
 
     it('should not navigate when already on dashboard', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
-      mockAuthStore.switchTenant.mockResolvedValue()
+      mockSwitchTenant.mockResolvedValue()
 
       const router = (await import('@/router')).default
       router.currentRoute.value.path = '/dashboard'
@@ -265,10 +260,8 @@ describe('useTenantStore', () => {
     })
 
     it('should handle tenant switch errors', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
       const switchError = new Error('Tenant switch failed')
-      mockAuthStore.switchTenant.mockRejectedValue(switchError)
+      mockSwitchTenant.mockRejectedValue(switchError)
 
       await expect(store.setCurrentTenant(tenantId)).rejects.toThrow('Tenant switch failed')
 
@@ -278,9 +271,7 @@ describe('useTenantStore', () => {
     })
 
     it('should set loading state correctly', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
-      mockAuthStore.switchTenant.mockResolvedValue()
+      mockSwitchTenant.mockResolvedValue()
 
       const promise = store.setCurrentTenant(tenantId)
 
@@ -292,9 +283,7 @@ describe('useTenantStore', () => {
     })
 
     it('should handle null tenantId', async () => {
-      const { useAuthStore } = await import('../auth')
-      const mockAuthStore = useAuthStore()
-      mockAuthStore.switchTenant.mockResolvedValue()
+      mockSwitchTenant.mockResolvedValue()
 
       await store.setCurrentTenant(null)
 

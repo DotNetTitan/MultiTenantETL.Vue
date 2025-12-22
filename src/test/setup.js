@@ -3,7 +3,10 @@ import { setupServer } from 'msw/node'
 import { handlers } from './handlers'
 
 // Mock CSS imports
-vi.mock('*.css', () => ({}))
+vi.mock('*.css', () => ({ default: '' }))
+
+// Mock Vuetify CSS specifically
+vi.mock('vuetify/lib/**/*.css', () => ({ default: '' }))
 
 // Mock Vuetify
 vi.mock('vuetify', () => ({
