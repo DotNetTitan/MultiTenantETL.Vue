@@ -290,6 +290,57 @@
                 </v-col>
               </template>
               
+              <!-- Cosmos DB Provider -->
+              <template v-else-if="connector.provider === 'CosmosDb'">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.cosmosEndpoint"
+                    :label="t('connectors.cosmosEndpoint')"
+                    :placeholder="t('connectors.cosmosEndpointPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.cosmosEndpoint') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.cosmosKey"
+                    :label="t('connectors.cosmosKey')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.cosmosKey') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.container"
+                    :label="t('connectors.containerName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.containerName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col v-if="connector.direction === 'source' || connector.direction === 'both'" cols="12">
+                  <v-textarea
+                    v-model="connector.config.query"
+                    :label="t('connectors.customQuery')"
+                    placeholder="SELECT * FROM c"
+                    variant="outlined"
+                    rows="3"
+                  />
+                </v-col>
+              </template>
+              
               <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
               <template v-else>
                 <v-col cols="12" md="6">
@@ -349,8 +400,8 @@
                 </v-col>
               </template>
               
-              <!-- Source/Both: Table Name or Query (Excluded for MongoDB) -->
-              <template v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.provider !== 'MongoDb'">
+              <!-- Source/Both: Table Name or Query (Excluded for MongoDB and CosmosDB) -->
+              <template v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.provider !== 'MongoDb' && connector.provider !== 'CosmosDb'">
                 <v-col cols="12">
                   <v-switch
                     v-model="connector.config.useCustomQuery"
@@ -1357,6 +1408,29 @@
                         <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
+                    <template v-else-if="connector.provider === 'CosmosDb'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-link-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.cosmosEndpoint') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate" v-text="connector.config.cosmosEndpoint"></v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database-cog</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.containerName') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.container }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.query">
+                        <template #prepend>
+                          <v-icon>mdi-code-braces</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.customQuery') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.query }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                     <template v-else-if="connector.provider === 'MongoDb'">
                       <v-list-item v-if="connector.config.connectionString">
                         <template #prepend>
@@ -2000,6 +2074,30 @@ function ensureDatabaseConfig(provider) {
     delete props.connector.config.datasetId;
     delete props.connector.config.location;
     delete props.connector.config.jsonCredentials;
+  } else if (provider === 'CosmosDb') {
+    // Ensure Cosmos DB-specific fields exist
+    if (!props.connector.config.cosmosEndpoint) props.connector.config.cosmosEndpoint = '';
+    if (!props.connector.config.cosmosKey) props.connector.config.cosmosKey = '';
+    if (!props.connector.config.database) props.connector.config.database = '';
+    if (!props.connector.config.container) props.connector.config.container = '';
+    
+    // Remove fields not used by Cosmos DB
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.location;
+    delete props.connector.config.jsonCredentials;
+    delete props.connector.config.connectionString;
+    delete props.connector.config.collectionName;
+    delete props.connector.config.filterJson;
   } else {
     // Ensure traditional database fields exist for other providers
     if (!props.connector.config.host) props.connector.config.host = '';
@@ -2243,6 +2341,11 @@ function validateConnectionConfig() {
         return basicMongoValid && isValidJson(config.filterJson);
       }
       return basicMongoValid;
+    }
+    
+    // Cosmos DB-specific validation
+    if (provider === 'CosmosDb') {
+      return !!config.cosmosEndpoint && !!config.cosmosKey && !!config.database && !!config.container;
     }
     
     // Other database providers

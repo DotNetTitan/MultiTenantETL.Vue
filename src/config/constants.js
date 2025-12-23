@@ -20,6 +20,7 @@ export const ConnectorProviders = {
   BigQuery: 'BigQuery',
   Redshift: 'Redshift',
   MongoDb: 'MongoDb',
+  CosmosDb: 'CosmosDb',
   REST: 'REST',
   Local: 'Local',
   FTP: 'FTP',
