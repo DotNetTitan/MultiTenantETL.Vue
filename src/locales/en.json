@@ -970,6 +970,9 @@
     "selectTransformation": "Select Transformation",
     "separator": "Separator",
     "separatorHint": "Character to use when combining multiple fields",
+    "allFieldMappingsValid": "All field mappings valid",
+    "allRequiredFieldsMapped": "All required fields are mapped!",
+    "uniqueIdentifierMappingRequired": "Unique identifier mapping required",
     "mappingIssues": "Mapping Issues"
   },
   "schedules": {
