@@ -17,7 +17,7 @@
       <div
         v-if="showHint"
         v-motion
-        :initial="{ opacity: 0, x: 20, scale: 0.9 }"
+        :initial="{ opacity: 0, x: 20, y: 0, scale: 1 }"
         :enter="{ 
           opacity: 1, 
           x: 0, 
@@ -31,18 +31,17 @@
         :leave="{ 
           opacity: 0, 
           x: 30, 
-          scale: 0.7,
           transition: { 
             duration: 400,
             ease: [0.4, 0, 0.2, 1]
           }
         }"
-        :visible="{ 
-          scale: [1, 1.02, 1],
-          transition: { 
-            duration: 2000,
-            repeat: Infinity,
-            ease: 'easeInOut'
+        :hovered="{
+          scale: 1.05,
+          transition: {
+            type: 'spring',
+            stiffness: 400,
+            damping: 10
           }
         }"
         class="help-hint"
@@ -50,7 +49,15 @@
       >
         <div class="hint-content">
           <v-icon size="small" class="mr-1">mdi-help-circle</v-icon>
-          <span>{{ $t('chatbot.needHelp') }}</span>
+          <span 
+            v-motion
+            :initial="{ opacity: 0, x: -10 }"
+            :enter="{ 
+              opacity: 1, 
+              x: 0, 
+              transition: { delay: 300, duration: 500 } 
+            }"
+          >{{ $t('chatbot.needHelp') }}</span>
         </div>
         <v-btn
           icon
@@ -67,6 +74,32 @@
     <!-- Chat Window -->
     <v-card
       v-if="isOpen"
+      v-motion
+      :initial="{ 
+        opacity: 0, 
+        y: 20, 
+        scale: 0.95,
+        transformOrigin: 'bottom right'
+      }"
+      :enter="{ 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        transition: {
+          type: 'spring',
+          stiffness: 250,
+          damping: 25
+        }
+      }"
+      :leave="{ 
+        opacity: 0, 
+        y: 20, 
+        scale: 0.95,
+        transition: {
+          duration: 300,
+          ease: 'easeIn'
+        }
+      }"
       class="chat-window"
       :class="{ 'chat-window-expanded': isExpanded }"
       elevation="12"
@@ -520,7 +553,9 @@ onUnmounted(() => {
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  /* Specifically transition width/height for expansion, but skip transform/opacity which v-motion handles */
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width, height, transform, opacity;
 }
 
 .chat-window-expanded {
@@ -831,12 +866,13 @@ onUnmounted(() => {
   cursor: pointer;
   white-space: nowrap;
   z-index: 998;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  /* Removed CSS hover transform to avoid conflict with v-motion :hovered */
+  transition: box-shadow 0.2s ease;
+  will-change: transform, opacity;
 }
 
 .help-hint:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
 .hint-content {
