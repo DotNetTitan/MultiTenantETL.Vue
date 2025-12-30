@@ -778,7 +778,6 @@ function createEmptyConnector() {
 
 function handleSchemaValidation(validation) {
   // Store validation result if needed
-  console.log('Schema validation:', validation);
   
   // Check if schema has changed
   if (originalSchema.value && editedConnector.value.schema) {

@@ -153,6 +153,7 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+  const requiresSuperAdmin = to.matched.some(record => record.meta.requiresSuperAdmin)
   const isGuestRoute = to.matched.some(record => record.meta.guest)
   const isPublicRoute = to.matched.some(record => record.meta.public)
 
@@ -173,6 +174,14 @@ router.beforeEach((to, from, next) => {
     // Prevent infinite redirect loop
     if (to.path !== '/login') {
       next('/login')
+    } else {
+      next()
+    }
+  } else if (requiresSuperAdmin && (!authStore.user || authStore.user.role !== 'SuperAdmin')) {
+    window.dispatchEvent(new CustomEvent('route-loading-end'))
+    // Prevent infinite redirect loop
+    if (to.path !== '/dashboard') {
+      next('/dashboard')
     } else {
       next()
     }

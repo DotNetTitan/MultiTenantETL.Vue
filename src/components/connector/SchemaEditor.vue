@@ -494,27 +494,18 @@ function importSchema() {
 }
 
 function handleSchemaGenerated(schema) {
-  console.log('🔍 handleSchemaGenerated called with:', schema);
-  console.log('🔍 Schema type:', typeof schema, 'Is array:', Array.isArray(schema));
-  
   // Handle both formats: array of fields or object with fields property
   let rawFields = [];
   
   if (Array.isArray(schema)) {
-    console.log('✅ Schema is array, using directly');
     rawFields = schema;
   } else if (schema && schema.fields && Array.isArray(schema.fields)) {
-    console.log('✅ Schema has fields property, extracting fields');
     rawFields = schema.fields;
   } else {
     console.error('❌ Invalid schema format received:', schema);
-    console.log('Schema keys:', schema ? Object.keys(schema) : 'null/undefined');
     localFields.value = [];
     return;
   }
-  
-  console.log('🔍 Raw fields to normalize:', rawFields);
-  console.log('🔍 First field sample:', rawFields[0]);
   
   // Normalize fields to ensure they have required properties
   const normalizedFields = rawFields
@@ -558,8 +549,6 @@ function handleSchemaGenerated(schema) {
       };
     });
   
-  console.log('✅ Normalized fields:', normalizedFields);
-  console.log('✅ Setting localFields.value to', normalizedFields.length, 'fields');
   localFields.value = normalizedFields;
 }
 </script>

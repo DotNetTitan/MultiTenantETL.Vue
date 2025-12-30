@@ -4,7 +4,26 @@ import { tenantService } from '@/services/tenantService'
 import api from '@/services/api'
 
 export const useTenantStore = defineStore('tenant', () => {
-  const currentTenantId = ref(localStorage.getItem('currentTenantId') || null)
+  // Initialize currentTenantId from auth store user if available, otherwise localStorage
+  const getInitialTenantId = () => {
+    // Try to get from auth store first (only if it's been initialized)
+    try {
+      const { useAuthStore } = require('./auth')
+      const authStore = useAuthStore()
+      if (authStore.user?.tenantId) {
+        // Sync to localStorage for persistence
+        localStorage.setItem('currentTenantId', authStore.user.tenantId)
+        return authStore.user.tenantId
+      }
+    } catch (error) {
+      // Auth store not available yet or error, fall back to localStorage
+    }
+    
+    // Fall back to localStorage
+    return localStorage.getItem('currentTenantId') || null
+  }
+  
+  const currentTenantId = ref(getInitialTenantId())
   const tenants = ref([])
   const loading = ref(false)
   const error = ref(null)
@@ -66,9 +85,10 @@ export const useTenantStore = defineStore('tenant', () => {
       const authStore = useAuthStore()
       await authStore.switchTenant(tenantId)
       
-      // Update local state
-      currentTenantId.value = tenantId
-      localStorage.setItem('currentTenantId', tenantId || '')
+      // Update local state - use tenantId from auth store's updated user for consistency
+      const updatedTenantId = authStore.user?.tenantId || tenantId
+      currentTenantId.value = updatedTenantId
+      localStorage.setItem('currentTenantId', updatedTenantId || '')
       
       // Navigate to dashboard with smooth transition (no page reload!)
       const router = (await import('@/router')).default

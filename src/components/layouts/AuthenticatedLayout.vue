@@ -12,7 +12,7 @@
         <v-spacer />
         
         <div class="d-flex align-center ga-2">
-          <tenant-selector v-if="isAdmin" class="flex-shrink-0" />
+          <tenant-selector class="flex-shrink-0" />
           <language-switcher class="flex-shrink-0" />
           
           <!-- AI Chatbot Toggle -->

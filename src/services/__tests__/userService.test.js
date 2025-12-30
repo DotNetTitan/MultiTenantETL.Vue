@@ -341,6 +341,7 @@ describe('User Service', () => {
       const result = await userService.addUserToTenant(userId, tenantId)
 
       expect(api.post).toHaveBeenCalledWith('/api/Users/1/tenants', {
+        userId: 1,
         tenantId: 1,
         roleCode: 'User'
       })
@@ -359,6 +360,7 @@ describe('User Service', () => {
       const result = await userService.addUserToTenant(userId, tenantId, roleCode)
 
       expect(api.post).toHaveBeenCalledWith('/api/Users/1/tenants', {
+        userId: 1,
         tenantId: 1,
         roleCode: 'Admin'
       })

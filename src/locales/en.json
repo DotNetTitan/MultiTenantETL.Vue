@@ -19,6 +19,7 @@
     "loading": "Loading...",
     "noData": "No data available",
     "error": "Error",
+    "accessDenied": "Access Denied",
     "success": "Success",
     "confirm": "Confirm",
     "yes": "Yes",
@@ -598,6 +599,8 @@
     "removeUserConfirm": "Are you sure you want to remove this user from the tenant?",
     "updateRole": "Update User Role",
     "switchSuccess": "Switched to {name}",
+    "adminRequired": "Administrator privileges are required to access this page.",
+    "superAdminRequired": "Super Administrator privileges are required to access this page.",
     "errors": {
       "switchFailed": "Failed to switch tenant"
     }

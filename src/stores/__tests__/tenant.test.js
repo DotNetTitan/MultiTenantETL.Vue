@@ -4,7 +4,10 @@ import { useTenantStore } from '../tenant'
 import { tenantService } from '@/services/tenantService'
 
 // Mock dependencies
-const mockSwitchTenant = vi.fn()
+const mockAuthStore = {
+  user: null,
+  switchTenant: vi.fn()
+}
 
 vi.mock('@/services/tenantService', () => ({
   tenantService: {
@@ -14,9 +17,7 @@ vi.mock('@/services/tenantService', () => ({
 }))
 
 vi.mock('../auth', () => ({
-  useAuthStore: vi.fn(() => ({
-    switchTenant: mockSwitchTenant
-  }))
+  useAuthStore: vi.fn(() => mockAuthStore)
 }))
 
 vi.mock('@/router', () => ({
@@ -47,6 +48,8 @@ describe('useTenantStore', () => {
 
     // Reset mocks
     vi.clearAllMocks()
+    mockAuthStore.user = null
+    mockAuthStore.switchTenant.mockClear()
 
     store = useTenantStore()
   })
@@ -225,11 +228,13 @@ describe('useTenantStore', () => {
     const tenantId = 'tenant-1'
 
     it('should switch tenant successfully', async () => {
-      mockSwitchTenant.mockResolvedValue()
+      mockAuthStore.switchTenant.mockResolvedValue()
+      // Mock the auth store user being updated after switch
+      mockAuthStore.user = { tenantId }
 
       const result = await store.setCurrentTenant(tenantId)
 
-      expect(mockSwitchTenant).toHaveBeenCalledWith(tenantId)
+      expect(mockAuthStore.switchTenant).toHaveBeenCalledWith(tenantId)
       expect(store.currentTenantId.value).toBe(tenantId)
       expect(localStorageMock.setItem).toHaveBeenCalledWith('currentTenantId', tenantId)
       expect(result).toBe(true)
@@ -238,7 +243,8 @@ describe('useTenantStore', () => {
     })
 
     it('should navigate to dashboard when not already there', async () => {
-      mockSwitchTenant.mockResolvedValue()
+      mockAuthStore.switchTenant.mockResolvedValue()
+      mockAuthStore.user = { tenantId }
 
       const router = (await import('@/router')).default
       router.currentRoute.value.path = '/tenants'
@@ -249,7 +255,8 @@ describe('useTenantStore', () => {
     })
 
     it('should not navigate when already on dashboard', async () => {
-      mockSwitchTenant.mockResolvedValue()
+      mockAuthStore.switchTenant.mockResolvedValue()
+      mockAuthStore.user = { tenantId }
 
       const router = (await import('@/router')).default
       router.currentRoute.value.path = '/dashboard'
@@ -261,7 +268,7 @@ describe('useTenantStore', () => {
 
     it('should handle tenant switch errors', async () => {
       const switchError = new Error('Tenant switch failed')
-      mockSwitchTenant.mockRejectedValue(switchError)
+      mockAuthStore.switchTenant.mockRejectedValue(switchError)
 
       await expect(store.setCurrentTenant(tenantId)).rejects.toThrow('Tenant switch failed')
 
@@ -271,7 +278,8 @@ describe('useTenantStore', () => {
     })
 
     it('should set loading state correctly', async () => {
-      mockSwitchTenant.mockResolvedValue()
+      mockAuthStore.switchTenant.mockResolvedValue()
+      mockAuthStore.user = { tenantId }
 
       const promise = store.setCurrentTenant(tenantId)
 
@@ -283,7 +291,8 @@ describe('useTenantStore', () => {
     })
 
     it('should handle null tenantId', async () => {
-      mockSwitchTenant.mockResolvedValue()
+      mockAuthStore.switchTenant.mockResolvedValue()
+      mockAuthStore.user = { tenantId: null }
 
       await store.setCurrentTenant(null)
 

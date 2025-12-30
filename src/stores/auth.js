@@ -26,6 +26,11 @@ export const useAuthStore = defineStore('auth', () => {
   function initialize() {
     if (authService.isAuthenticated()) {
       user.value = getCurrentUser()
+      
+      // Sync tenant ID to localStorage for tenant store initialization
+      if (user.value?.tenantId) {
+        localStorage.setItem('currentTenantId', user.value.tenantId)
+      }
     }
   }
 

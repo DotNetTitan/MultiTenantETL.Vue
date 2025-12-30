@@ -152,9 +152,6 @@ const matchesPassword = (value) => {
 };
 
 async function handleRegister() {
-  console.log('handleRegister called');
-  console.log('Form data:', JSON.parse(JSON.stringify(form)));
-
   const isValid = validateForm({
     firstName: { value: form.firstName, rules: [required] },
     lastName: { value: form.lastName, rules: [required] },
@@ -163,23 +160,17 @@ async function handleRegister() {
     confirmPassword: { value: form.confirmPassword, rules: [required, matchesPassword] }
   });
 
-  console.log('Validation result:', isValid);
-  console.log('Errors:', errors.value);
-
   if (!isValid) {
-    console.log('Form is invalid, stopping.');
     return;
   }
 
   try {
-    console.log('Calling authStore.register...');
     await authStore.register({
       email: form.email,
       password: form.password,
       firstName: form.firstName,
       lastName: form.lastName
     });
-    console.log('Registration successful');
     success.value = 'Account created successfully! Please check your email to confirm your account.';
     
     // Redirect to login after 3 seconds
@@ -189,7 +180,6 @@ async function handleRegister() {
   } catch (error) {
     // Error is already handled in the store
     console.warn('Registration failed:', error.message);
-    console.log('AuthStore error:', authStore.error);
   }
 }
 </script>
