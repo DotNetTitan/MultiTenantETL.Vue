@@ -38,6 +38,17 @@
               @update:model-value="loadPipelines"
             />
           </v-col>
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="isActiveFilter"
+              :label="$t('common.active')"
+              :items="activeOptions"
+              density="compact"
+              hide-details
+              class="mb-4"
+              @update:model-value="loadPipelines"
+            />
+          </v-col>
           <v-col cols="12" md="3">
             <v-select
               v-model="sortBy"
@@ -384,8 +395,10 @@ const {
   deletingPipeline,
   search,
   statusFilter,
+  isActiveFilter,
   sortBy,
   statusOptions,
+  activeOptions,
   sortOptions,
   loadPipelines,
   savePipeline,
@@ -661,17 +674,21 @@ onMounted(async () => {
   // Check if there's a status filter in the URL query parameter
   if (route.query.status) {
     const statusFromUrl = route.query.status.toLowerCase();
-    // Map URL status to internal status values
-    const statusMap = {
-      'active': 'Running',
-      'running': 'Running',
-      'idle': 'Idle',
-      'failed': 'Failed',
-      'completed': 'Completed'
-    };
     
-    if (statusMap[statusFromUrl]) {
-      statusFilter.value = statusMap[statusFromUrl];
+    if (statusFromUrl === 'active') {
+      isActiveFilter.value = 'Active';
+    } else {
+      // Map URL status to internal status values for execution status
+      const statusMap = {
+        'running': 'Running',
+        'idle': 'Idle',
+        'failed': 'Failed',
+        'completed': 'Completed'
+      };
+      
+      if (statusMap[statusFromUrl]) {
+        statusFilter.value = statusMap[statusFromUrl];
+      }
     }
   }
   
