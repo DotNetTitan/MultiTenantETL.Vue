@@ -561,6 +561,17 @@ function formatSchedule(schedule, isScheduled) {
   // If pipeline is not scheduled, return Manual
   if (!isScheduled || !schedule) return 'Manual';
   
+  // Use cronDescription if available (provided by backend)
+  if (schedule.cronDescription) {
+    return schedule.cronDescription;
+  }
+  
+  // Fallback to cron expression if description not available
+  if (schedule.cronExpression) {
+    return `Cron: ${schedule.cronExpression}`;
+  }
+  
+  // Legacy support for older frequency-based model if still present
   const freq = schedule.frequency;
   const time = schedule.time || '00:00';
   
