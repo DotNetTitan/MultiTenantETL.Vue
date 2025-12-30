@@ -6,34 +6,34 @@ export const userService = {
    */
   async getAll(filters = {}) {
     const params = {}
-    
+
     if (filters.search) {
       params.search = filters.search
     }
-    
+
     if (filters.email) {
       params.email = filters.email
     }
-    
+
     if (filters.name) {
       params.name = filters.name
     }
-    
+
     if (filters.status && filters.status !== 'All') {
       params.isActive = filters.status === 'Active'
     }
-    
+
     if (filters.tenantId) {
       params.tenantId = filters.tenantId
     }
 
     const response = await api.get('/api/Users', { params })
-    
+
     // Handle paginated response - extract users array
     if (response.data && response.data.users) {
       return response.data.users
     }
-    
+
     // Handle direct array response
     return response.data
   },
@@ -124,6 +124,7 @@ export const userService = {
    */
   async addUserToTenant(userId, tenantId, roleCode = 'User') {
     const response = await api.post(`/api/Users/${userId}/tenants`, {
+      userId,
       tenantId,
       roleCode
     })
@@ -206,16 +207,16 @@ export const userService = {
    */
   applyFilters(users, filters = {}) {
     let filtered = [...users]
-    
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
       filtered = filtered.filter(user => {
         const name = `${user.firstName} ${user.lastName}`.toLowerCase()
-        return name.includes(searchLower) || 
-               user.email?.toLowerCase().includes(searchLower)
+        return name.includes(searchLower) ||
+          user.email?.toLowerCase().includes(searchLower)
       })
     }
-    
+
     if (filters.status && filters.status !== 'All') {
       const isActive = filters.status === 'Active'
       filtered = filtered.filter(user => user.isActive === isActive)
@@ -225,7 +226,7 @@ export const userService = {
       const [field, order] = filters.sort.split('_')
       filtered.sort((a, b) => {
         let aVal, bVal
-        
+
         if (field === 'name') {
           aVal = `${a.firstName} ${a.lastName}`
           bVal = `${b.firstName} ${b.lastName}`
@@ -236,14 +237,14 @@ export const userService = {
           aVal = a[field]
           bVal = b[field]
         }
-        
+
         if (order === 'desc') {
           return bVal > aVal ? 1 : -1
         }
         return aVal > bVal ? 1 : -1
       })
     }
-    
+
     return filtered
   }
 }
