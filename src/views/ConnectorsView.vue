@@ -479,6 +479,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            color="primary"
             variant="text"
             :disabled="testingConnection"
             @click="showConnectionDialog = false"

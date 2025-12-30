@@ -249,9 +249,10 @@
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
+            color="primary"
             @click="showDetailsDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>

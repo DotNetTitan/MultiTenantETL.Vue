@@ -365,7 +365,7 @@
             color="primary"
             @click="showMappingsDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
