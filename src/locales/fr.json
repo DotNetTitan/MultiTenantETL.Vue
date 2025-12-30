@@ -516,7 +516,8 @@
     "completed": "Terminé",
     "failed": "Échoué",
     "cancelled": "Annulé",
-    "idle": "Inactif"
+    "idle": "Inactif",
+    "queued": "En file d'attente"
   },
   "tenants": {
     "title": "Locataires",

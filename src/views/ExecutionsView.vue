@@ -452,7 +452,8 @@ function getStatusLabel(status) {
     'Running': t('executions.running'),
     'Completed': t('executions.completed'),
     'Failed': t('executions.failed'),
-    'Cancelled': t('executions.cancelled')
+    'Cancelled': t('executions.cancelled'),
+    'Queued': t('executions.queued')
   };
   return statusMap[status] || status;
 }
@@ -482,6 +483,8 @@ function getStatusIcon(status) {
       return 'mdi-alert-circle';
     case 'cancelled':
       return 'mdi-stop-circle';
+    case 'queued':
+      return 'mdi-clock-outline';
     default:
       return 'mdi-help-circle';
   }
@@ -631,6 +634,8 @@ function getStatusColor(status) {
       return 'error';
     case 'cancelled':
       return 'warning';
+    case 'queued':
+      return 'blue-grey';
     default:
       return 'grey';
   }

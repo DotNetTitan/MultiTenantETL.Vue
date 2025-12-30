@@ -567,6 +567,7 @@
     "failed": "Failed",
     "cancelled": "Cancelled",
     "idle": "Idle",
+    "queued": "Queued",
     "logsCopied": "Logs copied to clipboard",
     "cancelSuccess": "Execution cancelled successfully",
     "errors": {

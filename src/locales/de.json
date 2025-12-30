@@ -516,7 +516,8 @@
     "completed": "Abgeschlossen",
     "failed": "Fehlgeschlagen",
     "cancelled": "Abgebrochen",
-    "idle": "Leerlauf"
+    "idle": "Leerlauf",
+    "queued": "In Warteschlange"
   },
   "tenants": {
     "title": "Tenants",

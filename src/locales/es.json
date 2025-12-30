@@ -532,7 +532,8 @@
     "completed": "Completado",
     "failed": "Fallido",
     "cancelled": "Cancelado",
-    "idle": "Inactivo"
+    "idle": "Inactivo",
+    "queued": "En cola"
   },
   "tenants": {
     "title": "Inquilinos",
