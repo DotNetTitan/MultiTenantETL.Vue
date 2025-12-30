@@ -60,8 +60,8 @@
               <v-select
                 v-model="selectedPreset"
                 :label="$t('schedules.presets.title')"
-                :items="cronPresets"
-                item-title="text"
+                :items="translatedPresets"
+                item-title="title"
                 item-value="value"
                 clearable
                 @update:model-value="applyPreset"
@@ -218,6 +218,13 @@ const isEditing = computed(() => !!form.value.id)
 
 // commonTimezones is already an array of { title, value } objects from useSchedule
 const timezoneItems = computed(() => commonTimezones)
+
+const translatedPresets = computed(() => {
+  return cronPresets.map(p => ({
+    ...p,
+    title: p.titleKey ? t(p.titleKey) : p.text
+  }))
+})
 
 const cronRules = [
   v => !!v || t('schedules.validation.cronRequired'),

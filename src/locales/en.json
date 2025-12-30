@@ -1039,7 +1039,8 @@
       "dailyEvening": "Daily at 6 PM",
       "weeklyMonday": "Weekly on Monday",
       "weeklySunday": "Weekly on Sunday",
-      "monthlyFirst": "First day of month"
+      "monthlyFirst": "First day of month",
+      "lastDayOfMonth": "Last day of month"
     },
     "nextExecutions": "Next Scheduled Executions",
     "noNextExecutions": "No upcoming executions",
