@@ -917,6 +917,12 @@
     "metadata": "Metadaten",
     "error": "Fehler",
     "tenant": "Tenant",
+    "userInformation": "Benutzerinformationen",
+    "resourceInformation": "Ressourceninformationen",
+    "email": "E-Mail",
+    "organization": "Organisation",
+    "occurredAt": "Zeitpunkt",
+    "resourceId": "Ressourcen-ID",
     "filterByAction": "Nach Aktion filtern",
     "filterByResource": "Nach Ressourcentyp filtern",
     "filterBySeverity": "Nach Schweregrad filtern"

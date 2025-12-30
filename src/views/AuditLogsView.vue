@@ -141,15 +141,15 @@
               <div class="mb-3">
                 <div class="d-flex align-center mb-2">
                   <v-icon size="small" color="primary" class="mr-2">mdi-account</v-icon>
-                  <span class="text-subtitle-2 font-weight-medium">User Information</span>
+                  <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.userInformation') }}</span>
                 </div>
                 <div class="pl-7">
                   <div class="mb-2">
-                    <div class="text-caption text-medium-emphasis">Email</div>
-                    <div class="text-body-2">{{ selectedLog.userEmail || 'System' }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.email') }}</div>
+                    <div class="text-body-2 text-truncate" :title="selectedLog.userEmail">{{ selectedLog.userEmail || 'System' }}</div>
                   </div>
                   <div>
-                    <div class="text-caption text-medium-emphasis">IP Address</div>
+                    <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.ipAddress') }}</div>
                     <div class="text-body-2">{{ selectedLog.ipAddress || '-' }}</div>
                   </div>
                 </div>
@@ -161,16 +161,16 @@
               <div class="mb-3">
                 <div class="d-flex align-center mb-2">
                   <v-icon size="small" color="primary" class="mr-2">mdi-cube-outline</v-icon>
-                  <span class="text-subtitle-2 font-weight-medium">Resource Information</span>
+                  <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.resourceInformation') }}</span>
                 </div>
                 <div class="pl-7">
                   <div class="mb-2">
-                    <div class="text-caption text-medium-emphasis">Type</div>
+                    <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.resourceType') }}</div>
                     <div class="text-body-2">{{ selectedLog.resourceType }}</div>
                   </div>
                   <div v-if="selectedLog.resourceId">
-                    <div class="text-caption text-medium-emphasis">Resource ID</div>
-                    <div class="text-body-2 font-mono text-caption">{{ selectedLog.resourceId }}</div>
+                    <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.resourceId') || 'Resource ID' }}</div>
+                    <div class="text-body-2 font-mono text-caption text-truncate" :title="selectedLog.resourceId">{{ selectedLog.resourceId }}</div>
                   </div>
                 </div>
               </div>
@@ -181,10 +181,10 @@
               <div class="mb-3">
                 <div class="d-flex align-center mb-2">
                   <v-icon size="small" color="primary" class="mr-2">mdi-domain</v-icon>
-                  <span class="text-subtitle-2 font-weight-medium">Tenant</span>
+                  <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.tenant') }}</span>
                 </div>
                 <div class="pl-7">
-                  <div class="text-caption text-medium-emphasis">Organization</div>
+                  <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.organization') }}</div>
                   <div class="text-body-2">{{ selectedLog.tenantName || 'System Level' }}</div>
                 </div>
               </div>
@@ -195,10 +195,10 @@
               <div class="mb-3">
                 <div class="d-flex align-center mb-2">
                   <v-icon size="small" color="primary" class="mr-2">mdi-clock-outline</v-icon>
-                  <span class="text-subtitle-2 font-weight-medium">Timestamp</span>
+                  <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.timestamp') }}</span>
                 </div>
                 <div class="pl-7">
-                  <div class="text-caption text-medium-emphasis">Occurred At</div>
+                  <div class="text-caption text-medium-emphasis">{{ $t('auditLogs.occurredAt') }}</div>
                   <div class="text-body-2">{{ auditService.formatDate(selectedLog.createdAt) }}</div>
                 </div>
               </div>
@@ -212,7 +212,21 @@
                   <v-icon size="small" color="primary" class="mr-2">mdi-code-json</v-icon>
                   <span class="text-subtitle-2 font-weight-medium">{{ $t('auditLogs.metadata') }}</span>
                 </div>
-                <pre class="text-body-2 pa-3 rounded overflow-auto" style="max-height: 200px; background-color: rgba(var(--v-theme-on-surface), 0.05)">{{ selectedLog.metadata }}</pre>
+                <div class="pa-4 rounded border" style="background-color: rgba(var(--v-theme-on-surface), 0.03)">
+                  <v-row v-for="(item, idx) in parsedMetadata" :key="idx" :class="{ 'mb-2': idx < parsedMetadata.length - 1 }" no-gutters>
+                    <v-col cols="4" class="text-caption font-weight-bold text-medium-emphasis text-uppercase" style="letter-spacing: 0.5px">
+                      {{ item.key }}
+                    </v-col>
+                    <v-col cols="8" class="text-body-2">
+                      <template v-if="typeof item.value === 'object'">
+                        <pre class="text-caption pa-2 rounded bg-surface-variant auto-overflow mt-1">{{ JSON.stringify(item.value, null, 2) }}</pre>
+                      </template>
+                      <template v-else>
+                        {{ item.value }}
+                      </template>
+                    </v-col>
+                  </v-row>
+                </div>
               </div>
             </v-col>
 
@@ -267,6 +281,22 @@ const filters = ref({
 
 const showDetailsDialog = ref(false)
 const selectedLog = ref(null)
+
+const parsedMetadata = computed(() => {
+  if (!selectedLog.value?.metadata) return []
+  try {
+    const data = typeof selectedLog.value.metadata === 'string' 
+      ? JSON.parse(selectedLog.value.metadata) 
+      : selectedLog.value.metadata
+    
+    return Object.entries(data).map(([key, value]) => ({
+      key,
+      value
+    }))
+  } catch (e) {
+    return [{ key: 'Data', value: selectedLog.value.metadata }]
+  }
+})
 
 const headers = computed(() => [
   { title: t('auditLogs.action'), key: 'action', width: '200px' },

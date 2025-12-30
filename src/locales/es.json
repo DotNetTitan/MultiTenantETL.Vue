@@ -925,6 +925,12 @@
     "metadata": "Metadatos",
     "error": "Error",
     "tenant": "Inquilino",
+    "userInformation": "Información del Usuario",
+    "resourceInformation": "Información del Recurso",
+    "email": "Correo Electrónico",
+    "organization": "Organización",
+    "occurredAt": "Ocurrido el",
+    "resourceId": "ID del Recurso",
     "filterByAction": "Filtrar por Acción",
     "filterByResource": "Filtrar por Tipo de Recurso",
     "filterBySeverity": "Filtrar por Severidad"

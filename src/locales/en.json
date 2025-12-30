@@ -894,6 +894,12 @@
     "metadata": "Metadata",
     "error": "Error",
     "tenant": "Tenant",
+    "userInformation": "User Information",
+    "resourceInformation": "Resource Information",
+    "email": "Email",
+    "organization": "Organization",
+    "occurredAt": "Occurred At",
+    "resourceId": "Resource ID",
     "filterByAction": "Filter by Action",
     "filterByResource": "Filter by Resource Type",
     "filterBySeverity": "Filter by Severity"

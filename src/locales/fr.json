@@ -917,6 +917,12 @@
     "metadata": "Métadonnées",
     "error": "Erreur",
     "tenant": "Locataire",
+    "userInformation": "Informations Utilisateur",
+    "resourceInformation": "Informations Ressource",
+    "email": "Email",
+    "organization": "Organisation",
+    "occurredAt": "Survenu à",
+    "resourceId": "ID de Ressource",
     "filterByAction": "Filtrer par Action",
     "filterByResource": "Filtrer par Type de Ressource",
     "filterBySeverity": "Filtrer par Gravité"
