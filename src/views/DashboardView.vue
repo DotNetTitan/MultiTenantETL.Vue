@@ -185,7 +185,6 @@
             </div>
             <v-sheet v-else height="300" class="d-flex align-center justify-center bg-transparent">
               <div class="text-center w-100">
-
                 <v-row class="ma-0">
                   <v-col 
                     v-for="(status, index) in statusDistribution" 

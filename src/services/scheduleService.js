@@ -12,8 +12,7 @@ import api from './api'
  * @returns {Promise<Object>} Paginated list of schedule objects
  */
 export async function fetchSchedules(params = {}) {
-  try {
-    const queryParams = new URLSearchParams()
+const queryParams = new URLSearchParams()
     
     if (params.pipelineId) queryParams.append('pipelineId', params.pipelineId)
     if (params.isActive !== undefined && params.isActive !== null) {
@@ -29,9 +28,6 @@ export async function fetchSchedules(params = {}) {
     
     const response = await api.get(url)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -40,12 +36,8 @@ export async function fetchSchedules(params = {}) {
  * @returns {Promise<Object>} Schedule object
  */
 export async function fetchScheduleById(id) {
-  try {
-    const response = await api.get(`/api/schedules/${id}`)
+const response = await api.get(`/api/schedules/${id}`)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -77,18 +69,14 @@ export async function fetchScheduleByPipelineId(pipelineId) {
  * @returns {Promise<Object>} Created schedule
  */
 export async function createSchedule(schedule) {
-  try {
-    const response = await api.post('/api/schedules', {
-      pipelineId: schedule.pipelineId,
-      cronExpression: schedule.cronExpression,
-      timezone: schedule.timezone,
-      description: schedule.description || null,
-      isActive: schedule.isActive ?? true
-    })
-    return response.data
-  } catch (error) {
-    throw error
-  }
+  const response = await api.post('/api/schedules', {
+    pipelineId: schedule.pipelineId,
+    cronExpression: schedule.cronExpression,
+    timezone: schedule.timezone,
+    description: schedule.description || null,
+    isActive: schedule.isActive ?? true
+  })
+  return response.data
 }
 
 /**
@@ -102,17 +90,13 @@ export async function createSchedule(schedule) {
  * @returns {Promise<Object>} Updated schedule
  */
 export async function updateSchedule(id, schedule) {
-  try {
-    const response = await api.put(`/api/schedules/${id}`, {
+const response = await api.put(`/api/schedules/${id}`, {
       cronExpression: schedule.cronExpression,
       timezone: schedule.timezone,
       description: schedule.description || null,
       isActive: schedule.isActive
     })
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -121,11 +105,7 @@ export async function updateSchedule(id, schedule) {
  * @returns {Promise<void>}
  */
 export async function deleteSchedule(id) {
-  try {
-    await api.delete(`/api/schedules/${id}`)
-  } catch (error) {
-    throw error
-  }
+await api.delete(`/api/schedules/${id}`)
 }
 
 /**
@@ -134,12 +114,8 @@ export async function deleteSchedule(id) {
  * @returns {Promise<Object>} Updated schedule
  */
 export async function enableSchedule(id) {
-  try {
-    const response = await api.post(`/api/schedules/${id}/enable`)
+const response = await api.post(`/api/schedules/${id}/enable`)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -148,12 +124,8 @@ export async function enableSchedule(id) {
  * @returns {Promise<Object>} Updated schedule
  */
 export async function disableSchedule(id) {
-  try {
-    const response = await api.post(`/api/schedules/${id}/disable`)
+const response = await api.post(`/api/schedules/${id}/disable`)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -162,12 +134,8 @@ export async function disableSchedule(id) {
  * @returns {Promise<Object>} Updated schedule
  */
 export async function triggerSchedule(id) {
-  try {
-    const response = await api.post(`/api/schedules/${id}/trigger`)
+const response = await api.post(`/api/schedules/${id}/trigger`)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -216,3 +184,4 @@ export const scheduleService = {
   validateCron: validateCronExpression,
   toggle: toggleSchedule
 }
+

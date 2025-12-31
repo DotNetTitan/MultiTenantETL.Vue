@@ -32,36 +32,32 @@ export const authService = {
    * The backend will then redirect to its login page if not authenticated
    */
   async initiateLogin() {
-    try {
-      // Generate PKCE parameters
-      const codeVerifier = generateCodeVerifier()
-      const codeChallenge = await generateCodeChallenge(codeVerifier)
-      const state = generateState()
+    // Generate PKCE parameters
+    const codeVerifier = generateCodeVerifier()
+    const codeChallenge = await generateCodeChallenge(codeVerifier)
+    const state = generateState()
 
-      // Store PKCE parameters for the callback (code_verifier is secret, never sent to server)
-      storePKCEParams(state, codeVerifier)
+    // Store PKCE parameters for the callback (code_verifier is secret, never sent to server)
+    storePKCEParams(state, codeVerifier)
 
-      // Get OAuth config from constants
-      const oauthConfig = getOAuthConfig()
-      const scopes = oauthConfig.scopes.join(' ')
+    // Get OAuth config from constants
+    const oauthConfig = getOAuthConfig()
+    const scopes = oauthConfig.scopes.join(' ')
 
-      // Build authorization URL - NO credentials in URL (proper OAuth flow)
-      const authParams = new URLSearchParams({
-        client_id: oauthConfig.clientId,
-        response_type: 'code',
-        scope: scopes,
-        redirect_uri: `${window.location.origin}/auth/callback`,
-        state: state,
-        code_challenge: codeChallenge,
-        code_challenge_method: 'S256'
-      })
+    // Build authorization URL - NO credentials in URL (proper OAuth flow)
+    const authParams = new URLSearchParams({
+      client_id: oauthConfig.clientId,
+      response_type: 'code',
+      scope: scopes,
+      redirect_uri: `${window.location.origin}/auth/callback`,
+      state: state,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256'
+    })
 
-      // Redirect to authorization endpoint
-      // Backend will redirect to login page if user is not authenticated
-      window.location.href = `${API_BASE}${oauthConfig.authorizeEndpoint}?${authParams.toString()}`
-    } catch (error) {
-      throw error
-    }
+    // Redirect to authorization endpoint
+    // Backend will redirect to login page if user is not authenticated
+    window.location.href = `${API_BASE}${oauthConfig.authorizeEndpoint}?${authParams.toString()}`
   },
 
   /**
@@ -192,53 +188,49 @@ export const authService = {
    * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, idToken: string, expiresIn: number, tokenType: string}>}
    */
   async refreshToken() {
-    try {
-      const refreshToken = this.getRefreshToken()
-      if (!refreshToken) {
-        throw new Error('No refresh token available')
-      }
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
 
-      // Get OAuth config from constants
-      const oauthConfig = getOAuthConfig()
-      const scopes = oauthConfig.scopes.join(' ')
+    // Get OAuth config from constants
+    const oauthConfig = getOAuthConfig()
+    const scopes = oauthConfig.scopes.join(' ')
 
-      const params = new URLSearchParams({
-        client_id: oauthConfig.clientId,
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        scope: scopes
-      })
+    const params = new URLSearchParams({
+      client_id: oauthConfig.clientId,
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      scope: scopes
+    })
 
-      const response = await fetch(`${API_BASE}${oauthConfig.tokenEndpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: params
-      })
+    const response = await fetch(`${API_BASE}${oauthConfig.tokenEndpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params
+    })
 
-      if (!response.ok) {
-        throw new Error('Token refresh failed')
-      }
+    if (!response.ok) {
+      throw new Error('Token refresh failed')
+    }
 
-      const data = await response.json()
-      const { access_token, refresh_token, id_token, expires_in, token_type } = data
+    const data = await response.json()
+    const { access_token, refresh_token, id_token, expires_in, token_type } = data
 
-      this.setTokens(access_token, refresh_token, id_token)
+    this.setTokens(access_token, refresh_token, id_token)
 
-      // Decode id_token to get updated user information
-      const user = getCurrentUser()
+    // Decode id_token to get updated user information
+    const user = getCurrentUser()
 
-      return {
-        user,
-        accessToken: access_token,
-        refreshToken: refresh_token,
-        idToken: id_token,
-        expiresIn: expires_in,
-        tokenType: token_type || 'Bearer'
-      }
-    } catch (error) {
-      throw error
+    return {
+      user,
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      idToken: id_token,
+      expiresIn: expires_in,
+      tokenType: token_type || 'Bearer'
     }
   },
 
@@ -360,36 +352,32 @@ export const authService = {
    * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, idToken: string}>}
    */
   async switchTenant(tenantId) {
-    try {
-      const response = await api.post(API_ENDPOINTS.auth.switchTenant, { tenantId })
+    const response = await api.post(API_ENDPOINTS.auth.switchTenant, { tenantId })
 
-      // Backend updates the database and tells us to refresh token
-      if (response.data.requiresTokenRefresh) {
-        // Refresh token to get new tokens with updated tenant claims
-        const tokenResponse = await this.refreshToken()
-        
-        return {
-          user: tokenResponse.user,
-          accessToken: tokenResponse.accessToken,
-          refreshToken: tokenResponse.refreshToken,
-          idToken: tokenResponse.idToken,
-          expiresIn: tokenResponse.expiresIn,
-          tokenType: tokenResponse.tokenType,
-          tenantName: response.data.tenantName
-        }
-      }
-
-      // Fallback (shouldn't reach here)
-      const user = getCurrentUser()
+    // Backend updates the database and tells us to refresh token
+    if (response.data.requiresTokenRefresh) {
+      // Refresh token to get new tokens with updated tenant claims
+      const tokenResponse = await this.refreshToken()
+      
       return {
-        user,
-        accessToken: this.getAccessToken(),
-        refreshToken: this.getRefreshToken(),
-        idToken: this.getIdToken(),
+        user: tokenResponse.user,
+        accessToken: tokenResponse.accessToken,
+        refreshToken: tokenResponse.refreshToken,
+        idToken: tokenResponse.idToken,
+        expiresIn: tokenResponse.expiresIn,
+        tokenType: tokenResponse.tokenType,
         tenantName: response.data.tenantName
       }
-    } catch (error) {
-      throw error
+    }
+
+    // Fallback (shouldn't reach here)
+    const user = getCurrentUser()
+    return {
+      user,
+      accessToken: this.getAccessToken(),
+      refreshToken: this.getRefreshToken(),
+      idToken: this.getIdToken(),
+      tenantName: response.data.tenantName
     }
   },
 

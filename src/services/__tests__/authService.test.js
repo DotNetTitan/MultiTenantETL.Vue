@@ -317,7 +317,6 @@ describe('Auth Service', () => {
           email: 'test@example.com',
           firstName: 'Test',
           lastName: 'User',
-          lastName: 'User',
           createdAt: '2023-01-01T00:00:00Z',
           updatedAt: '2023-01-01T00:00:00Z'
         }
@@ -332,7 +331,6 @@ describe('Auth Service', () => {
         id: expect.any(String),
         email: 'test@example.com',
         firstName: 'Test',
-        lastName: 'User',
         lastName: 'User',
         createdAt: expect.any(String),
         updatedAt: expect.any(String)

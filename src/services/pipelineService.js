@@ -9,8 +9,7 @@ import api from './api'
  * @returns {Promise<Array>} List of pipeline objects
  */
 export async function fetchPipelines(filters = {}) {
-  try {
-    const params = {
+const params = {
       page: filters.page || 1,
       pageSize: filters.pageSize || 20
     }
@@ -42,9 +41,6 @@ export async function fetchPipelines(filters = {}) {
     const response = await api.get('/api/pipelines', { params })
     // Backend returns PagedPipelineResponse with pipelines property (camelCase due to JSON config)
     return response.data.pipelines || []
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -53,12 +49,8 @@ export async function fetchPipelines(filters = {}) {
  * @returns {Promise<Object>} Pipeline object
  */
 export async function fetchPipelineById(id) {
-  try {
-    const response = await api.get(`/api/pipelines/${id}`)
+const response = await api.get(`/api/pipelines/${id}`)
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -67,8 +59,7 @@ export async function fetchPipelineById(id) {
  * @returns {Promise<Object>} Created/updated pipeline
  */
 export async function savePipeline(pipeline) {
-  try {
-    if (pipeline.id) {
+if (pipeline.id) {
       // Update existing pipeline
       const payload = {
         name: pipeline.name,
@@ -97,9 +88,6 @@ export async function savePipeline(pipeline) {
       const response = await api.post('/api/pipelines', payload)
       return response.data
     }
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -108,12 +96,8 @@ export async function savePipeline(pipeline) {
  * @returns {Promise<boolean>} Success indicator
  */
 export async function deletePipeline(id) {
-  try {
-    await api.delete(`/api/pipelines/${id}`)
+await api.delete(`/api/pipelines/${id}`)
     return true
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -122,12 +106,8 @@ export async function deletePipeline(id) {
  * @returns {Promise<Object>} Updated pipeline object
  */
 export async function togglePipelineStatus(id) {
-  try {
-    const response = await api.post(`/api/pipelines/${id}/toggle-status`)
+const response = await api.post(`/api/pipelines/${id}/toggle-status`)
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -136,12 +116,8 @@ export async function togglePipelineStatus(id) {
  * @returns {Promise<Object>} Execution result
  */
 export async function executePipeline(id) {
-  try {
-    const response = await api.post(`/api/pipelines/${id}/execute`)
+const response = await api.post(`/api/pipelines/${id}/execute`)
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -156,8 +132,7 @@ export async function executePipeline(id) {
  * @returns {Promise<Array>} List of execution objects
  */
 export async function getExecutions(filters = {}) {
-  try {
-    const params = {
+const params = {
       page: filters.page || 1,
       pageSize: filters.pageSize || 20
     }
@@ -184,9 +159,6 @@ export async function getExecutions(filters = {}) {
     
     const response = await api.get('/api/executions', { params })
     return response.data.executions || []
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -195,12 +167,8 @@ export async function getExecutions(filters = {}) {
  * @returns {Promise<Object>} Execution object
  */
 export async function getExecutionById(id) {
-  try {
-    const response = await api.get(`/api/executions/${id}`)
+const response = await api.get(`/api/executions/${id}`)
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -209,12 +177,8 @@ export async function getExecutionById(id) {
  * @returns {Promise<Object>} Updated execution object
  */
 export async function cancelExecution(id) {
-  try {
-    const response = await api.post(`/api/executions/${id}/cancel`)
+const response = await api.post(`/api/executions/${id}/cancel`)
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -223,16 +187,12 @@ export async function cancelExecution(id) {
  * @returns {Promise<Object>} Execution statistics
  */
 export async function getExecutionStats(pipelineId = null) {
-  try {
-    const params = {}
+const params = {}
     if (pipelineId) {
       params.pipelineId = pipelineId
     }
     const response = await api.get('/api/executions/stats', { params })
     return response.data
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -241,8 +201,7 @@ export async function getExecutionStats(pipelineId = null) {
  * @returns {Promise<Array>} List of pipelines using the connector
  */
 export async function findPipelinesUsingConnector(connectorId) {
-  try {
-    // This will filter pipelines by connector on the backend
+// This will filter pipelines by connector on the backend
     const response = await api.get('/api/pipelines', {
       params: {
         sourceConnectorId: connectorId,
@@ -250,9 +209,6 @@ export async function findPipelinesUsingConnector(connectorId) {
       }
     })
     return response.data.pipelines || []
-  } catch (error) {
-    throw error;
-  }
 }
 
 // For backward compatibility with code that might use the old object-based API
@@ -272,3 +228,6 @@ export const pipelineService = {
   getExecutionStats,
   findPipelinesUsingConnector
 };
+
+
+

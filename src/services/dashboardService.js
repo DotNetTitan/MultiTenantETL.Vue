@@ -111,72 +111,68 @@ async function fetchRecentExecutions(limit = 5) {
  * @returns {Promise<Object>} Object containing stats and executions data
  */
 export async function fetchDashboardData() {
-  try {
-    // Fetch all data in parallel for better performance
-    const [
-      pipelineStats,
-      activePipelinesCount,
-      connectorCount,
-      scheduleCount,
-      executionStats,
-      recentExecutions
-    ] = await Promise.all([
-      fetchPipelineStats(),
-      fetchActivePipelinesCount(),
-      fetchConnectorCount(),
-      fetchScheduleCount(),
-      fetchExecutionStats(),
-      fetchRecentExecutions(5)
-    ])
+  // Fetch all data in parallel for better performance
+  const [
+    pipelineStats,
+    activePipelinesCount,
+    connectorCount,
+    scheduleCount,
+    executionStats,
+    recentExecutions
+  ] = await Promise.all([
+    fetchPipelineStats(),
+    fetchActivePipelinesCount(),
+    fetchConnectorCount(),
+    fetchScheduleCount(),
+    fetchExecutionStats(),
+    fetchRecentExecutions(5)
+  ])
 
-    // Build stats object
-    const stats = {
-      totalPipelines: pipelineStats.totalCount,
-      activePipelines: activePipelinesCount,
-      connectors: connectorCount,
-      schedules: scheduleCount,
-      // Execution stats
-      totalExecutions: executionStats.totalExecutions,
-      runningExecutions: executionStats.runningExecutions,
-      completedExecutions: executionStats.completedExecutions,
-      failedExecutions: executionStats.failedExecutions,
-      cancelledExecutions: executionStats.cancelledExecutions,
-      successRate: executionStats.successRate,
-      averageDurationMs: executionStats.averageDurationMs,
-      totalRecordsProcessed: executionStats.totalRecordsProcessed,
-      lastExecutionTime: executionStats.lastExecutionTime
-    }
+  // Build stats object
+  const stats = {
+    totalPipelines: pipelineStats.totalCount,
+    activePipelines: activePipelinesCount,
+    connectors: connectorCount,
+    schedules: scheduleCount,
+    // Execution stats
+    totalExecutions: executionStats.totalExecutions,
+    runningExecutions: executionStats.runningExecutions,
+    completedExecutions: executionStats.completedExecutions,
+    failedExecutions: executionStats.failedExecutions,
+    cancelledExecutions: executionStats.cancelledExecutions,
+    successRate: executionStats.successRate,
+    averageDurationMs: executionStats.averageDurationMs,
+    totalRecordsProcessed: executionStats.totalRecordsProcessed,
+    lastExecutionTime: executionStats.lastExecutionTime
+  }
 
-    // Build status distribution from execution stats
-    const statusDistribution = [
-      { name: 'Completed', count: executionStats.completedExecutions || 0 },
-      { name: 'Running', count: executionStats.runningExecutions || 0 },
-      { name: 'Failed', count: executionStats.failedExecutions || 0 },
-      { name: 'Cancelled', count: executionStats.cancelledExecutions || 0 }
-    ]
+  // Build status distribution from execution stats
+  const statusDistribution = [
+    { name: 'Completed', count: executionStats.completedExecutions || 0 },
+    { name: 'Running', count: executionStats.runningExecutions || 0 },
+    { name: 'Failed', count: executionStats.failedExecutions || 0 },
+    { name: 'Cancelled', count: executionStats.cancelledExecutions || 0 }
+  ]
 
-    // Map recent executions to consistent format
-    const recentExecutionsData = recentExecutions.map(exec => ({
-      id: exec.id,
-      pipelineId: exec.pipelineId,
-      pipelineName: exec.pipelineName,
-      startTime: exec.startTime,
-      endTime: exec.endTime,
-      duration: exec.duration,
-      durationMs: exec.durationMs,
-      status: exec.status,
-      rowsProcessed: exec.recordsProcessed || 0,
-      progressPercent: exec.progressPercent || 0,
-      triggeredBy: exec.triggeredBy
-    }))
+  // Map recent executions to consistent format
+  const recentExecutionsData = recentExecutions.map(exec => ({
+    id: exec.id,
+    pipelineId: exec.pipelineId,
+    pipelineName: exec.pipelineName,
+    startTime: exec.startTime,
+    endTime: exec.endTime,
+    duration: exec.duration,
+    durationMs: exec.durationMs,
+    status: exec.status,
+    rowsProcessed: exec.recordsProcessed || 0,
+    progressPercent: exec.progressPercent || 0,
+    triggeredBy: exec.triggeredBy
+  }))
 
-    return { 
-      stats, 
-      statusDistribution, 
-      recentExecutions: recentExecutionsData 
-    }
-  } catch (error) {
-    throw error
+  return {
+    stats,
+    statusDistribution,
+    recentExecutions: recentExecutionsData
   }
 }
 

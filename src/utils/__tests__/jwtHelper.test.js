@@ -12,14 +12,9 @@ import {
 } from '@/utils/jwtHelper'
 
 // Mock jwt-decode
-vi.mock('jwt-decode')
-
-// Mock jwt-decode
 vi.mock('jwt-decode', () => ({
-  jwtDecode: vi.fn()
+  default: vi.fn()
 }))
-
-import { jwtDecode } from 'jwt-decode'
 
 describe('jwtHelper', () => {
   beforeEach(() => {
