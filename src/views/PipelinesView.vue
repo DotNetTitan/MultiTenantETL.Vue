@@ -238,124 +238,12 @@
           </div>
           
           <div v-else-if="pipelineMappings">
-            <!-- Pipeline Info -->
-            <v-card variant="outlined" class="mb-4">
-              <v-card-text>
-                <v-row dense>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('pipelines.source') }}</div>
-                    <div class="text-body-1">
-                      <v-icon size="small" color="blue" class="mr-1">mdi-database</v-icon>
-                      {{ selectedPipeline?.sourceName }}
-                    </div>
-                  </v-col>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('pipelines.destination') }}</div>
-                    <div class="text-body-1">
-                      <v-icon size="small" color="green" class="mr-1">mdi-database</v-icon>
-                      {{ selectedPipeline?.destinationName }}
-                    </div>
-                  </v-col>
-                  <v-col cols="12">
-                    <div class="text-caption text-grey">{{ $t('pipelines.totalMappings') }}</div>
-                    <div class="text-h6">{{ pipelineMappings.length }}</div>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-
             <!-- Mappings List -->
-            <div v-if="pipelineMappings.length === 0" class="text-center py-8">
-              <v-icon size="64" color="grey">mdi-map-marker-off</v-icon>
-              <div class="mt-4 text-grey">{{ $t('pipelines.noMappingsDefine') }}</div>
-            </div>
-            
-            <v-expansion-panels v-else>
-              <v-expansion-panel
-                v-for="(mapping, index) in pipelineMappings"
-                :key="index"
-              >
-                <v-expansion-panel-title>
-                  <div class="d-flex align-center w-100">
-                    <v-chip size="small" class="mr-2">{{ index + 1 }}</v-chip>
-                    <div class="flex-grow-1">
-                      <div>
-                        <strong>{{ mapping.sourceField }}</strong>
-                        <v-chip v-if="mapping.sourceFieldType" size="x-small" variant="tonal" class="ml-1">
-                          {{ mapping.sourceFieldType }}
-                        </v-chip>
-                      </div>
-                      <v-icon class="mx-2">mdi-arrow-right</v-icon>
-                      <div>
-                        <strong>{{ mapping.destinationField }}</strong>
-                        <v-chip v-if="mapping.destinationFieldType" size="x-small" variant="tonal" class="ml-1">
-                          {{ mapping.destinationFieldType }}
-                        </v-chip>
-                      </div>
-                    </div>
-                    <v-chip
-                      v-if="mapping.transformation"
-                      size="small"
-                      :color="getTransformationColor(mapping.transformation.type)"
-                      class="ml-2"
-                    >
-                      <v-icon start size="small">{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                      {{ mapping.transformation.type }}
-                    </v-chip>
-                  </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-row dense>
-                    <v-col cols="12" md="5">
-                      <v-card variant="outlined">
-                        <v-card-subtitle>{{ $t('pipelines.sourceField') }}</v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.sourceField }}</strong>
-                          </div>
-                          <div v-if="mapping.sourceFieldType" class="text-caption">
-                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.sourceFieldType }}</v-chip>
-                          </div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                    
-                    <v-col cols="12" md="2" class="d-flex align-center justify-center">
-                      <v-icon size="large" color="primary">mdi-arrow-right-thick</v-icon>
-                    </v-col>
-                    
-                    <v-col cols="12" md="5">
-                      <v-card variant="outlined">
-                        <v-card-subtitle>{{ $t('pipelines.destinationField') }}</v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.destinationField }}</strong>
-                          </div>
-                          <div v-if="mapping.destinationFieldType" class="text-caption">
-                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.destinationFieldType }}</v-chip>
-                          </div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                    
-                    <v-col v-if="mapping.transformation" cols="12" class="mt-3">
-                      <v-card variant="outlined" color="info">
-                        <v-card-subtitle>
-                          <v-icon start>{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                          {{ $t('pipelines.transformationApplied') }}
-                        </v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.transformation.name }}</strong>
-                          </div>
-                          <div class="text-caption">{{ mapping.transformation.description }}</div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
+            <MappingViewer 
+              :mappings="pipelineMappings" 
+              :source-name="selectedPipeline?.sourceName"
+              :destination-name="selectedPipeline?.destinationName"
+            />
           </div>
         </v-card-text>
         
@@ -379,6 +267,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
+import MappingViewer from '@/components/pipeline/MappingViewer.vue';
 import { fetchPipelineById } from '@/services/pipelineService';
 import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
@@ -531,45 +420,7 @@ function getStatusLabel(status) {
   return statusMap[status] || status;
 }
 
-function getTransformationColor(type) {
-  const colors = {
-    'Filter': 'blue',
-    'Map': 'green',
-    'Aggregation': 'orange',
-    'Script': 'purple',
-    'Join': 'teal',
-    'Trim': 'cyan',
-    'Case Convert': 'indigo',
-    'Substring': 'pink',
-    'Replace': 'amber',
-    'Split': 'lime'
-  };
-  // Handle multiple types (e.g., "Script, Map") - use first type's color or 'primary' for mixed
-  if (type && type.includes(', ')) {
-    return 'primary';
-  }
-  return colors[type] || 'grey';
-}
 
-function getTransformationIcon(type) {
-  const icons = {
-    'Filter': 'mdi-filter',
-    'Map': 'mdi-map',
-    'Aggregation': 'mdi-chart-bar',
-    'Script': 'mdi-code-braces',
-    'Join': 'mdi-link-variant',
-    'Trim': 'mdi-content-cut',
-    'Case Convert': 'mdi-format-letter-case',
-    'Substring': 'mdi-contain',
-    'Replace': 'mdi-find-replace',
-    'Split': 'mdi-call-split'
-  };
-  // Handle multiple types (e.g., "Script, Map") - use generic transform icon
-  if (type && type.includes(', ')) {
-    return 'mdi-vector-polyline';
-  }
-  return icons[type] || 'mdi-cog';
-}
 
 async function viewMappings(pipeline) {
   try {
