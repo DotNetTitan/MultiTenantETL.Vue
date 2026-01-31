@@ -243,13 +243,19 @@ function openChatbot() {
   color: white !important;
 }
 
-/* Softer user avatar in light mode */
-.v-theme--light .v-navigation-drawer .v-avatar {
+/* Softer user avatar in light mode for all containers */
+.v-theme--light .v-avatar {
   background-color: rgba(var(--v-theme-primary), 0.12) !important;
 }
 
-.v-theme--light .v-navigation-drawer .v-avatar .text-h6 {
+/* Ensure avatar text (initials) is primary blue in light mode */
+.v-theme--light .v-avatar span {
   color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* Special case for App Bar avatar to stand out on the blue background */
+.v-theme--light .v-app-bar .v-avatar {
+  background-color: white !important;
 }
 
 /* User Menu Improvements */
