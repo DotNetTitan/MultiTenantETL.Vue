@@ -4,13 +4,13 @@
       <v-card-text>
         <div class="d-flex justify-space-between align-center">
           <div class="d-flex align-center">
-             <div class="d-flex flex-column align-center mr-4">
+              <div class="d-flex flex-column align-center mr-4">
                 <v-icon color="primary" icon="mdi-database" size="large" class="mb-1"></v-icon>
-                <span class="text-caption font-weight-bold text-primary">SOURCE</span>
-             </div>
-             <div>
-                <div class="text-h6">{{ sourceName }}</div>
-             </div>
+                <span class="text-caption font-weight-medium text-primary">SOURCE</span>
+              </div>
+              <div>
+                <div class="text-h6 font-weight-medium">{{ sourceName }}</div>
+              </div>
           </div>
 
           <div class="d-flex flex-column align-center px-4">
@@ -19,13 +19,13 @@
           </div>
 
           <div class="d-flex align-center text-right">
-             <div>
-                <div class="text-h6">{{ destinationName }}</div>
-             </div>
-             <div class="d-flex flex-column align-center ml-4">
-                <v-icon color="success" icon="mdi-database" size="large" class="mb-1"></v-icon>
-                <span class="text-caption font-weight-bold text-success">TARGET</span>
-             </div>
+            <div>
+              <div class="text-h6 font-weight-medium">{{ destinationName }}</div>
+            </div>
+            <div class="d-flex flex-column align-center ml-4">
+              <v-icon color="success" icon="mdi-database" size="large" class="mb-1"></v-icon>
+              <span class="text-caption font-weight-medium text-success">TARGET</span>
+            </div>
           </div>
         </div>
       </v-card-text>
@@ -173,12 +173,12 @@ function getTransformationIcon(type) {
 }
 
 .mapping-table th {
-    background-color: rgb(var(--v-theme-surface-light));
+    background-color: rgb(var(--v-theme-surface-variant));
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.05em;
-    color: rgba(var(--v-theme-on-surface), 0.6);
+    color: rgb(var(--v-theme-on-surface-variant));
 }
 
 .bg-surface-lighten-1 {

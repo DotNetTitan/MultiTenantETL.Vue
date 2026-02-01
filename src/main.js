@@ -23,21 +23,21 @@ import './styles/global.scss'
 const lightTheme = {
   dark: false,
   colors: {
-    primary: '#1565C0',
-    secondary: '#424242',
-    accent: '#0277BD',
-    error: '#D32F2F',
-    info: '#0288D1',
-    success: '#388E3C',
-    warning: '#F57C00',
+    primary: '#1976D2',
+    secondary: '#5C6BC0',
+    accent: '#00B0FF',
+    error: '#FF5252',
+    info: '#2196F3',
+    success: '#4CAF50',
+    warning: '#FB8C00',
     surface: '#FFFFFF',
-    'surface-variant': '#E8E8E8',
-    'on-surface': '#1A1A1A',
-    'on-surface-variant': '#424242',
-    background: '#FAFAFA',
-    'on-background': '#1A1A1A',
-    outline: '#BDBDBD',
-    'outline-variant': '#E0E0E0'
+    'surface-variant': '#F5F7FA',
+    'on-surface': '#2C3E50',
+    'on-surface-variant': '#546E7A',
+    background: '#F0F2F5',
+    'on-background': '#2C3E50',
+    outline: '#CFD8DC',
+    'outline-variant': '#ECEFF1'
   }
 }
 

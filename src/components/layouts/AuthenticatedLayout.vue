@@ -232,8 +232,9 @@ function openChatbot() {
 </script>
 
 <style>
-/* Ensure app bar text and icons are white when using primary color in light mode */
+/* Softer app bar with gradient */
 .v-theme--light .v-app-bar {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, #1565C0 100%) !important;
   color: white !important;
 }
 
@@ -297,6 +298,30 @@ function openChatbot() {
 .v-theme--light .user-menu-card {
   background: #ffffff;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Sidebar refinement */
+.sidebar-drawer {
+  border-right: 1px solid rgba(var(--v-theme-outline), 0.5) !important;
+}
+
+.sidebar-drawer .v-list-item--active {
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  
+  .v-icon {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+}
+
+.sidebar-drawer .v-list-subheader {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em !important;
+  color: rgb(var(--v-theme-on-surface-variant)) !important;
+  opacity: 0.7;
+  padding-top: 16px !important;
 }
 
 /* Dark mode menu card */
