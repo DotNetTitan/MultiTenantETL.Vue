@@ -614,7 +614,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
@@ -642,6 +642,8 @@ const route = useRoute();
 const router = useRouter();
 const tenantStore = useTenantStore();
 const { t } = useI18n();
+
+const showNotification = inject('showNotification');
 
 const { validateConnection } = useConnector();
 const { connectorTypes: metadataTypes } = useTranslatedMetadata();
@@ -909,10 +911,27 @@ async function deleteConnector() {
       connectors.value.splice(index, 1);
     }
     
+    showNotification(t('connectors.deleteSuccess'), 'success');
+    
     showDeleteDialog.value = false;
     connectorToDelete.value = null;
   } catch (error) {
     console.error('Error deleting connector:', error);
+    
+    // Extract error message from API response
+    let errorMessage = t('connectors.deleteError');
+    
+    if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    } else if (error.response?.data?.title) {
+      errorMessage = error.response.data.title;
+    } else if (error.userMessage) {
+      errorMessage = error.userMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    showNotification(errorMessage, 'error', 6000); // Longer timeout for error messages
   } finally {
     deletingConnector.value = false;
   }

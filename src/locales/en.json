@@ -298,6 +298,8 @@
     "createNewConnector": "Create New Connector",
     "editConnector": "Edit Connector",
     "deleteConnector": "Delete Connector",
+    "deleteSuccess": "Connector deleted successfully",
+    "deleteError": "Failed to delete connector",
     "updateConnectorConfiguration": "Update connector configuration",
     "configureNewConnector": "Configure a new connector for your ETL pipelines",
     "loadingConnector": "Loading connector...",
