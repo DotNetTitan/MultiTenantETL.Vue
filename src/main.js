@@ -62,6 +62,9 @@ const darkTheme = {
 // Get saved locale from localStorage or use default
 const savedLocale = localStorage.getItem('user-locale') || defaultLocale
 
+// Get saved theme from localStorage or use default dark theme
+const savedTheme = localStorage.getItem('user-theme') || 'dark'
+
 // Create i18n instance
 const i18n = createI18n({
   legacy: false, // Use Composition API mode
@@ -77,7 +80,7 @@ const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'dark',
+    defaultTheme: savedTheme,
     themes: {
       light: lightTheme,
       dark: darkTheme

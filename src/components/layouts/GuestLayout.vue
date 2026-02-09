@@ -57,7 +57,9 @@ const titleColor = computed(() =>
 );
 
 function toggleTheme() {
-  theme.global.name.value = isDarkTheme.value ? 'light' : 'dark';
+  const newTheme = isDarkTheme.value ? 'light' : 'dark';
+  theme.global.name.value = newTheme;
+  localStorage.setItem('user-theme', newTheme);
 }
 </script>
 
