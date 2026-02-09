@@ -6,7 +6,7 @@
           <!-- Header Section with Icon -->
           <div class="login-header">
             <v-avatar size="64" class="mb-4" color="primary">
-              <v-icon size="40" color="white">mdi-database-sync</v-icon>
+              <v-icon size="40" class="text-white">mdi-database-sync</v-icon>
             </v-avatar>
             <h1 class="text-h4 font-weight-bold mb-2 text-primary">ETL Portal</h1>
             <p class="text-subtitle-1 text-medium-emphasis">Multi-Tenant ETL Platform</p>
@@ -162,5 +162,10 @@ async function handleLogin() {
 .login-header {
   text-align: center;
   padding: 48px 32px 0;
+}
+
+/* Override the light mode avatar opacity for login logo */
+:deep(.v-theme--light .login-header .v-avatar) {
+  background-color: rgb(var(--v-theme-primary)) !important;
 }
 </style>
