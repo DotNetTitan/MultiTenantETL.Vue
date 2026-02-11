@@ -67,7 +67,8 @@ if (pipeline.id) {
         fieldMappings: pipeline.fieldMappings || [],
         schedule: pipeline.schedule || null,
         isScheduled: pipeline.isScheduled || false,
-        isActive: pipeline.isActive
+        isActive: pipeline.isActive,
+        notificationEmails: pipeline.notificationEmails || null
       }
       
       const response = await api.put(`/api/pipelines/${pipeline.id}`, payload)
@@ -82,7 +83,8 @@ if (pipeline.id) {
         fieldMappings: pipeline.fieldMappings || [],
         schedule: pipeline.schedule || null,
         isScheduled: pipeline.isScheduled || false,
-        isActive: pipeline.isActive ?? true  // Default to active when creating
+        isActive: pipeline.isActive ?? true,  // Default to active when creating
+        notificationEmails: pipeline.notificationEmails || null
       }
       
       const response = await api.post('/api/pipelines', payload)

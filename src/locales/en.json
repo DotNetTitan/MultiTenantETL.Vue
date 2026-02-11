@@ -231,7 +231,10 @@
     "continueToReview": "Continue to Review",
     "pipelineSchedule": "Pipeline Schedule",
     "noScheduleConfigured": "No schedule configured for this pipeline",
-    "manageAllSchedules": "Manage All Schedules"
+    "manageAllSchedules": "Manage All Schedules",
+    "notificationEmails": "Notification Emails",
+    "notificationEmailsPlaceholder": "Enter email addresses to notify after execution",
+    "notificationEmailsHint": "Add one or more email addresses to receive execution reports. Press Enter after each email."
   },
   "connectors": {
     "title": "Connectors",
@@ -738,7 +741,9 @@
     "maxLength": "{field} must be at most {length} characters",
     "passwordMatch": "Passwords do not match",
     "passwordRequirements": "Password must contain at least one uppercase letter and one number",
-    "invalidJson": "Invalid JSON format"
+    "invalidJson": "Invalid JSON format",
+    "invalidEmails": "Invalid email address(es): {emails}",
+    "maxEmails": "Maximum {max} email addresses allowed"
   },
   "filters": {
     "allTypes": "All Types",

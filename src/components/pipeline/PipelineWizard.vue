@@ -62,6 +62,29 @@
                 />
               </v-col>
               <v-col cols="12">
+                <v-combobox
+                  v-model="pipeline.notificationEmails"
+                  :label="$t('pipelines.notificationEmails')"
+                  :placeholder="$t('pipelines.notificationEmailsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                  :hint="$t('pipelines.notificationEmailsHint')"
+                  persistent-hint
+                  :rules="emailRules"
+                >
+                  <template #chip="{ props: chipProps, item }">
+                    <v-chip
+                      v-bind="chipProps"
+                      :text="item.raw"
+                      closable
+                      size="small"
+                    />
+                  </template>
+                </v-combobox>
+              </v-col>
+              <v-col cols="12">
                 <v-switch
                   v-model="pipeline.isActive"
                   :label="$t('common.active')"
@@ -252,6 +275,23 @@
                     </template>
                     <v-list-item-title>{{ $t('common.description') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ pipeline.description }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0">
+                    <template #prepend>
+                      <v-icon>mdi-email</v-icon>
+                    </template>
+                    <v-list-item-title>{{ $t('pipelines.notificationEmails') }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip
+                        v-for="(email, idx) in pipeline.notificationEmails"
+                        :key="idx"
+                        size="small"
+                        class="mr-1 mb-1"
+                        variant="tonal"
+                      >
+                        {{ email }}
+                      </v-chip>
+                    </v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-card-text>
@@ -507,6 +547,22 @@ const emit = defineEmits(['save', 'close', 'create-connector', 'toggle-fullscree
 const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
+
+// Email validation rules
+const emailRules = [
+  (v) => {
+    if (!v || v.length === 0) return true; // Optional field
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = v.filter(email => !emailPattern.test(email));
+    if (invalidEmails.length > 0) {
+      return t('validation.invalidEmails', { emails: invalidEmails.join(', ') });
+    }
+    if (v.length > 10) {
+      return t('validation.maxEmails', { max: 10 });
+    }
+    return true;
+  }
+];
 
 // Track original connector IDs to detect changes
 const originalSourceId = ref(null);

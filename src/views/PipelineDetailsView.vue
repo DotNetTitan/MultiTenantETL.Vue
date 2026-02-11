@@ -73,6 +73,21 @@
                 <div class="info-label">Schedule:</div>
                 <div>{{ pipeline.schedule || 'Manual execution only' }}</div>
               </div>
+              <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
+                <div class="info-label">Notifications:</div>
+                <div>
+                  <v-chip
+                    v-for="(email, idx) in pipeline.notificationEmails"
+                    :key="idx"
+                    size="small"
+                    class="mr-1 mb-1"
+                    variant="tonal"
+                  >
+                    <v-icon start size="small">mdi-email</v-icon>
+                    {{ email }}
+                  </v-chip>
+                </div>
+              </div>
             </v-card-text>
           </v-card>
 
