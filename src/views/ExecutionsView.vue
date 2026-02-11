@@ -752,7 +752,11 @@ async function viewExecutionDetails(execution) {
   try {
     // Fetch detailed execution data including logs
     const detailedExecution = await getExecutionById(execution.id);
-    selectedExecution.value = detailedExecution;
+    // Transform API response to match view format
+    selectedExecution.value = {
+      ...detailedExecution,
+      rowsProcessed: detailedExecution.recordsProcessed || 0
+    };
     showDetailsDialog.value = true;
 
     // Wait for DOM update then scroll to first error (if any)
