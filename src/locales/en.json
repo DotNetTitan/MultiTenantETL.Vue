@@ -363,6 +363,7 @@
     "useCustomQuery": "Use Custom Query",
     "useCustomQueryHint": "Write a custom SQL query instead of selecting a table",
     "tableName": "Table Name",
+    "tableNameHint": "Target table in the database",
     "tableNamePlaceholder": "e.g., products, customers",
     "customQuery": "Custom SQL Query",
     "customQueryPlaceholder": "SELECT * FROM products WHERE active = true",
