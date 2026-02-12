@@ -3,13 +3,21 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('connectors.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
+      <v-btn
+        color="primary"
+        :disabled="authStore.isGuest"
         @click="createNewConnector"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
         <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
         <span v-else>{{ $t('connectors.createConnector') }}</span>
+        <v-tooltip
+          v-if="authStore.isGuest"
+          activator="parent"
+          location="bottom"
+        >
+          Guest users have read-only access
+        </v-tooltip>
       </v-btn>
     </div>
 
@@ -104,15 +112,21 @@
             </div>
           </template>
           <template #item.actions="{ item }">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :title="$t('connectors.editConnector')"
-              @click="editConnector(item)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="editConnector(item)"
+                >
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('connectors.editConnector') }}</span>
+            </v-tooltip>
             <v-btn
               icon
               variant="text"
@@ -123,26 +137,38 @@
             >
               <v-icon>mdi-table-eye</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="success"
-              :title="$t('connectors.testConnection')"
-              @click="testConnection(item)"
-            >
-              <v-icon>mdi-connection</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              :title="$t('common.delete')"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="success"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="testConnection(item)"
+                >
+                  <v-icon>mdi-connection</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('connectors.testConnection') }}</span>
+            </v-tooltip>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="error"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="confirmDelete(item)"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.delete') }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -640,6 +666,7 @@ import { findPipelinesUsingConnector } from '@/services/pipelineService';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const tenantStore = useTenantStore();
 const { t } = useI18n();
 
@@ -828,22 +855,28 @@ function formatDate(dateString) {
 
 async function fetchConnectors() {
   const authStore = useAuthStore();
-  
+
+  console.log('fetchConnectors called - isAuthenticated:', authStore.isAuthenticated, 'user:', authStore.user);
+
   // Don't fetch if not authenticated
   if (!authStore.isAuthenticated) {
+    console.log('Skipping fetchConnectors - not authenticated');
     return;
   }
-  
+
+  console.log('Making API call to GET /api/connectors');
+
   try {
     loading.value = true;
-    
+
     const filters = {
       search: search.value,
       type: typeFilter.value,
       sortBy: sortBy.value
     };
-    
+
     const result = await getConnectors(filters);
+    console.log('Connectors API response:', result);
     // Handle paginated response from API
     connectors.value = result.connectors || result;
   } catch (error) {

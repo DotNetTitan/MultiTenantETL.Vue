@@ -72,14 +72,29 @@
                 color="primary"
                 size="large"
                 block
-                :loading="authStore.loading"
-                :disabled="authStore.loading"
+                :loading="authStore.loading && !guestLoading"
+                :disabled="authStore.loading || guestLoading"
                 class="text-none font-weight-bold"
                 elevation="2"
                 @click="handleLogin"
               >
                 <v-icon start>mdi-login</v-icon>
                 {{ $t('auth.signIn') || 'Sign In' }}
+              </v-btn>
+
+              <!-- Guest Login Button -->
+              <v-btn
+                variant="outlined"
+                color="primary"
+                size="large"
+                block
+                :loading="guestLoading"
+                :disabled="authStore.loading || guestLoading"
+                class="text-none font-weight-medium mt-3"
+                @click="handleGuestLogin"
+              >
+                <v-icon start>mdi-account-eye</v-icon>
+                Try as Guest
               </v-btn>
 
               <div class="text-center mt-6">
@@ -105,11 +120,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { API_CONFIG } from '@/config/api';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const isRedirecting = ref(false);
+const guestLoading = ref(false);
 
 // Reset state on mount
 onMounted(() => {
@@ -134,6 +152,23 @@ async function handleLogin() {
     isRedirecting.value = false;
     // Error is already handled in the store
     console.warn('Login initiation failed:', error.message);
+  }
+}
+
+/**
+ * Login as guest - instant access without registration
+ */
+async function handleGuestLogin() {
+  try {
+    guestLoading.value = true;
+    await authStore.loginAsGuest();
+
+    // Redirect to dashboard on success
+    await router.push('/dashboard');
+  } catch (error) {
+    guestLoading.value = false;
+    // Error is already handled in the store
+    console.warn('Guest login failed:', error.message);
   }
 }
 </script>

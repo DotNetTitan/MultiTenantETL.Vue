@@ -18,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value) return false
     return user.value.role === 'SuperAdmin' || user.value.role === 'TenantAdmin'
   })
+  const isGuest = computed(() => authService.isGuestSession())
   const token = computed(() => authService.getAccessToken()) // For backward compatibility
 
   /**
@@ -65,6 +66,39 @@ export const useAuthStore = defineStore('auth', () => {
       throw err
     }
     // Don't set loading.value = false here because browser redirects
+  }
+
+  /**
+   * Login as guest - instant access without registration
+   */
+  async function loginAsGuest() {
+    try {
+      loading.value = true
+      error.value = null
+      apiOffline.value = false
+
+      const response = await authService.loginAsGuest()
+      user.value = response.user
+
+      // Sync tenant ID to localStorage
+      if (user.value?.tenantId) {
+        localStorage.setItem('currentTenantId', user.value.tenantId)
+      }
+
+      return true
+    } catch (err) {
+      console.error('Guest login error:', err)
+
+      if (err.isNetworkError || err.code === 'ERR_NETWORK' || err.code === 'ERR_CONNECTION_REFUSED') {
+        apiOffline.value = true
+        error.value = 'Cannot connect to the server. Please ensure the API server is running.'
+      } else {
+        error.value = err.message || 'Guest login failed. Please try again later.'
+      }
+      throw err
+    } finally {
+      loading.value = false
+    }
   }
 
   /**
@@ -235,9 +269,11 @@ export const useAuthStore = defineStore('auth', () => {
     // Computed
     isAuthenticated,
     isAdmin,
+    isGuest,
 
     // Actions
     login,
+    loginAsGuest,
     register,
     logout,
     forgotPassword,

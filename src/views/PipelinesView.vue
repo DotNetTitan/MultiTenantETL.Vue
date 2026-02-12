@@ -3,13 +3,21 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('pipelines.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
+      <v-btn
+        color="primary"
+        :disabled="authStore.isGuest"
         @click="openCreatePipelineDialog"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
         <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
         <span v-else>{{ $t('pipelines.createPipeline') }}</span>
+        <v-tooltip
+          v-if="authStore.isGuest"
+          activator="parent"
+          location="bottom"
+        >
+          Guest users have read-only access
+        </v-tooltip>
       </v-btn>
     </div>
 
@@ -96,9 +104,17 @@
               color="success"
               hide-details
               density="compact"
-              :disabled="item.status === 'Running'"
+              :disabled="item.status === 'Running' || authStore.isGuest"
               @update:model-value="handleToggleActive(item)"
-            />
+            >
+              <v-tooltip
+                v-if="authStore.isGuest"
+                activator="parent"
+                location="bottom"
+              >
+                Guest users have read-only access
+              </v-tooltip>
+            </v-switch>
           </template>
           <template #item.actions="{ item }">
             <v-btn
@@ -110,15 +126,21 @@
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :title="$t('common.edit')"
-              @click="openEditDialog(item)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="openEditDialog(item)"
+                >
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.edit') }}</span>
+            </v-tooltip>
             <v-btn
               icon
               variant="text"
@@ -129,27 +151,47 @@
             >
               <v-icon>mdi-map-marker-path</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="success"
-              :disabled="item.status === 'Running' || !item.isActive"
-              :title="$t('pipelines.executePipeline')"
-              @click="handleExecutePipeline(item)"
-            >
-              <v-icon>mdi-play</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              :title="$t('common.delete')"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="success"
+                  :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
+                  v-bind="props"
+                  @click="handleExecutePipeline(item)"
+                >
+                  <v-icon>mdi-play</v-icon>
+                </v-btn>
+              </template>
+              <span>
+                {{ authStore.isGuest
+                  ? 'Guest users have read-only access'
+                  : !item.isActive
+                    ? 'Pipeline must be active to execute'
+                    : item.status === 'Running'
+                      ? 'Pipeline is already running'
+                      : $t('pipelines.executePipeline')
+                }}
+              </span>
+            </v-tooltip>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="error"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="confirmDelete(item)"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.delete') }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -266,6 +308,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
 import MappingViewer from '@/components/pipeline/MappingViewer.vue';
@@ -276,6 +319,7 @@ import { usePipelineForm } from '@/composables/usePipelineForm';
 const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 // Get functionality from main pipeline composable
 const {

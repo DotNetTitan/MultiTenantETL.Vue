@@ -382,6 +382,65 @@ export const authService = {
   },
 
   /**
+   * Login as guest - uses password grant with fixed guest credentials
+   * @returns {Promise<{user: Object, accessToken: string, refreshToken: string, expiresIn: number}>}
+   */
+  async loginAsGuest() {
+    try {
+      const oauthConfig = getOAuthConfig()
+
+      // Use password grant for guest login (simpler than auth code flow)
+      const tokenParams = new URLSearchParams({
+        client_id: 'multitenant-etl-spa', // Use public SPA client (no secret required)
+        grant_type: 'password',
+        username: 'guest@multitenant-etl.com',
+        password: 'Guest@123456',
+        scope: oauthConfig.scopes.join(' ')
+      })
+
+      const tokenResponse = await fetch(`${API_BASE}/connect/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: tokenParams
+      })
+
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json()
+        throw new Error(errorData.error_description || 'Guest login failed')
+      }
+
+      const tokens = await tokenResponse.json()
+
+      // Store tokens
+      this.setTokens(tokens.access_token, tokens.refresh_token, tokens.id_token)
+      localStorage.setItem('is_guest', 'true') // Mark as guest session
+
+      // Decode user info from ID token
+      const user = getCurrentUser()
+
+      return {
+        user,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresIn: tokens.expires_in
+      }
+    } catch (error) {
+      console.error('Guest login error:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Check if current session is a guest session
+   * @returns {boolean}
+   */
+  isGuestSession() {
+    return localStorage.getItem('is_guest') === 'true'
+  },
+
+  /**
    * Check if user is authenticated (token exists and not expired)
    * @returns {boolean}
    */
@@ -426,5 +485,6 @@ export const authService = {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('id_token')
+    localStorage.removeItem('is_guest')
   }
 }

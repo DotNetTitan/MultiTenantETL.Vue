@@ -86,17 +86,22 @@
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
-            <v-btn
-              v-if="item.status === 'Running'"
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              title="Cancel execution"
-              @click="cancelExecution(item)"
-            >
-              <v-icon>mdi-stop</v-icon>
-            </v-btn>
+            <v-tooltip v-if="item.status === 'Running'" location="top">
+              <template #activator="{ props }">
+                <v-btn
+                  icon
+                  variant="text"
+                  size="small"
+                  color="error"
+                  :disabled="authStore.isGuest"
+                  v-bind="props"
+                  @click="cancelExecution(item)"
+                >
+                  <v-icon>mdi-stop</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : 'Cancel execution' }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -248,10 +253,18 @@
                               color="error"
                               variant="tonal"
                               size="small"
+                              :disabled="authStore.isGuest"
                               @click="cancelExecution(selectedExecution)"
                             >
                               <v-icon start size="small">mdi-stop</v-icon>
                               {{ $t('common.cancel') }}
+                              <v-tooltip
+                                v-if="authStore.isGuest"
+                                activator="parent"
+                                location="bottom"
+                              >
+                                Guest users have read-only access
+                              </v-tooltip>
                             </v-btn>
                           </div>
                         </div>
@@ -407,6 +420,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
 import { getExecutions, getExecutionById } from '@/services/pipelineService';
@@ -415,6 +429,7 @@ import { useGlobalState } from '@/composables/useGlobalState';
 const { t } = useI18n();
 const { showSuccess, showError, showInfo } = useGlobalState();
 
+const authStore = useAuthStore();
 const tenantStore = useTenantStore();
 const theme = useTheme();
 

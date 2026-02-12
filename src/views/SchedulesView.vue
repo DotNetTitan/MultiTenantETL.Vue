@@ -3,13 +3,21 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('schedules.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
+      <v-btn
+        color="primary"
+        :disabled="authStore.isGuest"
         @click="openCreateDialog"
       >
         <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
         <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
         <span v-else>{{ $t('schedules.createSchedule') }}</span>
+        <v-tooltip
+          v-if="authStore.isGuest"
+          activator="parent"
+          location="bottom"
+        >
+          Guest users have read-only access
+        </v-tooltip>
       </v-btn>
     </div>
 
@@ -111,8 +119,17 @@
               hide-details
               density="compact"
               :loading="togglingId === item.id"
+              :disabled="authStore.isGuest"
               @update:model-value="toggleActive(item)"
-            />
+            >
+              <v-tooltip
+                v-if="authStore.isGuest"
+                activator="parent"
+                location="bottom"
+              >
+                Guest users have read-only access
+              </v-tooltip>
+            </v-switch>
           </template>
 
           <template #item.nextRunAt="{ item }">
@@ -142,35 +159,53 @@
 
           <template #item.actions="{ item }">
             <div class="d-flex flex-nowrap">
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :title="$t('schedules.trigger')"
-                :loading="triggeringId === item.id"
-                @click="triggerScheduleNow(item)"
-              >
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :title="$t('schedules.editSchedule')"
-                @click="editSchedule(item)"
-              >
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                color="error"
-                :title="$t('schedules.deleteSchedule')"
-                @click="confirmDelete(item)"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :loading="triggeringId === item.id"
+                    :disabled="authStore.isGuest"
+                    v-bind="props"
+                    @click="triggerScheduleNow(item)"
+                  >
+                    <v-icon>mdi-play</v-icon>
+                  </v-btn>
+                </template>
+                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.trigger') }}</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :disabled="authStore.isGuest"
+                    v-bind="props"
+                    @click="editSchedule(item)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </template>
+                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.editSchedule') }}</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    v-bind="props"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </template>
+                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.deleteSchedule') }}</span>
+              </v-tooltip>
             </div>
           </template>
         </v-data-table>
@@ -258,12 +293,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/auth'
 import { useSchedule } from '@/composables/useSchedule'
 import { useGlobalState } from '@/composables/useGlobalState'
 import { fetchPipelines } from '@/services/pipelineService'
 import ScheduleDialog from '@/components/schedules/ScheduleDialog.vue'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 const { showSuccess, showError } = useGlobalState()
 const {
   schedules,

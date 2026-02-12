@@ -10,9 +10,9 @@
         </div>
         
         <v-spacer />
-        
+
         <div class="d-flex align-center ga-2">
-          <tenant-selector class="flex-shrink-0" />
+          <tenant-selector v-if="!authStore.isGuest" class="flex-shrink-0" />
           <language-switcher class="flex-shrink-0" />
           
           <!-- AI Chatbot Toggle -->
@@ -71,10 +71,11 @@
               </v-card-text>
               
               <v-divider />
-              
+
               <!-- Menu Items -->
               <v-list density="compact" class="py-2">
                 <v-list-item
+                  v-if="!authStore.isGuest"
                   to="/settings"
                   prepend-icon="mdi-cog"
                   class="menu-item"
@@ -82,7 +83,7 @@
                 >
                   <v-list-item-title class="text-body-2">{{ $t('nav.settings') }}</v-list-item-title>
                 </v-list-item>
-                
+
                 <v-list-item
                   prepend-icon="mdi-logout"
                   class="menu-item logout-item"
@@ -100,7 +101,7 @@
 
     <v-navigation-drawer
       v-model="drawer"
-      :permanent="!isMobile"
+      :permanent="!isMobile && drawer"
       :temporary="isMobile"
       :theme="theme.global.name.value"
       class="sidebar-drawer"
@@ -125,12 +126,12 @@
 
         <!-- Navigation Items -->
         <v-list density="compact" nav>
-          <v-list-item to="/" prepend-icon="mdi-view-dashboard" :title="$t('nav.dashboard')" rounded="lg">
+          <v-list-item to="/" prepend-icon="mdi-view-dashboard" rounded="lg">
             <template #title>{{ $t('nav.dashboard') }}</template>
           </v-list-item>
-          
-          <v-list-subheader>{{ $t('common.data') }}</v-list-subheader>
-          
+
+          <v-list-subheader class="mt-2">{{ $t('common.data') }}</v-list-subheader>
+
           <v-list-item to="/pipelines" prepend-icon="mdi-pipe" rounded="lg">
             <template #title>{{ $t('nav.pipelines') }}</template>
           </v-list-item>
@@ -143,10 +144,10 @@
           <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
             <template #title>{{ $t('nav.executions') }}</template>
           </v-list-item>
-          
-          <template v-if="isAdmin">
-            <v-list-subheader>{{ $t('common.administration') }}</v-list-subheader>
-            
+
+          <template v-if="isAdmin && !authStore.isGuest">
+            <v-list-subheader class="mt-2">{{ $t('common.administration') }}</v-list-subheader>
+
             <v-list-item to="/tenants" prepend-icon="mdi-office-building" rounded="lg">
               <template #title>{{ $t('nav.tenants') }}</template>
             </v-list-item>

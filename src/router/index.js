@@ -132,7 +132,15 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: () => import('@/views/SettingsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      beforeEnter: (to, from, next) => {
+        const authStore = useAuthStore()
+        if (authStore.isGuest) {
+          next('/dashboard') // Redirect guests to dashboard
+        } else {
+          next()
+        }
+      }
     },
     {
       path: '/users',
