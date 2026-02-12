@@ -3,7 +3,7 @@
     "save": "Speichern",
     "configuring": "Konfigurieren",
     "cancel": "Abbrechen",
-    "continue": "Continue",
+    "continue": "Fortfahren",
     "close": "Schließen",
     "retry": "Wiederholen",
     "delete": "Löschen",
@@ -19,7 +19,7 @@
     "loading": "Laden...",
     "noData": "Keine Daten verfügbar",
     "error": "Fehler",
-    "accessDenied": "Access Denied",
+    "accessDenied": "Zugriff verweigert",
     "success": "Erfolg",
     "confirm": "Bestätigen",
     "yes": "Ja",
@@ -101,8 +101,8 @@
   },
   "auth": {
     "login": "Anmelden",
-    "signIn": "Sign In",
-    "signInPrompt": "Sign in to access your ETL pipelines and data integrations.",
+    "signIn": "Anmelden",
+    "signInPrompt": "Melden Sie sich an, um auf Ihre ETL-Pipelines und Datenintegrationen zuzugreifen.",
     "logout": "Abmelden",
     "username": "Benutzername",
     "password": "Passwort",
@@ -116,8 +116,8 @@
     "apiOfflineReason3": "Ihre Netzwerkverbindung funktioniert",
     "currentApiUrl": "Aktuelle API-URL",
     "secureMessage": "Sichere Multi-Tenant-Daten-Pipeline-Verwaltung",
-    "processingLogin": "Processing Login",
-    "pleaseWait": "Please wait while we authenticate you..."
+    "processingLogin": "Anmeldung wird verarbeitet",
+    "pleaseWait": "Bitte warten Sie, während wir Sie authentifizieren..."
   },
   "dashboard": {
     "title": "Dashboard",

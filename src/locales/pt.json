@@ -3,7 +3,7 @@
     "save": "Salvar",
     "configuring": "Configurando",
     "cancel": "Cancelar",
-    "continue": "Continue",
+    "continue": "Continuar",
     "close": "Fechar",
     "retry": "Tentar novamente",
     "delete": "Excluir",
@@ -19,7 +19,7 @@
     "loading": "Carregando...",
     "noData": "Nenhum dado disponível",
     "error": "Erro",
-    "accessDenied": "Access Denied",
+    "accessDenied": "Acesso negado",
     "success": "Sucesso",
     "confirm": "Confirmar",
     "yes": "Sim",
@@ -101,8 +101,8 @@
   },
   "auth": {
     "login": "Entrar",
-    "signIn": "Sign In",
-    "signInPrompt": "Sign in to access your ETL pipelines and data integrations.",
+    "signIn": "Entrar",
+    "signInPrompt": "Inicie sessão para aceder aos seus pipelines ETL e integrações de dados.",
     "logout": "Sair",
     "username": "Nome de Usuário",
     "password": "Senha",
@@ -116,8 +116,8 @@
     "apiOfflineReason3": "Sua conexão de rede esteja funcionando",
     "currentApiUrl": "URL da API Atual",
     "secureMessage": "Gerenciamento seguro de pipelines de dados multi-locador",
-    "processingLogin": "Processing Login",
-    "pleaseWait": "Please wait while we authenticate you..."
+    "processingLogin": "A processar início de sessão",
+    "pleaseWait": "Aguarde enquanto autenticamos o seu acesso..."
   },
   "dashboard": {
     "title": "Painel",

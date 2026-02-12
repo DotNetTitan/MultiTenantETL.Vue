@@ -3,7 +3,7 @@
     "save": "Enregistrer",
     "configuring": "Configuration",
     "cancel": "Annuler",
-    "continue": "Continue",
+    "continue": "Continuer",
     "close": "Fermer",
     "retry": "Réessayer",
     "delete": "Supprimer",
@@ -19,7 +19,7 @@
     "loading": "Chargement...",
     "noData": "Aucune donnée disponible",
     "error": "Erreur",
-    "accessDenied": "Access Denied",
+    "accessDenied": "Accès refusé",
     "success": "Succès",
     "confirm": "Confirmer",
     "yes": "Oui",
@@ -101,8 +101,8 @@
   },
   "auth": {
     "login": "Se Connecter",
-    "signIn": "Sign In",
-    "signInPrompt": "Sign in to access your ETL pipelines and data integrations.",
+    "signIn": "Se connecter",
+    "signInPrompt": "Connectez-vous pour accéder à vos pipelines ETL et à vos intégrations de données.",
     "logout": "Déconnexion",
     "username": "Nom d'utilisateur",
     "password": "Mot de passe",
@@ -116,8 +116,8 @@
     "apiOfflineReason3": "Votre connexion réseau fonctionne",
     "currentApiUrl": "URL de l'API actuelle",
     "secureMessage": "Gestion sécurisée des pipelines de données multi-locataires",
-    "processingLogin": "Processing Login",
-    "pleaseWait": "Please wait while we authenticate you..."
+    "processingLogin": "Connexion en cours",
+    "pleaseWait": "Veuillez patienter pendant que nous vous authentifions..."
   },
   "dashboard": {
     "title": "Tableau de Bord",
