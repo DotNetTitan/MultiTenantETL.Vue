@@ -68,7 +68,8 @@ if (pipeline.id) {
         schedule: pipeline.schedule || null,
         isScheduled: pipeline.isScheduled || false,
         isActive: pipeline.isActive,
-        notificationEmails: pipeline.notificationEmails || null
+        notificationEmails: pipeline.notificationEmails || null,
+        emailNotificationsEnabled: pipeline.emailNotificationsEnabled ?? true
       }
       
       const response = await api.put(`/api/pipelines/${pipeline.id}`, payload)
@@ -84,7 +85,8 @@ if (pipeline.id) {
         schedule: pipeline.schedule || null,
         isScheduled: pipeline.isScheduled || false,
         isActive: pipeline.isActive ?? true,  // Default to active when creating
-        notificationEmails: pipeline.notificationEmails || null
+        notificationEmails: pipeline.notificationEmails || null,
+        emailNotificationsEnabled: pipeline.emailNotificationsEnabled ?? true
       }
       
       const response = await api.post('/api/pipelines', payload)

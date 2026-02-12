@@ -88,6 +88,21 @@
                   </v-chip>
                 </div>
               </div>
+              <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
+                <div class="info-label">Email Notifications:</div>
+                <div>
+                  <v-chip
+                    :color="pipeline.emailNotificationsEnabled ? 'success' : 'grey'"
+                    size="small"
+                    variant="tonal"
+                  >
+                    <v-icon start size="small">
+                      {{ pipeline.emailNotificationsEnabled ? 'mdi-bell-check' : 'mdi-bell-off' }}
+                    </v-icon>
+                    {{ pipeline.emailNotificationsEnabled ? 'Enabled' : 'Disabled' }}
+                  </v-chip>
+                </div>
+              </div>
             </v-card-text>
           </v-card>
 

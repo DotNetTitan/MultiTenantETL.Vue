@@ -86,6 +86,15 @@
               </v-col>
               <v-col cols="12">
                 <v-switch
+                  v-model="pipeline.emailNotificationsEnabled"
+                  :label="$t('pipelines.enableEmailNotifications')"
+                  color="success"
+                  :disabled="!pipeline.notificationEmails || pipeline.notificationEmails.length === 0"
+                  hide-details
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-switch
                   v-model="pipeline.isActive"
                   :label="$t('common.active')"
                   color="success"
@@ -290,6 +299,21 @@
                         variant="tonal"
                       >
                         {{ email }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0">
+                    <template #prepend>
+                      <v-icon>mdi-bell</v-icon>
+                    </template>
+                    <v-list-item-title>{{ $t('pipelines.enableEmailNotifications') }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip
+                        size="small"
+                        :color="pipeline.emailNotificationsEnabled ? 'success' : 'grey'"
+                        variant="tonal"
+                      >
+                        {{ pipeline.emailNotificationsEnabled ? $t('common.active') : $t('common.inactive') }}
                       </v-chip>
                     </v-list-item-subtitle>
                   </v-list-item>

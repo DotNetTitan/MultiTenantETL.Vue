@@ -214,7 +214,11 @@
     "scheduledExecution": "Ejecución Programada",
     "enabled": "Habilitado",
     "disabledManualOnly": "Deshabilitado (Solo manual)",
-    "savePipeline": "Guardar Tubería"
+    "savePipeline": "Guardar Tubería",
+    "notificationEmails": "Correos electrónicos de notificación",
+    "notificationEmailsPlaceholder": "Ingrese direcciones de correo para notificar después de la ejecución",
+    "notificationEmailsHint": "Agregue una o más direcciones de correo electrónico para recibir informes de ejecución. Presione Enter después de cada correo.",
+    "enableEmailNotifications": "Habilitar Notificaciones por Correo Electrónico"
   },
   "connectors": {
     "title": "Conectores",

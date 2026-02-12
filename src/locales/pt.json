@@ -212,7 +212,11 @@
     "scheduledExecution": "Execução Agendada",
     "enabled": "Ativado",
     "disabledManualOnly": "Desativado (Apenas Manual)",
-    "savePipeline": "Salvar Pipeline"
+    "savePipeline": "Salvar Pipeline",
+    "notificationEmails": "E-mails de notificação",
+    "notificationEmailsPlaceholder": "Digite endereços de e-mail para notificar após a execução",
+    "notificationEmailsHint": "Adicione um ou mais endereços de e-mail para receber relatórios de execução. Pressione Enter após cada e-mail.",
+    "enableEmailNotifications": "Ativar Notificações por E-mail"
   },
   "connectors": {
     "title": "Conectores",
