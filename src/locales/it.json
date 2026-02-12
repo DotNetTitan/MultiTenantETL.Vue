@@ -216,7 +216,9 @@
     "notificationEmails": "E-mail di notifica",
     "notificationEmailsPlaceholder": "Inserisci indirizzi email da notificare dopo l'esecuzione",
     "notificationEmailsHint": "Aggiungi uno o più indirizzi email per ricevere i rapporti di esecuzione. Premi Invio dopo ogni email.",
-    "enableEmailNotifications": "Abilita Notifiche via E-mail"
+    "enableEmailNotifications": "Abilita Notifiche via E-mail",
+    "pipelineActiveDescription": "La pipeline sarà attiva e pronta per l'esecuzione dopo il salvataggio",
+    "pipelineInactiveDescription": "La pipeline sarà inattiva dopo il salvataggio"
   },
   "connectors": {
     "title": "Connettori",

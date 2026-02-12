@@ -85,20 +85,13 @@
                 </v-combobox>
               </v-col>
               <v-col cols="12">
-                <v-switch
+                <v-checkbox
                   v-model="pipeline.emailNotificationsEnabled"
                   :label="$t('pipelines.enableEmailNotifications')"
-                  color="success"
                   :disabled="!pipeline.notificationEmails || pipeline.notificationEmails.length === 0"
-                  hide-details
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-switch
-                  v-model="pipeline.isActive"
-                  :label="$t('common.active')"
                   color="success"
                   hide-details
+                  density="compact"
                 />
               </v-col>
             </v-row>
@@ -439,6 +432,32 @@
                     </v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- Pipeline Status -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-toggle-switch</v-icon>
+                {{ $t('common.status') }}
+              </v-card-title>
+              <v-card-text>
+                <v-switch
+                  v-model="pipeline.isActive"
+                  :label="$t('common.active')"
+                  color="success"
+                  hide-details
+                  class="mt-2"
+                >
+                  <template #label>
+                    <div class="d-flex flex-column">
+                      <span class="text-body-1">{{ $t('common.active') }}</span>
+                      <span class="text-caption text-grey">
+                        {{ pipeline.isActive ? $t('pipelines.pipelineActiveDescription') : $t('pipelines.pipelineInactiveDescription') }}
+                      </span>
+                    </div>
+                  </template>
+                </v-switch>
               </v-card-text>
             </v-card>
           </div>

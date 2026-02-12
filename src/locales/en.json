@@ -235,7 +235,9 @@
     "notificationEmails": "Notification Emails",
     "notificationEmailsPlaceholder": "Enter email addresses to notify after execution",
     "notificationEmailsHint": "Add one or more email addresses to receive execution reports. Press Enter after each email.",
-    "enableEmailNotifications": "Enable Email Notifications"
+    "enableEmailNotifications": "Enable Email Notifications",
+    "pipelineActiveDescription": "Pipeline will be active and ready to run after saving",
+    "pipelineInactiveDescription": "Pipeline will be inactive after saving"
   },
   "connectors": {
     "title": "Connectors",
