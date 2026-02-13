@@ -20,6 +20,7 @@
     "noData": "No data available",
     "error": "Error",
     "accessDenied": "Access Denied",
+    "guestReadOnly": "Guest users have read-only access",
     "success": "Success",
     "confirm": "Confirm",
     "yes": "Yes",

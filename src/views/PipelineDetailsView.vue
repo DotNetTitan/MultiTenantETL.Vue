@@ -19,25 +19,48 @@
         {{ pipeline.status }}
       </v-chip>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        prepend-icon="mdi-play" 
-        :loading="running"
-        :disabled="pipeline?.status === 'Running'"
-        class="mr-2"
-        @click="runPipeline"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        Run
-      </v-btn>
-      <v-btn 
-        color="primary" 
-        variant="outlined"
-        prepend-icon="mdi-pencil" 
-        class="mr-2"
-        @click="editPipeline"
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn 
+              color="primary" 
+              prepend-icon="mdi-play" 
+              :loading="running"
+              :disabled="pipeline?.status === 'Running' || authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              class="mr-2"
+              @click="runPipeline"
+            >
+              Run
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        Edit
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn 
+              color="primary" 
+              variant="outlined"
+              prepend-icon="mdi-pencil" 
+              class="mr-2"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="editPipeline"
+            >
+              Edit
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card v-if="loading" class="mb-4">
@@ -404,9 +427,11 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
 import { fetchConnectorById } from '@/services/connectorService';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Pipeline data
 const pipeline = ref(null);

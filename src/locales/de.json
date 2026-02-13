@@ -18,6 +18,7 @@
     "loading": "Laden...",
     "noData": "Keine Daten verfügbar",
     "error": "Fehler",
+    "guestReadOnly": "Gastbenutzer haben schreibgeschützten Zugriff",
     "success": "Erfolg",
     "confirm": "Bestätigen",
     "yes": "Ja",

@@ -3,22 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('connectors.title') }}</h1>
       <v-spacer />
-      <v-btn
-        color="primary"
-        :disabled="authStore.isGuest"
-        @click="createNewConnector"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('connectors.createConnector') }}</span>
-        <v-tooltip
-          v-if="authStore.isGuest"
-          activator="parent"
-          location="bottom"
-        >
-          Guest users have read-only access
-        </v-tooltip>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="createNewConnector"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('connectors.createConnector') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -114,18 +118,20 @@
           <template #item.actions="{ item }">
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="editConnector(item)"
-                >
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="editConnector(item)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('connectors.editConnector') }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.editConnector') }}</span>
             </v-tooltip>
             <v-btn
               icon
@@ -139,35 +145,39 @@
             </v-btn>
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="success"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="testConnection(item)"
-                >
-                  <v-icon>mdi-connection</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="success"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="testConnection(item)"
+                  >
+                    <v-icon>mdi-connection</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('connectors.testConnection') }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.testConnection') }}</span>
             </v-tooltip>
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="error"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="confirmDelete(item)"
-                >
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.delete') }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
             </v-tooltip>
           </template>
         </v-data-table>

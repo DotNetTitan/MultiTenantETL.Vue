@@ -3,22 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('pipelines.title') }}</h1>
       <v-spacer />
-      <v-btn
-        color="primary"
-        :disabled="authStore.isGuest"
-        @click="openCreatePipelineDialog"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('pipelines.createPipeline') }}</span>
-        <v-tooltip
-          v-if="authStore.isGuest"
-          activator="parent"
-          location="bottom"
-        >
-          Guest users have read-only access
-        </v-tooltip>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="openCreatePipelineDialog"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('pipelines.createPipeline') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -99,22 +103,24 @@
             <span v-else class="text-grey">—</span>
           </template>
           <template #item.isActive="{ item }">
-            <v-switch
-              :model-value="item.isActive"
-              color="success"
-              hide-details
-              density="compact"
-              :disabled="item.status === 'Running' || authStore.isGuest"
-              @update:model-value="handleToggleActive(item)"
+            <v-tooltip
+              :disabled="!authStore.isGuest"
+              location="bottom"
             >
-              <v-tooltip
-                v-if="authStore.isGuest"
-                activator="parent"
-                location="bottom"
-              >
-                Guest users have read-only access
-              </v-tooltip>
-            </v-switch>
+              <template #activator="{ props }">
+                <div v-bind="props" :style="authStore.isGuest ? 'pointer-events: auto' : ''">
+                  <v-switch
+                    :model-value="item.isActive"
+                    color="success"
+                    hide-details
+                    density="compact"
+                    :disabled="item.status === 'Running' || authStore.isGuest"
+                    @update:model-value="handleToggleActive(item)"
+                  />
+                </div>
+              </template>
+              {{ $t('common.guestReadOnly') }}
+            </v-tooltip>
           </template>
           <template #item.actions="{ item }">
             <v-btn
@@ -128,18 +134,20 @@
             </v-btn>
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="openEditDialog(item)"
-                >
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="openEditDialog(item)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.edit') }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.edit') }}</span>
             </v-tooltip>
             <v-btn
               icon
@@ -153,21 +161,23 @@
             </v-btn>
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="success"
-                  :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
-                  v-bind="props"
-                  @click="handleExecutePipeline(item)"
-                >
-                  <v-icon>mdi-play</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="success"
+                    :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="handleExecutePipeline(item)"
+                  >
+                    <v-icon>mdi-play</v-icon>
+                  </v-btn>
+                </span>
               </template>
               <span>
                 {{ authStore.isGuest
-                  ? 'Guest users have read-only access'
+                  ? $t('common.guestReadOnly')
                   : !item.isActive
                     ? 'Pipeline must be active to execute'
                     : item.status === 'Running'
@@ -178,19 +188,21 @@
             </v-tooltip>
             <v-tooltip location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="error"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="confirmDelete(item)"
-                >
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('common.delete') }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
             </v-tooltip>
           </template>
         </v-data-table>

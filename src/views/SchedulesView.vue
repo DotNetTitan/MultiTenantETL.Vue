@@ -3,22 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('schedules.title') }}</h1>
       <v-spacer />
-      <v-btn
-        color="primary"
-        :disabled="authStore.isGuest"
-        @click="openCreateDialog"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('schedules.createSchedule') }}</span>
-        <v-tooltip
-          v-if="authStore.isGuest"
-          activator="parent"
-          location="bottom"
-        >
-          Guest users have read-only access
-        </v-tooltip>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="openCreateDialog"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('schedules.createSchedule') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -113,23 +117,25 @@
           </template>
 
           <template #item.isActive="{ item }">
-            <v-switch
-              :model-value="item.isActive"
-              color="success"
-              hide-details
-              density="compact"
-              :loading="togglingId === item.id"
-              :disabled="authStore.isGuest"
-              @update:model-value="toggleActive(item)"
+            <v-tooltip
+              :disabled="!authStore.isGuest"
+              location="bottom"
             >
-              <v-tooltip
-                v-if="authStore.isGuest"
-                activator="parent"
-                location="bottom"
-              >
-                Guest users have read-only access
-              </v-tooltip>
-            </v-switch>
+              <template #activator="{ props }">
+                <div v-bind="props" :style="authStore.isGuest ? 'pointer-events: auto' : ''">
+                  <v-switch
+                    :model-value="item.isActive"
+                    color="success"
+                    hide-details
+                    density="compact"
+                    :loading="togglingId === item.id"
+                    :disabled="authStore.isGuest"
+                    @update:model-value="toggleActive(item)"
+                  />
+                </div>
+              </template>
+              {{ $t('common.guestReadOnly') }}
+            </v-tooltip>
           </template>
 
           <template #item.nextRunAt="{ item }">
@@ -161,50 +167,56 @@
             <div class="d-flex flex-nowrap">
               <v-tooltip location="top">
                 <template #activator="{ props }">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    :loading="triggeringId === item.id"
-                    :disabled="authStore.isGuest"
-                    v-bind="props"
-                    @click="triggerScheduleNow(item)"
-                  >
-                    <v-icon>mdi-play</v-icon>
-                  </v-btn>
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :loading="triggeringId === item.id"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="triggerScheduleNow(item)"
+                    >
+                      <v-icon>mdi-play</v-icon>
+                    </v-btn>
+                  </span>
                 </template>
-                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.trigger') }}</span>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.trigger') }}</span>
               </v-tooltip>
               <v-tooltip location="top">
                 <template #activator="{ props }">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    :disabled="authStore.isGuest"
-                    v-bind="props"
-                    @click="editSchedule(item)"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="editSchedule(item)"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                  </span>
                 </template>
-                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.editSchedule') }}</span>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.editSchedule') }}</span>
               </v-tooltip>
               <v-tooltip location="top">
                 <template #activator="{ props }">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="error"
-                    :disabled="authStore.isGuest"
-                    v-bind="props"
-                    @click="confirmDelete(item)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
                 </template>
-                <span>{{ authStore.isGuest ? 'Guest users have read-only access' : $t('schedules.deleteSchedule') }}</span>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.deleteSchedule') }}</span>
               </v-tooltip>
             </div>
           </template>

@@ -88,19 +88,21 @@
             </v-btn>
             <v-tooltip v-if="item.status === 'Running'" location="top">
               <template #activator="{ props }">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="error"
-                  :disabled="authStore.isGuest"
-                  v-bind="props"
-                  @click="cancelExecution(item)"
-                >
-                  <v-icon>mdi-stop</v-icon>
-                </v-btn>
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="cancelExecution(item)"
+                  >
+                    <v-icon>mdi-stop</v-icon>
+                  </v-btn>
+                </span>
               </template>
-              <span>{{ authStore.isGuest ? 'Guest users have read-only access' : 'Cancel execution' }}</span>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : 'Cancel execution' }}</span>
             </v-tooltip>
           </template>
         </v-data-table>
@@ -248,24 +250,28 @@
                             >
                               {{ getStatusLabel(selectedExecution.status) }}
                             </v-chip>
-                            <v-btn
+                            <v-tooltip
                               v-if="selectedExecution.status === 'Running'"
-                              color="error"
-                              variant="tonal"
-                              size="small"
-                              :disabled="authStore.isGuest"
-                              @click="cancelExecution(selectedExecution)"
+                              :disabled="!authStore.isGuest"
+                              location="bottom"
                             >
-                              <v-icon start size="small">mdi-stop</v-icon>
-                              {{ $t('common.cancel') }}
-                              <v-tooltip
-                                v-if="authStore.isGuest"
-                                activator="parent"
-                                location="bottom"
-                              >
-                                Guest users have read-only access
-                              </v-tooltip>
-                            </v-btn>
+                              <template #activator="{ props }">
+                                <span v-bind="props">
+                                  <v-btn
+                                    color="error"
+                                    variant="tonal"
+                                    size="small"
+                                    :disabled="authStore.isGuest"
+                                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                                    @click="cancelExecution(selectedExecution)"
+                                  >
+                                    <v-icon start size="small">mdi-stop</v-icon>
+                                    {{ $t('common.cancel') }}
+                                  </v-btn>
+                                </span>
+                              </template>
+                              {{ $t('common.guestReadOnly') }}
+                            </v-tooltip>
                           </div>
                         </div>
                       </v-card-text>

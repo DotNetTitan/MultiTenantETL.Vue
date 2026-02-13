@@ -18,6 +18,7 @@
     "loading": "Carregando...",
     "noData": "Nenhum dado disponível",
     "error": "Erro",
+    "guestReadOnly": "Os usuários convidados têm acesso somente leitura",
     "success": "Sucesso",
     "confirm": "Confirmar",
     "yes": "Sim",

@@ -95,6 +95,14 @@ const vuetify = createVuetify({
 
 const app = createApp(App)
 
+// Suppress benign ResizeObserver errors (common with Vuetify when rapidly changing language/themes)
+window.addEventListener('error', (event) => {
+  if (event.message && event.message.includes('ResizeObserver loop')) {
+    event.stopImmediatePropagation()
+    event.preventDefault()
+  }
+})
+
 app.use(createPinia())
 app.use(i18n)
 app.use(router)
