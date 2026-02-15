@@ -1,0 +1,88 @@
+# Azure DevOps CI/CD Pipeline for MultiTenantETL Frontend
+# Deploys Vue 3 SPA to Azure Static Web Apps
+#
+# Prerequisites:
+#   1. Create an Azure Static Web App resource in the Azure Portal
+#   2. Copy the Deployment Token from the Static Web App → Manage deployment token
+#   3. Create a variable group "multitenant-etl-frontend" in Azure DevOps Library with:
+#      - DEPLOYMENT_TOKEN (secret) - the Static Web App deployment token
+#      - VITE_API_BASE_URL - your API Container App URL (e.g. https://multitenant-etl-dev-api.<region>.azurecontainerapps.io)
+#      - VITE_GEMINI_API_KEY (secret, optional) - Gemini API key for AI chatbot
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: multitenant-etl-frontend
+
+stages:
+# =============================================================================
+# Stage 1: Build & Test
+# =============================================================================
+- stage: BuildAndTest
+  displayName: 'Build & Test'
+  jobs:
+  - job: Test
+    displayName: 'Test'
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js 18'
+      inputs:
+        versionSpec: '18.x'
+
+    - script: npm ci
+      displayName: 'Install Dependencies'
+
+    - script: npm run test:run
+      displayName: 'Run Tests'
+      timeoutInMinutes: 10
+
+  - job: Build
+    displayName: 'Build'
+    dependsOn: Test
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js 18'
+      inputs:
+        versionSpec: '18.x'
+
+    - script: npm ci
+      displayName: 'Install Dependencies'
+
+    - script: npm run build
+      displayName: 'Build Production Bundle'
+      env:
+        VITE_API_BASE_URL: $(VITE_API_BASE_URL)
+        VITE_GEMINI_API_KEY: $(VITE_GEMINI_API_KEY)
+
+    - publish: dist
+      artifact: frontend
+      displayName: 'Upload Frontend Artifact'
+
+# =============================================================================
+# Stage 2: Deploy to Azure Static Web Apps
+# =============================================================================
+- stage: Deploy
+  displayName: 'Deploy to Static Web App'
+  dependsOn: BuildAndTest
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  jobs:
+  - deployment: DeployFrontend
+    displayName: 'Deploy Frontend'
+    environment: 'dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureStaticWebApp@0
+            displayName: 'Deploy to Azure Static Web Apps'
+            inputs:
+              skip_app_build: true
+              app_location: '$(Pipeline.Workspace)/frontend'
+              azure_static_web_apps_api_token: $(DEPLOYMENT_TOKEN)
