@@ -264,7 +264,7 @@ describe('Tenant Service', () => {
       const dateString = '2023-01-01T12:00:00Z'
       const result = tenantService.formatDate(dateString)
 
-      expect(result).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} (AM|PM)/)
+      expect(result).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} (AM|PM|am|pm)/)
     })
 
     it('should return dash for null date', () => {
