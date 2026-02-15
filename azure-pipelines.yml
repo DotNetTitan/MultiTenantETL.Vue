@@ -39,9 +39,9 @@ stages:
     - script: npm ci
       displayName: 'Install Dependencies'
 
-    - script: npm run test:run
+    - script: npm run test:all -- --run --no-threads
       displayName: 'Run Tests'
-      timeoutInMinutes: 10
+      timeoutInMinutes: 15
 
   - job: Build
     displayName: 'Build'
