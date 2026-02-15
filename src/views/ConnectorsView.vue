@@ -866,15 +866,12 @@ function formatDate(dateString) {
 async function fetchConnectors() {
   const authStore = useAuthStore();
 
-  console.log('fetchConnectors called - isAuthenticated:', authStore.isAuthenticated, 'user:', authStore.user);
 
   // Don't fetch if not authenticated
   if (!authStore.isAuthenticated) {
-    console.log('Skipping fetchConnectors - not authenticated');
     return;
   }
 
-  console.log('Making API call to GET /api/connectors');
 
   try {
     loading.value = true;
@@ -886,7 +883,6 @@ async function fetchConnectors() {
     };
 
     const result = await getConnectors(filters);
-    console.log('Connectors API response:', result);
     // Handle paginated response from API
     connectors.value = result.connectors || result;
   } catch (error) {
