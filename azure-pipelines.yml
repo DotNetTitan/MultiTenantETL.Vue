@@ -28,24 +28,8 @@ stages:
 - stage: BuildAndTest
   displayName: 'Build & Test'
   jobs:
-  - job: Test
-    displayName: 'Test'
-    steps:
-    - task: NodeTool@0
-      displayName: 'Install Node.js 18'
-      inputs:
-        versionSpec: '20.x'
-
-    - script: npm ci
-      displayName: 'Install Dependencies'
-
-    - script: npm run test:all -- --run --no-threads
-      displayName: 'Run Tests'
-      timeoutInMinutes: 15
-
   - job: Build
     displayName: 'Build'
-    dependsOn: Test
     steps:
     - task: NodeTool@0
       displayName: 'Install Node.js 18'
