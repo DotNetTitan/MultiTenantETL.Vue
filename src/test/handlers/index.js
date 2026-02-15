@@ -1,10 +1,12 @@
 import { http, HttpResponse } from 'msw'
+import { API_CONFIG } from '@/config/api'
 
 // Mock data generators
 import { createMockUser, createMockTenant, createMockConnector, createMockPipeline, createMockSchedule, createMockExecution, createMockAuditLog } from '../utils'
 
 // Base URL for API
-const API_BASE = 'http://localhost:5000'
+// Base URL for API from config
+const API_BASE = API_CONFIG.baseURL
 
 // Helper to get auth token from request headers
 const getAuthToken = (request) => {

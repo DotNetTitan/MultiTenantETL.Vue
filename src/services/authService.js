@@ -1,17 +1,17 @@
 import api from './api'
-import { API_ENDPOINTS } from '@/config/api'
+import { API_CONFIG, API_ENDPOINTS } from '@/config/api'
 import { getCurrentUser } from '@/utils/jwtHelper'
 import { getOAuthConfig } from '@/config/constants'
-import { 
-  generateCodeVerifier, 
-  generateCodeChallenge, 
-  generateState, 
-  storePKCEParams, 
+import {
+  generateCodeVerifier,
+  generateCodeChallenge,
+  generateState,
+  storePKCEParams,
   retrievePKCEParams,
   clearPKCEParams
 } from '@/utils/pkce'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+const API_BASE = API_CONFIG.baseURL
 
 /**
  * Authentication Service
@@ -107,7 +107,7 @@ export const authService = {
       if (!tokenResponse.ok) {
         let errorData
         const contentType = tokenResponse.headers.get('content-type')
-        
+
         try {
           if (contentType && contentType.includes('application/json')) {
             errorData = await tokenResponse.json()
@@ -125,7 +125,7 @@ export const authService = {
             error_description: 'Failed to parse server error response'
           }
         }
-        
+
         // If code already used and we have valid tokens, consider it success
         // This handles dev environment double-execution gracefully
         if (errorData.error === 'invalid_grant' && this.isAuthenticated()) {
@@ -358,7 +358,7 @@ export const authService = {
     if (response.data.requiresTokenRefresh) {
       // Refresh token to get new tokens with updated tenant claims
       const tokenResponse = await this.refreshToken()
-      
+
       return {
         user: tokenResponse.user,
         accessToken: tokenResponse.accessToken,
