@@ -34,9 +34,9 @@ stages:
     - task: NodeTool@0
       displayName: 'Install Node.js 18'
       inputs:
-        versionSpec: '20.x'
+        versionSpec: '18.x'
 
-    - script: npm ci
+    - script: npm install
       displayName: 'Install Dependencies'
 
     - script: npm run build
