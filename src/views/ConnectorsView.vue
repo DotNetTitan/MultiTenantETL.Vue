@@ -80,17 +80,7 @@
             </v-chip>
           </template>
           <template #item.provider="{ item }">
-            <v-tooltip v-if="item.provider" location="top">
-              <template #activator="{ props }">
-                <v-icon
-                  v-bind="props"
-                  :color="getProviderColor(item.provider)"
-                  :icon="getProviderIcon(item.provider)"
-                  size="24"
-                />
-              </template>
-              <span>{{ item.provider }}</span>
-            </v-tooltip>
+            <span v-if="item.provider">{{ item.provider }}</span>
             <span v-else class="text-grey">-</span>
           </template>
           <template #item.description="{ item }">
