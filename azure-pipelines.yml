@@ -64,9 +64,13 @@ stages:
       runOnce:
         deploy:
           steps:
+          - download: current
+            artifact: frontend
+            path: $(Build.SourcesDirectory)/dist
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Azure Static Web Apps'
             inputs:
               skip_app_build: true
-              app_location: '$(Pipeline.Workspace)/frontend'
+              app_location: '/'
+              output_location: 'dist'
               azure_static_web_apps_api_token: $(DEPLOYMENT_TOKEN)
