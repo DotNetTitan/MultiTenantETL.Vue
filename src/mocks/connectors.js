@@ -277,7 +277,7 @@ export const mockConnectors = [
     name: 'Local CSV Files',
     description: 'Local file system for CSV data files',
     type: 'File',
-    provider: 'Local',
+    provider: 'SFTP',
     direction: 'both',
     createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
     config: {
@@ -292,7 +292,7 @@ export const mockConnectors = [
       }
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: 'C:/data/exports',
       fileType: 'CSV',
       delimiter: ','
@@ -551,7 +551,7 @@ export const mockConnectors = [
     name: 'XML Data Files',
     description: 'Local XML files for legacy system integration',
     type: 'File',
-    provider: 'Local',
+    provider: 'SFTP',
     direction: 'source',
     createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
     config: {
@@ -561,7 +561,7 @@ export const mockConnectors = [
       xmlRecordElement: 'Record'
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: 'C:/data/imports/xml',
       fileType: 'XML'
     },

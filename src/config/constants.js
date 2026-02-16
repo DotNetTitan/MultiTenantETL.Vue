@@ -22,7 +22,6 @@ export const ConnectorProviders = {
   MongoDb: 'MongoDb',
   CosmosDb: 'CosmosDb',
   REST: 'REST',
-  Local: 'Local',
   FTP: 'FTP',
   SFTP: 'SFTP',
   S3: 'S3',

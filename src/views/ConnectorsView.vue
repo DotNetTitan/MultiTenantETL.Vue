@@ -295,7 +295,7 @@
                   <v-select
                     v-model="editedConnector.file.storageType"
                     label="Storage Type"
-                    :items="['Local', 'SFTP', 'S3', 'Azure Blob', 'Google Cloud Storage']"
+                    :items="['SFTP', 'S3', 'Azure Blob', 'Google Cloud Storage']"
                     :rules="[v => !!v || 'Storage type is required']"
                   />
                 </v-col>
@@ -780,7 +780,7 @@ function createEmptyConnector() {
       databaseName: ''
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: '',
       fileType: 'CSV',
       delimiter: ','
@@ -896,7 +896,7 @@ function updateConnectorForm() {
     };
   } else if (editedConnector.value.type === 'File') {
     editedConnector.value.file = {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: '',
       fileType: 'CSV',
       delimiter: ','

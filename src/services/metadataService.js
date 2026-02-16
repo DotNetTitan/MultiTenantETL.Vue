@@ -22,7 +22,7 @@ const MOCK_METADATA = {
     providers: {
       Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake', 'BigQuery', 'Redshift', 'MongoDb', 'CosmosDb'],
       API: ['REST'],
-      File: ['Local', 'FTP', 'SFTP', 'S3', 'AzureBlob', 'GCS']
+      File: ['FTP', 'SFTP', 'S3', 'AzureBlob', 'GCS']
     },
 
     providerMetadata: {
@@ -36,7 +36,6 @@ const MOCK_METADATA = {
       MongoDb: { icon: 'mdi-database', color: '#4DB33D' },
       CosmosDb: { icon: 'mdi-infinity', color: '#44ACE1' },
       REST: { icon: 'mdi-api', color: '#FFB300' },
-      Local: { icon: 'mdi-folder', color: '#757575' },
       FTP: { icon: 'mdi-server-network', color: '#5C6BC0' },
       SFTP: { icon: 'mdi-server-network', color: '#3F51B5' },
       S3: { icon: 'mdi-aws', color: '#FF9900' },

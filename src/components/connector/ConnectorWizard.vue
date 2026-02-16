@@ -693,19 +693,7 @@
                 />
               </v-col>
 
-              <!-- Local Storage -->
-              <template v-if="connector.provider === 'Local'">
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.path"
-                    :label="t('connectors.filePath')"
-                    :placeholder="t('connectors.filePathPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.filePath') })]"
-                    required
-                  />
-                </v-col>
-              </template>
+              <!-- Local storage option removed; SFTP/FTP and cloud providers handled below -->
 
               <!-- FTP Storage -->
               <template v-if="connector.provider === 'FTP'">
@@ -1543,8 +1531,7 @@
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
-                        <v-icon v-if="connector.provider === 'Local'">mdi-folder</v-icon>
-                        <v-icon v-else-if="connector.provider === 'FTP'">mdi-server-network</v-icon>
+                        <v-icon v-if="connector.provider === 'FTP' || connector.provider === 'SFTP'">mdi-server-network</v-icon>
                         <v-icon v-else-if="connector.provider === 'S3'">mdi-aws</v-icon>
                         <v-icon v-else-if="connector.provider === 'AzureBlob'">mdi-microsoft-azure</v-icon>
                         <v-icon v-else>mdi-cloud</v-icon>
