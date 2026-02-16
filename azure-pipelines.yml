@@ -68,11 +68,10 @@ stages:
             inputs:
               buildType: 'current'
               artifactName: 'frontend'
-              targetPath: '$(Build.SourcesDirectory)/dist'
+              targetPath: '$(System.DefaultWorkingDirectory)/dist'
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Azure Static Web Apps'
             inputs:
               skip_app_build: true
-              app_location: '/'
-              output_location: 'dist'
+              app_location: 'dist'
               azure_static_web_apps_api_token: $(DEPLOYMENT_TOKEN)
