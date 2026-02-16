@@ -15,14 +15,13 @@
     <!-- Content Security Policy -->
     <!-- Note: 'unsafe-inline' and 'unsafe-eval' needed for Vue 3 + Vite in dev mode -->
     <!-- In production, consider using nonces or hashes for stricter CSP -->
-    <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:;
       worker-src 'self' blob:;
-      style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-      font-src 'self' data: https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
+      font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
-      connect-src 'self' http://localhost:* https://localhost:* https://generativelanguage.googleapis.com ws://localhost:*;
+      connect-src 'self' http://localhost:* https://localhost:* https://generativelanguage.googleapis.com ws://localhost:* https://*.azurecontainerapps.io;
       base-uri 'self';
       form-action 'self';
     ">
