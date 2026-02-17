@@ -189,8 +189,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const languageOptions = [
-  { title: 'JavaScript', value: 'javascript' },
-  { title: 'C#', value: 'csharp' }
+  { title: 'JavaScript', value: 'javascript' }
 ];
 
 const testInputs = reactive({});
