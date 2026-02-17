@@ -71,10 +71,31 @@
     <v-col cols="12" md="6">
       <v-card>
         <v-card-title>
-          <v-icon start color="green">mdi-database-import</v-icon>
-          {{ $t('pipeline.destinationFields') }}
+          <v-icon start color="green">{{ isEmailDestination ? 'mdi-email-outline' : 'mdi-database-import' }}</v-icon>
+          {{ isEmailDestination ? $t('pipeline.exportColumns') : $t('pipeline.destinationFields') }}
         </v-card-title>
-        <v-card-text class="pa-0">
+        <v-card-text v-if="isEmailDestination" class="pa-4">
+          <v-alert type="info" variant="tonal" density="compact" class="mb-3">
+            {{ $t('pipeline.emailDestinationFieldsInfo') }}
+          </v-alert>
+          <div v-if="emailMappedFields.length > 0" class="field-list-container">
+            <v-list density="compact">
+              <v-list-item
+                v-for="(field, idx) in emailMappedFields"
+                :key="idx"
+              >
+                <template #prepend>
+                  <v-icon color="success">mdi-check-circle</v-icon>
+                </template>
+                <v-list-item-title>{{ field }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+          <div v-else class="text-center py-4 text-grey">
+            {{ $t('pipeline.noFieldMappings') }}
+          </div>
+        </v-card-text>
+        <v-card-text v-else class="pa-0">
           <v-text-field
             v-model="destinationSearch"
             :label="$t('pipeline.searchDestinationFields')"
@@ -128,7 +149,7 @@
             </v-list>
           </div>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions v-if="!isEmailDestination">
           <v-chip size="small" color="success">
             {{ $t('pipeline.mapped', { count: mappedDestinationFieldsCount, total: destinationSchema.fields.length }) }}
           </v-chip>
@@ -139,6 +160,11 @@
             color="error"
           >
             {{ $t('pipeline.requiredUnmapped', { count: unmappedRequiredFieldsCount }) }}
+          </v-chip>
+        </v-card-actions>
+        <v-card-actions v-else-if="emailMappedFields.length > 0">
+          <v-chip size="small" color="success">
+            {{ emailMappedFields.length }} {{ emailMappedFields.length === 1 ? 'column' : 'columns' }}
           </v-chip>
         </v-card-actions>
       </v-card>
@@ -164,6 +190,10 @@ const props = defineProps({
   mappings: {
     type: Array,
     default: () => []
+  },
+  isEmailDestination: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -220,6 +250,13 @@ const unmappedRequiredFieldsCount = computed(() => {
   return (props.destinationSchema.fields || []).filter(field =>
     field.required && !mappedDestinationFields.value.has(field.name)
   ).length;
+});
+
+// For Email destinations, show the mapped column headers
+const emailMappedFields = computed(() => {
+  return props.mappings
+    .filter(m => m.destinationField)
+    .map(m => m.destinationField);
 });
 
 // Methods

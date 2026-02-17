@@ -166,6 +166,22 @@ const connectors = await getAllConnectors()
     return connectors.filter(c => c.isDestination)
 }
 
+/**
+ * Preview the email template with the given configuration.
+ * Returns the rendered HTML string from the backend.
+ */
+export async function previewEmailTemplate(config) {
+  const response = await api.post('/api/connectors/email-preview', {
+    bodyMessage: config.bodyMessage || null,
+    attachmentFormat: config.attachmentFormat || 'CSV',
+    attachmentFileName: config.attachmentFileName || null
+  }, {
+    responseType: 'text',
+    headers: { 'Accept': 'text/html' }
+  })
+  return response.data
+}
+
 export const connectorService = {
   search: fetchConnectors,
   getAll: getAllConnectors,
@@ -178,6 +194,7 @@ export const connectorService = {
   detectSchema,
   detectSchemaPreview,
   getSources: getSourceConnectors,
-  getDestinations: getDestinationConnectors
+  getDestinations: getDestinationConnectors,
+  previewEmailTemplate
 }
 

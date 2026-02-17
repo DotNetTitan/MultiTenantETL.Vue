@@ -148,6 +148,7 @@
               v-model="pipeline.fieldMappings"
               :source-id="getConnectorId(pipeline.sourceId)"
               :destination-id="getConnectorId(pipeline.destinationId)"
+              :is-email-destination="isEmailDestination"
               @validate="handleMappingValidation"
             />
             <v-alert v-else type="info" variant="tonal">
@@ -703,6 +704,18 @@ const sourceConnectors = computed(() =>
 
 const destinationConnectors = computed(() => 
   props.connectors.filter(c => c.direction === 'destination' || c.direction === 'both' || c.isDestination)
+);
+
+// Detect if the selected destination connector is Email type
+const selectedDestinationConnector = computed(() => {
+  const id = typeof props.pipeline.destinationId === 'string'
+    ? props.pipeline.destinationId
+    : props.pipeline.destinationId?.id;
+  return props.connectors.find(c => c.id === id) || null;
+});
+
+const isEmailDestination = computed(() =>
+  selectedDestinationConnector.value?.type === 'Email'
 );
 
 const canProceed = computed(() => {

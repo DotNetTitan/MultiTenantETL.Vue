@@ -28,6 +28,7 @@
               :source-schema="sourceSchema"
               :destination-schema="destinationSchema"
               :mappings="localMappings"
+              :is-email-destination="isEmailDestination"
             />
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -68,6 +69,7 @@
                   :mapping="mapping"
                   :source-fields="sourceSchema.fields || []"
                   :destination-fields="destinationSchema.fields || []"
+                  :is-email-destination="isEmailDestination"
                   :index="index"
                   :can-move-up="index > 0"
                   :can-move-down="index < localMappings.length - 1"
@@ -181,6 +183,10 @@ const props = defineProps({
   modelValue: {
     type: Array,
     default: () => []
+  },
+  isEmailDestination: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -241,23 +247,36 @@ async function fetchSchemas() {
   error.value = null;
   
   try {
-    const [source, destination] = await Promise.all([
-      fetchSchema(props.sourceId),
-      fetchSchema(props.destinationId)
-    ]);
-    
-    sourceSchema.value = source;
-    destinationSchema.value = destination;
-    
-    // Check if either schema is using auto-detection
-    usingAutoDetection.value = !source.isManual || !destination.isManual;
-    
-    // Track which data sources are using auto-detection
-    if (!source.isManual) {
-      autoDetectedSourceId.value = props.sourceId;
-    }
-    if (!destination.isManual) {
-      autoDetectedDestinationId.value = props.destinationId;
+    if (props.isEmailDestination) {
+      // Email destinations have no schema; only fetch source
+      const source = await fetchSchema(props.sourceId);
+      sourceSchema.value = source;
+      destinationSchema.value = { fields: [], isManual: true };
+
+      usingAutoDetection.value = !source.isManual;
+      if (!source.isManual) {
+        autoDetectedSourceId.value = props.sourceId;
+      }
+      autoDetectedDestinationId.value = null;
+    } else {
+      const [source, destination] = await Promise.all([
+        fetchSchema(props.sourceId),
+        fetchSchema(props.destinationId)
+      ]);
+
+      sourceSchema.value = source;
+      destinationSchema.value = destination;
+
+      // Check if either schema is using auto-detection
+      usingAutoDetection.value = !source.isManual || !destination.isManual;
+
+      // Track which data sources are using auto-detection
+      if (!source.isManual) {
+        autoDetectedSourceId.value = props.sourceId;
+      }
+      if (!destination.isManual) {
+        autoDetectedDestinationId.value = props.destinationId;
+      }
     }
     
     // Validate existing mappings
@@ -320,9 +339,42 @@ function moveDown(index) {
 }
 
 function validateMappings() {
-  if (!sourceSchema.value?.fields || !destinationSchema.value?.fields) {
+  if (!sourceSchema.value?.fields) {
     validationResult.value = {
-      isValid: true, // Don't block if schemas aren't loaded yet
+      isValid: true,
+      errors: [],
+      warnings: [],
+      unmappedRequiredFields: []
+    };
+    emit('validate', validationResult.value);
+    return;
+  }
+
+  // Email destinations have no schema to validate against
+  if (props.isEmailDestination) {
+    const completeMappings = localMappings.value.filter(m =>
+      m.sourceFields && m.sourceFields.length > 0 && m.destinationField
+    );
+
+    // Check for duplicate destination field names
+    const destFields = completeMappings.map(m => m.destinationField);
+    const duplicates = destFields.filter((item, index) => destFields.indexOf(item) !== index);
+    const errors = [...new Set(duplicates)].map(f => `Column header '${f}' is used multiple times`);
+
+    const result = {
+      isValid: errors.length === 0,
+      errors,
+      warnings: [],
+      unmappedRequiredFields: []
+    };
+    validationResult.value = result;
+    emit('validate', result);
+    return;
+  }
+
+  if (!destinationSchema.value?.fields) {
+    validationResult.value = {
+      isValid: true,
       errors: [],
       warnings: [],
       unmappedRequiredFields: []

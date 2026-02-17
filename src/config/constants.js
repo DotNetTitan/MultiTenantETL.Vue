@@ -26,7 +26,8 @@ export const ConnectorProviders = {
   SFTP: 'SFTP',
   S3: 'S3',
   AzureBlob: 'AzureBlob',
-  GCS: 'GCS'
+  GCS: 'GCS',
+  Email: 'Email'
 }
 
 /**
