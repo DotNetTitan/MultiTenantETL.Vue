@@ -141,7 +141,7 @@
 
         <v-divider></v-divider>
 
-        <v-card-text class="pa-0" style="max-height: 60vh; overflow-y: auto;">
+        <v-card-text class="pa-0 custom-scrollbar" style="max-height: 60vh; overflow-y: auto;">
           <v-window v-model="activeTab">
             <!-- Overview Tab - KEEP AS IS -->
             <v-window-item value="overview">
@@ -951,19 +951,13 @@ async function confirmCancelExecution() {
   align-items: flex-start;
 }
 
-/* Added scrollable container styles */
+/* Timeline container styles - scrolling handled by outer v-card-text */
 .timeline-scrollable-container {
-  max-height: 400px;
-  overflow-y: auto;
   border-radius: var(--app-border-radius);
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 600px) {
-  .timeline-scrollable-container {
-    max-height: 300px;
-  }
-  
   :deep(.v-timeline-item__opposite) {
     display: none !important;
   }
@@ -980,8 +974,6 @@ async function confirmCancelExecution() {
 
 /* Updated logs styling for better light/dark mode support */
 .logs-container {
-  max-height: 450px;
-  overflow-y: auto;
   border-radius: var(--app-border-radius);
   font-family: 'Consolas', 'Monaco', monospace;
   white-space: pre-wrap;
@@ -1037,8 +1029,8 @@ async function confirmCancelExecution() {
 :deep(.card-success) { border-left-color: rgb(var(--v-theme-success)); }
 :deep(.card-info) { border-left-color: rgb(var(--v-theme-info)); }
 
-/* Make timeline container scrollable */
-.timeline-scrollable-container { max-height: 350px; overflow-y: auto; padding-right: 8px; }
+/* Timeline container padding */
+.timeline-scrollable-container { padding-right: 8px; }
 
 
 /* Make execution dialog consistent between themes */
@@ -1049,8 +1041,7 @@ async function confirmCancelExecution() {
 
 /* Log entries styling */
 .logs-entries {
-  max-height: 400px;
-  overflow-y: auto;
+  /* Scrolling handled by the outer v-card-text container */
 }
 
 .log-entry {
