@@ -578,5 +578,34 @@ export const mockConnectors = [
       isManual: true,
       lastModified: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
     }
+  },
+  {
+    id: '19',
+    name: 'Daily Report Email',
+    description: 'Sends daily data export to the analytics team',
+    type: 'Email',
+    provider: 'Email',
+    direction: 'destination',
+    createdAt: new Date().toISOString(),
+    config: {
+      recipients: ['analytics@example.com', 'manager@example.com'],
+      ccRecipients: [],
+      subject: 'Daily Sales Export',
+      bodyMessage: 'Please find attached the daily sales data export.',
+      attachmentFormat: 'CSV',
+      attachmentFileName: 'sales-export',
+      writeConfig: {
+        sendEmptyReport: false
+      }
+    },
+    isSource: false,
+    isDestination: true,
+    requiresCredentials: false,
+    schema: {
+      fields: [],
+      version: 1,
+      isManual: false,
+      lastModified: new Date().toISOString()
+    }
   }
 ];

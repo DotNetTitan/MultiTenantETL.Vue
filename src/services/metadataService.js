@@ -60,8 +60,7 @@ const MOCK_METADATA = {
       { value: 'CSV', labelKey: 'common.csv', extension: '.csv' },
       { value: 'JSON', labelKey: 'common.json', extension: '.json' },
       { value: 'Excel', labelKey: 'common.excel', extension: '.xlsx' },
-      { value: 'XML', labelKey: 'common.xml', extension: '.xml' },
-      { value: 'Parquet', labelKey: 'common.parquet', extension: '.parquet' }
+      { value: 'XML', labelKey: 'common.xml', extension: '.xml' }
     ],
 
     writeOperations: [

@@ -828,6 +828,8 @@ function getTypeColor(type) {
       return 'success';
     case 'API':
       return 'info';
+    case 'Email':
+      return 'deep-orange';
     default:
       return 'grey';
   }

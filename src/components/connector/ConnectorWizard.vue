@@ -15,8 +15,9 @@
           :title="t('common.connection')"
           :subtitle="t('common.connectionDetails')"
         />
-        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
+        <v-icon v-if="showSchemaStep" class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
+          v-if="showSchemaStep"
           :complete="currentStep > 3"
           :value="3"
           :title="t('common.schema')"
@@ -32,7 +33,7 @@
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
-          :value="showWriteConfigStep ? 5 : 4"
+          :value="lastStep"
           :title="t('common.reviewAndSave')"
           :subtitle="t('common.reviewConfiguration')"
         />
@@ -990,11 +991,105 @@
                 </div>
               </v-col>
             </v-row>
+
+            <!-- Email Connection -->
+            <v-row v-else-if="connector.type === 'Email'">
+              <v-col cols="12">
+                <v-combobox
+                  v-model="connector.config.recipients"
+                  :label="t('connectors.recipients')"
+                  :placeholder="t('connectors.recipientsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                  :rules="[v => (v && v.length > 0) || t('validation.required', { field: t('connectors.recipients') })]"
+                  :hint="t('connectors.recipientsHint')"
+                  persistent-hint
+                  required
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-combobox
+                  v-model="connector.config.ccRecipients"
+                  :label="t('connectors.ccRecipients')"
+                  :placeholder="t('connectors.ccRecipientsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.subject"
+                  :label="t('connectors.emailSubject')"
+                  :placeholder="t('connectors.emailSubjectPlaceholder')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.emailSubject') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="connector.config.attachmentFormat"
+                  :items="fileFormats"
+                  :label="t('connectors.attachmentFormat')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.attachmentFormat') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="connector.config.bodyMessage"
+                  :label="t('connectors.emailBodyMessage')"
+                  :placeholder="t('connectors.emailBodyPlaceholder')"
+                  variant="outlined"
+                  rows="3"
+                  auto-grow
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.attachmentFileName"
+                  :label="t('connectors.attachmentFileName')"
+                  :placeholder="t('connectors.attachmentFileNamePlaceholder')"
+                  variant="outlined"
+                  :hint="t('connectors.attachmentFileNameHint')"
+                  persistent-hint
+                />
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-switch
+                  v-model="connector.config.writeConfig.sendEmptyReport"
+                  :label="t('connectors.sendEmptyReport')"
+                  color="primary"
+                  :hint="t('connectors.sendEmptyReportHint')"
+                  persistent-hint
+                />
+              </v-col>
+
+              <!-- Preview Email Button -->
+              <v-col cols="12" class="text-center mt-4">
+                <v-btn
+                  color="deep-orange"
+                  variant="outlined"
+                  prepend-icon="mdi-email-search"
+                  :loading="loadingEmailPreview"
+                  :disabled="!validateConnectionConfig()"
+                  @click="previewEmail"
+                >
+                  {{ t('connectors.previewEmail') }}
+                </v-btn>
+              </v-col>
+            </v-row>
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 3: Schema Definition -->
-        <v-stepper-window-item :value="3">
+        <!-- Step 3: Schema Definition (skipped for Email) -->
+        <v-stepper-window-item v-if="showSchemaStep" :value="3">
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
@@ -1278,11 +1373,12 @@
                 </v-col>
               </template>
             </v-row>
+
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 4/5: Review & Save -->
-        <v-stepper-window-item :value="showWriteConfigStep ? 5 : 4">
+        <!-- Review & Save -->
+        <v-stepper-window-item :value="lastStep">
           <div class="pa-6">
             <div class="text-h5 mb-4">{{ t('common.reviewConfiguration') }}</div>
             
@@ -1632,6 +1728,52 @@
                       <v-list-item-subtitle>{{ connector.config.hasHeader ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
+
+                  <!-- Email Connection Details -->
+                  <template v-if="connector.type === 'Email'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-email-multiple</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.recipients') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.recipients?.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.ccRecipients && connector.config.ccRecipients.length > 0">
+                      <template #prepend>
+                        <v-icon>mdi-email-outline</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.ccRecipients') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.ccRecipients.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-text-short</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.emailSubject') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.subject }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-paperclip</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.attachmentFormat') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.attachmentFormat }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.attachmentFileName">
+                      <template #prepend>
+                        <v-icon>mdi-file-document-outline</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.attachmentFileName') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.attachmentFileName }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.bodyMessage">
+                      <template #prepend>
+                        <v-icon>mdi-message-text</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.emailBodyMessage') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.bodyMessage }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -1656,8 +1798,8 @@
               </v-card-text>
             </v-card>
 
-            <!-- Schema Fields -->
-            <v-card variant="outlined" class="mb-4">
+            <!-- Schema Fields (hidden for Email since schema step is skipped) -->
+            <v-card v-if="showSchemaStep" variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-table</v-icon>
                 {{ t('connectors.schemaFields') }} ({{ connector.schema.fields.length }})
@@ -1816,6 +1958,17 @@
                       <v-list-item-subtitle>{{ connector.config.writeConfig.rootKey }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
+
+                  <!-- Email Write Config -->
+                  <template v-if="connector.type === 'Email'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-email-check</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.sendEmptyReport') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.writeConfig.sendEmptyReport ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -1831,18 +1984,18 @@
         v-if="currentStep > 1"
         variant="outlined"
         prepend-icon="mdi-chevron-left"
-        @click="currentStep--"
+        @click="goToPrevStep"
       >
         {{ t('common.back') }}
       </v-btn>
       <v-spacer />
       <v-btn
-        v-if="currentStep < (showWriteConfigStep ? 5 : 4)"
+        v-if="currentStep < lastStep"
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
         :disabled="!canProceed"
-        @click="currentStep++"
+        @click="goToNextStep"
       >
         {{ t('common.next') }}
       </v-btn>
@@ -1859,17 +2012,119 @@
         <v-tooltip activator="parent" location="top">{{ t('common.saveConnector') }}</v-tooltip>
       </v-btn>
     </v-card-actions>
+
+    <!-- Email Preview Dialog -->
+    <v-dialog v-model="showEmailPreview" max-width="720" scrollable>
+      <v-card>
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" color="primary">mdi-email-search</v-icon>
+          <span class="text-h6">{{ t('connectors.emailPreviewTitle') }}</span>
+          <v-spacer />
+          <v-btn icon variant="text" @click="showEmailPreview = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="pa-6">
+          <!-- Envelope metadata section -->
+          <div class="pa-4 rounded mb-4" style="background-color: rgba(var(--v-theme-on-surface), 0.05)">
+            <!-- Subject -->
+            <div class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-email-outline</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis">{{ t('connectors.emailSubject') }}</div>
+                <div class="text-body-1 font-weight-medium">{{ connector.config.subject || '(no subject)' }}</div>
+              </div>
+            </div>
+
+            <!-- Recipients -->
+            <div class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-account-multiple</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis mb-1">{{ t('connectors.recipients') }}</div>
+                <v-chip
+                  v-for="(email, idx) in (connector.config.recipients || [])"
+                  :key="'to-' + idx"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="mr-1 mb-1"
+                >
+                  {{ email }}
+                </v-chip>
+                <span v-if="!connector.config.recipients?.length" class="text-medium-emphasis">(none)</span>
+              </div>
+            </div>
+
+            <!-- CC -->
+            <div v-if="connector.config.ccRecipients?.length" class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-account-multiple-outline</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis mb-1">{{ t('connectors.ccRecipients') }}</div>
+                <v-chip
+                  v-for="(email, idx) in connector.config.ccRecipients"
+                  :key="'cc-' + idx"
+                  size="small"
+                  variant="tonal"
+                  class="mr-1 mb-1"
+                >
+                  {{ email }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- Attachment indicator -->
+            <div class="d-flex align-center">
+              <v-icon size="small" color="primary" class="mr-2">mdi-paperclip</v-icon>
+              <span class="text-caption text-medium-emphasis mr-2">{{ t('connectors.attachmentFormat') }}</span>
+              <v-chip size="small" variant="outlined">
+                {{ connector.config.attachmentFormat || 'CSV' }}
+              </v-chip>
+            </div>
+          </div>
+
+          <!-- Email body preview in sandboxed iframe -->
+          <div class="rounded" style="border: thin solid rgba(var(--v-theme-on-surface), 0.12); overflow: hidden;">
+            <v-progress-linear
+              v-if="loadingEmailPreview"
+              indeterminate
+              color="primary"
+            />
+            <iframe
+              v-if="emailPreviewHtml && !loadingEmailPreview"
+              :srcdoc="emailPreviewSrcdoc"
+              sandbox
+              style="width: 100%; height: 520px; border: none;"
+            />
+          </div>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn color="primary" @click="showEmailPreview = false">
+            {{ t('common.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTheme } from 'vuetify';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import SchemaEditor from './SchemaEditor.vue';
 import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const { t } = useI18n();
+const vuetifyTheme = useTheme();
+const isDark = computed(() => vuetifyTheme.global.current.value.dark);
 
 const props = defineProps({
   connector: {
@@ -1901,6 +2156,33 @@ const testingConnection = ref(false);
 const connectionTestResult = ref(false);
 const connectionTestSuccess = ref(false);
 const connectionTestMessage = ref('');
+const showEmailPreview = ref(false);
+const loadingEmailPreview = ref(false);
+const emailPreviewHtml = ref('');
+
+const emailPreviewSrcdoc = computed(() => {
+  if (!emailPreviewHtml.value) return '';
+  if (!isDark.value) return emailPreviewHtml.value;
+  const darkCss = `<style>
+    body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }
+    .container { background: #2d2d2d !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; }
+    .content { background: #2d2d2d !important; }
+    .content h2 { color: #e0e0e0 !important; }
+    .content p, .content li { color: #ccc !important; }
+    .footer { background: #252525 !important; border-top-color: #444 !important; color: #999 !important; }
+    .footer a { color: #64b5f6 !important; }
+    .success-note { background: #1b3a1b !important; border-left-color: #4CAF50 !important; color: #a5d6a7 !important; }
+    .success-note strong { color: #a5d6a7 !important; }
+    .security-note { background: #3e2e0f !important; border-left-color: #FFA000 !important; color: #ffe0b2 !important; }
+    .security-note strong { color: #ffe0b2 !important; }
+    .divider { background: #444 !important; }
+    table td { color: #ccc !important; }
+    td[style*="font-weight: 600"] { color: #e0e0e0 !important; }
+    div[style*="background: #F5F5F5"], div[style*="background:#F5F5F5"] { background: #333 !important; }
+    tr[style*="border-top"] { border-top-color: #444 !important; }
+  </style>`;
+  return emailPreviewHtml.value.replace('</head>', darkCss + '</head>');
+});
 
 // Use translated metadata service
 const {
@@ -1920,13 +2202,20 @@ const connectorTypes = computed(() =>
   }))
 );
 
-const directionOptions = computed(() => 
-  directions.value.map(dir => ({
+const directionOptions = computed(() => {
+  const allDirections = directions.value.map(dir => ({
     title: dir.label,
     value: dir.value,
     icon: dir.icon
-  }))
-);
+  }));
+
+  // Email connectors are destination-only
+  if (props.connector.type === 'Email') {
+    return allDirections.filter(d => d.value === 'destination');
+  }
+
+  return allDirections;
+});
 
 const authTypes = computed(() => 
   metadataAuthTypes.value.map(auth => auth.label)
@@ -1934,6 +2223,12 @@ const authTypes = computed(() =>
 
 const fileFormats = computed(() => 
   metadataFileFormats.value.map(format => format.value)
+);
+
+const fileFormatExtensions = computed(() =>
+  Object.fromEntries(
+    metadataFileFormats.value.map(f => [f.value, f.extension?.replace('.', '') || f.value.toLowerCase()])
+  )
 );
 
 const httpMethods = computed(() => {
@@ -1945,9 +2240,51 @@ const providerOptions = computed(() => {
   return getProvidersForType(props.connector.type);
 });
 
+const showSchemaStep = computed(() => {
+  return props.connector.type !== 'Email';
+});
+
 const showWriteConfigStep = computed(() => {
+  if (props.connector.type === 'Email') return false;
   return props.connector.direction === 'destination' || props.connector.direction === 'both';
 });
+
+const lastStep = computed(() => {
+  // Review step takes the next value after the last visible optional step
+  // Fixed step values: 1=Basic, 2=Connection, 3=Schema(optional), 4=WriteConfig(optional)
+  if (showWriteConfigStep.value) return 5;   // After WriteConfig(4)
+  if (showSchemaStep.value) return 4;         // After Schema(3), no WriteConfig
+  return 3;                                   // After Connection(2), no Schema/WriteConfig
+});
+
+function goToNextStep() {
+  const cur = currentStep.value;
+  if (cur === 2 && !showSchemaStep.value) {
+    // Skip schema; go to write config or review
+    currentStep.value = showWriteConfigStep.value ? 4 : lastStep.value;
+  } else if (cur === 3 && !showWriteConfigStep.value) {
+    // Skip write config; go to review
+    currentStep.value = lastStep.value;
+  } else {
+    currentStep.value = cur + 1;
+  }
+}
+
+function goToPrevStep() {
+  const cur = currentStep.value;
+  if (cur === lastStep.value && !showWriteConfigStep.value && !showSchemaStep.value) {
+    // Review -> Connection (both schema and write config are skipped)
+    currentStep.value = 2;
+  } else if (cur === lastStep.value && !showWriteConfigStep.value) {
+    // Review -> Schema (write config skipped)
+    currentStep.value = 3;
+  } else if (cur === 4 && !showSchemaStep.value) {
+    // Write Config -> Connection (schema skipped)
+    currentStep.value = 2;
+  } else {
+    currentStep.value = cur - 1;
+  }
+}
 
 // Watch for direction changes and ensure writeConfig exists
 watch(() => props.connector.direction, (newDirection) => {
@@ -2104,6 +2441,7 @@ function ensureDatabaseConfig(provider) {
 }
 
 const canProceed = computed(() => {
+  if (currentStep.value === lastStep.value) return true; // Review step
   switch (currentStep.value) {
     case 1:
       return !!props.connector.name && !!props.connector.type && !!props.connector.provider;
@@ -2112,24 +2450,23 @@ const canProceed = computed(() => {
     case 3:
       return schemaValidation.value.isValid && props.connector.schema.fields.length > 0;
     case 4:
-      if (showWriteConfigStep.value) {
-        return validateWriteConfig();
-      }
-      return true; // Review step
-    case 5:
-      return true; // Review step when write config is shown
+      return validateWriteConfig();
     default:
       return false;
   }
 });
 
 const canSave = computed(() => {
-  const baseValid = props.connector.name &&
+  let baseValid = props.connector.name &&
          props.connector.type &&
          props.connector.provider &&
-         validateConnectionConfig() &&
+         validateConnectionConfig();
+  
+  if (showSchemaStep.value) {
+    baseValid = baseValid &&
          schemaValidation.value.isValid &&
          props.connector.schema.fields.length > 0;
+  }
   
   if (showWriteConfigStep.value) {
     return baseValid && validateWriteConfig();
@@ -2142,7 +2479,8 @@ function getTypeIcon(type) {
   const icons = {
     Database: 'mdi-database',
     API: 'mdi-api',
-    File: 'mdi-file'
+    File: 'mdi-file',
+    Email: 'mdi-email'
   };
   return icons[type] || 'mdi-help-circle';
 }
@@ -2202,6 +2540,11 @@ function isValidJson(str) {
 function handleTypeChange() {
   props.connector.provider = '';
   props.connector.config = getDefaultConfig(props.connector.type);
+
+  // Email connectors are destination-only
+  if (props.connector.type === 'Email') {
+    props.connector.direction = 'destination';
+  }
 }
 
 function getDefaultConfig(type) {
@@ -2293,6 +2636,18 @@ function getDefaultConfig(type) {
           rootKey: null
         }
       };
+    case 'Email':
+      return {
+        recipients: [],
+        ccRecipients: [],
+        subject: '',
+        bodyMessage: '',
+        attachmentFormat: 'CSV',
+        attachmentFileName: '',
+        writeConfig: {
+          sendEmptyReport: false
+        }
+      };
     default:
       return {};
   }
@@ -2355,6 +2710,10 @@ function validateConnectionConfig() {
     return basicValid;
   }
   
+  if (type === 'Email') {
+    return config.recipients?.length > 0 && !!config.subject && !!config.attachmentFormat;
+  }
+  
   return false;
 }
 
@@ -2402,11 +2761,28 @@ function validateWriteConfig() {
     return true;
   }
   
+  if (type === 'Email') {
+    return true; // writeConfig fields are all optional with defaults
+  }
+  
   return false;
 }
 
 function handleSchemaValidation(validation) {
   schemaValidation.value = validation;
+}
+
+async function previewEmail() {
+  loadingEmailPreview.value = true;
+  try {
+    const { previewEmailTemplate } = await import('@/services/connectorService');
+    emailPreviewHtml.value = await previewEmailTemplate(props.connector.config);
+    showEmailPreview.value = true;
+  } catch (error) {
+    console.error('Error loading email preview:', error);
+  } finally {
+    loadingEmailPreview.value = false;
+  }
 }
 
 async function testConnectionBeforeSave() {

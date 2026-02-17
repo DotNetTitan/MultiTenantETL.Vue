@@ -77,7 +77,19 @@
 
         <!-- Destination Field -->
         <v-col cols="12" md="5">
+          <!-- Email destination: free-text combobox for column header names -->
+          <v-combobox
+            v-if="isEmailDestination"
+            v-model="localMapping.destinationField"
+            :items="emailDestinationSuggestions"
+            :label="$t('pipeline.exportColumnHeader')"
+            :placeholder="$t('pipeline.exportColumnHeaderPlaceholder')"
+            :hint="$t('pipeline.exportColumnHeaderHint')"
+            persistent-hint
+          />
+          <!-- Standard destination: select from schema fields -->
           <v-select
+            v-else
             v-model="localMapping.destinationField"
             :items="destinationFieldItems"
             :label="$t('pipeline.destinationField')"
@@ -155,6 +167,10 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  isEmailDestination: {
+    type: Boolean,
+    default: false
+  },
   index: {
     type: Number,
     required: true
@@ -203,6 +219,14 @@ const destinationFieldItems = computed(() => {
     required: field.required,
     raw: field
   }));
+});
+
+// For Email destinations, suggest source field names as column headers
+const emailDestinationSuggestions = computed(() => {
+  if (!props.sourceFields || !Array.isArray(props.sourceFields)) {
+    return [];
+  }
+  return props.sourceFields.map(field => field.name);
 });
 </script>
 
