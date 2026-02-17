@@ -2014,7 +2014,7 @@
     </v-card-actions>
 
     <!-- Email Preview Dialog -->
-    <v-dialog v-model="showEmailPreview" max-width="720" scrollable>
+    <v-dialog v-model="showEmailPreview" max-width="720">
       <v-card>
         <v-card-title class="d-flex align-center pa-4">
           <v-icon class="mr-2" color="primary">mdi-email-search</v-icon>
@@ -2027,7 +2027,7 @@
 
         <v-divider />
 
-        <v-card-text class="pa-6">
+        <v-card-text class="pa-6" style="overflow-y: hidden;">
           <!-- Envelope metadata section -->
           <div class="pa-4 rounded mb-4" style="background-color: rgba(var(--v-theme-on-surface), 0.05)">
             <!-- Subject -->
@@ -2096,7 +2096,7 @@
               v-if="emailPreviewHtml && !loadingEmailPreview"
               :srcdoc="emailPreviewSrcdoc"
               sandbox
-              style="width: 100%; height: 520px; border: none;"
+              style="width: 100%; height: clamp(300px, 50vh, 600px); border: none;"
             />
           </div>
         </v-card-text>
