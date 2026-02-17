@@ -124,6 +124,7 @@
               <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.editConnector') }}</span>
             </v-tooltip>
             <v-btn
+              v-if="item.type !== 'Email'"
               icon
               variant="text"
               size="small"
@@ -133,7 +134,7 @@
             >
               <v-icon>mdi-table-eye</v-icon>
             </v-btn>
-            <v-tooltip location="top">
+            <v-tooltip v-if="item.type !== 'Email'" location="top">
               <template #activator="{ props }">
                 <span v-bind="props">
                   <v-btn
