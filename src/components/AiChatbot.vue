@@ -549,6 +549,7 @@ onUnmounted(() => {
 .chat-window {
   width: 380px;
   height: 500px;
+  max-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   border-radius: 12px;
