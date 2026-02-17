@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import jwtDecode from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import {
   getCurrentUser,
   getUserPermissions,
@@ -11,9 +11,9 @@ import {
   getTimeUntilExpiration
 } from '@/utils/jwtHelper'
 
-// Mock jwt-decode
+// Mock jwt-decode with named export matching the source
 vi.mock('jwt-decode', () => ({
-  default: vi.fn()
+  jwtDecode: vi.fn()
 }))
 
 describe('jwtHelper', () => {
