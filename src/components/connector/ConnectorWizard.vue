@@ -1275,7 +1275,7 @@
                 </v-tooltip>
                 <v-tooltip :text="$t('connectors.pipelineTooltip')" location="top">
                   <template #activator="{ props }">
-                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipeline}</v-chip>
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipelineId}</v-chip>
                   </template>
                 </v-tooltip>
                 <v-tooltip :text="$t('connectors.executionIdTooltip')" location="top">
