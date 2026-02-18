@@ -223,7 +223,10 @@ async function detectSchema() {
 
 function applySchema() {
   if (detectionResult.value) {
-    emit('schema-generated', detectionResult.value.fields);
+    emit('schema-generated', { 
+      fields: detectionResult.value.fields, 
+      tableName: tableName.value 
+    });
     detectionResult.value = null;
     tableName.value = '';
     showPreview.value = false;

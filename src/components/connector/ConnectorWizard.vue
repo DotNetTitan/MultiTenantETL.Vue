@@ -1110,6 +1110,7 @@
               :provider="connector.provider"
               :config="connector.config"
               @validate="handleSchemaValidation"
+              @table-name-detected="handleTableNameDetected"
             />
           </div>
         </v-stepper-window-item>
@@ -2496,12 +2497,29 @@ function getDirectionIcon(direction) {
 
 function getDirectionLabel(direction) {
   const labels = {
-    source: t('connectors.sourceOnly'),
-    destination: t('connectors.destinationOnly'),
-    both: t('connectors.both')
+    source: t('connectors.source'),
+    destination: t('connectors.destination'),
+    both: t('connectors.sourceAndDestination')
   };
   return labels[direction] || direction;
 }
+
+function handleTableNameDetected(tableName) {
+  if (!tableName) return;
+  
+  // Only auto-fill for Database connectors that are destinations
+  if (props.connector.type === 'Database' && 
+      (props.connector.direction === 'destination' || props.connector.direction === 'both')) {
+    
+    ensureWriteConfig();
+    
+    // Only auto-fill if the table name is currently empty to avoid overwriting user input
+    if (!props.connector.config.writeConfig.tableName) {
+      props.connector.config.writeConfig.tableName = tableName;
+    }
+  }
+}
+
 
 function getMethodColor(method) {
   const colors = {

@@ -282,7 +282,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'validate']);
+const emit = defineEmits(['update:modelValue', 'validate', 'table-name-detected']);
 
 // State
 const localFields = ref([...props.modelValue]);
@@ -501,6 +501,11 @@ function handleSchemaGenerated(schema) {
     rawFields = schema;
   } else if (schema && schema.fields && Array.isArray(schema.fields)) {
     rawFields = schema.fields;
+    
+    // Check if tableName was provided along with fields
+    if (schema.tableName) {
+      emit('table-name-detected', schema.tableName);
+    }
   } else {
     console.error('❌ Invalid schema format received:', schema);
     localFields.value = [];
