@@ -540,8 +540,12 @@ function formatDate(dateString, includeSeconds = false) {
 }
 
 function formatDuration(milliseconds) {
-  if (!milliseconds) {
+  if (milliseconds == null || milliseconds === false) {
     return '-';
+  }
+  
+  if (milliseconds < 1000) {
+    return `${milliseconds}ms`;
   }
   
   const seconds = Math.floor(milliseconds / 1000);
@@ -729,9 +733,13 @@ async function fetchRecentExecutions() {
     
     // Transform execution data to match view format
     recentExecutions.value = sortedExecutions.map(exec => {
-      const duration = exec.endTime 
-        ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
-        : Date.now() - new Date(exec.startTime).getTime();
+      // Use API-provided durationMs (has decimal precision e.g. 234.047ms)
+      // Only fall back to timestamp math for still-running executions
+      const durationMs = exec.durationMs != null
+        ? exec.durationMs
+        : (exec.endTime
+            ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
+            : Date.now() - new Date(exec.startTime).getTime());
       
       // Format logs from array to string
       let logsText = '';
@@ -750,7 +758,7 @@ async function fetchRecentExecutions() {
         status: exec.status,
         startTime: exec.startTime,
         endTime: exec.endTime,
-        duration: duration,
+        durationMs: durationMs,
         rowsProcessed: exec.recordsProcessed || 0,
         logs: logsText,
         progressPercent: exec.status === 'Completed' ? 100 : (exec.status === 'Running' ? 50 : 0)

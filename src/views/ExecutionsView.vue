@@ -674,8 +674,12 @@ function formatDate(dateString, includeSeconds = false) {
 }
 
 function formatDuration(milliseconds) {
-  if (!milliseconds && milliseconds !== 0) {
+  if (milliseconds == null || milliseconds === false) {
     return '-';
+  }
+  
+  if (milliseconds < 1000) {
+    return `${milliseconds}ms`;
   }
   
   const seconds = Math.floor(milliseconds / 1000);
@@ -686,11 +690,8 @@ function formatDuration(milliseconds) {
     return `${hours}h ${minutes % 60}m`;
   } else if (minutes > 0) {
     return `${minutes}m ${seconds % 60}s`;
-  } else if (seconds > 0) {
-    return `${seconds}s`;
   } else {
-    // Show milliseconds for sub-second durations
-    return `${milliseconds}ms`;
+    return `${seconds}s`;
   }
 }
 
