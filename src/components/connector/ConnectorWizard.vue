@@ -137,119 +137,8 @@
             
             <!-- Database Connection -->
             <v-row v-if="connector.type === 'Database'">
-              <!-- Snowflake Configuration -->
-              <template v-if="connector.provider === 'Snowflake'">
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.account"
-                    :label="t('connectors.snowflakeAccount')"
-                    :placeholder="t('connectors.snowflakeAccountPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeAccount') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.warehouse"
-                    :label="t('connectors.snowflakeWarehouse')"
-                    :placeholder="t('connectors.snowflakeWarehousePlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeWarehouse') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.database"
-                    :label="t('connectors.databaseName')"
-                    :placeholder="t('connectors.snowflakeDatabasePlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.schema"
-                    :label="t('connectors.snowflakeSchema')"
-                    :placeholder="t('connectors.snowflakeSchemaPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.snowflakeSchema') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.username"
-                    :label="t('connectors.username')"
-                    :placeholder="t('connectors.snowflakeUsernamePlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.password"
-                    :label="t('connectors.password')"
-                    type="password"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.role"
-                    :label="t('connectors.snowflakeRole')"
-                    :placeholder="t('connectors.snowflakeRolePlaceholder')"
-                    variant="outlined"
-                    :hint="t('connectors.snowflakeRoleHint')"
-                  />
-                </v-col>
-              </template>
-              
-              <!-- BigQuery Provider -->
-              <template v-else-if="connector.provider === 'BigQuery'">
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.projectId"
-                    :label="t('connectors.bigQueryProjectId')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bigQueryProjectId') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.datasetId"
-                    :label="t('connectors.bigQueryDatasetId')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bigQueryDatasetId') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.location"
-                    :label="t('connectors.bigQueryLocation')"
-                    variant="outlined"
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="connector.config.jsonCredentials"
-                    :label="t('connectors.bigQueryJsonCredentials')"
-                    variant="outlined"
-                    rows="4"
-                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
-                  />
-                </v-col>
-              </template>
-              
               <!-- MongoDB Provider -->
-              <template v-else-if="connector.provider === 'MongoDb'">
+              <template v-if="connector.provider === 'MongoDb'">
                 <v-col cols="12">
                   <v-textarea
                     v-model="connector.config.connectionString"
@@ -800,68 +689,6 @@
                 </v-col>
               </template>
 
-              <!-- S3 Storage -->
-              <template v-if="connector.provider === 'S3'">
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3Bucket"
-                    :label="t('connectors.bucketName')"
-                    :placeholder="t('connectors.bucketPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bucketName') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3Region"
-                    :label="t('connectors.region')"
-                    :placeholder="t('connectors.regionPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.region') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3AccessKey"
-                    :label="t('connectors.accessKeyId')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.accessKeyId') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3SecretKey"
-                    :label="t('connectors.secretAccessKey')"
-                    type="password"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.secretAccessKey') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.s3Endpoint"
-                    :label="t('connectors.s3Endpoint')"
-                    :placeholder="t('connectors.s3EndpointPlaceholder')"
-                    variant="outlined"
-                    :hint="t('connectors.s3EndpointHint')"
-                    persistent-hint
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.path"
-                    :label="t('connectors.objectKey')"
-                    :placeholder="t('connectors.objectKeyPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.objectKey') })]"
-                    required
-                  />
-                </v-col>
-              </template>
 
               <!-- AzureBlob Storage -->
               <template v-if="connector.provider === 'AzureBlob'">
@@ -907,48 +734,6 @@
                 </v-col>
               </template>
               
-              <!-- GCS Storage -->
-              <template v-if="connector.provider === 'GCS'">
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.gcsBucket"
-                    :label="t('connectors.gcsBucket')"
-                    :placeholder="t('connectors.gcsBucketPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.gcsBucket') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.gcsProjectId"
-                    :label="t('connectors.gcsProjectId')"
-                    :placeholder="t('connectors.gcsProjectIdPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.gcsProjectId') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="connector.config.gcsJsonCredentials"
-                    :label="t('connectors.gcsJsonCredentials')"
-                    variant="outlined"
-                    rows="4"
-                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.path"
-                    :label="t('connectors.filePath')"
-                    placeholder="e.g., path/to/file.csv"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.filePath') })]"
-                    required
-                  />
-                </v-col>
-              </template>
 
               <!-- Format-specific options (CSV) -->
               <v-col v-if="connector.config.format === 'CSV'" cols="12" md="6">
@@ -1374,7 +1159,6 @@
                 </v-col>
               </template>
             </v-row>
-
           </div>
         </v-stepper-window-item>
 
@@ -1433,67 +1217,7 @@
                 <v-list density="compact">
                   <!-- Database Connection Details -->
                   <template v-if="connector.type === 'Database'">
-                    <template v-if="connector.provider === 'BigQuery'">
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-google-cloud</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.bigQueryProjectId') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.projectId }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-database</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.bigQueryDatasetId') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.datasetId }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item v-if="connector.config.location">
-                        <template #prepend>
-                          <v-icon>mdi-map-marker</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.bigQueryLocation') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.location }}</v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                    <template v-else-if="connector.provider === 'Snowflake'">
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-snowflake</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.snowflakeAccount') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.account }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-warehouse</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.snowflakeWarehouse') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.warehouse }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-database</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.databaseName') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-schema</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.snowflakeSchema') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.schema }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-account</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                    <template v-else-if="connector.provider === 'CosmosDb'">
+                    <template v-if="connector.provider === 'CosmosDb'">
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-link-variant</v-icon>
@@ -1629,7 +1353,6 @@
                     <v-list-item>
                       <template #prepend>
                         <v-icon v-if="connector.provider === 'FTP' || connector.provider === 'SFTP'">mdi-server-network</v-icon>
-                        <v-icon v-else-if="connector.provider === 'S3'">mdi-aws</v-icon>
                         <v-icon v-else-if="connector.provider === 'AzureBlob'">mdi-microsoft-azure</v-icon>
                         <v-icon v-else>mdi-cloud</v-icon>
                       </template>
@@ -1657,38 +1380,6 @@
                         </template>
                         <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
                         <v-list-item-subtitle>{{ connector.config.ftpUsername }}</v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                    <template v-if="connector.provider === 'S3'">
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-bucket</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.s3Bucket') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.s3Bucket }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-earth</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.region') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.s3Region }}</v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                    <template v-if="connector.provider === 'GCS'">
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-bucket</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.gcsBucket') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.gcsBucket }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-google-cloud</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.gcsProjectId') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.gcsProjectId }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
                     <template v-if="connector.provider === 'AzureBlob'">

@@ -194,10 +194,10 @@ export const mockPipelines = [
     name: 'Monthly Financial Report',
     description: 'Generate monthly financial reports from Oracle ERP',
     sourceName: 'Oracle ERP Database',
-    destinationName: 'AWS S3 Bucket',
+    destinationName: 'Azure Blob Storage',
     status: 'Idle',
     sourceId: '9',
-    destinationId: '11',
+    destinationId: '14',
     transformationIds: ['11'],
     transformations: [],
     fieldMappings: [

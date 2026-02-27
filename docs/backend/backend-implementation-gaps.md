@@ -170,7 +170,7 @@ Create `docs/backend/file-storage.md`:
 ```markdown
 ## Storage Provider
 - Development: Local file system
-- Staging/Production: Azure Blob Storage or AWS S3
+- Staging/Production: Azure Blob Storage
 
 ## Configuration
 - Max file size: 100MB (configurable)
@@ -234,7 +234,7 @@ GET /health/ready - Readiness check (DB, external services)
 - Database connectivity
 - SignalR hub status
 - Hangfire job processor
-- External storage (S3/Blob)
+- External storage (Blob)
 - Memory usage
 - Disk space
 ```
@@ -556,7 +556,6 @@ Create `docs/backend/external-integrations.md`:
 
 ## File Connectors
 - Azure.Storage.Blobs - Azure Blob Storage
-- AWSSDK.S3 - AWS S3
 - SSH.NET - SFTP
 - FTP client libraries
 ```

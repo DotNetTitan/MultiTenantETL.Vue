@@ -4,13 +4,13 @@
       <v-card-text>
         <div class="d-flex justify-space-between align-center">
           <div class="d-flex align-center">
-              <div class="d-flex flex-column align-center mr-4">
-                <v-icon color="primary" icon="mdi-database" size="large" class="mb-1"></v-icon>
-                <span class="text-caption font-weight-medium text-primary">SOURCE</span>
-              </div>
-              <div>
-                <div class="text-h6 font-weight-medium">{{ sourceName }}</div>
-              </div>
+            <div class="d-flex flex-column align-center mr-4">
+              <v-icon color="primary" icon="mdi-database" size="large" class="mb-1"></v-icon>
+              <span class="text-caption font-weight-medium text-primary">SOURCE</span>
+            </div>
+            <div>
+              <div class="text-h6 font-weight-medium">{{ sourceName }}</div>
+            </div>
           </div>
 
           <div class="d-flex flex-column align-center px-4">
@@ -60,22 +60,22 @@
           </td>
           <td class="text-center">
             <div v-if="mapping.transformation" class="d-flex justify-center">
-                 <v-tooltip location="top">
-                    <template v-slot:activator="{ props }">
-                        <v-avatar
-                            v-bind="props"
-                            size="32"
-                            :color="getTransformationColor(mapping.transformation.type)"
-                            variant="tonal"
-                        >
-                            <v-icon size="small">{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                        </v-avatar>
-                    </template>
-                    <div class="text-center">
-                        <div class="font-weight-bold">{{ mapping.transformation.type }}</div>
-                        <div class="text-caption">{{ mapping.transformation.description }}</div>
-                    </div>
-                 </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <v-avatar
+                    v-bind="props"
+                    size="32"
+                    :color="getTransformationColor(mapping.transformation.type)"
+                    variant="tonal"
+                  >
+                    <v-icon size="small">{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
+                  </v-avatar>
+                </template>
+                <div class="text-center">
+                  <div class="font-weight-bold">{{ mapping.transformation.type }}</div>
+                  <div class="text-caption">{{ mapping.transformation.description }}</div>
+                </div>
+              </v-tooltip>
             </div>
             <v-icon v-else color="grey-lighten-2" icon="mdi-arrow-right-thin"></v-icon>
           </td>
@@ -96,9 +96,9 @@
           </td>
         </tr>
         <tr v-if="mappings.length === 0">
-            <td colspan="4" class="text-center py-8 text-grey">
-                No mappings defined
-            </td>
+          <td colspan="4" class="text-center py-8 text-grey">
+            No mappings defined
+          </td>
         </tr>
       </tbody>
     </v-table>

@@ -20,27 +20,21 @@ const MOCK_METADATA = {
     ],
 
     providers: {
-      Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'Snowflake', 'BigQuery', 'Redshift', 'MongoDb', 'CosmosDb'],
+      Database: ['SqlServer', 'PostgreSQL', 'MySQL', 'MongoDb', 'CosmosDb'],
       API: ['REST'],
-      File: ['FTP', 'SFTP', 'S3', 'AzureBlob', 'GCS']
+      File: ['FTP', 'SFTP', 'AzureBlob']
     },
 
     providerMetadata: {
       SqlServer: { icon: 'mdi-microsoft-sql-server', color: '#CC2927' },
       PostgreSQL: { icon: 'mdi-database', color: '#336791' },
       MySQL: { icon: 'mdi-database', color: '#4479A1' },
-      Snowflake: { icon: 'mdi-snowflake', color: '#00B0FF' },
-      Snoflake: { icon: 'mdi-snowflake', color: '#00B0FF' }, // Alias for typo
-      BigQuery: { icon: 'mdi-google-cloud', color: '#4285F4' },
-      Redshift: { icon: 'mdi-database', color: '#FF9900' },
       MongoDb: { icon: 'mdi-database', color: '#4DB33D' },
       CosmosDb: { icon: 'mdi-infinity', color: '#44ACE1' },
       REST: { icon: 'mdi-api', color: '#FFB300' },
       FTP: { icon: 'mdi-server-network', color: '#5C6BC0' },
       SFTP: { icon: 'mdi-server-network', color: '#3F51B5' },
-      S3: { icon: 'mdi-aws', color: '#FF9900' },
-      AzureBlob: { icon: 'mdi-microsoft-azure', color: '#0089D6' },
-      GCS: { icon: 'mdi-google-cloud', color: '#FBBC04' }
+      AzureBlob: { icon: 'mdi-microsoft-azure', color: '#0089D6' }
     },
 
     directions: [

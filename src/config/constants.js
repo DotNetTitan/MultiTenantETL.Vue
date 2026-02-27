@@ -16,17 +16,12 @@ export const ConnectorProviders = {
   SqlServer: 'SqlServer',
   PostgreSQL: 'PostgreSQL',
   MySQL: 'MySQL',
-  Snowflake: 'Snowflake',
-  BigQuery: 'BigQuery',
-  Redshift: 'Redshift',
   MongoDb: 'MongoDb',
   CosmosDb: 'CosmosDb',
   REST: 'REST',
   FTP: 'FTP',
   SFTP: 'SFTP',
-  S3: 'S3',
   AzureBlob: 'AzureBlob',
-  GCS: 'GCS',
   Email: 'Email'
 }
 

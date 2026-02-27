@@ -53,15 +53,13 @@ Since you're ready to start development, here are the key points for the remaini
 
 **Quick Decision:**
 - **Development:** Local file system (`wwwroot/uploads/`)
-- **Production:** Azure Blob Storage or AWS S3
+- **Production:** Azure Blob Storage
 - **Max size:** 100MB (configurable)
 - **Retention:** 30 days for uploads, configurable for connectors
 
 **NuGet Packages:**
 ```bash
 dotnet add package Azure.Storage.Blobs  # For Azure
-# OR
-dotnet add package AWSSDK.S3  # For AWS
 ```
 
 ---

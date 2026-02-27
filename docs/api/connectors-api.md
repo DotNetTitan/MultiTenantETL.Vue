@@ -298,7 +298,7 @@ Returns array of connector objects filtered to destinations only.
   "hasHeader": true,
   
   // For cloud storage
-  "storageType": "Local|FTP|SFTP|S3|Azure Blob|Google Cloud Storage",
+  "storageType": "Local|FTP|SFTP|Azure Blob",
   
   // FTP/SFTP specific
   "ftpHost": "ftp.example.com",
@@ -306,21 +306,10 @@ Returns array of connector objects filtered to destinations only.
   "ftpUsername": "user",
   "ftpPassword": "***",
   
-  // S3 specific
-  "bucket": "my-bucket",
-  "region": "us-east-1",
-  "awsAccessKey": "***",
-  "awsSecretKey": "***",
-  
   // Azure Blob specific
   "azureAccountName": "myaccount",
   "azureContainer": "container",
   "azureAccountKey": "***",
-  
-  // GCS specific
-  "gcsBucket": "my-bucket",
-  "gcsProjectId": "project-123",
-  "gcsCredentials": "***",
   
   // Required if direction = "destination" or "both"
   "writeConfig": {
@@ -339,7 +328,7 @@ Returns array of connector objects filtered to destinations only.
 {
   "format": "JSON",
   "path": "/data/exports",
-  "storageType": "Local|S3|Azure Blob|Google Cloud Storage",
+  "storageType": "Local|Azure Blob",
   // ... cloud storage config same as above
   
   "writeConfig": {
@@ -366,7 +355,7 @@ Returns array of connector objects filtered to destinations only.
 {
   "format": "Parquet",
   "path": "/raw-data/events",
-  "storageType": "S3|Azure Blob|Google Cloud Storage",
+  "storageType": "Azure Blob",
   // ... cloud storage config
   
   "writeConfig": {
@@ -510,32 +499,6 @@ Supported data types in connector schemas:
     ],
     "version": 1,
     "isManual": false
-  },
-  "requiresCredentials": true
-}
-```
-
-### Example 2: AWS S3 JSON File Connector
-
-```json
-{
-  "name": "AWS S3 Bucket",
-  "description": "S3 bucket for data lake storage",
-  "type": "File",
-  "provider": "S3",
-  "direction": "both",
-  "config": {
-    "format": "JSON",
-    "bucket": "my-data-lake",
-    "region": "us-east-1",
-    "path": "/raw-data",
-    "awsAccessKey": "***",
-    "awsSecretKey": "***",
-    "writeConfig": {
-      "writeMode": "append",
-      "filenamePattern": "export_{timestamp}.json",
-      "structure": "array"
-    }
   },
   "requiresCredentials": true
 }

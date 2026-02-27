@@ -312,29 +312,7 @@ export const mockConnectors = [
       lastModified: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
     }
   },
-  {
-    id: '11',
-    name: 'AWS S3 Bucket',
-    description: 'Amazon S3 bucket for data lake storage',
-    type: 'File',
-    provider: 'S3',
-    direction: 'both',
-    createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'JSON',
-      bucket: 'my-data-lake',
-      region: 'us-east-1',
-      path: '/raw-data'
-    },
-    file: {
-      storageType: 'S3',
-      path: '/raw-data',
-      fileType: 'JSON'
-    },
-    isSource: true,
-    isDestination: true,
-    requiresCredentials: true
-  },
+
   {
     id: '12',
     name: 'GraphQL API',
@@ -435,46 +413,7 @@ export const mockConnectors = [
       lastModified: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
     }
   },
-  {
-    id: '15',
-    name: 'Google Cloud Storage',
-    description: 'GCS bucket for data lake',
-    type: 'File',
-    provider: 'Google Cloud Storage',
-    direction: 'both',
-    createdAt: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'Parquet',
-      gcsBucket: 'my-data-lake',
-      gcsProjectId: 'my-project-123',
-      gcsCredentials: '***',
-      path: '/raw-data/events',
-      writeConfig: {
-        filenamePattern: 'events_{date}_{time}.parquet',
-        compression: 'snappy'
-      }
-    },
-    file: {
-      storageType: 'Google Cloud Storage',
-      path: '/raw-data/events',
-      fileType: 'Parquet'
-    },
-    isSource: true,
-    isDestination: true,
-    requiresCredentials: true,
-    schema: {
-      fields: [
-        { name: 'event_id', type: 'string', required: true, nullable: false, description: 'Event ID' },
-        { name: 'event_type', type: 'string', required: true, nullable: false, description: 'Event type' },
-        { name: 'user_id', type: 'string', required: false, nullable: true, description: 'User ID' },
-        { name: 'event_data', type: 'json', required: false, nullable: true, description: 'Event payload' },
-        { name: 'created_at', type: 'timestamp', required: true, nullable: false, description: 'Event timestamp' }
-      ],
-      version: 1,
-      isManual: false,
-      lastModified: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  },
+
   {
     id: '16',
     name: 'SOAP Web Service',

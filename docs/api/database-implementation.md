@@ -124,8 +124,8 @@ CREATE TABLE connector_types (
 CREATE TABLE connector_providers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     type_code VARCHAR(20) NOT NULL REFERENCES connector_types(code) ON DELETE CASCADE,
-    code VARCHAR(50) NOT NULL,  -- 'sqlserver', 'postgresql', 's3', 'rest'
-    display_name VARCHAR(100) NOT NULL,  -- 'SQL Server', 'PostgreSQL', 'S3', 'REST'
+    code VARCHAR(50) NOT NULL,  -- 'sqlserver', 'postgresql', 'rest'
+    display_name VARCHAR(100) NOT NULL,  -- 'SQL Server', 'PostgreSQL', 'REST'
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(type_code, code),
@@ -153,9 +153,7 @@ INSERT INTO connector_providers (type_code, code, display_name) VALUES
     ('file', 'local', 'Local'),
     ('file', 'ftp', 'FTP'),
     ('file', 'sftp', 'SFTP'),
-    ('file', 's3', 'S3'),
     ('file', 'azure_blob', 'Azure Blob'),
-    ('file', 'gcs', 'Google Cloud Storage'),
     -- API providers
     ('api', 'rest', 'REST'),
     ('api', 'graphql', 'GraphQL'),

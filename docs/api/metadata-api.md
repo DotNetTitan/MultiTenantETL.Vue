@@ -69,7 +69,7 @@ Gets connector configuration metadata.
   "providers": {
     "Database": ["SQL Server", "PostgreSQL", "MySQL", "Oracle", "SQLite"],
     "API": ["REST", "GraphQL", "SOAP"],
-    "File": ["Local", "FTP", "SFTP", "S3", "Azure Blob", "Google Cloud Storage"]
+    "File": ["Local", "FTP", "SFTP", "Azure Blob"]
   },
   "directions": [
     {

@@ -22,8 +22,8 @@ describe('useProviderMetadata Composable', () => {
       icon: 'mdi-database-outline',
       color: 'orange'
     },
-    S3: {
-      icon: 'mdi-aws',
+    AzureBlob: {
+      icon: 'mdi-microsoft-azure',
       color: 'green'
     },
     REST: {
@@ -37,7 +37,7 @@ describe('useProviderMetadata Composable', () => {
     providers: {
       Database: ['PostgreSQL', 'MySQL'],
       API: ['REST'],
-      File: ['S3']
+      File: ['AzureBlob']
     },
     providerMetadata: mockProviderMetadata
   }
@@ -149,14 +149,14 @@ describe('useProviderMetadata Composable', () => {
 
       expect(composable.getProviderIcon('PostgreSQL')).toBe('mdi-database')
       expect(composable.getProviderIcon('MySQL')).toBe('mdi-database-outline')
-      expect(composable.getProviderIcon('S3')).toBe('mdi-aws')
+      expect(composable.getProviderIcon('AzureBlob')).toBe('mdi-microsoft-azure')
     })
 
     it('should return default icon for unknown provider', async () => {
       getConnectorConfig.mockResolvedValue(mockConnectorConfig)
       await composable.loadProviderMetadata()
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
       const result = composable.getProviderIcon('UnknownProvider')
 
@@ -205,7 +205,7 @@ describe('useProviderMetadata Composable', () => {
       getConnectorConfig.mockResolvedValue(mockConnectorConfig)
       await composable.loadProviderMetadata()
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { })
 
       const result = composable.getProviderColor('UnknownProvider')
 
