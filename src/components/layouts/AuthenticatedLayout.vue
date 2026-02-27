@@ -30,6 +30,7 @@
             </template>
           </v-tooltip>
           
+          <!-- Dark mode toggle (temporarily disabled)
           <v-switch
             v-model="isDarkMode"
             hide-details
@@ -41,6 +42,7 @@
             false-icon="mdi-weather-sunny"
             @update:model-value="toggleTheme"
           />
+          -->
           
           <!-- User Menu -->
           <v-menu offset-y min-width="240">
