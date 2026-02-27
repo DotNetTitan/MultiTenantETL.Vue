@@ -818,6 +818,11 @@
     "tableNameRequired": "Table name is required",
     "noFieldsDetected": "No fields detected. Please check the table name.",
     "detectionFailed": "Schema detection failed. Please try again.",
+    "detectFromApi": "Detect Schema from API",
+    "detectFromApiDescription": "Select a GET endpoint to automatically detect the schema from the API response",
+    "selectEndpoint": "Select Endpoint",
+    "noGetEndpointsConfigured": "No GET endpoints configured. Add a GET endpoint in the Connection step first.",
+    "schemaDetectionFailed": "Schema detection failed. Please try again.",
     "dataTypes": {
       "string": "String",
       "integer": "Integer",

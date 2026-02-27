@@ -740,6 +740,11 @@
     "tableNameRequired": "Il nome della tabella è richiesto",
     "noFieldsDetected": "Nessun campo rilevato. Controlla il nome della tabella.",
     "detectionFailed": "Rilevamento schema fallito. Riprova.",
+    "detectFromApi": "Rileva Schema da API",
+    "detectFromApiDescription": "Seleziona un endpoint GET per rilevare automaticamente lo schema dalla risposta API",
+    "selectEndpoint": "Seleziona Endpoint",
+    "noGetEndpointsConfigured": "Nessun endpoint GET configurato. Aggiungi prima un endpoint GET nel passaggio di connessione.",
+    "schemaDetectionFailed": "Rilevamento dello schema non riuscito. Riprova.",
     "dataTypes": {
       "string": "Stringa",
       "integer": "Intero",

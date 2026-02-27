@@ -743,6 +743,11 @@
     "tableNameRequired": "Tabellenname ist erforderlich",
     "noFieldsDetected": "Keine Felder erkannt. Bitte überprüfen Sie den Tabellennamen.",
     "detectionFailed": "Schema-Erkennung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "detectFromApi": "Schema von API erkennen",
+    "detectFromApiDescription": "WÃ¤hlen Sie einen GET-Endpunkt aus, um das Schema automatisch aus der API-Antwort zu erkennen",
+    "selectEndpoint": "Endpunkt auswÃ¤hlen",
+    "noGetEndpointsConfigured": "Keine GET-Endpunkte konfiguriert. FÃ¼gen Sie zuerst einen GET-Endpunkt im Verbindungsschritt hinzu.",
+    "schemaDetectionFailed": "Schemaerkennung fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "dataTypes": {
       "string": "String",
       "integer": "Integer",

@@ -740,6 +740,11 @@
     "tableNameRequired": "O nome da tabela é obrigatório",
     "noFieldsDetected": "Nenhum campo detectado. Verifique o nome da tabela.",
     "detectionFailed": "Detecção de esquema falhou. Tente novamente.",
+    "detectFromApi": "Detectar Esquema da API",
+    "detectFromApiDescription": "Selecione um endpoint GET para detectar automaticamente o esquema da resposta da API",
+    "selectEndpoint": "Selecionar Endpoint",
+    "noGetEndpointsConfigured": "Nenhum endpoint GET configurado. Adicione um endpoint GET no passo de conexÃ£o primeiro.",
+    "schemaDetectionFailed": "Falha na detecÃ§Ã£o do esquema. Por favor, tente novamente.",
     "dataTypes": {
       "string": "String",
       "integer": "Inteiro",

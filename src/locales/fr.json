@@ -743,6 +743,11 @@
     "tableNameRequired": "Le nom de la table est requis",
     "noFieldsDetected": "Aucun champ détecté. Veuillez vérifier le nom de la table.",
     "detectionFailed": "La détection du schéma a échoué. Veuillez réessayer.",
+    "detectFromApi": "DÃ©tecter le SchÃ©ma depuis l'API",
+    "detectFromApiDescription": "SÃ©lectionnez un endpoint GET pour dÃ©tecter automatiquement le schÃ©ma depuis la rÃ©ponse de l'API",
+    "selectEndpoint": "SÃ©lectionner un Endpoint",
+    "noGetEndpointsConfigured": "Aucun endpoint GET configurÃ©. Ajoutez d'abord un endpoint GET Ã  l'Ã©tape de connexion.",
+    "schemaDetectionFailed": "Ã‰chec de la dÃ©tection du schÃ©ma. Veuillez rÃ©essayer.",
     "dataTypes": {
       "string": "Chaîne",
       "integer": "Entier",

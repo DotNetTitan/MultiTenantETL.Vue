@@ -2499,13 +2499,11 @@ async function testConnectionBeforeSave() {
   connectionTestResult.value = false;
   
   try {
-    const { testConnection, testExistingConnection } = await import('@/services/connectorService');
+    const { testConnection } = await import('@/services/connectorService');
     
-    // For existing connectors, use the endpoint that tests with stored config
-    // For new connectors, use the endpoint that tests with provided config
-    const result = props.connector.id
-      ? await testExistingConnection(props.connector.id)
-      : await testConnection(props.connector);
+    // Always test with the current form config (whether creating or editing),
+    // so unsaved changes to the connection settings are reflected in the test.
+    const result = await testConnection(props.connector);
     
     connectionTestSuccess.value = result.success;
     connectionTestMessage.value = result.message;
