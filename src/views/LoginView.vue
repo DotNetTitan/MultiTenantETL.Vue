@@ -5,9 +5,7 @@
         <v-card class="login-card" elevation="24">
           <!-- Header Section with Icon -->
           <div class="login-header">
-            <v-avatar size="64" class="mb-4" color="primary">
-              <v-icon size="40" class="text-white">mdi-database-sync</v-icon>
-            </v-avatar>
+            <img :src="logoUrl" alt="Logo" class="login-logo mb-4" />
             <h1 class="text-h4 font-weight-bold mb-2 text-primary">ETL Portal</h1>
             <p class="text-subtitle-1 text-medium-emphasis">Multi-Tenant ETL Platform</p>
           </div>
@@ -122,6 +120,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import logoUrl from '@/assets/logo.png';
 import { API_CONFIG } from '@/config/api';
 
 const router = useRouter();
@@ -197,10 +196,15 @@ async function handleGuestLogin() {
 .login-header {
   text-align: center;
   padding: 48px 32px 0;
+  --login-logo-size: 128px;
 }
 
-/* Override the light mode avatar opacity for login logo */
-:deep(.v-theme--light .login-header .v-avatar) {
-  background-color: rgb(var(--v-theme-primary)) !important;
+.login-logo {
+  height: var(--login-logo-size);
+  width: var(--login-logo-size);
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
+
 </style>
