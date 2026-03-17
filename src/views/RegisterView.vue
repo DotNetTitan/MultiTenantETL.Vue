@@ -5,9 +5,7 @@
         <v-card class="register-card" elevation="24">
           <!-- Header Section -->
           <div class="register-header">
-            <v-avatar size="64" class="mb-4" color="primary">
-              <v-icon size="40" color="white">mdi-account-plus</v-icon>
-            </v-avatar>
+            <img :src="logoUrl" alt="Logo" class="register-logo mb-4" />
             <h1 class="text-h4 font-weight-bold mb-2 text-primary">Create Account</h1>
             <p class="text-subtitle-1 text-medium-emphasis">Join our ETL platform</p>
           </div>
@@ -128,6 +126,7 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
+import logoUrl from '@/assets/logo.png';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useFormValidation, required, minLength } from '@/composables/useFormValidation';
@@ -208,5 +207,14 @@ async function handleRegister() {
 .register-header {
   text-align: center;
   padding: 48px 32px 0;
+  --register-logo-size: 128px;
+}
+
+.register-logo {
+  height: var(--register-logo-size);
+  width: var(--register-logo-size);
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 </style>
