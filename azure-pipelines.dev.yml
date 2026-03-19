@@ -1,0 +1,128 @@
+# ============================================================================
+# azure-pipelines.dev.yml – MultiTenant ETL Frontend – Dev Environment
+#
+# Trigger: push to 'develop' branch
+# Target:  mtetl-web-dev  (multi-tenant-etl-dev-rg)
+#
+# PREREQUISITES (one-time manual setup)
+# ──────────────────────────────────────────────────────────────────────────────
+# 1. Run the backend dev pipeline first to create the Static Web App via Bicep.
+#
+# 2. Variable Group in Azure DevOps Library: mtetl-dev-vars
+#    Required variables:
+#      AZURE_SERVICE_CONNECTION  – multi-tenant-etl
+#      VITE_API_BASE_URL          – API Container App URL (from backend Bicep output)
+#      VITE_GEMINI_API_KEY        – Google Generative AI API key (secret)
+#
+# NOTE: VITE_* variables are baked into the JS bundle at build time.
+# Re-run this pipeline after updating VITE_API_BASE_URL.
+# ============================================================================
+
+trigger:
+  branches:
+    include:
+    - develop
+
+pr: none
+
+variables:
+  - group: mtetl-dev-vars
+  - name: SWA_NAME
+    value: mtetl-web-dev
+  - name: RESOURCE_GROUP
+    value: multi-tenant-etl-dev-rg
+
+# HOW TO CONFIGURE APPROVALS (one-time setup in Azure DevOps):
+#   Pipelines → Environments → open 'mtetl-dev' → Approvals and checks → + → Approvals
+#   (The mtetl-dev environment is shared with the backend pipeline — add approvers once.)
+
+stages:
+# ════════════════════════════════════════════════════════════════════════════════
+# Stage 1 – Build & Test (runs automatically on every push)
+# ════════════════════════════════════════════════════════════════════════════════
+- stage: Build
+  displayName: '① Build & Test'
+  jobs:
+  - job: Build
+    displayName: 'npm ci → test → build'
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: NodeTool@0
+      displayName: 'Use Node.js 20'
+      inputs:
+        versionSpec: '20.x'
+
+    - script: npm ci
+      displayName: 'Install dependencies'
+      workingDirectory: $(Build.SourcesDirectory)
+
+    - script: npx vitest run
+      displayName: 'Run tests'
+      workingDirectory: $(Build.SourcesDirectory)
+      continueOnError: false
+
+    # VITE_* variables are injected at build time and baked into the JS bundle
+    - script: npm run build
+      displayName: 'Vite build (production)'
+      workingDirectory: $(Build.SourcesDirectory)
+      env:
+        VITE_API_BASE_URL: $(VITE_API_BASE_URL)
+        VITE_GEMINI_API_KEY: $(VITE_GEMINI_API_KEY)
+
+    # Publish the built dist/ folder as a pipeline artifact so the Deploy stage
+    # can pick it up after approval without re-running the build.
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish dist/ artifact'
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/dist
+        artifact: frontend-dist
+        publishLocation: pipeline
+
+# ════════════════════════════════════════════════════════════════════════════════
+# Stage 2 – Deploy (approval-gated via mtetl-dev Environment)
+# ════════════════════════════════════════════════════════════════════════════════
+- stage: Deploy
+  displayName: '② Deploy → Dev SWA'
+  dependsOn: Build
+  jobs:
+  - deployment: DeployToSWA
+    displayName: 'Deploy to Azure Static Web App'
+    environment: mtetl-dev
+    pool:
+      vmImage: ubuntu-latest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          # Deployment jobs do not auto-checkout; download the artifact built in Stage 1.
+          - download: none
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download dist/ artifact'
+            inputs:
+              artifact: frontend-dist
+              targetPath: $(Pipeline.Workspace)/dist
+
+          # Retrieve the SWA deployment token dynamically from Azure –
+          # no need to store it as a long-lived secret in the variable group.
+          - task: AzureCLI@2
+            displayName: 'Get SWA deployment token'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                TOKEN=$(az staticwebapp secrets list \
+                  --name $(SWA_NAME) \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --query "properties.apiKey" -o tsv)
+                echo "##vso[task.setvariable variable=SWA_DEPLOY_TOKEN;isSecret=true]${TOKEN}"
+
+          - task: AzureStaticWebApp@0
+            displayName: 'Deploy to Azure Static Web App'
+            inputs:
+              azure_static_web_apps_api_token: $(SWA_DEPLOY_TOKEN)
+              workingDirectory: $(Pipeline.Workspace)
+              app_location: 'dist'
+              output_location: ''
+              skip_app_build: true
