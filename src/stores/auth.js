@@ -265,8 +265,8 @@ export const useAuthStore = defineStore('auth', () => {
     // Clear any other user-related data that might be cached
     sessionStorage.clear()
     
-    // Also clear any Vue Router cached state
-    if (router.currentRoute.value.meta.requiresAuth) {
+    // Also clear any Vue Router cached state (only if router is available)
+    if (router && router.currentRoute && router.currentRoute.value && router.currentRoute.value.meta.requiresAuth) {
       router.replace('/login')
     }
   }

@@ -174,7 +174,7 @@ describe('useAuthStore', () => {
       expect(store.user.value).toBe(null)
       expect(store.error.value).toBe(null)
       expect(authService.clearTokens).toHaveBeenCalled()
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Logout error (clearing local state anyway):', logoutError)
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Backend logout error (continuing with local cleanup):', logoutError)
 
       consoleWarnSpy.mockRestore()
     })
