@@ -11,6 +11,7 @@
 # 2. Variable Group in Azure DevOps Library: mtetl-dev-vars
 #    Required variables:
 #      AZURE_SERVICE_CONNECTION  – multi-tenant-etl
+#      SWA_DEPLOY_TOKEN          – Azure Static Web App deployment token (secret, from Azure Portal → SWA → Manage deployment token)
 #      VITE_API_BASE_URL          – API Container App URL (from backend Bicep output)
 #      VITE_GEMINI_API_KEY        – Google Generative AI API key (secret)
 #
@@ -103,21 +104,8 @@ stages:
               artifact: frontend-dist
               targetPath: $(Pipeline.Workspace)/dist
 
-          # Retrieve the SWA deployment token dynamically from Azure –
-          # no need to store it as a long-lived secret in the variable group.
-          - task: AzureCLI@2
-            displayName: 'Get SWA deployment token'
-            inputs:
-              azureSubscription: $(AZURE_SERVICE_CONNECTION)
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                TOKEN=$(az staticwebapp secrets list \
-                  --name $(SWA_NAME) \
-                  --resource-group $(RESOURCE_GROUP) \
-                  --query "properties.apiKey" -o tsv)
-                echo "##vso[task.setvariable variable=SWA_DEPLOY_TOKEN;isSecret=true]${TOKEN}"
-
+          # SWA_DEPLOY_TOKEN is stored as a secret in the mtetl-dev-vars variable group.
+          # To get the token: Azure Portal → Static Web Apps → mtetl-web-dev → Manage deployment token
           - task: AzureStaticWebApp@0
             displayName: 'Deploy to Azure Static Web App'
             inputs:
