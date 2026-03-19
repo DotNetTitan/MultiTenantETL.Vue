@@ -143,18 +143,24 @@ export const useAuthStore = defineStore('auth', () => {
       loggingOut.value = true
       
       // Call backend logout endpoint first (to revoke tokens server-side)
-      await authService.logout()
+      try {
+        await authService.logout()
+      } catch (err) {
+        // Backend logout might fail if already logged out or network error
+        console.warn('Backend logout error (continuing with local cleanup):', err)
+      }
       
-      // Clear all authentication state
+      // CRITICAL: Clear all authentication state
       clearAuth()
       
-      // Navigate to login page
-      await router.push('/login')
+      // Force a hard navigation to login to ensure clean state
+      // This prevents any cached state from interfering
+      window.location.href = '/login'
     } catch (err) {
-      // Even if backend logout fails, clear local state
-      console.warn('Logout error (clearing local state anyway):', err)
+      // Even if everything fails, clear local state
+      console.error('Logout error (clearing local state anyway):', err)
       clearAuth()
-      await router.push('/login')
+      window.location.href = '/login'
     } finally {
       // Reset logging out state
       loggingOut.value = false
@@ -246,7 +252,9 @@ export const useAuthStore = defineStore('auth', () => {
    * CRITICAL: This must clear ALL stored tokens and user data
    */
   function clearAuth() {
+    // Clear user state
     user.value = null
+    loggingOut.value = false
     
     // Clear all tokens from localStorage
     authService.clearTokens()
@@ -256,6 +264,11 @@ export const useAuthStore = defineStore('auth', () => {
     
     // Clear any other user-related data that might be cached
     sessionStorage.clear()
+    
+    // Also clear any Vue Router cached state
+    if (router.currentRoute.value.meta.requiresAuth) {
+      router.replace('/login')
+    }
   }
 
   /**
