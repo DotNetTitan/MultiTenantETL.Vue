@@ -9,6 +9,8 @@ vi.mock('@/services/authService', () => ({
   authService: {
     isAuthenticated: vi.fn(),
     getAccessToken: vi.fn(),
+    getIdToken: vi.fn(),
+    getRefreshToken: vi.fn(),
     initiateLogin: vi.fn(),
     logout: vi.fn(),
     clearTokens: vi.fn(),
@@ -16,7 +18,8 @@ vi.mock('@/services/authService', () => ({
     forgotPassword: vi.fn(),
     resetPassword: vi.fn(),
     changePassword: vi.fn(),
-    switchTenant: vi.fn()
+    switchTenant: vi.fn(),
+    isGuestSession: vi.fn()
   }
 }))
 
@@ -72,11 +75,15 @@ describe('useAuthStore', () => {
   describe('initialize', () => {
     it('should set user when authenticated', () => {
       const mockUser = { id: 1, username: 'testuser' }
+      authService.getAccessToken.mockReturnValue('access-token')
+      authService.getIdToken.mockReturnValue('id-token')
       authService.isAuthenticated.mockReturnValue(true)
       getCurrentUser.mockReturnValue(mockUser)
 
       store.initialize()
 
+      expect(authService.getAccessToken).toHaveBeenCalled()
+      expect(authService.getIdToken).toHaveBeenCalled()
       expect(authService.isAuthenticated).toHaveBeenCalled()
       expect(getCurrentUser).toHaveBeenCalled()
       expect(store.user.value).toEqual(mockUser)
@@ -85,11 +92,13 @@ describe('useAuthStore', () => {
     it('should not set user when not authenticated', () => {
       // Reset user state first
       store.user.value = null
+      authService.getAccessToken.mockReturnValue(null)
+      authService.getIdToken.mockReturnValue(null)
       authService.isAuthenticated.mockReturnValue(false)
 
       store.initialize()
 
-      expect(authService.isAuthenticated).toHaveBeenCalled()
+      expect(authService.getAccessToken).toHaveBeenCalled()
       expect(getCurrentUser).not.toHaveBeenCalled()
       expect(store.user.value).toBe(null)
     })
@@ -165,7 +174,7 @@ describe('useAuthStore', () => {
       expect(store.user.value).toBe(null)
       expect(store.error.value).toBe(null)
       expect(authService.clearTokens).toHaveBeenCalled()
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Backend logout error (ignored):', logoutError.message)
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Logout error (clearing local state anyway):', logoutError)
 
       consoleWarnSpy.mockRestore()
     })

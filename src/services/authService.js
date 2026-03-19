@@ -247,7 +247,7 @@ export const authService = {
         const response = await api.post(API_ENDPOINTS.auth.logout)
         
         // Check if backend explicitly requested token clearing
-        if (response.data?.clearTokens) {
+        if (response?.data?.clearTokens) {
           this.clearTokens()
         }
       }
