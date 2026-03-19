@@ -23,15 +23,29 @@ export const useAuthStore = defineStore('auth', () => {
 
   /**
    * Initialize - load user from token if available
+   * CRITICAL: Validate token before trusting it
    */
   function initialize() {
-    if (authService.isAuthenticated()) {
-      user.value = getCurrentUser()
-      
-      // Sync tenant ID to localStorage for tenant store initialization
-      if (user.value?.tenantId) {
-        localStorage.setItem('currentTenantId', user.value.tenantId)
+    // Check if we have tokens stored
+    const hasTokens = authService.getAccessToken() && authService.getIdToken()
+    
+    if (hasTokens && authService.isAuthenticated()) {
+      try {
+        user.value = getCurrentUser()
+        
+        // Sync tenant ID to localStorage for tenant store initialization
+        if (user.value?.tenantId) {
+          localStorage.setItem('currentTenantId', user.value.tenantId)
+        }
+      } catch (error) {
+        // Token is invalid or corrupted - clear everything
+        console.warn('Invalid token detected during initialization:', error)
+        clearAuth()
       }
+    } else if (hasTokens) {
+      // Tokens exist but are expired/invalid - clear them
+      console.warn('Expired or invalid tokens detected - clearing')
+      clearAuth()
     }
   }
 
@@ -124,23 +138,27 @@ export const useAuthStore = defineStore('auth', () => {
    * Logout
    */
   async function logout() {
-    // Set logging out state to make isAuthenticated false, allowing navigation to guest route
-    loggingOut.value = true
-    
-    // Navigate to login page
-    await router.push('/login')
-    
-    // Clear auth state after navigation completes
-    clearAuth()
-    
-    // Reset logging out state
-    loggingOut.value = false
-    
-    // Call backend to revoke tokens in background (don't wait)
-    authService.logout().catch(err => {
-      // Ignore errors - already logged out locally
-      console.warn('Backend logout error (ignored):', err.message)
-    })
+    try {
+      // Set logging out state to make isAuthenticated false, allowing navigation to guest route
+      loggingOut.value = true
+      
+      // Call backend logout endpoint first (to revoke tokens server-side)
+      await authService.logout()
+      
+      // Clear all authentication state
+      clearAuth()
+      
+      // Navigate to login page
+      await router.push('/login')
+    } catch (err) {
+      // Even if backend logout fails, clear local state
+      console.warn('Logout error (clearing local state anyway):', err)
+      clearAuth()
+      await router.push('/login')
+    } finally {
+      // Reset logging out state
+      loggingOut.value = false
+    }
   }
 
   /**
@@ -225,12 +243,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   /**
    * Clear authentication state
+   * CRITICAL: This must clear ALL stored tokens and user data
    */
   function clearAuth() {
     user.value = null
+    
+    // Clear all tokens from localStorage
     authService.clearTokens()
+    
     // Clear tenant selection when logging out
     localStorage.removeItem('currentTenantId')
+    
+    // Clear any other user-related data that might be cached
+    sessionStorage.clear()
   }
 
   /**

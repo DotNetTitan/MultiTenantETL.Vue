@@ -76,11 +76,11 @@ api.interceptors.response.use(
 
         return api(originalRequest)
       } catch (refreshError) {
-        // Refresh failed - logout and redirect to login
+        // Refresh failed - clear all tokens and redirect to login
         const authStore = useAuthStore()
         authStore.clearAuth()
         
-        // Use router instead of window.location for proper SPA navigation
+        // Force redirect to login page (use window.location to ensure clean state)
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'
         }

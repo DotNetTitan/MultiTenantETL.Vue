@@ -244,7 +244,12 @@ export const authService = {
 
       // Call backend logout endpoint
       if (accessToken) {
-        await api.post(API_ENDPOINTS.auth.logout)
+        const response = await api.post(API_ENDPOINTS.auth.logout)
+        
+        // Check if backend explicitly requested token clearing
+        if (response.data?.clearTokens) {
+          this.clearTokens()
+        }
       }
 
       // Revoke refresh token if exists
@@ -268,7 +273,9 @@ export const authService = {
       }
     } catch (error) {
       // Don't throw - logout should always succeed locally
+      console.warn('Backend logout error:', error)
     } finally {
+      // CRITICAL: Always clear tokens locally, even if backend call fails
       this.clearTokens()
     }
   },
@@ -482,9 +489,16 @@ export const authService = {
   },
 
   clearTokens() {
+    // Clear all authentication tokens
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('id_token')
     localStorage.removeItem('is_guest')
+    
+    // Clear any PKCE parameters that might be stored
+    clearPKCEParams()
+    
+    // Clear any other auth-related session storage
+    sessionStorage.removeItem('login_credentials')
   }
 }
