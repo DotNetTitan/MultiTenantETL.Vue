@@ -81,7 +81,7 @@
               </v-btn>
 
               <!-- Guest Login Button -->
-              <!-- <v-btn
+              <v-btn
                 variant="outlined"
                 color="primary"
                 size="large"
@@ -93,7 +93,7 @@
               >
                 <v-icon start>mdi-account-eye</v-icon>
                 Try as Guest
-              </v-btn> -->
+              </v-btn>
 
               <div class="text-center mt-6">
                 <span class="text-medium-emphasis">Don't have an account?</span>
