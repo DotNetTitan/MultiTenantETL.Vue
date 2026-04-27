@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import api from './api';
+import * as Sentry from '@sentry/vue';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -654,6 +655,12 @@ ${liveContext ? liveContext + '\nIMPORTANT: When the user asks about their data 
       } else if (error.message?.includes('404')) {
         throw new Error('Model not found. Please check your API configuration.');
       }
+
+      // Capture specific AI errors in Sentry
+      Sentry.captureException(error, {
+        tags: { service: 'gemini' },
+        extra: { message: message, page: currentPage }
+      });
 
       throw error;
     }
