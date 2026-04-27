@@ -295,16 +295,29 @@ const shouldShowChatbot = computed(() => {
   
   return true;
 });
-const isOpen = ref(false);
+const isOpen = ref(sessionStorage.getItem('chatbot-is-open') === 'true');
 const userInput = ref('');
-const messages = ref([]);
+const messages = ref(JSON.parse(sessionStorage.getItem('chatbot-messages') || '[]'));
 const isLoading = ref(false);
 const messagesContainer = ref(null);
 const showHint = ref(false);
 const hintTimer = ref(null);
 // Check sessionStorage to see if hint was already dismissed in this session
 const hintDismissed = ref(sessionStorage.getItem('chatbot-hint-dismissed') === 'true');
-const isExpanded = ref(false);
+const isExpanded = ref(sessionStorage.getItem('chatbot-is-expanded') === 'true');
+
+// Watchers for persistence
+watch(messages, (newMessages) => {
+  sessionStorage.setItem('chatbot-messages', JSON.stringify(newMessages));
+}, { deep: true });
+
+watch(isOpen, (newValue) => {
+  sessionStorage.setItem('chatbot-is-open', newValue.toString());
+});
+
+watch(isExpanded, (newValue) => {
+  sessionStorage.setItem('chatbot-is-expanded', newValue.toString());
+});
 
 // Quick suggestions based on current page
 const quickSuggestions = computed(() => [
@@ -361,6 +374,7 @@ const toggleChat = () => {
 
 const clearChat = () => {
   messages.value = [];
+  sessionStorage.removeItem('chatbot-messages');
 };
 
 const scrollToBottom = (smooth = false) => {
@@ -485,9 +499,8 @@ const handleUserActivity = () => {
   }
 };
 
-// Clear messages when route changes
+// Keep messages when route changes (don't clear them anymore)
 watch(() => route.path, () => {
-  messages.value = [];
   // Don't reset hint dismissal - it should persist for the entire session
   
   // Close chatbot when navigating to hidden routes
@@ -496,6 +509,11 @@ watch(() => route.path, () => {
   }
   
   resetHintTimer();
+  
+  // Ensure we scroll to bottom if it was open
+  if (isOpen.value) {
+    scrollToBottom(true);
+  }
 });
 
 // Watch chat open state

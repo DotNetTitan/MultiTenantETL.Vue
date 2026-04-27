@@ -544,11 +544,6 @@ export async function getChatResponse(message, currentPage, conversationHistory 
   // Fetch live data for the current page before calling Gemini
   const liveContext = await fetchLiveContext(currentPage);
   return retryWithBackoff(async () => {
-    // Use gemini-2.5-flash (stable, fast, and widely supported)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash'
-    });
-
     // Language instruction based on user's locale
     const languageInstructions = {
       'en': 'Respond in English.',
@@ -620,11 +615,19 @@ CRITICAL - DO NOT HALLUCINATE:
 
 ${liveContext ? liveContext + '\nIMPORTANT: When the user asks about their data (pipelines, executions, connectors, logs), ALWAYS use the live data above to give specific, accurate answers with real names, statuses, timestamps, and log messages. Do not give generic answers when you have real data available.' : '(No live data available for this page — answer from general knowledge of the app.)'}`;
 
-    // Build conversation history
-    const history = conversationHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }));
+    // Build conversation history (excluding the current user message to avoid duplication)
+    const history = conversationHistory
+      .filter(msg => msg.content !== message) // Remove current message if it was already pushed
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      }));
+
+    // Use gemini-2.5-flash with systemInstruction for better role-play consistency
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: systemPrompt
+    });
 
     const chat = model.startChat({
       history,
@@ -635,7 +638,7 @@ ${liveContext ? liveContext + '\nIMPORTANT: When the user asks about their data 
     });
 
     try {
-      const result = await chat.sendMessage(`${systemPrompt}\n\nUser question: ${message}`);
+      const result = await chat.sendMessage(message);
       const response = result.response;
       return response.text();
     } catch (error) {
