@@ -195,11 +195,14 @@
               <span>Recent Executions</span>
               <v-spacer />
               <v-btn
-                variant="text"
+                variant="tonal"
                 size="small"
+                color="primary"
                 to="/executions"
+                prepend-icon="mdi-history"
+                append-icon="mdi-chevron-right"
               >
-                View All
+                {{ $t('dashboard.viewAll') }}
               </v-btn>
             </v-card-title>
             <v-card-text>
@@ -211,7 +214,7 @@
                     <th>Start Time</th>
                     <th>Duration</th>
                     <th>Rows Processed</th>
-                    <th>Actions</th>
+                    <th class="text-end">Details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -229,7 +232,7 @@
                     <td>{{ formatDate(execution.startTime) }}</td>
                     <td>{{ formatDuration(execution.durationMs) }}</td>
                     <td>{{ execution.rowsProcessed?.toLocaleString() || 'N/A' }}</td>
-                    <td>
+                    <td class="text-end">
                       <v-btn
                         icon
                         variant="text"
@@ -341,10 +344,11 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            color="primary"
             variant="text"
             @click="showExecutionDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -775,10 +779,7 @@ function viewExecutionDetails(execution) {
 }
 
 function editPipeline() {
-  // In a real app, navigate to the pipeline edit page
-  // router.push(`/pipelines/${pipeline.value.id}/edit`);
-  
-  alert('Pipeline edit functionality would be implemented here');
+  router.push(`/pipelines/${pipeline.value.id}/edit`);
 }
 
 function runPipeline() {
