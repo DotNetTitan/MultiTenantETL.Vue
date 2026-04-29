@@ -261,7 +261,6 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { getChatResponse } from '@/services/geminiService';
 import { marked } from 'marked';
-import * as Sentry from '@sentry/vue';
 
 const route = useRoute();
 const { t } = useI18n();
@@ -430,12 +429,6 @@ const sendMessage = async () => {
     setTimeout(() => scrollToBottom(true), 100);
   } catch (error) {
     console.error('Chat error:', error);
-    
-    // Capture the error in Sentry before showing friendly message
-    Sentry.captureException(error, {
-      tags: { component: 'AiChatbot' },
-      extra: { lastMessage: message }
-    });
     
     // Provide specific error message
     let errorMessage = 'Sorry, I encountered an error. Please try again.';

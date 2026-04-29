@@ -2,7 +2,6 @@ import axios from 'axios'
 import { API_CONFIG } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
 import { useTenantStore } from '@/stores/tenant'
-import * as Sentry from '@sentry/vue'
 
 // Create axios instance with configuration
 const api = axios.create({
@@ -164,18 +163,6 @@ api.interceptors.response.use(
         // Something else happened
         error.userMessage = 'An unexpected error occurred.'
       }
-    }
-
-    // Capture all non-silent errors in Sentry
-    if (!error.silent) {
-      Sentry.captureException(error, {
-        extra: {
-          url: originalRequest?.url,
-          method: originalRequest?.method,
-          status: error.response?.status,
-          userMessage: error.userMessage
-        }
-      });
     }
 
     return Promise.reject(error)
