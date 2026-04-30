@@ -164,7 +164,7 @@
         </v-card-actions>
         <v-card-actions v-else-if="emailMappedFields.length > 0">
           <v-chip size="small" color="success">
-            {{ emailMappedFields.length }} {{ emailMappedFields.length === 1 ? 'column' : 'columns' }}
+            {{ $t('pipeline.columnCount', emailMappedFields.length, { count: emailMappedFields.length }) }}
           </v-chip>
         </v-card-actions>
       </v-card>

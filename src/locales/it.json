@@ -862,6 +862,8 @@
     "searchDestinationFields": "Cerca campi destinazione",
     "mapped": "{count} / {total} mappati",
     "fieldsMapped": "{count} campo mappato | {count} campi mappati",
+    "mappingCount": "{count} mappatura | {count} mappature",
+    "columnCount": "{count} colonna | {count} colonne",
     "requiredUnmapped": "{count} richiesti non mappati",
     "noFieldsFound": "Nessun campo trovato",
     "convertToManualSchema": "Converti in Schema Manuale",

@@ -1040,6 +1040,8 @@
     "searchDestinationFields": "Search destination fields...",
     "mapped": "mapped",
     "fieldsMapped": "{count} field mapped | {count} fields mapped",
+    "mappingCount": "{count} mapping | {count} mappings",
+    "columnCount": "{count} column | {count} columns",
     "selectMultipleFields": "Select multiple fields to combine",
     "loadingSchemas": "Loading schemas...",
     "viewSourceDestFields": "View Source & Destination Fields",
