@@ -807,6 +807,7 @@
     "searchSourceFields": "Rechercher des champs source",
     "searchDestinationFields": "Rechercher des champs de destination",
     "mapped": "{count} / {total} mappés",
+    "fieldsMapped": "{count} champ mappé | {count} champs mappés",
     "requiredUnmapped": "{count} requis non mappés",
     "noFieldsFound": "Aucun champ trouvé",
     "convertToManualSchema": "Convertir en Schéma Manuel",

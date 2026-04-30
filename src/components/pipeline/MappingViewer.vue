@@ -6,7 +6,7 @@
           <div class="d-flex align-center">
             <div class="d-flex flex-column align-center mr-4">
               <v-icon color="primary" icon="mdi-database" size="large" class="mb-1"></v-icon>
-              <span class="text-caption font-weight-medium text-primary">SOURCE</span>
+              <span class="text-caption font-weight-medium text-primary">{{ $t('pipelines.source').toUpperCase() }}</span>
             </div>
             <div>
               <div class="text-h6 font-weight-medium">{{ sourceName }}</div>
@@ -15,7 +15,7 @@
 
           <div class="d-flex flex-column align-center px-4">
             <v-icon color="grey-lighten-1" size="x-large">mdi-arrow-right</v-icon>
-            <div class="text-caption text-medium-emphasis mt-1">{{ mappings.length }} {{ mappings.length === 1 ? 'field' : 'fields' }} mapped</div>
+            <div class="text-caption text-medium-emphasis mt-1">{{ $t('pipeline.fieldsMapped', mappings.length, { count: mappings.length }) }}</div>
           </div>
 
           <div class="d-flex align-center text-right">
@@ -24,7 +24,7 @@
             </div>
             <div class="d-flex flex-column align-center ml-4">
               <v-icon color="success" icon="mdi-database" size="large" class="mb-1"></v-icon>
-              <span class="text-caption font-weight-medium text-success">TARGET</span>
+              <span class="text-caption font-weight-medium text-success">{{ $t('pipelines.destination').toUpperCase() }}</span>
             </div>
           </div>
         </div>
@@ -35,9 +35,9 @@
       <thead>
         <tr>
           <th class="text-left" style="width: 50px">#</th>
-          <th class="text-left" style="width: 40%">Source Field</th>
-          <th class="text-center" style="width: 10%">Transform</th>
-          <th class="text-left" style="width: 40%">Destination Field</th>
+          <th class="text-left" style="width: 40%">{{ $t('pipelines.sourceField') }}</th>
+          <th class="text-center" style="width: 10%">{{ $t('transformations.categoryTransformation') }}</th>
+          <th class="text-left" style="width: 40%">{{ $t('pipelines.destinationField') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -97,7 +97,7 @@
         </tr>
         <tr v-if="mappings.length === 0">
           <td colspan="4" class="text-center py-8 text-grey">
-            No mappings defined
+            {{ $t('pipelines.noMappingsDefine') }}
           </td>
         </tr>
       </tbody>

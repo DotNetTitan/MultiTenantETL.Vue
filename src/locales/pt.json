@@ -804,6 +804,7 @@
     "searchSourceFields": "Pesquisar campos de origem",
     "searchDestinationFields": "Pesquisar campos de destino",
     "mapped": "{count} / {total} mapeados",
+    "fieldsMapped": "{count} campo mapeado | {count} campos mapeados",
     "requiredUnmapped": "{count} obrigatórios não mapeados",
     "noFieldsFound": "Nenhum campo encontrado",
     "convertToManualSchema": "Converter para Esquema Manual",

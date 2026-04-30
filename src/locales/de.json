@@ -807,6 +807,7 @@
     "searchSourceFields": "Quellfelder suchen",
     "searchDestinationFields": "Ziel-Felder suchen",
     "mapped": "{count} / {total} zugeordnet",
+    "fieldsMapped": "{count} Feld zugeordnet | {count} Felder zugeordnet",
     "requiredUnmapped": "{count} erforderlich nicht zugeordnet",
     "noFieldsFound": "Keine Felder gefunden",
     "convertToManualSchema": "Zu manuelles Schema konvertieren",
