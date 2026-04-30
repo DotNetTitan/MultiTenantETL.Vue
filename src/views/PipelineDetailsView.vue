@@ -9,7 +9,7 @@
       >
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <h1 class="text-h4 mr-4">{{ pipeline?.name || 'Pipeline Details' }}</h1>
+      <h1 class="text-h4 mr-4">{{ pipeline?.name || $t('pipelines.detailsTitle') }}</h1>
       <v-chip
         v-if="pipeline?.status"
         :color="getStatusColor(pipeline.status)"
@@ -34,7 +34,7 @@
               class="mr-2"
               @click="runPipeline"
             >
-              Run
+              {{ $t('pipelines.runPipelineTitle') }}
             </v-btn>
           </span>
         </template>
@@ -55,7 +55,7 @@
               :style="authStore.isGuest ? 'pointer-events: auto' : ''"
               @click="editPipeline"
             >
-              Edit
+              {{ $t('common.edit') }}
             </v-btn>
           </span>
         </template>
@@ -74,30 +74,30 @@
         <!-- Pipeline Information -->
         <v-col cols="12" md="4">
           <v-card class="mb-4">
-            <v-card-title>Pipeline Information</v-card-title>
+            <v-card-title>{{ $t('pipelines.information') }}</v-card-title>
             <v-card-text>
               <div class="d-flex mb-4">
-                <div class="info-label">Name:</div>
+                <div class="info-label">{{ $t('common.name') }}:</div>
                 <div>{{ pipeline.name }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Description:</div>
-                <div>{{ pipeline.description || 'No description provided' }}</div>
+                <div class="info-label">{{ $t('common.description') }}:</div>
+                <div>{{ pipeline.description || $t('pipelines.noDescription') }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Created:</div>
+                <div class="info-label">{{ $t('common.created') }}:</div>
                 <div>{{ formatDate(pipeline.createdAt) }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Last Run:</div>
-                <div>{{ pipeline.lastRun ? formatDate(pipeline.lastRun) : 'Never' }}</div>
+                <div class="info-label">{{ $t('pipelines.lastRun') }}:</div>
+                <div>{{ pipeline.lastRun ? formatDate(pipeline.lastRun) : $t('pipelines.never') }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Schedule:</div>
-                <div>{{ pipeline.schedule || 'Manual execution only' }}</div>
+                <div class="info-label">{{ $t('pipelines.schedule') }}:</div>
+                <div>{{ pipeline.schedule || $t('pipelines.manualExecutionOnly') }}</div>
               </div>
               <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
-                <div class="info-label">Notifications:</div>
+                <div class="info-label">{{ $t('settings.notifications') }}:</div>
                 <div>
                   <v-chip
                     v-for="(email, idx) in pipeline.notificationEmails"
@@ -112,7 +112,7 @@
                 </div>
               </div>
               <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
-                <div class="info-label">Email Notifications:</div>
+                <div class="info-label">{{ $t('settings.emailNotifications') }}:</div>
                 <div>
                   <v-chip
                     :color="pipeline.emailNotificationsEnabled ? 'success' : 'grey'"
@@ -122,7 +122,7 @@
                     <v-icon start size="small">
                       {{ pipeline.emailNotificationsEnabled ? 'mdi-bell-check' : 'mdi-bell-off' }}
                     </v-icon>
-                    {{ pipeline.emailNotificationsEnabled ? 'Enabled' : 'Disabled' }}
+                    {{ pipeline.emailNotificationsEnabled ? $t('schedules.enabled') : $t('schedules.disabled') }}
                   </v-chip>
                 </div>
               </div>
@@ -130,14 +130,14 @@
           </v-card>
 
           <v-card>
-            <v-card-title>Data Sources</v-card-title>
+            <v-card-title>{{ $t('pipelines.dataSources') }}</v-card-title>
             <v-card-text>
               <v-list density="compact">
                 <v-list-item
                   v-for="(source, index) in pipeline.connectors"
                   :key="index"
                   :title="source.name"
-                  :subtitle="source.direction === 'source' ? 'Source' : 'Destination'"
+                  :subtitle="source.direction === 'source' ? $t('pipelines.source') : $t('pipelines.destination')"
                   :ripple="false"
                 >
                   <template #prepend>
@@ -152,7 +152,7 @@
                       size="x-small"
                       class="ml-2"
                     >
-                      {{ source.isConnected ? 'Connected' : 'Error' }}
+                      {{ source.isConnected ? $t('common.success') : $t('common.error') }}
                     </v-chip>
                   </template>
                 </v-list-item>
@@ -164,7 +164,7 @@
         <!-- Pipeline Execution Info -->
         <v-col cols="12" md="8">
           <v-card class="mb-4">
-            <v-card-title>Pipeline Workflow</v-card-title>
+            <v-card-title>{{ $t('pipelines.workflow') }}</v-card-title>
             <v-card-text>
               <v-timeline density="compact" align="start">
                 <v-timeline-item
@@ -192,7 +192,7 @@
 
           <v-card>
             <v-card-title class="d-flex align-center">
-              <span>Recent Executions</span>
+              <span>{{ $t('dashboard.recentExecutions') }}</span>
               <v-spacer />
               <v-btn
                 variant="tonal"
@@ -209,12 +209,12 @@
               <v-table>
                 <thead>
                   <tr>
-                    <th>Execution ID</th>
-                    <th>Status</th>
-                    <th>Start Time</th>
-                    <th>Duration</th>
-                    <th>Rows Processed</th>
-                    <th class="text-end">Details</th>
+                    <th>{{ $t('executions.executionId') }}</th>
+                    <th>{{ $t('common.status') }}</th>
+                    <th>{{ $t('dashboard.startTime') }}</th>
+                    <th>{{ $t('dashboard.duration') }}</th>
+                    <th>{{ $t('dashboard.rowsProcessed') }}</th>
+                    <th class="text-end">{{ $t('executions.viewDetails') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -245,7 +245,7 @@
                     </td>
                   </tr>
                   <tr v-if="recentExecutions.length === 0">
-                    <td colspan="6" class="text-center">No executions yet</td>
+                    <td colspan="6" class="text-center">{{ $t('dashboard.noRecentExecutions') }}</td>
                   </tr>
                 </tbody>
               </v-table>
@@ -257,7 +257,7 @@
 
     <v-card v-else>
       <v-card-text class="text-center pa-5">
-        Pipeline not found
+        {{ $t('pipelines.notFound') }}
       </v-card-text>
     </v-card>
 
@@ -268,7 +268,7 @@
     >
       <v-card v-if="selectedExecution">
         <v-card-title class="d-flex align-center">
-          <span>Execution Details</span>
+          <span>{{ $t('executions.executionDetails') }}</span>
           <v-chip
             :color="getStatusColor(selectedExecution.status)"
             text-color="white"
@@ -289,24 +289,24 @@
         <v-card-text>
           <v-row>
             <v-col cols="12" md="6">
-              <div class="text-subtitle-1 font-weight-bold mb-2">Execution ID</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.executionId') }}</div>
               <p>{{ selectedExecution.id }}</p>
               
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Start Time</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.startTime') }}</div>
               <p>{{ formatDate(selectedExecution.startTime, true) }}</p>
               
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">End Time</div>
-              <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</p>
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.endTime') }}</div>
+              <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : $t('dashboard.running') }}</p>
               
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Duration</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.duration') }}</div>
               <p>{{ formatDuration(selectedExecution.durationMs) }}</p>
               
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Rows Processed</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.rowsProcessed') }}</div>
               <p>{{ selectedExecution.rowsProcessed?.toLocaleString() || 'N/A' }}</p>
             </v-col>
             
             <v-col cols="12" md="6">
-              <div class="text-subtitle-1 font-weight-bold mb-2">Progress</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.progress') }}</div>
               <v-progress-linear
                 v-if="selectedExecution.status === 'Running'"
                 :model-value="selectedExecution.progressPercent || 0"
@@ -331,12 +331,12 @@
                 </template>
               </v-progress-linear>
               
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Execution Logs</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.executionLogs') }}</div>
               <v-card
                 variant="outlined"
                 class="app-log-container custom-scrollbar"
               >
-                <pre class="app-log-text">{{ selectedExecution.logs || 'No logs available' }}</pre>
+                <pre class="app-log-text">{{ selectedExecution.logs || $t('executions.noLogsAvailable') }}</pre>
               </v-card>
             </v-col>
           </v-row>
@@ -360,42 +360,42 @@
       max-width="500px"
     >
       <v-card>
-        <v-card-title>Run Pipeline</v-card-title>
+        <v-card-title>{{ $t('pipelines.runPipelineTitle') }}</v-card-title>
         <v-card-text>
-          <p>Are you sure you want to run this pipeline?</p>
+          <p>{{ $t('pipelines.runPipelineConfirm') }}</p>
           
           <v-form ref="runForm" @submit.prevent="confirmRunPipeline">
             <v-checkbox
               v-model="runOptions.saveResults"
-              label="Save results to destination"
+              :label="$t('pipelines.saveResults')"
               hide-details
               class="mb-3"
             />
             
             <v-checkbox
               v-model="runOptions.notifyOnCompletion"
-              label="Notify me when complete"
+              :label="$t('pipelines.notifyComplete')"
               hide-details
               class="mb-3"
             />
             
             <v-expansion-panels>
               <v-expansion-panel>
-                <v-expansion-panel-title>Advanced Options</v-expansion-panel-title>
+                <v-expansion-panel-title>{{ $t('pipelines.advancedOptions') }}</v-expansion-panel-title>
                 <v-expansion-panel-text>
                   <v-text-field
                     v-model="runOptions.maxRows"
-                    label="Max Rows (0 for unlimited)"
+                    :label="$t('pipelines.maxRows')"
                     type="number"
-                    hint="Limit the number of rows to process"
+                    :hint="$t('pipelines.maxRowsHint')"
                     persistent-hint
                     class="mb-3"
                   />
                   
                   <v-checkbox
                     v-model="runOptions.debugMode"
-                    label="Debug Mode"
-                    hint="Enable detailed logging for debugging"
+                    :label="$t('pipelines.debugMode')"
+                    :hint="$t('pipelines.debugModeHint')"
                     persistent-hint
                     hide-details
                     class="mb-3"
@@ -411,14 +411,14 @@
             variant="text"
             @click="showRunDialog = false"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
             color="primary"
             :loading="running"
             @click="confirmRunPipeline"
           >
-            Run Now
+            {{ $t('pipelines.runNow') }}
           </v-btn>
         </v-card-actions>
       </v-card>
