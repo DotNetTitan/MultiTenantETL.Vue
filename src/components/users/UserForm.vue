@@ -37,7 +37,7 @@
           prepend-icon="mdi-shield-account"
           variant="outlined"
           :error-messages="errors.role"
-          hint="Global system role"
+          :hint="$t('forms.globalSystemRole')"
           persistent-hint
           @update:model-value="updateField('role', $event)"
         />

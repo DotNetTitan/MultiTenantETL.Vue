@@ -240,7 +240,17 @@
     "notificationEmailsHint": "Fügen Sie eine oder mehrere E-Mail-Adressen hinzu, um Ausführungsberichte zu erhalten. Drücken Sie die Eingabetaste nach jeder E-Mail.",
     "enableEmailNotifications": "E-Mail-Benachrichtigungen aktivieren",
     "pipelineActiveDescription": "Pipeline wird nach dem Speichern aktiv und betriebsbereit sein",
-    "pipelineInactiveDescription": "Pipeline wird nach dem Speichern inaktiv sein"
+    "pipelineInactiveDescription": "Pipeline wird nach dem Speichern inaktiv sein",
+    "connectorChangeWarning": "Warnung: Connector-Änderung",
+    "connectorChangeMessage": "Das Ändern des Quell- oder Ziel-Connectors löscht alle bestehenden Feldzuordnungen.",
+    "existingMappingsWillBeCleared": "Bestehende Zuordnungen werden gelöscht.",
+    "scheduleAfterSave": "Zeitplan (Verfügbar nach dem Speichern)",
+    "scheduleAfterSaveDescription": "Sie können einen Zeitplan für diese Pipeline konfigurieren, nachdem sie erstellt wurde.",
+    "scheduleAfterSaveShort": "Nach dem Speichern verfügbar",
+    "continueToReview": "Weiter zur Überprüfung",
+    "pipelineSchedule": "Pipeline-Zeitplan",
+    "noScheduleConfigured": "Kein Zeitplan für diese Pipeline konfiguriert",
+    "manageAllSchedules": "Alle Zeitpläne verwalten"
   },
   "connectors": {
     "title": "Konnektoren",
@@ -429,7 +439,33 @@
     "writeOperationInsert": "Einfügen",
     "writeOperationUpdate": "Aktualisieren",
     "writeOperationUpsert": "Upsert",
-    "writeOperationBulkInsert": "Bulk-Einfügen"
+    "writeOperationBulkInsert": "Bulk-Einfügen",
+    "apiEndpointConfig": {
+      "addEndpoint": "Endpunkt hinzufügen",
+      "noEndpoints": "Keine Endpunkte konfiguriert",
+      "addEndpointsHint": "Fügen Sie Endpunkte basierend auf der Datenquellenrichtung hinzu",
+      "untitledEndpoint": "Unbenannter Endpunkt",
+      "httpMethod": "HTTP-Methode",
+      "endpointPath": "Endpunkt-Pfad",
+      "pathPlaceholder": "/customers oder /customers/{id}",
+      "pathHint": "Verwenden Sie {id} für Pfadparameter",
+      "descPlaceholder": "Kurze Beschreibung dieses Endpunkts",
+      "requestConfig": "Anfragekonfiguration",
+      "requestSchema": "Anfrageschema (JSON)",
+      "requestSchemaHint": "Vollständige Struktur des Anfrage-Bodys",
+      "requestDataPath": "Anfragedatenpfad",
+      "requestDataPathHint": "Wo die gemappten Daten in der Anfrage platziert werden sollen (z.B. 'customer' oder 'data.customer')",
+      "responseConfig": "Antwortkonfiguration",
+      "responseSchema": "Antwortschema (JSON)",
+      "responseSchemaHint": "Vollständige Antwortstruktur",
+      "responseDataPath": "Antwortdatenpfad",
+      "responseDataPathHint": "Pfad zu den Geschäftsdaten in der Antwort",
+      "errorPath": "Fehlerpfad (Optional)",
+      "errorPathHint": "Pfad zur Fehlermeldung in der Antwort",
+      "reqSource": "Erforderlich: Mindestens ein GET-Endpunkt",
+      "reqDestination": "Erforderlich: Mindestens ein POST-, PUT- oder PATCH-Endpunkt",
+      "reqBoth": "Erforderlich: Mindestens ein GET-Endpunkt und ein POST/PUT/PATCH-Endpunkt"
+    }
   },
   "transformations": {
     "title": "Transformationen",
@@ -597,10 +633,16 @@
     "createTenant": "Tenant erstellen",
     "isActive": "Ist aktiv",
     "manageUsers": "Benutzer verwalten",
-    "addUser": "Benutzer zum Tenant hinzufügen",
+    "addUser": "Benutzer zum Mandanten hinzufügen",
     "removeUser": "Benutzer entfernen",
-    "removeUserConfirm": "Sind Sie sicher, dass Sie diesen Benutzer vom Tenant entfernen möchten?",
-    "updateRole": "Benutzerrolle aktualisieren"
+    "removeUserConfirm": "Sind Sie sicher, dass Sie diesen Benutzer aus dem Mandanten entfernen möchten?",
+    "updateRole": "Benutzerrolle aktualisieren",
+    "switchSuccess": "Zu {name} gewechselt",
+    "adminRequired": "Administratorrechte sind erforderlich, um auf diese Seite zuzugreifen.",
+    "superAdminRequired": "Super-Administratorrechte sind erforderlich, um auf diese Seite zuzugreifen.",
+    "errors": {
+      "switchFailed": "Wechsel des Mandanten fehlgeschlagen"
+    }
   },
   "users": {
     "title": "Benutzer",
@@ -619,7 +661,22 @@
     "user": "Benutzer",
     "selectUser": "Benutzer auswählen",
     "manageTenants": "Tenants verwalten",
-    "addToTenant": "Zum Tenant hinzufügen"
+    "addToTenant": "Zum Mandanten hinzufügen",
+    "deleteSuccess": "Benutzer erfolgreich gelöscht",
+    "saveSuccess": "Benutzer erfolgreich gespeichert",
+    "activateSuccess": "Benutzer erfolgreich aktiviert",
+    "deactivateSuccess": "Benutzer erfolgreich deaktiviert",
+    "addToTenantSuccess": "Benutzer erfolgreich zum Mandanten hinzugefügt",
+    "removeFromTenantSuccess": "Benutzer erfolgreich aus Mandant entfernt",
+    "errors": {
+      "loadFailed": "Benutzer konnten nicht geladen werden",
+      "loadDetailsFailed": "Benutzerdetails konnten nicht geladen werden",
+      "deleteFailed": "Benutzer konnte nicht gelöscht werden",
+      "saveFailed": "Benutzer konnte nicht gespeichert werden",
+      "statusUpdateFailed": "Benutzerstatus konnte nicht aktualisiert werden",
+      "addToTenantFailed": "Benutzer konnte nicht zum Mandanten hinzugefügt werden",
+      "removeFromTenantFailed": "Benutzer konnte nicht aus dem Mandanten entfernt werden"
+    }
   },
   "settings": {
     "title": "Einstellungen",
@@ -894,7 +951,14 @@
     "enableNotifications": "Benachrichtigungen aktivieren",
     "light": "Hell",
     "dark": "Dunkel",
-    "system": "System"
+    "system": "System",
+    "slug": "Slug",
+    "slugHint": "URL-freundlicher Identifikator (nur Kleinbuchstaben, Zahlen, Bindestriche)",
+    "globalRole": "Globale Rolle",
+    "tenantRole": "Mandantenrolle",
+    "selectTenant": "Mandant auswählen",
+    "tenantMemberships": "Mandanten-Mitgliedschaften",
+    "globalSystemRole": "Globale Systemrolle"
   },
   "schedules": {
     "title": "Zeitpläne",

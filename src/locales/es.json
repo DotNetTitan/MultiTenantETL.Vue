@@ -240,7 +240,17 @@
     "notificationEmailsHint": "Agregue una o más direcciones de correo electrónico para recibir informes de ejecución. Presione Enter después de cada correo.",
     "enableEmailNotifications": "Habilitar Notificaciones por Correo Electrónico",
     "pipelineActiveDescription": "La pipeline estará activa y lista para ejecutarse después de guardar",
-    "pipelineInactiveDescription": "La pipeline estará inactiva después de guardar"
+    "pipelineInactiveDescription": "La pipeline estará inactiva después de guardar",
+    "connectorChangeWarning": "Advertencia: Cambio de Conector",
+    "connectorChangeMessage": "Cambiar el conector de origen o destino borrará todos sus mapeos de campos existentes.",
+    "existingMappingsWillBeCleared": "Los mapeos existentes serán borrados.",
+    "scheduleAfterSave": "Programación (Disponible después de guardar)",
+    "scheduleAfterSaveDescription": "Puede configurar una programación para esta tubería después de que se haya creado.",
+    "scheduleAfterSaveShort": "Disponible después de guardar",
+    "continueToReview": "Continuar a Revisión",
+    "pipelineSchedule": "Programación de Tubería",
+    "noScheduleConfigured": "No hay programación configurada para esta tubería",
+    "manageAllSchedules": "Administrar todas las programaciones"
   },
   "connectors": {
     "title": "Conectores",
@@ -436,7 +446,33 @@
     "writeOperationInsert": "Insertar",
     "writeOperationUpdate": "Actualizar",
     "writeOperationUpsert": "Insertar o Actualizar",
-    "writeOperationBulkInsert": "Inserción Masiva"
+    "writeOperationBulkInsert": "Inserción Masiva",
+    "apiEndpointConfig": {
+      "addEndpoint": "Agregar Endpoint",
+      "noEndpoints": "No hay endpoints configurados",
+      "addEndpointsHint": "Agregue endpoints según la dirección de la fuente de datos",
+      "untitledEndpoint": "Endpoint sin título",
+      "httpMethod": "Método HTTP",
+      "endpointPath": "Ruta del Endpoint",
+      "pathPlaceholder": "/customers o /customers/{id}",
+      "pathHint": "Use {id} para parámetros de ruta",
+      "descPlaceholder": "Breve descripción de este endpoint",
+      "requestConfig": "Configuración de Solicitud",
+      "requestSchema": "Esquema de Solicitud (JSON)",
+      "requestSchemaHint": "Estructura completa del cuerpo de la solicitud",
+      "requestDataPath": "Ruta de Datos de Solicitud",
+      "requestDataPathHint": "Dónde colocar los datos mapeados en la solicitud (ej. 'customer' o 'data.customer')",
+      "responseConfig": "Configuración de Respuesta",
+      "responseSchema": "Esquema de Respuesta (JSON)",
+      "responseSchemaHint": "Estructura de respuesta completa",
+      "responseDataPath": "Ruta de Datos de Respuesta",
+      "responseDataPathHint": "Ruta a los datos de negocio en la respuesta",
+      "errorPath": "Ruta de Error (Opcional)",
+      "errorPathHint": "Ruta al mensaje de error en la respuesta",
+      "reqSource": "Requerido: Al menos un endpoint GET",
+      "reqDestination": "Requerido: Al menos un endpoint POST, PUT o PATCH",
+      "reqBoth": "Requerido: Al menos un endpoint GET y un endpoint POST/PUT/PATCH"
+    }
   },
   "transformations": {
     "title": "Transformaciones",
@@ -601,7 +637,19 @@
     "noTenantsFound": "No se encontraron inquilinos",
     "deleteConfirm": "¿Está seguro de que desea eliminar este inquilino? Esta acción no se puede deshacer.",
     "createTenant": "Crear Inquilino",
-    "isActive": "Está Activo"
+    "isActive": "Está Activo",
+    "slug": "Slug",
+    "manageUsers": "Administrar Usuarios",
+    "addUser": "Agregar Usuario al Inquilino",
+    "removeUser": "Eliminar Usuario",
+    "removeUserConfirm": "¿Está seguro de que desea eliminar a este usuario del inquilino?",
+    "updateRole": "Actualizar Rol de Usuario",
+    "switchSuccess": "Cambió a {name}",
+    "adminRequired": "Se requieren privilegios de administrador para acceder a esta página.",
+    "superAdminRequired": "Se requieren privilegios de súper administrador para acceder a esta página.",
+    "errors": {
+      "switchFailed": "Error al cambiar de inquilino"
+    }
   },
   "users": {
     "title": "Usuarios",
@@ -617,7 +665,25 @@
     "deactivateUser": "Desactivar usuario",
     "deleteConfirm": "¿Está seguro de que desea eliminar el usuario \"{name}\"? Esta acción no se puede deshacer.",
     "admin": "Administrador",
-    "user": "Usuario"
+    "user": "Usuario",
+    "selectUser": "Seleccionar Usuario",
+    "manageTenants": "Administrar Inquilinos",
+    "addToTenant": "Agregar al Inquilino",
+    "deleteSuccess": "Usuario eliminado exitosamente",
+    "saveSuccess": "Usuario guardado exitosamente",
+    "activateSuccess": "Usuario activado exitosamente",
+    "deactivateSuccess": "Usuario desactivado exitosamente",
+    "addToTenantSuccess": "Usuario agregado al inquilino exitosamente",
+    "removeFromTenantSuccess": "Usuario eliminado del inquilino exitosamente",
+    "errors": {
+      "loadFailed": "No se pudieron cargar los usuarios",
+      "loadDetailsFailed": "No se pudieron cargar los detalles del usuario",
+      "deleteFailed": "No se pudo eliminar el usuario",
+      "saveFailed": "No se pudo guardar el usuario",
+      "statusUpdateFailed": "No se pudo actualizar el estado del usuario",
+      "addToTenantFailed": "No se pudo agregar el usuario al inquilino",
+      "removeFromTenantFailed": "No se pudo eliminar el usuario del inquilino"
+    }
   },
   "settings": {
     "title": "Configuración",
@@ -893,7 +959,14 @@
     "enableNotifications": "Habilitar Notificaciones",
     "light": "Claro",
     "dark": "Oscuro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "slug": "Slug",
+    "slugHint": "Identificador amigable para URL (solo minúsculas, números, guiones)",
+    "globalRole": "Rol Global",
+    "tenantRole": "Rol de Inquilino",
+    "selectTenant": "Seleccionar Inquilino",
+    "tenantMemberships": "Membresías de Inquilino",
+    "globalSystemRole": "Rol global del sistema"
   },
   "schedules": {
     "title": "Programaciones",

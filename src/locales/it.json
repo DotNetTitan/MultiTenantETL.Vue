@@ -238,7 +238,17 @@
     "notificationEmailsHint": "Aggiungi uno o più indirizzi email per ricevere i rapporti di esecuzione. Premi Invio dopo ogni email.",
     "enableEmailNotifications": "Abilita Notifiche via E-mail",
     "pipelineActiveDescription": "La pipeline sarà attiva e pronta per l'esecuzione dopo il salvataggio",
-    "pipelineInactiveDescription": "La pipeline sarà inattiva dopo il salvataggio"
+    "pipelineInactiveDescription": "La pipeline sarà inattiva dopo il salvataggio",
+    "connectorChangeWarning": "Avviso: Cambio Connettore",
+    "connectorChangeMessage": "La modifica del connettore di origine o di destinazione cancellerà tutte le mappature dei campi esistenti.",
+    "existingMappingsWillBeCleared": "Le mappature esistenti verranno cancellate.",
+    "scheduleAfterSave": "Pianificazione (Disponibile dopo il salvataggio)",
+    "scheduleAfterSaveDescription": "È possibile configurare una pianificazione per questa pipeline dopo che è stata creata.",
+    "scheduleAfterSaveShort": "Disponibile dopo il salvataggio",
+    "continueToReview": "Continua con la revisione",
+    "pipelineSchedule": "Pianificazione Pipeline",
+    "noScheduleConfigured": "Nessuna pianificazione configurata per questa pipeline",
+    "manageAllSchedules": "Gestisci tutte le pianificazioni"
   },
   "connectors": {
     "title": "Connettori",
@@ -427,7 +437,33 @@
     "writeOperationInsert": "Inserisci",
     "writeOperationUpdate": "Aggiorna",
     "writeOperationUpsert": "Upsert",
-    "writeOperationBulkInsert": "Inserimento Bulk"
+    "writeOperationBulkInsert": "Inserimento Bulk",
+    "apiEndpointConfig": {
+      "addEndpoint": "Aggiungi Endpoint",
+      "noEndpoints": "Nessun endpoint configurato",
+      "addEndpointsHint": "Aggiungi endpoint in base alla direzione dell'origine dati",
+      "untitledEndpoint": "Endpoint senza titolo",
+      "httpMethod": "Metodo HTTP",
+      "endpointPath": "Percorso Endpoint",
+      "pathPlaceholder": "/customers o /customers/{id}",
+      "pathHint": "Usa {id} per i parametri di percorso",
+      "descPlaceholder": "Breve descrizione di questo endpoint",
+      "requestConfig": "Configurazione Richiesta",
+      "requestSchema": "Schema Richiesta (JSON)",
+      "requestSchemaHint": "Struttura completa del corpo della richiesta",
+      "requestDataPath": "Percorso Dati Richiesta",
+      "requestDataPathHint": "Dove posizionare i dati mappati nella richiesta (es. 'customer' o 'data.customer')",
+      "responseConfig": "Configurazione Risposta",
+      "responseSchema": "Schema Risposta (JSON)",
+      "responseSchemaHint": "Struttura completa della risposta",
+      "responseDataPath": "Percorso Dati Risposta",
+      "responseDataPathHint": "Percorso verso i dati di business nella risposta",
+      "errorPath": "Percorso Errore (Opzionale)",
+      "errorPathHint": "Percorso verso il messaggio di errore nella risposta",
+      "reqSource": "Richiesto: Almeno un endpoint GET",
+      "reqDestination": "Richiesto: Almeno un endpoint POST, PUT o PATCH",
+      "reqBoth": "Richiesto: Almeno un endpoint GET e un endpoint POST/PUT/PATCH"
+    }
   },
   "transformations": {
     "title": "Trasformazioni",
@@ -597,7 +633,13 @@
     "addUser": "Aggiungi Utente al Tenant",
     "removeUser": "Rimuovi Utente",
     "removeUserConfirm": "Sei sicuro di voler rimuovere questo utente dal tenant?",
-    "updateRole": "Aggiorna Ruolo Utente"
+    "updateRole": "Aggiorna Ruolo Utente",
+    "switchSuccess": "Passato a {name}",
+    "adminRequired": "Sono richiesti i privilegi di amministratore per accedere a questa pagina.",
+    "superAdminRequired": "Sono richiesti i privilegi di super amministratore per accedere a questa pagina.",
+    "errors": {
+      "switchFailed": "Impossibile cambiare tenant"
+    }
   },
   "users": {
     "title": "Utenti",
@@ -616,7 +658,22 @@
     "user": "Utente",
     "selectUser": "Seleziona Utente",
     "manageTenants": "Gestisci Tenant",
-    "addToTenant": "Aggiungi al Tenant"
+    "addToTenant": "Aggiungi al Tenant",
+    "deleteSuccess": "Utente eliminato con successo",
+    "saveSuccess": "Utente salvato con successo",
+    "activateSuccess": "Utente attivato con successo",
+    "deactivateSuccess": "Utente disattivato con successo",
+    "addToTenantSuccess": "Utente aggiunto al tenant con successo",
+    "removeFromTenantSuccess": "Utente rimosso dal tenant con successo",
+    "errors": {
+      "loadFailed": "Impossibile caricare gli utenti",
+      "loadDetailsFailed": "Impossibile caricare i dettagli dell'utente",
+      "deleteFailed": "Impossibile eliminare l'utente",
+      "saveFailed": "Impossibile salvare l'utente",
+      "statusUpdateFailed": "Impossibile aggiornare lo stato dell'utente",
+      "addToTenantFailed": "Impossibile aggiungere l'utente al tenant",
+      "removeFromTenantFailed": "Impossibile rimuovere l'utente dal tenant"
+    }
   },
   "settings": {
     "title": "Impostazioni",
@@ -891,6 +948,13 @@
     "enableNotifications": "Abilita Notifiche",
     "light": "Chiaro",
     "dark": "Oscuro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "slug": "Slug",
+    "slugHint": "Identificatore compatibile con URL (solo lettere minuscole, numeri, trattini)",
+    "globalRole": "Ruolo Globale",
+    "tenantRole": "Ruolo Tenant",
+    "selectTenant": "Seleziona Tenant",
+    "tenantMemberships": "Appartenenze Tenant",
+    "globalSystemRole": "Ruolo di sistema globale"
   }
 }

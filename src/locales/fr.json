@@ -240,7 +240,17 @@
     "notificationEmailsHint": "Ajoutez une ou plusieurs adresses e-mail pour recevoir les rapports d'exécution. Appuyez sur Entrée après chaque e-mail.",
     "enableEmailNotifications": "Activer les Notifications par E-mail",
     "pipelineActiveDescription": "Le pipeline sera actif et prêt à s'exécuter après l'enregistrement",
-    "pipelineInactiveDescription": "Le pipeline sera inactif après l'enregistrement"
+    "pipelineInactiveDescription": "Le pipeline sera inactif après l'enregistrement",
+    "connectorChangeWarning": "Avertissement : Changement de Connecteur",
+    "connectorChangeMessage": "Changer le connecteur source ou de destination effacera tous vos mappages de champs existants.",
+    "existingMappingsWillBeCleared": "Les mappages existants seront effacés.",
+    "scheduleAfterSave": "Planification (Disponible après enregistrement)",
+    "scheduleAfterSaveDescription": "Vous pouvez configurer une planification pour ce pipeline après sa création.",
+    "scheduleAfterSaveShort": "Disponible après enregistrement",
+    "continueToReview": "Continuer vers l'examen",
+    "pipelineSchedule": "Planification du Pipeline",
+    "noScheduleConfigured": "Aucune planification configurée pour ce pipeline",
+    "manageAllSchedules": "Gérer toutes les planifications"
   },
   "connectors": {
     "title": "Connecteurs",
@@ -429,7 +439,33 @@
     "writeOperationInsert": "Insérer",
     "writeOperationUpdate": "Mettre à jour",
     "writeOperationUpsert": "Insérer ou Mettre à jour",
-    "writeOperationBulkInsert": "Insertion en Masse"
+    "writeOperationBulkInsert": "Insertion en Masse",
+    "apiEndpointConfig": {
+      "addEndpoint": "Ajouter un Endpoint",
+      "noEndpoints": "Aucun endpoint configuré",
+      "addEndpointsHint": "Ajoutez des endpoints en fonction de la direction de la source de données",
+      "untitledEndpoint": "Endpoint sans titre",
+      "httpMethod": "Méthode HTTP",
+      "endpointPath": "Chemin de l'Endpoint",
+      "pathPlaceholder": "/customers ou /customers/{id}",
+      "pathHint": "Utilisez {id} pour les paramètres de chemin",
+      "descPlaceholder": "Brève description de cet endpoint",
+      "requestConfig": "Configuration de la Requête",
+      "requestSchema": "Schéma de Requête (JSON)",
+      "requestSchemaHint": "Structure complète du corps de la requête",
+      "requestDataPath": "Chemin des Données de Requête",
+      "requestDataPathHint": "Où placer les données mappées dans la requête (ex. 'customer' ou 'data.customer')",
+      "responseConfig": "Configuration de la Réponse",
+      "responseSchema": "Schéma de Réponse (JSON)",
+      "responseSchemaHint": "Structure de réponse complète",
+      "responseDataPath": "Chemin des Données de Réponse",
+      "responseDataPathHint": "Chemin vers les données métier dans la réponse",
+      "errorPath": "Chemin d'Erreur (Optionnel)",
+      "errorPathHint": "Chemin vers le message d'erreur dans la réponse",
+      "reqSource": "Requis : Au moins un endpoint GET",
+      "reqDestination": "Requis : Au moins un endpoint POST, PUT ou PATCH",
+      "reqBoth": "Requis : Au moins un endpoint GET et un endpoint POST/PUT/PATCH"
+    }
   },
   "transformations": {
     "title": "Transformations",
@@ -599,8 +635,14 @@
     "manageUsers": "Gérer les Utilisateurs",
     "addUser": "Ajouter un Utilisateur au Locataire",
     "removeUser": "Supprimer l'Utilisateur",
-    "removeUserConfirm": "Êtes-vous sûr de vouloir supprimer cet utilisateur du locataire?",
-    "updateRole": "Mettre à Jour le Rôle de l'Utilisateur"
+    "removeUserConfirm": "Êtes-vous sûr de vouloir supprimer cet utilisateur du locataire ?",
+    "updateRole": "Mettre à jour le Rôle de l'Utilisateur",
+    "switchSuccess": "Passé à {name}",
+    "adminRequired": "Des privilèges d'administrateur sont requis pour accéder à cette page.",
+    "superAdminRequired": "Des privilèges de super administrateur sont requis pour accéder à cette page.",
+    "errors": {
+      "switchFailed": "Échec du changement de locataire"
+    }
   },
   "users": {
     "title": "Utilisateurs",
@@ -619,7 +661,22 @@
     "user": "Utilisateur",
     "selectUser": "Sélectionner un Utilisateur",
     "manageTenants": "Gérer les Locataires",
-    "addToTenant": "Ajouter au Locataire"
+    "addToTenant": "Ajouter au Locataire",
+    "deleteSuccess": "Utilisateur supprimé avec succès",
+    "saveSuccess": "Utilisateur enregistré avec succès",
+    "activateSuccess": "Utilisateur activé avec succès",
+    "deactivateSuccess": "Utilisateur désactivé avec succès",
+    "addToTenantSuccess": "Utilisateur ajouté au locataire avec succès",
+    "removeFromTenantSuccess": "Utilisateur retiré du locataire avec succès",
+    "errors": {
+      "loadFailed": "Échec du chargement des utilisateurs",
+      "loadDetailsFailed": "Échec du chargement des détails de l'utilisateur",
+      "deleteFailed": "Échec de la suppression de l'utilisateur",
+      "saveFailed": "Échec de l'enregistrement de l'utilisateur",
+      "statusUpdateFailed": "Échec de la mise à jour du statut de l'utilisateur",
+      "addToTenantFailed": "Échec de l'ajout de l'utilisateur au locataire",
+      "removeFromTenantFailed": "Échec de la suppression de l'utilisateur du locataire"
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -894,7 +951,14 @@
     "enableNotifications": "Activer les Notifications",
     "light": "Clair",
     "dark": "Sombre",
-    "system": "Système"
+    "system": "Système",
+    "slug": "Slug",
+    "slugHint": "Identifiant convivial pour URL (lettres minuscules, chiffres, tirets uniquement)",
+    "globalRole": "Rôle Global",
+    "tenantRole": "Rôle de Locataire",
+    "selectTenant": "Sélectionner un Locataire",
+    "tenantMemberships": "Adhésions de Locataires",
+    "globalSystemRole": "Rôle système global"
   },
   "schedules": {
     "title": "Planifications",

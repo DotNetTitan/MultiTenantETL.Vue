@@ -471,7 +471,33 @@
     "writeOperationInsert": "Insert",
     "writeOperationUpdate": "Update",
     "writeOperationUpsert": "Upsert",
-    "writeOperationBulkInsert": "Bulk Insert"
+    "writeOperationBulkInsert": "Bulk Insert",
+    "apiEndpointConfig": {
+      "addEndpoint": "Add Endpoint",
+      "noEndpoints": "No endpoints configured",
+      "addEndpointsHint": "Add endpoints based on data source direction",
+      "untitledEndpoint": "Untitled Endpoint",
+      "httpMethod": "HTTP Method",
+      "endpointPath": "Endpoint Path",
+      "pathPlaceholder": "/customers or /customers/{id}",
+      "pathHint": "Use {id} for path parameters",
+      "descPlaceholder": "Brief description of this endpoint",
+      "requestConfig": "Request Configuration",
+      "requestSchema": "Request Schema (JSON)",
+      "requestSchemaHint": "Full request body structure",
+      "requestDataPath": "Request Data Path",
+      "requestDataPathHint": "Where to place mapped data in request (e.g., 'customer' or 'data.customer')",
+      "responseConfig": "Response Configuration",
+      "responseSchema": "Response Schema (JSON)",
+      "responseSchemaHint": "Full response structure",
+      "responseDataPath": "Response Data Path",
+      "responseDataPathHint": "Path to business data in response",
+      "errorPath": "Error Path (Optional)",
+      "errorPathHint": "Path to error message in response",
+      "reqSource": "Required: At least one GET endpoint",
+      "reqDestination": "Required: At least one POST, PUT, or PATCH endpoint",
+      "reqBoth": "Required: At least one GET endpoint and one POST/PUT/PATCH endpoint"
+    }
   },
   "transformations": {
     "title": "Transformations",
@@ -752,7 +778,8 @@
     "system": "System",
     "active": "Active",
     "contactName": "Contact Name",
-    "contactEmail": "Contact Email"
+    "contactEmail": "Contact Email",
+    "globalSystemRole": "Global system role"
   },
   "validation": {
     "required": "{field} is required",

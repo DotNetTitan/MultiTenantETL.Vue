@@ -238,7 +238,17 @@
     "notificationEmailsHint": "Adicione um ou mais endereços de e-mail para receber relatórios de execução. Pressione Enter após cada e-mail.",
     "enableEmailNotifications": "Ativar Notificações por E-mail",
     "pipelineActiveDescription": "O pipeline estará ativo e pronto para executar após salvar",
-    "pipelineInactiveDescription": "O pipeline estará inativo após salvar"
+    "pipelineInactiveDescription": "O pipeline estará inativo após salvar",
+    "connectorChangeWarning": "Aviso: Mudança de Conector",
+    "connectorChangeMessage": "Aterar o conector de origem ou destino limpará todos os mapeamentos de campos existentes.",
+    "existingMappingsWillBeCleared": "Os mapeamentos existentes serão apagados.",
+    "scheduleAfterSave": "Programação (Disponível após salvar)",
+    "scheduleAfterSaveDescription": "Você pode configurar uma programação para este pipeline após ele ser criado.",
+    "scheduleAfterSaveShort": "Disponível após salvar",
+    "continueToReview": "Continuar para Revisão",
+    "pipelineSchedule": "Programação do Pipeline",
+    "noScheduleConfigured": "Nenhuma programação configurada para este pipeline",
+    "manageAllSchedules": "Gerenciar todas as programações"
   },
   "connectors": {
     "title": "Conectores",
@@ -427,7 +437,33 @@
     "writeOperationInsert": "Inserir",
     "writeOperationUpdate": "Atualizar",
     "writeOperationUpsert": "Upsert",
-    "writeOperationBulkInsert": "Inserção em Lote"
+    "writeOperationBulkInsert": "Inserção em Lote",
+    "apiEndpointConfig": {
+      "addEndpoint": "Adicionar Endpoint",
+      "noEndpoints": "Nenhum endpoint configurado",
+      "addEndpointsHint": "Adicione endpoints com base na direção da fonte de dados",
+      "untitledEndpoint": "Endpoint sem título",
+      "httpMethod": "Método HTTP",
+      "endpointPath": "Caminho do Endpoint",
+      "pathPlaceholder": "/customers ou /customers/{id}",
+      "pathHint": "Use {id} para parâmetros de caminho",
+      "descPlaceholder": "Breve descrição deste endpoint",
+      "requestConfig": "Configuração da Solicitação",
+      "requestSchema": "Esquema da Solicitação (JSON)",
+      "requestSchemaHint": "Estrutura completa do corpo da solicitação",
+      "requestDataPath": "Caminho dos Dados da Solicitação",
+      "requestDataPathHint": "Onde colocar os dados mapeados na solicitação (ex: 'customer' ou 'data.customer')",
+      "responseConfig": "Configuração da Resposta",
+      "responseSchema": "Esquema da Resposta (JSON)",
+      "responseSchemaHint": "Estrutura completa da resposta",
+      "responseDataPath": "Caminho dos Dados da Resposta",
+      "responseDataPathHint": "Caminho para os dados de negócios na resposta",
+      "errorPath": "Caminho do Erro (Opcional)",
+      "errorPathHint": "Caminho para a mensagem de erro na resposta",
+      "reqSource": "Obrigatório: Pelo menos um endpoint GET",
+      "reqDestination": "Obrigatório: Pelo menos um endpoint POST, PUT ou PATCH",
+      "reqBoth": "Obrigatório: Pelo menos um endpoint GET e um endpoint POST/PUT/PATCH"
+    }
   },
   "transformations": {
     "title": "Transformações",
@@ -597,7 +633,13 @@
     "addUser": "Adicionar Usuário ao Locatário",
     "removeUser": "Remover Usuário",
     "removeUserConfirm": "Tem certeza de que deseja remover este usuário do locatário?",
-    "updateRole": "Atualizar Função do Usuário"
+    "updateRole": "Atualizar Função do Usuário",
+    "switchSuccess": "Mudou para {name}",
+    "adminRequired": "São necessários privilégios de administrador para acessar esta página.",
+    "superAdminRequired": "São necessários privilégios de super administrador para acessar esta página.",
+    "errors": {
+      "switchFailed": "Falha ao mudar de locatário"
+    }
   },
   "users": {
     "title": "Usuários",
@@ -616,7 +658,22 @@
     "user": "Usuário",
     "selectUser": "Selecionar Usuário",
     "manageTenants": "Gerenciar Locatários",
-    "addToTenant": "Adicionar ao Locatário"
+    "addToTenant": "Adicionar ao Locatário",
+    "deleteSuccess": "Usuário excluído com sucesso",
+    "saveSuccess": "Usuário salvo com sucesso",
+    "activateSuccess": "Usuário ativado com sucesso",
+    "deactivateSuccess": "Usuário desativado com sucesso",
+    "addToTenantSuccess": "Usuário adicionado ao locatário com sucesso",
+    "removeFromTenantSuccess": "Usuário removido do locatário com sucesso",
+    "errors": {
+      "loadFailed": "Falha ao carregar usuários",
+      "loadDetailsFailed": "Falha ao carregar detalhes do usuário",
+      "deleteFailed": "Falha ao excluir usuário",
+      "saveFailed": "Falha ao salvar usuário",
+      "statusUpdateFailed": "Falha ao atualizar status do usuário",
+      "addToTenantFailed": "Falha ao adicionar usuário ao locatário",
+      "removeFromTenantFailed": "Falha ao remover usuário do locatário"
+    }
   },
   "settings": {
     "title": "Configurações",
@@ -891,6 +948,13 @@
     "enableNotifications": "Ativar Notificações",
     "light": "Claro",
     "dark": "Escuro",
-    "system": "Sistema"
+    "system": "Sistema",
+    "slug": "Slug",
+    "slugHint": "Identificador amigável para URL (apenas letras minúsculas, números, hifens)",
+    "globalRole": "Função Global",
+    "tenantRole": "Função de Locatário",
+    "selectTenant": "Selecionar Locatário",
+    "tenantMemberships": "Associações de Locatários",
+    "globalSystemRole": "Função global do sistema"
   }
 }
