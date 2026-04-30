@@ -30,6 +30,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/bff": {
+        target: backendTarget,
+        changeOrigin: true,
+        secure: false,
+      },
       "/css": {
         target: backendTarget,
         changeOrigin: true,

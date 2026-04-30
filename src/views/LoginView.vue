@@ -34,7 +34,7 @@
               <p class="text-body-1 text-center text-medium-emphasis mb-6">
                 {{ $t('auth.signInPrompt') || 'Sign in to access your ETL pipelines and data integrations.' }}
               </p>
-              
+
               <!-- Error alert for API server offline -->
               <v-alert
                 v-if="authStore.apiOffline"
@@ -155,7 +155,7 @@ async function handleLogin() {
 }
 
 /**
- * Login as guest - instant access without registration
+ * Login as guest via secure BFF session
  */
 async function handleGuestLogin() {
   try {
@@ -180,8 +180,8 @@ async function handleGuestLogin() {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: linear-gradient(135deg, 
-    rgba(var(--v-theme-primary), 0.03) 0%, 
+  background: linear-gradient(135deg,
+    rgba(var(--v-theme-primary), 0.03) 0%,
     rgba(var(--v-theme-primary), 0.08) 100%);
 }
 

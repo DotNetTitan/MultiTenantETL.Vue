@@ -8,10 +8,6 @@ export const API_CONFIG = {
 
 export const API_ENDPOINTS = {
   auth: {
-    // OAuth 2.0 / OpenIddict endpoints (at root level, no /api prefix)
-    token: "/connect/token",
-    revoke: "/connect/revoke",
-    authorize: "/connect/authorize",
     // Account management endpoints (under /api prefix)
     register: "/api/Account/register",
     confirmEmail: "/api/Account/confirm-email",

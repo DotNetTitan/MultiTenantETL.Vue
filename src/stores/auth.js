@@ -20,7 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
       user.value.role === "SuperAdmin" || user.value.role === "TenantAdmin"
     );
   });
-  const isGuest = computed(() => false);
+  const isGuest = computed(() => authService.isGuestSession(user.value));
   const token = computed(() => null); // Backward compatibility
 
   /**
@@ -78,10 +78,43 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   /**
-   * Guest login is disabled in session mode.
+   * Guest login via BFF endpoint.
    */
   async function loginAsGuest() {
-    throw new Error("Guest login is not supported in session mode.");
+    try {
+      loading.value = true;
+      error.value = null;
+      apiOffline.value = false;
+
+      const guestUser = await authService.loginAsGuest();
+      user.value = guestUser;
+
+      if (user.value?.currentTenantId) {
+        localStorage.setItem("currentTenantId", user.value.currentTenantId);
+      }
+
+      return true;
+    } catch (err) {
+      console.error("Guest login error:", err);
+
+      if (
+        err.isNetworkError ||
+        err.code === "ERR_NETWORK" ||
+        err.code === "ERR_CONNECTION_REFUSED"
+      ) {
+        apiOffline.value = true;
+        error.value =
+          "Cannot connect to the server. Please ensure the API server is running.";
+      } else {
+        error.value =
+          err.response?.data?.detail ||
+          err.message ||
+          "Guest login failed. Please try again later.";
+      }
+      throw err;
+    } finally {
+      loading.value = false;
+    }
   }
 
   /**

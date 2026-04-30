@@ -49,12 +49,7 @@ const router = createRouter({
       component: () => import("@/views/ConfirmEmailView.vue"),
       meta: { public: true }, // Allow both authenticated and unauthenticated users
     },
-    {
-      path: "/auth/callback",
-      name: "auth-callback",
-      component: () => import("@/views/AuthCallbackView.vue"),
-      meta: { guest: true },
-    },
+
     {
       path: "/pipelines",
       name: "pipelines",

@@ -18,14 +18,6 @@ export const authService = {
   },
 
   /**
-   * No-op callback handler retained for backward compatibility.
-   * In cookie mode, backend login page handles sign-in directly.
-   */
-  async handleCallback() {
-    return this.getCurrentUser();
-  },
-
-  /**
    * Fetch current authenticated user from backend.
    */
   async getCurrentUser() {
@@ -136,13 +128,16 @@ export const authService = {
   },
 
   /**
-   * Guest login is disabled in BFF mode to avoid browser token storage.
+   * Guest login using secure BFF cookie session.
    */
   async loginAsGuest() {
-    throw new Error("Guest login is not supported in session mode.");
+    await api.post("/bff/guest-login");
+    return this.getCurrentUser();
   },
 
-  isGuestSession() {
-    return false;
+  isGuestSession(user) {
+    const role =
+      user?.role || (Array.isArray(user?.roles) ? user.roles[0] : null);
+    return role === "Viewer";
   },
 };

@@ -2,6 +2,28 @@ import axios from "axios";
 import { API_CONFIG } from "@/config/api";
 import { useTenantStore } from "@/stores/tenant";
 
+let csrfToken = null;
+let csrfPromise = null;
+
+async function ensureCsrfToken() {
+  if (csrfToken) return csrfToken;
+
+  if (!csrfPromise) {
+    csrfPromise = api
+      .get("/bff/csrf")
+      .then((response) => {
+        // IMPORTANT: Use the request token returned by backend, not the XSRF cookie value.
+        csrfToken = response.data?.token || null;
+        return csrfToken;
+      })
+      .finally(() => {
+        csrfPromise = null;
+      });
+  }
+
+  return csrfPromise;
+}
+
 // Create axios instance with configuration
 const api = axios.create({
   ...API_CONFIG,
@@ -12,12 +34,23 @@ const api = axios.create({
 
 // Request interceptor - add tenant header
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const tenantStore = useTenantStore();
 
     // Add tenant ID if it exists
     if (tenantStore.currentTenantId) {
       config.headers["X-Tenant-Id"] = tenantStore.currentTenantId;
+    }
+
+    // Add CSRF token for unsafe methods in cookie-auth mode.
+    const method = (config.method || "get").toUpperCase();
+    const isUnsafeMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+
+    if (isUnsafeMethod) {
+      const token = await ensureCsrfToken();
+      if (token) {
+        config.headers["X-CSRF-TOKEN"] = token;
+      }
     }
 
     return config;
@@ -32,6 +65,29 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config || {};
+
+    // If CSRF fails, refresh token and retry once.
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.title === "Invalid CSRF token"
+    ) {
+      csrfToken = null;
+
+      const method = (originalRequest.method || "get").toUpperCase();
+      const isUnsafeMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(
+        method,
+      );
+
+      if (isUnsafeMethod && !originalRequest._csrfRetry) {
+        originalRequest._csrfRetry = true;
+        const freshToken = await ensureCsrfToken();
+        if (freshToken) {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers["X-CSRF-TOKEN"] = freshToken;
+        }
+        return api(originalRequest);
+      }
+    }
 
     // Handle unauthorized errors for session-based auth
     if (error.response?.status === 401) {
