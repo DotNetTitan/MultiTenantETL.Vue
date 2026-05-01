@@ -404,6 +404,7 @@
     "batchSize": "Tamanho do Lote",
     "batchSizeHint": "Número de registros por lote",
     "requestFormat": "Formato de Requisição",
+    "requestFormatHint": "Formato usado para o payload da requisição",
     "wrapInArray": "Envolver em Array",
     "includeHeaders": "Incluir Cabeçalhos",
     "startCell": "Célula Inicial",
@@ -465,8 +466,8 @@
       "errorPath": "Caminho do Erro (Opcional)",
       "errorPathHint": "Caminho para a mensagem de erro na resposta",
       "reqSource": "Obrigatório: Pelo menos um endpoint GET",
-      "reqDestination": "Obrigatório: Pelo menos um endpoint POST, PUT ou PATCH",
-      "reqBoth": "Obrigatório: Pelo menos um endpoint GET e um endpoint POST/PUT/PATCH"
+      "reqDestination": "Obrigatório: Pelo menos um endpoint POST ou PUT",
+      "reqBoth": "Obrigatório: Pelo menos um endpoint GET e um endpoint POST/PUT"
     }
   },
   "transformations": {
@@ -888,8 +889,8 @@
   "apiEndpoint": {
     "title": "Endpoints da API",
     "requirementSource": "Obrigatório: Pelo menos um endpoint GET",
-    "requirementDestination": "Obrigatório: Pelo menos um endpoint POST, PUT ou PATCH",
-    "requirementBoth": "Obrigatório: Pelo menos um endpoint GET e um endpoint POST/PUT/PATCH",
+    "requirementDestination": "Obrigatório: Pelo menos um endpoint POST ou PUT",
+    "requirementBoth": "Obrigatório: Pelo menos um endpoint GET e um endpoint POST/PUT",
     "addEndpoint": "Adicionar Endpoint",
     "noEndpointsConfigured": "Nenhum endpoint configurado",
     "addEndpointsBasedOnDirection": "Adicionar endpoints com base na direção da fonte de dados",

@@ -448,6 +448,7 @@
     "batchSize": "Batch Size",
     "batchSizeHint": "Number of records per batch",
     "requestFormat": "Request Format",
+    "requestFormatHint": "Format used for the request payload",
     "wrapInArray": "Wrap in Array",
     "includeHeaders": "Include Headers",
     "startCell": "Start Cell",
@@ -499,8 +500,8 @@
       "errorPath": "Error Path (Optional)",
       "errorPathHint": "Path to error message in response",
       "reqSource": "Required: At least one GET endpoint",
-      "reqDestination": "Required: At least one POST, PUT, or PATCH endpoint",
-      "reqBoth": "Required: At least one GET endpoint and one POST/PUT/PATCH endpoint"
+      "reqDestination": "Required: At least one POST or PUT endpoint",
+      "reqBoth": "Required: At least one GET endpoint and one POST/PUT endpoint"
     }
   },
   "transformations": {
@@ -889,8 +890,8 @@
   "apiEndpoint": {
     "title": "API Endpoints",
     "requirementSource": "Required: At least one GET endpoint",
-    "requirementDestination": "Required: At least one POST, PUT, or PATCH endpoint",
-    "requirementBoth": "Required: At least one GET endpoint and one POST/PUT/PATCH endpoint",
+    "requirementDestination": "Required: At least one POST or PUT endpoint",
+    "requirementBoth": "Required: At least one GET endpoint and one POST/PUT endpoint",
     "addEndpoint": "Add Endpoint",
     "noEndpointsConfigured": "No endpoints configured",
     "addEndpointsBasedOnDirection": "Add endpoints based on connector direction",

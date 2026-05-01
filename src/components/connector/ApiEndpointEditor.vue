@@ -83,8 +83,8 @@
                 />
               </v-col>
 
-              <!-- Request Schema (for POST/PUT/PATCH) -->
-              <v-col v-if="['POST', 'PUT', 'PATCH'].includes(endpoint.method)" cols="12">
+              <!-- Request Schema (for POST/PUT) -->
+              <v-col v-if="requestBodyMethods.includes(endpoint.method)" cols="12">
                 <v-divider class="mb-3" />
                 <h5 class="text-subtitle-2 mb-2">{{ $t('connectors.apiEndpointConfig.requestConfig') }}</h5>
                 <v-textarea
@@ -98,7 +98,7 @@
                 />
               </v-col>
 
-              <v-col v-if="['POST', 'PUT', 'PATCH'].includes(endpoint.method)" cols="12">
+              <v-col v-if="requestBodyMethods.includes(endpoint.method)" cols="12">
                 <v-text-field
                   v-model="endpoint.requestDataPath"
                   :label="$t('connectors.apiEndpointConfig.requestDataPath')"
@@ -160,8 +160,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 
 const { t } = useI18n();
+const { httpMethods: metadataHttpMethods } = useTranslatedMetadata();
 
 const props = defineProps({
   modelValue: {
@@ -178,15 +180,19 @@ const emit = defineEmits(['update:modelValue']);
 
 const localEndpoints = ref([...props.modelValue]);
 
-// Available methods based on direction
+const endpointDirectionMethodMap = {
+  source: ['GET'],
+  destination: ['POST', 'PUT'],
+  both: ['GET', 'POST', 'PUT']
+};
+
+const requestBodyMethods = ['POST', 'PUT'];
+
+// Available methods based on direction and backend metadata
 const availableMethods = computed(() => {
-  if (props.direction === 'source') {
-    return ['GET'];
-  } else if (props.direction === 'destination') {
-    return ['POST', 'PUT', 'PATCH'];
-  } else { // both
-    return ['GET', 'POST', 'PUT', 'PATCH'];
-  }
+  const allowedByDirection = endpointDirectionMethodMap[props.direction] || endpointDirectionMethodMap.source;
+  const metadataValues = metadataHttpMethods.value.map(method => method.value);
+  return allowedByDirection.filter(method => metadataValues.includes(method));
 });
 
 // Watch for changes - emit updates
@@ -203,8 +209,9 @@ watch(() => props.modelValue, (newVal) => {
 });
 
 function addEndpoint() {
-  const defaultMethod = props.direction === 'destination' ? 'POST' : 'GET';
-  
+  const fallbackMethod = props.direction === 'destination' ? 'POST' : 'GET';
+  const defaultMethod = availableMethods.value[0] || fallbackMethod;
+
   localEndpoints.value.push({
     id: `endpoint-${Date.now()}-${Math.random()}`,
     method: defaultMethod,
@@ -227,7 +234,6 @@ function getMethodColor(method) {
     GET: 'blue',
     POST: 'green',
     PUT: 'orange',
-    PATCH: 'purple',
     DELETE: 'red'
   };
   return colors[method] || 'grey';

@@ -406,6 +406,7 @@
     "batchSize": "Taille du Lot",
     "batchSizeHint": "Nombre d'enregistrements par lot",
     "requestFormat": "Format de Requête",
+    "requestFormatHint": "Format utilisé pour la charge utile de la requête",
     "wrapInArray": "Envelopper dans un Tableau",
     "includeHeaders": "Inclure les En-têtes",
     "startCell": "Cellule de Départ",
@@ -467,8 +468,8 @@
       "errorPath": "Chemin d'Erreur (Optionnel)",
       "errorPathHint": "Chemin vers le message d'erreur dans la réponse",
       "reqSource": "Requis : Au moins un endpoint GET",
-      "reqDestination": "Requis : Au moins un endpoint POST, PUT ou PATCH",
-      "reqBoth": "Requis : Au moins un endpoint GET et un endpoint POST/PUT/PATCH"
+      "reqDestination": "Requis : Au moins un endpoint POST ou PUT",
+      "reqBoth": "Requis : Au moins un endpoint GET et un endpoint POST/PUT"
     }
   },
   "transformations": {
@@ -891,8 +892,8 @@
   "apiEndpoint": {
     "title": "Points de Terminaison API",
     "requirementSource": "Requis : Au moins un point de terminaison GET",
-    "requirementDestination": "Requis : Au moins un point de terminaison POST, PUT ou PATCH",
-    "requirementBoth": "Requis : Au moins un point de terminaison GET et un POST/PUT/PATCH",
+    "requirementDestination": "Requis : Au moins un point de terminaison POST ou PUT",
+    "requirementBoth": "Requis : Au moins un point de terminaison GET et un POST/PUT",
     "addEndpoint": "Ajouter un Point de Terminaison",
     "noEndpointsConfigured": "Aucun point de terminaison configuré",
     "addEndpointsBasedOnDirection": "Ajoutez des points de terminaison en fonction de la direction de la source de données",

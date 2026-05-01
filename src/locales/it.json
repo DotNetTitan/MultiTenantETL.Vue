@@ -404,6 +404,7 @@
     "batchSize": "Dimensione Batch",
     "batchSizeHint": "Numero di record per batch",
     "requestFormat": "Formato Richiesta",
+    "requestFormatHint": "Formato utilizzato per il payload della richiesta",
     "wrapInArray": "Avvolgi in Array",
     "includeHeaders": "Includi Header",
     "startCell": "Cella di Inizio",
@@ -465,8 +466,8 @@
       "errorPath": "Percorso Errore (Opzionale)",
       "errorPathHint": "Percorso verso il messaggio di errore nella risposta",
       "reqSource": "Richiesto: Almeno un endpoint GET",
-      "reqDestination": "Richiesto: Almeno un endpoint POST, PUT o PATCH",
-      "reqBoth": "Richiesto: Almeno un endpoint GET e un endpoint POST/PUT/PATCH"
+      "reqDestination": "Richiesto: Almeno un endpoint POST o PUT",
+      "reqBoth": "Richiesto: Almeno un endpoint GET e un endpoint POST/PUT"
     }
   },
   "transformations": {
@@ -888,8 +889,8 @@
   "apiEndpoint": {
     "title": "Endpoint API",
     "requirementSource": "Richiesto: Almeno un endpoint GET",
-    "requirementDestination": "Richiesto: Almeno un endpoint POST, PUT o PATCH",
-    "requirementBoth": "Richiesto: Almeno un endpoint GET e un endpoint POST/PUT/PATCH",
+    "requirementDestination": "Richiesto: Almeno un endpoint POST o PUT",
+    "requirementBoth": "Richiesto: Almeno un endpoint GET e un endpoint POST/PUT",
     "addEndpoint": "Aggiungi Endpoint",
     "noEndpointsConfigured": "Nessun endpoint configurato",
     "addEndpointsBasedOnDirection": "Aggiungi endpoint basati sulla direzione della sorgente dati",

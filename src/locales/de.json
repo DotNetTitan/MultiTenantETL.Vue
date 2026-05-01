@@ -406,6 +406,7 @@
     "batchSize": "Batch-Größe",
     "batchSizeHint": "Anzahl der Datensätze pro Batch",
     "requestFormat": "Anfrageformat",
+    "requestFormatHint": "Format für den Anfrage-Payload",
     "wrapInArray": "In Array umschließen",
     "includeHeaders": "Header einschließen",
     "startCell": "Startzelle",
@@ -467,8 +468,8 @@
       "errorPath": "Fehlerpfad (Optional)",
       "errorPathHint": "Pfad zur Fehlermeldung in der Antwort",
       "reqSource": "Erforderlich: Mindestens ein GET-Endpunkt",
-      "reqDestination": "Erforderlich: Mindestens ein POST-, PUT- oder PATCH-Endpunkt",
-      "reqBoth": "Erforderlich: Mindestens ein GET-Endpunkt und ein POST/PUT/PATCH-Endpunkt"
+      "reqDestination": "Erforderlich: Mindestens ein POST- oder PUT-Endpunkt",
+      "reqBoth": "Erforderlich: Mindestens ein GET-Endpunkt und ein POST/PUT-Endpunkt"
     }
   },
   "transformations": {
@@ -891,8 +892,8 @@
   "apiEndpoint": {
     "title": "API-Endpunkte",
     "requirementSource": "Erforderlich: Mindestens ein GET-Endpunkt",
-    "requirementDestination": "Erforderlich: Mindestens ein POST-, PUT- oder PATCH-Endpunkt",
-    "requirementBoth": "Erforderlich: Mindestens ein GET-Endpunkt und ein POST-/PUT-/PATCH-Endpunkt",
+    "requirementDestination": "Erforderlich: Mindestens ein POST- oder PUT-Endpunkt",
+    "requirementBoth": "Erforderlich: Mindestens ein GET-Endpunkt und ein POST-/PUT-Endpunkt",
     "addEndpoint": "Endpunkt hinzufügen",
     "noEndpointsConfigured": "Keine Endpunkte konfiguriert",
     "addEndpointsBasedOnDirection": "Endpunkte basierend auf Datensource-Richtung hinzufügen",
