@@ -98,6 +98,10 @@ export function useMetadata() {
     metadata.value?.connectorConfig?.httpMethods || []
   );
 
+  const apiResponseFormats = computed(() => 
+    metadata.value?.connectorConfig?.apiResponseFormats || []
+  );
+
   const transformationTypes = computed(() => 
     metadata.value?.transformationTypes || []
   );
@@ -173,6 +177,7 @@ export function useMetadata() {
     fileFormats,
     writeOperations,
     httpMethods,
+    apiResponseFormats,
     transformationTypes,
     dataTypes,
     scheduleFrequencies,

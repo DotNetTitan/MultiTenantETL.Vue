@@ -89,6 +89,11 @@ async function loadConnector() {
       loadedConnector.config = {};
     }
     
+    // Ensure responseFormat exists for API connectors
+    if (loadedConnector.type === 'API' && !loadedConnector.config.responseFormat) {
+      loadedConnector.config.responseFormat = 'JSON';
+    }
+    
     // Ensure writeConfig exists for destination/both connectors
     if (loadedConnector.direction === 'destination' || loadedConnector.direction === 'both') {
       if (!loadedConnector.config.writeConfig) {

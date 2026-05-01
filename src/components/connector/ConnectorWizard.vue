@@ -66,36 +66,49 @@
                 />
               </v-col>
               <v-col cols="12" md="4">
-                <v-select
-                  v-model="connector.type"
-                  :items="connectorTypes"
-                  item-title="title"
-                  item-value="value"
-                  :label="t('connectors.type')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
-                  required
-                  @update:model-value="handleTypeChange"
-                >
-                  <template #item="{ item, props }">
-                    <v-list-item v-bind="props">
-                      <template #prepend>
-                        <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
+                <v-tooltip :disabled="!isEditMode" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <v-select
+                      v-bind="tooltipProps"
+                      v-model="connector.type"
+                      :items="connectorTypes"
+                      item-title="title"
+                      item-value="value"
+                      :label="t('connectors.type')"
+                      variant="outlined"
+                      :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
+                      required
+                      :disabled="isEditMode"
+                      @update:model-value="handleTypeChange"
+                    >
+                      <template #item="{ item, props }">
+                        <v-list-item v-bind="props">
+                          <template #prepend>
+                            <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
+                          </template>
+                        </v-list-item>
                       </template>
-                    </v-list-item>
+                    </v-select>
                   </template>
-                </v-select>
+                  {{ t('connectors.typeImmutable') }}
+                </v-tooltip>
               </v-col>
               <v-col cols="12" md="4">
-                <v-select
-                  v-model="connector.provider"
-                  :items="providerOptions"
-                  :label="t('connectors.provider')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
-                  required
-                  :disabled="!connector.type"
-                />
+                <v-tooltip :disabled="!isEditMode" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <v-select
+                      v-bind="tooltipProps"
+                      v-model="connector.provider"
+                      :items="providerOptions"
+                      :label="t('connectors.provider')"
+                      variant="outlined"
+                      :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
+                      required
+                      :disabled="!connector.type || isEditMode"
+                    />
+                  </template>
+                  {{ t('connectors.providerImmutable') }}
+                </v-tooltip>
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
@@ -128,13 +141,13 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
-              <span class="font-weight-medium">{{ connector.provider }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
+              <span class="font-weight-medium">{{ connector.provider }}</span> ·
               <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ t('common.connectionConfiguration') }}</div>
-            
+
             <!-- Database Connection -->
             <v-row v-if="connector.type === 'Database'">
               <!-- MongoDB Provider -->
@@ -179,7 +192,7 @@
                   />
                 </v-col>
               </template>
-              
+
               <!-- Cosmos DB Provider -->
               <template v-else-if="connector.provider === 'CosmosDb'">
                 <v-col cols="12">
@@ -230,7 +243,7 @@
                   />
                 </v-col>
               </template>
-              
+
               <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
               <template v-else>
                 <v-col cols="12" md="6">
@@ -289,7 +302,7 @@
                   />
                 </v-col>
               </template>
-              
+
               <!-- Source/Both: Table Name or Query (Excluded for MongoDB and CosmosDB) -->
               <template v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.provider !== 'MongoDb' && connector.provider !== 'CosmosDb'">
                 <v-col cols="12">
@@ -323,7 +336,7 @@
                   />
                 </v-col>
               </template>
-              
+
               <v-col cols="12">
                 <v-switch
                   v-model="connector.config.useCustomConnectionString"
@@ -380,6 +393,16 @@
               </v-col>
               <v-col cols="12" md="6">
                 <v-select
+                  v-model="connector.config.responseFormat"
+                  :items="responseFormats"
+                  :label="t('connectors.responseFormat')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.responseFormat') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
                   v-model="connector.config.authType"
                   :items="authTypes"
                   :label="t('connectors.authenticationType')"
@@ -398,7 +421,7 @@
                     :hint="t('connectors.useDynamicTokenHint')"
                   />
                 </v-col>
-                
+
                 <!-- Static Token -->
                 <v-col v-if="!connector.config.useDynamicToken" cols="12">
                   <v-text-field
@@ -410,7 +433,7 @@
                     persistent-hint
                   />
                 </v-col>
-                
+
                 <!-- Dynamic Token Configuration -->
                 <template v-else>
                   <v-col cols="12">
@@ -423,7 +446,7 @@
                       required
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-select
                       v-model="connector.config.tokenEndpointMethod"
@@ -432,7 +455,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-text-field
                       v-model="connector.config.tokenResponsePath"
@@ -443,7 +466,7 @@
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12">
                     <v-textarea
                       v-model="connector.config.tokenEndpointBody"
@@ -455,7 +478,7 @@
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12">
                     <v-textarea
                       v-model="connector.config.tokenEndpointHeadersText"
@@ -467,7 +490,7 @@
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-text-field
                       v-model.number="connector.config.tokenExpirySeconds"
@@ -733,7 +756,7 @@
                   />
                 </v-col>
               </template>
-              
+
 
               <!-- Format-specific options (CSV) -->
               <v-col v-if="connector.config.format === 'CSV'" cols="12" md="6">
@@ -878,16 +901,16 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
               <span class="font-weight-medium">{{ connector.provider }}</span><template v-if="connector.type === 'File'">
-                · 
+                ·
                 <span class="font-weight-medium">{{ connector.config.format }}</span>
-              </template> · 
+              </template> ·
               <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ t('connectors.schemaDefinition') }}</div>
-            
+
             <SchemaEditor
               v-model="connector.schema.fields"
               :connector-type="connector.type"
@@ -905,17 +928,17 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
               <span class="font-weight-medium">{{ connector.provider }}</span><template v-if="connector.type === 'File'">
-                · 
+                ·
                 <span class="font-weight-medium">{{ connector.config.format }}</span>
-              </template> · 
-              <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span> · 
+              </template> ·
+              <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span> ·
               <span class="font-weight-medium">{{ connector.schema.fields.length }} {{ $t('connectors.fields', connector.schema.fields.length) }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ $t('common.writeConfiguration') }}</div>
-            
+
             <p class="text-body-2 text-medium-emphasis mb-6">
               {{ $t('connectors.writeConfigDescription') }}
             </p>
@@ -988,7 +1011,7 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="connector.config.writeConfig.requestFormat"
-                  :items="['JSON', 'XML', 'Form Data']"
+                  :items="requestFormats"
                   :label="t('connectors.requestFormat')"
                   variant="outlined"
                   :hint="t('connectors.requestFormatHint')"
@@ -1166,7 +1189,7 @@
         <v-stepper-window-item :value="lastStep">
           <div class="pa-6">
             <div class="text-h5 mb-4">{{ t('common.reviewConfiguration') }}</div>
-            
+
             <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
@@ -1883,11 +1906,12 @@ const {
   authTypes: metadataAuthTypes,
   fileFormats: metadataFileFormats,
   httpMethods: metadataHttpMethods,
+  apiResponseFormats: metadataApiResponseFormats,
   getProvidersForType
 } = useTranslatedMetadata();
 
 // Map to component format for compatibility
-const connectorTypes = computed(() => 
+const connectorTypes = computed(() =>
   metadataConnectorTypes.value.map(type => ({
     title: type.label,
     value: type.value
@@ -1909,11 +1933,22 @@ const directionOptions = computed(() => {
   return allDirections;
 });
 
-const authTypes = computed(() => 
+const authTypes = computed(() =>
   metadataAuthTypes.value.map(auth => auth.label)
 );
 
-const fileFormats = computed(() => 
+const responseFormats = computed(() =>
+  metadataApiResponseFormats.value
+    .filter(format => format.isSupported !== false)
+    .map(format => ({
+      title: format.label,
+      value: format.value
+    }))
+);
+
+const requestFormats = computed(() => responseFormats.value);
+
+const fileFormats = computed(() =>
   metadataFileFormats.value.map(format => format.value)
 );
 
@@ -1930,6 +1965,10 @@ const httpMethods = computed(() => {
 
 const providerOptions = computed(() => {
   return getProvidersForType(props.connector.type);
+});
+
+const isEditMode = computed(() => {
+  return props.connector.id !== null && props.connector.id !== undefined;
 });
 
 const showSchemaStep = computed(() => {
@@ -2037,7 +2076,7 @@ function ensureDatabaseConfig(provider) {
     if (!props.connector.config.warehouse) props.connector.config.warehouse = '';
     if (!props.connector.config.schema) props.connector.config.schema = '';
     if (!props.connector.config.role) props.connector.config.role = '';
-    
+
     // Remove fields not used by Snowflake
     delete props.connector.config.host;
     delete props.connector.config.port;
@@ -2050,7 +2089,7 @@ function ensureDatabaseConfig(provider) {
     if (!props.connector.config.projectId) props.connector.config.projectId = '';
     if (!props.connector.config.datasetId) props.connector.config.datasetId = '';
     if (!props.connector.config.location) props.connector.config.location = '';
-    
+
     // Remove fields not used by BigQuery
     delete props.connector.config.host;
     delete props.connector.config.port;
@@ -2063,9 +2102,9 @@ function ensureDatabaseConfig(provider) {
     delete props.connector.config.schema;
     delete props.connector.config.schema;
     delete props.connector.config.role;
-    
+
     // Ensure table name is required if destination
-    if ((props.connector.direction === 'destination' || props.connector.direction === 'both') && 
+    if ((props.connector.direction === 'destination' || props.connector.direction === 'both') &&
         props.connector.config.writeConfig && !props.connector.config.writeConfig.tableName) {
       // Logic for mandatory table name is mostly handled by validateWriteConfig
     }
@@ -2096,7 +2135,7 @@ function ensureDatabaseConfig(provider) {
     if (!props.connector.config.cosmosKey) props.connector.config.cosmosKey = '';
     if (!props.connector.config.database) props.connector.config.database = '';
     if (!props.connector.config.container) props.connector.config.container = '';
-    
+
     // Remove fields not used by Cosmos DB
     delete props.connector.config.host;
     delete props.connector.config.port;
@@ -2119,7 +2158,7 @@ function ensureDatabaseConfig(provider) {
     if (!props.connector.config.host) props.connector.config.host = '';
     if (!props.connector.config.port) props.connector.config.port = getDefaultPort(provider);
     if (!props.connector.config.useSsl) props.connector.config.useSsl = false;
-    
+
     // Remove Snowflake/BigQuery-specific fields
     delete props.connector.config.account;
     delete props.connector.config.warehouse;
@@ -2153,17 +2192,17 @@ const canSave = computed(() => {
          props.connector.type &&
          props.connector.provider &&
          validateConnectionConfig();
-  
+
   if (showSchemaStep.value) {
     baseValid = baseValid &&
          schemaValidation.value.isValid &&
          props.connector.schema.fields.length > 0;
   }
-  
+
   if (showWriteConfigStep.value) {
     return baseValid && validateWriteConfig();
   }
-  
+
   return baseValid;
 });
 
@@ -2197,13 +2236,13 @@ function getDirectionLabel(direction) {
 
 function handleTableNameDetected(tableName) {
   if (!tableName) return;
-  
+
   // Only auto-fill for Database connectors that are destinations
-  if (props.connector.type === 'Database' && 
+  if (props.connector.type === 'Database' &&
       (props.connector.direction === 'destination' || props.connector.direction === 'both')) {
-    
+
     ensureWriteConfig();
-    
+
     // Only auto-fill if the table name is currently empty to avoid overwriting user input
     if (!props.connector.config.writeConfig.tableName) {
       props.connector.config.writeConfig.tableName = tableName;
@@ -2278,6 +2317,7 @@ function getDefaultConfig(type) {
     case 'API':
       return {
         baseUrl: '',
+        responseFormat: 'JSON',
         authType: 'None',
         authToken: null,
         useDynamicToken: false,
@@ -2364,18 +2404,18 @@ function getDefaultConfig(type) {
 
 function validateConnectionConfig() {
   const { type, provider, config } = props.connector;
-  
+
   if (type === 'Database') {
     if (config.useCustomConnectionString) {
       return !!config.connectionString;
     }
-    
+
     // Snowflake-specific validation
     if (provider === 'Snowflake') {
-      return !!config.account && !!config.warehouse && !!config.database && 
+      return !!config.account && !!config.warehouse && !!config.database &&
              !!config.schema && !!config.username && !!config.password;
     }
-    
+
     // BigQuery-specific validation
     if (provider === 'BigQuery') {
       const basicValid = !!config.projectId && !!config.datasetId;
@@ -2384,7 +2424,7 @@ function validateConnectionConfig() {
       }
       return basicValid;
     }
-    
+
     // MongoDB-specific validation
     if (provider === 'MongoDb') {
       const basicMongoValid = !!config.connectionString && !!config.database && !!config.collectionName;
@@ -2393,20 +2433,20 @@ function validateConnectionConfig() {
       }
       return basicMongoValid;
     }
-    
+
     // Cosmos DB-specific validation
     if (provider === 'CosmosDb') {
       return !!config.cosmosEndpoint && !!config.cosmosKey && !!config.database && !!config.container;
     }
-    
+
     // Other database providers
     return !!config.host && !!config.database && !!config.username && !!config.password;
   }
-  
+
   if (type === 'API') {
     return !!config.baseUrl;
   }
-  
+
   if (type === 'File') {
     const basicValid = !!config.path;
     if (provider === 'GCS') {
@@ -2418,62 +2458,62 @@ function validateConnectionConfig() {
     }
     return basicValid;
   }
-  
+
   if (type === 'Email') {
     return config.recipients?.length > 0 && !!config.subject && !!config.attachmentFormat;
   }
-  
+
   return false;
 }
 
 function validateWriteConfig() {
   const { type, config } = props.connector;
-  
+
   if (!config.writeConfig) return false;
-  
+
   if (type === 'Database') {
     // Table name is required
     if (!config.writeConfig.tableName) return false;
-    
+
     // For UPDATE/UPSERT operations, primary keys are required
     if (['UPDATE', 'UPSERT'].includes(config.writeConfig.operation)) {
       return config.writeConfig.primaryKeys && config.writeConfig.primaryKeys.length > 0;
     }
-    
+
     return true;
   }
-  
+
   if (type === 'API') {
     // Request format is required
     return !!config.writeConfig.requestFormat;
   }
-  
+
   if (type === 'File') {
     // Write mode is required
     if (!config.writeConfig.writeMode) return false;
-    
+
     // For CSV, column order should be defined (can be empty initially)
     if (config.format === 'CSV') {
       return config.writeConfig.columnOrder !== undefined;
     }
-    
+
     // For Excel, sheet name is required
     if (config.format === 'Excel') {
       return !!config.writeConfig.sheetName;
     }
-    
+
     // For JSON, structure is required
     if (config.format === 'JSON') {
       return !!config.writeConfig.structure;
     }
-    
+
     return true;
   }
-  
+
   if (type === 'Email') {
     return true; // writeConfig fields are all optional with defaults
   }
-  
+
   return false;
 }
 
@@ -2497,14 +2537,14 @@ async function previewEmail() {
 async function testConnectionBeforeSave() {
   testingConnection.value = true;
   connectionTestResult.value = false;
-  
+
   try {
     const { testConnection } = await import('@/services/connectorService');
-    
+
     // Always test with the current form config (whether creating or editing),
     // so unsaved changes to the connection settings are reflected in the test.
     const result = await testConnection(props.connector);
-    
+
     connectionTestSuccess.value = result.success;
     connectionTestMessage.value = result.message;
     connectionTestResult.value = true;
@@ -2521,7 +2561,7 @@ async function testConnectionBeforeSave() {
 
 function parseHeadersFromText(headersText) {
   if (!headersText) return {};
-  
+
   try {
     return JSON.parse(headersText);
   } catch (e) {
@@ -2539,19 +2579,19 @@ function parseHeadersFromText(headersText) {
 
 async function handleSave() {
   if (!canSave.value) return;
-  
+
   saving.value = true;
   try {
     // Parse and set custom headers
     if (props.connector.type === 'API') {
       props.connector.config.headers = parseHeadersFromText(customHeadersText.value);
-      
+
       // Parse and set token endpoint headers if using dynamic tokens
       if (props.connector.config.useDynamicToken) {
         props.connector.config.tokenEndpointHeaders = parseHeadersFromText(props.connector.config.tokenEndpointHeadersText);
       }
     }
-    
+
     emit('save', props.connector);
   } finally {
     saving.value = false;

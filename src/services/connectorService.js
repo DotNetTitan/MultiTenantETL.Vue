@@ -64,6 +64,8 @@ export async function updateConnector(id, connector) {
 const response = await api.put(`/api/connectors/${id}`, {
       name: connector.name,
       description: connector.description || null,
+      type: connector.type,
+      provider: connector.provider,
       direction: connector.direction,
       config: connector.config,
       schema: connector.schema || null,

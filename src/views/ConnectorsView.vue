@@ -789,7 +789,8 @@ function createEmptyConnector() {
     api: {
       baseUrl: '',
       authType: 'None',
-      dataFormat: 'JSON'
+      dataFormat: 'JSON',
+      responseFormat: 'JSON'
     },
     credentials: {
       username: '',
