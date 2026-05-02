@@ -68,27 +68,28 @@
               <v-col cols="12" md="4">
                 <v-tooltip :disabled="!isEditMode" location="top">
                   <template #activator="{ props: tooltipProps }">
-                    <v-select
-                      v-bind="tooltipProps"
-                      v-model="connector.type"
-                      :items="connectorTypes"
-                      item-title="title"
-                      item-value="value"
-                      :label="t('connectors.type')"
-                      variant="outlined"
-                      :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
-                      required
-                      :disabled="isEditMode"
-                      @update:model-value="handleTypeChange"
-                    >
-                      <template #item="{ item, props }">
-                        <v-list-item v-bind="props">
-                          <template #prepend>
-                            <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
-                          </template>
-                        </v-list-item>
-                      </template>
-                    </v-select>
+                    <div v-bind="tooltipProps" class="w-100">
+                      <v-select
+                        v-model="connector.type"
+                        :items="connectorTypes"
+                        item-title="title"
+                        item-value="value"
+                        :label="t('connectors.type')"
+                        variant="outlined"
+                        :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
+                        required
+                        :disabled="isEditMode"
+                        @update:model-value="handleTypeChange"
+                      >
+                        <template #item="{ item, props }">
+                          <v-list-item v-bind="props">
+                            <template #prepend>
+                              <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
+                            </template>
+                          </v-list-item>
+                        </template>
+                      </v-select>
+                    </div>
                   </template>
                   {{ t('connectors.typeImmutable') }}
                 </v-tooltip>
@@ -96,16 +97,17 @@
               <v-col cols="12" md="4">
                 <v-tooltip :disabled="!isEditMode" location="top">
                   <template #activator="{ props: tooltipProps }">
-                    <v-select
-                      v-bind="tooltipProps"
-                      v-model="connector.provider"
-                      :items="providerOptions"
-                      :label="t('connectors.provider')"
-                      variant="outlined"
-                      :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
-                      required
-                      :disabled="!connector.type || isEditMode"
-                    />
+                    <div v-bind="tooltipProps" class="w-100">
+                      <v-select
+                        v-model="connector.provider"
+                        :items="providerOptions"
+                        :label="t('connectors.provider')"
+                        variant="outlined"
+                        :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
+                        required
+                        :disabled="!connector.type || isEditMode"
+                      />
+                    </div>
                   </template>
                   {{ t('connectors.providerImmutable') }}
                 </v-tooltip>
