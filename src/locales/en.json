@@ -716,6 +716,8 @@
     "emailConfirmed": "Email Confirmed",
     "currentTenant": "Current Tenant",
     "role": "Role",
+    "tenantRole": "Tenant Role",
+    "globalRole": "Global Role",
     "theme": "Theme",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",

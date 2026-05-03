@@ -229,31 +229,38 @@
               
               <v-list-item>
                 <template #prepend>
-                  <v-icon color="primary">mdi-shield-account</v-icon>
+                  <v-icon color="deep-purple">mdi-shield-account</v-icon>
                 </template>
                 <v-list-item-title class="text-body-2 font-weight-medium mb-1">
-                  {{ $t('settings.role') }}
+                  {{ $t('settings.tenantRole') }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  <template v-if="userDetails?.roles && userDetails.roles.length > 0">
-                    <v-chip
-                      v-for="role in userDetails.roles"
-                      :key="role"
-                      :color="getRoleColor(role)"
-                      size="small"
-                      variant="flat"
-                      class="mr-1"
-                    >
-                      {{ role }}
-                    </v-chip>
-                  </template>
                   <v-chip
-                    v-else
-                    :color="getRoleColor(authStore.user?.role)"
+                    :color="getRoleColor(tenantRole)"
                     size="small"
                     variant="flat"
                   >
-                    {{ authStore.user?.role }}
+                    {{ tenantRole }}
+                  </v-chip>
+                </v-list-item-subtitle>
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item>
+                <template #prepend>
+                  <v-icon color="primary">mdi-shield-star</v-icon>
+                </template>
+                <v-list-item-title class="text-body-2 font-weight-medium mb-1">
+                  {{ $t('settings.globalRole') }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip
+                    :color="getRoleColor(globalRole)"
+                    size="small"
+                    variant="flat"
+                  >
+                    {{ globalRole }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -315,6 +322,19 @@ const isPasswordFormValid = computed(() => {
          passwordChange.value.new === passwordChange.value.confirm &&
          passwordChange.value.new.length >= 8;
 });
+
+// Tenant role = current tenant membership roleCode (or effective role)
+const tenantRole = computed(() => {
+  const u = authStore.user;
+  if (!u) return 'User';
+  const membership = Array.isArray(u.tenants)
+    ? u.tenants.find(t => t.tenantId === u.currentTenantId)
+    : null;
+  return membership?.roleCode || u.role || 'User';
+});
+
+// Global role = system-wide role (not tenant-scoped)
+const globalRole = computed(() => authStore.user?.globalRole || 'User');
 
 // Watch for validation
 watch(() => profile.value.firstName, (val) => {
