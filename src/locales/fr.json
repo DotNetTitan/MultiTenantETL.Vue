@@ -45,6 +45,8 @@
     "expand": "Développer",
     "collapse": "Réduire",
     "items": "éléments",
+    "rowsPerPage": "Lignes par page",
+    "of": "sur",
     "seconds": "secondes",
     "minute": "minute",
     "minutes": "minutes",

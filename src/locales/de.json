@@ -45,6 +45,8 @@
     "expand": "Erweitern",
     "collapse": "Zuklappen",
     "items": "Elemente",
+    "rowsPerPage": "Zeilen pro Seite",
+    "of": "von",
     "seconds": "Sekunden",
     "minute": "Minute",
     "minutes": "Minuten",

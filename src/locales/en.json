@@ -48,6 +48,8 @@
     "expand": "Expand",
     "collapse": "Collapse",
     "items": "items",
+    "rowsPerPage": "Rows per page",
+    "of": "of",
     "seconds": "seconds",
     "minute": "minute",
     "minutes": "minutes",

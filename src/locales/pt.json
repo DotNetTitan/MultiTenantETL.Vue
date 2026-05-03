@@ -45,6 +45,8 @@
     "expand": "Expandir",
     "collapse": "Recolher",
     "items": "itens",
+    "rowsPerPage": "Linhas por página",
+    "of": "de",
     "seconds": "segundos",
     "minute": "minuto",
     "minutes": "minutos",

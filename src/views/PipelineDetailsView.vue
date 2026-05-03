@@ -205,38 +205,34 @@
                 {{ $t('dashboard.viewAll') }}
               </v-btn>
             </v-card-title>
-            <v-card-text>
-              <v-table>
-                <thead>
-                  <tr>
-                    <th>{{ $t('executions.executionId') }}</th>
-                    <th>{{ $t('common.status') }}</th>
-                    <th>{{ $t('dashboard.startTime') }}</th>
-                    <th>{{ $t('dashboard.duration') }}</th>
-                    <th>{{ $t('dashboard.rowsProcessed') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="execution in recentExecutions" :key="execution.id">
-                    <td>{{ execution.id }}</td>
-                    <td>
-                      <v-chip
-                        :color="getStatusColor(execution.status)"
-                        text-color="white"
-                        size="x-small"
-                      >
-                        {{ execution.status }}
-                      </v-chip>
-                    </td>
-                    <td>{{ formatDate(execution.startTime) }}</td>
-                    <td>{{ formatDuration(execution.durationMs) }}</td>
-                    <td>{{ execution.rowsProcessed?.toLocaleString() || 'N/A' }}</td>
-                  </tr>
-                  <tr v-if="recentExecutions.length === 0">
-                    <td colspan="5" class="text-center">{{ $t('dashboard.noRecentExecutions') }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
+            <v-card-text class="pa-0">
+              <v-data-table
+                :headers="executionHeaders"
+                :items="recentExecutions"
+                :items-per-page="10"
+              >
+                <template #item.status="{ item }">
+                  <v-chip
+                    :color="getStatusColor(item.status)"
+                    text-color="white"
+                    size="x-small"
+                  >
+                    {{ item.status }}
+                  </v-chip>
+                </template>
+                <template #item.startTime="{ item }">
+                  {{ formatDate(item.startTime) }}
+                </template>
+                <template #item.durationMs="{ item }">
+                  {{ formatDuration(item.durationMs) }}
+                </template>
+                <template #item.rowsProcessed="{ item }">
+                  {{ item.rowsProcessed?.toLocaleString() || 'N/A' }}
+                </template>
+                <template #no-data>
+                  {{ $t('dashboard.noRecentExecutions') }}
+                </template>
+              </v-data-table>
             </v-card-text>
           </v-card>
         </v-col>
@@ -415,13 +411,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
 import { fetchConnectorById } from '@/services/connectorService';
 import { useAuthStore } from '@/stores/auth';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -429,6 +427,15 @@ const authStore = useAuthStore();
 const pipeline = ref(null);
 const loading = ref(false);
 const recentExecutions = ref([]);
+
+// Headers for recent executions data table
+const executionHeaders = computed(() => [
+  { title: t('executions.executionId'), key: 'id', sortable: false },
+  { title: t('common.status'), key: 'status', sortable: true },
+  { title: t('dashboard.startTime'), key: 'startTime', sortable: true },
+  { title: t('dashboard.duration'), key: 'durationMs', sortable: true },
+  { title: t('dashboard.rowsProcessed'), key: 'rowsProcessed', sortable: true },
+]);
 
 // Dialog controls
 const showExecutionDialog = ref(false);

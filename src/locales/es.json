@@ -45,6 +45,8 @@
     "expand": "Expandir",
     "collapse": "Contraer",
     "items": "elementos",
+    "rowsPerPage": "Filas por página",
+    "of": "de",
     "seconds": "segundos",
     "minute": "minuto",
     "minutes": "minutos",
