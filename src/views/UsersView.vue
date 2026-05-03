@@ -135,7 +135,7 @@
             @submit="saveUser"
             @remove-tenant="handleRemoveTenant"
           />
-          
+
           <!-- Tenant Management Section -->
           <v-divider v-if="editedUser.id" class="my-4" />
           <div v-if="editedUser.id" class="mt-4">
@@ -324,18 +324,18 @@ async function fetchUsers() {
 
 function filterUsers() {
   let filtered = [...allUsers.value];
-  
+
   // Apply search filter
   if (search.value) {
     const searchLower = search.value.toLowerCase();
-    filtered = filtered.filter(user => 
+    filtered = filtered.filter(user =>
       user.email?.toLowerCase().includes(searchLower) ||
       user.firstName?.toLowerCase().includes(searchLower) ||
       user.lastName?.toLowerCase().includes(searchLower) ||
       `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower)
     );
   }
-  
+
   users.value = filtered;
 }
 
@@ -343,13 +343,13 @@ async function editUser(user) {
   try {
     // Fetch full user details including tenants
     const fullUser = await userService.getById(user.id);
-    
+
     // Convert roles array to single role for the form
-    const role = Array.isArray(fullUser.roles) && fullUser.roles.length > 0 
-      ? fullUser.roles[0] 
+    const role = Array.isArray(fullUser.roles) && fullUser.roles.length > 0
+      ? fullUser.roles[0]
       : 'User';
-    
-    editedUser.value = { 
+
+    editedUser.value = {
       ...fullUser,
       role: role,
       tenants: fullUser.tenants || []
@@ -390,11 +390,29 @@ async function deleteUser() {
 async function saveUser() {
   try {
     savingUser.value = true;
-    
+
     if (editedUser.value.id) {
+      const existingRoles = Array.isArray(editedUser.value.roles)
+        ? [...editedUser.value.roles]
+        : [];
+      const selectedRole = editedUser.value.role;
+
       await userService.update(editedUser.value.id, editedUser.value);
+
+      // Keep global roles aligned with the selected single role from the form
+      if (selectedRole) {
+        const rolesToRemove = existingRoles.filter(role => role !== selectedRole);
+
+        for (const roleName of rolesToRemove) {
+          await userService.removeRole(editedUser.value.id, roleName);
+        }
+
+        if (!existingRoles.includes(selectedRole)) {
+          await userService.assignRole(editedUser.value.id, selectedRole);
+        }
+      }
     }
-    
+
     await fetchUsers();
     showCreateDialog.value = false;
     editedUser.value = createEmpty();
@@ -440,11 +458,11 @@ async function handleRemoveTenant(tenantId) {
   try {
     loading.value = true;
     await userService.removeUserFromTenant(editedUser.value.id, tenantId);
-    
+
     // Refresh user data
     const updatedUser = await userService.getById(editedUser.value.id);
     editedUser.value.tenants = updatedUser.tenants || [];
-    
+
     showSuccess(t('users.removeFromTenantSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error removing user from tenant:', error);
@@ -462,15 +480,15 @@ async function addUserToTenant() {
       selectedTenantId.value,
       selectedTenantRole.value
     );
-    
+
     // Refresh user data
     const updatedUser = await userService.getById(editedUser.value.id);
     editedUser.value.tenants = updatedUser.tenants || [];
-    
+
     showAddTenantDialog.value = false;
     selectedTenantId.value = null;
     selectedTenantRole.value = 'User';
-    
+
     showSuccess(t('users.addToTenantSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error adding user to tenant:', error);
@@ -484,7 +502,7 @@ async function fetchAvailableTenants() {
   try {
     const tenantService = (await import('@/services/tenantService')).tenantService;
     const allTenants = await tenantService.getAll();
-    
+
     // Filter out tenants user is already in
     const userTenantIds = (editedUser.value.tenants || []).map(t => t.tenantId);
     availableTenants.value = allTenants.filter(t => !userTenantIds.includes(t.id));
@@ -503,7 +521,7 @@ onMounted(async () => {
     router.push('/');
     return;
   }
-  
+
   await fetchUsers();
   await fetchAvailableTenants();
 });

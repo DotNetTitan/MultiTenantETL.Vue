@@ -25,10 +25,20 @@ export const authService = {
     const data = response.data;
 
     const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
-    const primaryRole =
-      Array.isArray(data.roles) && data.roles.length > 0
-        ? data.roles[0]
-        : "User";
+    const globalRoles = Array.isArray(data.roles) ? data.roles : [];
+    const tenantMemberships = Array.isArray(data.tenants) ? data.tenants : [];
+
+    const currentTenantMembership = tenantMemberships.find(
+      (tenant) => tenant.tenantId === data.currentTenantId,
+    );
+
+    // Effective role for UI/route access:
+    // 1) SuperAdmin always wins
+    // 2) Otherwise use current tenant membership role
+    // 3) Fallback to first global role or User
+    const effectiveRole = globalRoles.includes("SuperAdmin")
+      ? "SuperAdmin"
+      : currentTenantMembership?.roleCode || globalRoles[0] || "User";
 
     return {
       id: data.id,
@@ -36,13 +46,14 @@ export const authService = {
       firstName: data.firstName,
       lastName: data.lastName,
       name: fullName || data.email || "User",
-      role: primaryRole,
-      roles: data.roles || [],
+      role: effectiveRole,
+      globalRole: globalRoles[0] || "User",
+      roles: globalRoles,
       tenantId: data.currentTenantId,
       tenantName: data.currentTenantName,
       currentTenantId: data.currentTenantId,
       currentTenantName: data.currentTenantName,
-      tenants: data.tenants || [],
+      tenants: tenantMemberships,
     };
   },
 

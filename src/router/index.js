@@ -44,10 +44,15 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
-      path: "/auth/confirm-email",
+      path: "/confirm-email",
       name: "confirm-email",
       component: () => import("@/views/ConfirmEmailView.vue"),
       meta: { public: true }, // Allow both authenticated and unauthenticated users
+    },
+    {
+      path: "/auth/confirm-email",
+      component: () => import("@/views/ConfirmEmailView.vue"),
+      meta: { public: true },
     },
 
     {

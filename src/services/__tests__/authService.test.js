@@ -60,6 +60,7 @@ describe("authService (BFF session mode)", () => {
       lastName: "User",
       name: "Test User",
       role: "SuperAdmin",
+      globalRole: "SuperAdmin",
       roles: ["SuperAdmin"],
       tenantId: "t1",
       tenantName: "Tenant One",
@@ -104,7 +105,9 @@ describe("authService (BFF session mode)", () => {
         roles: ["User"],
         currentTenantId: "t2",
         currentTenantName: "Tenant B",
-        tenants: [],
+        tenants: [
+          { tenantId: "t2", tenantName: "Tenant B", roleCode: "TenantAdmin" },
+        ],
       },
     });
 
@@ -115,5 +118,59 @@ describe("authService (BFF session mode)", () => {
     });
     expect(api.get).toHaveBeenCalledWith("/api/users/me");
     expect(result.currentTenantId).toBe("t2");
+    expect(result.user.role).toBe("TenantAdmin");
+  });
+
+  it("getCurrentUser should prefer current tenant membership role over global user role", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        id: "u2",
+        email: "tenant.admin@example.com",
+        firstName: "Tenant",
+        lastName: "Admin",
+        roles: ["User"],
+        currentTenantId: "tenant-2",
+        currentTenantName: "Tenant Two",
+        tenants: [
+          { tenantId: "tenant-1", tenantName: "Tenant One", roleCode: "User" },
+          {
+            tenantId: "tenant-2",
+            tenantName: "Tenant Two",
+            roleCode: "TenantAdmin",
+          },
+        ],
+      },
+    });
+
+    const result = await authService.getCurrentUser();
+
+    expect(result.role).toBe("TenantAdmin");
+    expect(result.globalRole).toBe("User");
+  });
+
+  it("getCurrentUser should keep SuperAdmin as effective role", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        id: "u3",
+        email: "super.admin@example.com",
+        firstName: "Super",
+        lastName: "Admin",
+        roles: ["SuperAdmin"],
+        currentTenantId: "tenant-3",
+        currentTenantName: "Tenant Three",
+        tenants: [
+          {
+            tenantId: "tenant-3",
+            tenantName: "Tenant Three",
+            roleCode: "User",
+          },
+        ],
+      },
+    });
+
+    const result = await authService.getCurrentUser();
+
+    expect(result.role).toBe("SuperAdmin");
+    expect(result.globalRole).toBe("SuperAdmin");
   });
 });

@@ -194,16 +194,26 @@ describe("useAuthStore", () => {
       store.user.value = null;
       expect(store.isAdmin.value).toBe(false);
 
-      // Set user with TenantAdmin role
-      store.user.value = { id: 1, role: "TenantAdmin" };
+      // Effective role TenantAdmin should be admin
+      store.user.value = { id: 1, role: "TenantAdmin", roles: ["User"] };
+      expect(store.isAdmin.value).toBe(true);
+
+      // Tenant membership role TenantAdmin should be admin even if global role is User
+      store.user.value = {
+        id: 1,
+        role: "User",
+        roles: ["User"],
+        currentTenantId: "t1",
+        tenants: [{ tenantId: "t1", roleCode: "TenantAdmin" }],
+      };
       expect(store.isAdmin.value).toBe(true);
 
       // Set user with regular role
-      store.user.value = { id: 1, role: "User" };
+      store.user.value = { id: 1, role: "User", roles: ["User"] };
       expect(store.isAdmin.value).toBe(false);
 
       // Set user with SuperAdmin role
-      store.user.value = { id: 1, role: "SuperAdmin" };
+      store.user.value = { id: 1, role: "SuperAdmin", roles: ["SuperAdmin"] };
       expect(store.isAdmin.value).toBe(true);
     });
 

@@ -16,8 +16,19 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!user.value && !loggingOut.value);
   const isAdmin = computed(() => {
     if (!user.value) return false;
+
+    const effectiveRole = user.value.role;
+    const globalRoles = Array.isArray(user.value.roles) ? user.value.roles : [];
+    const currentTenantId = user.value.currentTenantId;
+    const currentTenantMembership = Array.isArray(user.value.tenants)
+      ? user.value.tenants.find((tenant) => tenant.tenantId === currentTenantId)
+      : null;
+
     return (
-      user.value.role === "SuperAdmin" || user.value.role === "TenantAdmin"
+      effectiveRole === "SuperAdmin" ||
+      effectiveRole === "TenantAdmin" ||
+      globalRoles.includes("SuperAdmin") ||
+      currentTenantMembership?.roleCode === "TenantAdmin"
     );
   });
   const isGuest = computed(() => authService.isGuestSession(user.value));
