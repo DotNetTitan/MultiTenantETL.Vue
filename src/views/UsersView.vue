@@ -56,10 +56,22 @@
           <template #item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
-          <template #item.actions="{ item }">
-            <!-- TenantAdmin cannot edit SuperAdmin users -->
+          <template #item.tenantMemberships="{ item }">
             <v-btn
-              v-if="!(authStore.user?.role === 'TenantAdmin' && item.roles?.includes('SuperAdmin'))"
+              icon
+              variant="text"
+              size="small"
+              color="primary"
+              :title="$t('users.viewTenantMemberships')"
+              @click="openMembershipsDialog(item)"
+            >
+              <v-icon>mdi-domain</v-icon>
+            </v-btn>
+          </template>
+          <template #item.actions="{ item }">
+            <!-- Only SuperAdmin can edit user details -->
+            <v-btn
+              v-if="authStore.user?.role === 'SuperAdmin'"
               icon
               variant="text"
               size="small"
@@ -142,7 +154,9 @@
             <div class="d-flex align-center mb-2">
               <h3 class="text-subtitle-1">{{ $t('users.manageTenants') }}</h3>
               <v-spacer />
+              <!-- Only SuperAdmin can add users to tenants from this dialog -->
               <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin'"
                 size="small"
                 color="primary"
                 @click="showAddTenantDialog = true"
@@ -161,7 +175,9 @@
           >
             {{ $t('common.close') }}
           </v-btn>
+          <!-- Only SuperAdmin can save changes to other users -->
           <v-btn
+            v-if="authStore.user?.role === 'SuperAdmin'"
             color="primary"
             :loading="savingUser"
             @click="saveUser"
@@ -222,6 +238,74 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Tenant Memberships Dialog -->
+    <v-dialog v-model="showMembershipsDialog" max-width="480px">
+      <v-card>
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon color="primary" class="mr-2">mdi-domain</v-icon>
+          {{ $t('users.tenantMemberships') }}
+          <v-spacer />
+          <v-btn icon variant="text" @click="showMembershipsDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="pa-4">
+          <!-- Loading state -->
+          <div v-if="loadingMemberships" class="d-flex align-center justify-center py-6">
+            <v-progress-circular indeterminate color="primary" size="32" />
+            <span class="ml-3 text-body-2 text-medium-emphasis">{{ $t('common.loading') }}</span>
+          </div>
+
+          <!-- Empty state -->
+          <div
+            v-else-if="!memberships.length"
+            class="d-flex flex-column align-center justify-center py-6 text-medium-emphasis"
+          >
+            <v-icon size="48" class="mb-3">mdi-domain-off</v-icon>
+            <span class="text-body-2">{{ $t('users.noTenantMemberships') }}</span>
+          </div>
+
+          <!-- Membership list -->
+          <v-list v-else lines="two" class="pa-0">
+            <v-list-item
+              v-for="membership in memberships"
+              :key="membership.tenantId"
+              class="px-0"
+            >
+              <template #prepend>
+                <v-avatar color="primary" variant="tonal" size="36" class="mr-3">
+                  <v-icon size="20">mdi-office-building</v-icon>
+                </v-avatar>
+              </template>
+              <v-list-item-title class="font-weight-medium">
+                {{ membership.tenantName }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                <v-chip
+                  :color="getRoleColor(membership.roleCode)"
+                  size="x-small"
+                  class="mt-1"
+                >
+                  {{ membership.roleCode }}
+                </v-chip>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+
+        <v-divider />
+        <v-card-actions class="pa-3">
+          <v-spacer />
+          <v-btn variant="text" @click="showMembershipsDialog = false">
+            {{ $t('common.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 
@@ -256,10 +340,11 @@ const { t } = useI18n();
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
   { title: t('users.email'), key: 'email' },
-  { title: t('users.role'), key: 'roles', width: '120px' },
+  { title: t('users.globalRole'), key: 'roles', width: '130px' },
   { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('common.created'), key: 'createdAt', width: '150px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '150px', align: 'end' }
+  { title: t('users.tenantMemberships'), key: 'tenantMemberships', sortable: false, width: '200px', align: 'center' },
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '130px', align: 'end' }
 ]);
 
 // Get available roles from service
@@ -299,6 +384,12 @@ const editedUser = ref(createEmpty());
 // Global notification
 const { showSuccess, showError } = useGlobalState();
 
+// Tenant membership dialog state
+const showMembershipsDialog = ref(false);
+const membershipsUser = ref(null);
+const memberships = ref([]);
+const loadingMemberships = ref(false);
+
 // Tenant management
 const availableTenants = ref([]);
 const selectedTenantId = ref(null);
@@ -308,10 +399,17 @@ const tenantRoles = ['TenantAdmin', 'User'];
 async function fetchUsers() {
   try {
     loading.value = true;
-    const result = await userService.getAll({
+    const filters = {
       status: statusFilter.value,
       sort: sortBy.value
-    });
+    };
+
+    // TenantAdmins should only see users within their own tenant
+    if (authStore.user?.role !== 'SuperAdmin' && authStore.user?.currentTenantId) {
+      filters.tenantId = authStore.user.currentTenantId;
+    }
+
+    const result = await userService.getAll(filters);
     allUsers.value = result;
     filterUsers();
   } catch (error) {
@@ -337,6 +435,29 @@ function filterUsers() {
   }
 
   users.value = filtered;
+}
+
+async function openMembershipsDialog(user) {
+  membershipsUser.value = user;
+  memberships.value = [];
+  showMembershipsDialog.value = true;
+  loadingMemberships.value = true;
+  try {
+    const allMemberships = await userService.getUserTenants(user.id);
+    // TenantAdmins should only see the memberships within their own tenant
+    if (authStore.user?.role !== 'SuperAdmin' && authStore.user?.currentTenantId) {
+      memberships.value = allMemberships.filter(
+        m => m.tenantId === authStore.user.currentTenantId
+      );
+    } else {
+      memberships.value = allMemberships;
+    }
+  } catch (error) {
+    console.error('Error fetching tenant memberships:', error);
+    memberships.value = [];
+  } finally {
+    loadingMemberships.value = false;
+  }
 }
 
 async function editUser(user) {

@@ -659,6 +659,7 @@
     "switchSuccess": "Switched to {name}",
     "adminRequired": "Administrator privileges are required to access this page.",
     "superAdminRequired": "Super Administrator privileges are required to access this page.",
+    "superAdminProtected": "SuperAdmin role cannot be modified",
     "errors": {
       "switchFailed": "Failed to switch tenant"
     }
@@ -678,6 +679,10 @@
     "deleteConfirm": "Are you sure you want to delete the user \"{name}\"? This action cannot be undone.",
     "admin": "Admin",
     "user": "User",
+    "globalRole": "Global Role",
+    "viewTenantMemberships": "View Tenant Memberships",
+    "tenantMemberships": "Tenant Memberships",
+    "noTenantMemberships": "This user has no tenant memberships",
     "selectUser": "Select User",
     "manageTenants": "Manage Tenants",
     "addToTenant": "Add to Tenant",

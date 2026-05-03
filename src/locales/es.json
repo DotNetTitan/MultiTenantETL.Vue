@@ -654,6 +654,7 @@
     "switchSuccess": "Cambió a {name}",
     "adminRequired": "Se requieren privilegios de administrador para acceder a esta página.",
     "superAdminRequired": "Se requieren privilegios de súper administrador para acceder a esta página.",
+    "superAdminProtected": "El rol SuperAdmin no puede modificarse",
     "errors": {
       "switchFailed": "Error al cambiar de inquilino"
     }
@@ -673,6 +674,10 @@
     "deleteConfirm": "¿Está seguro de que desea eliminar el usuario \"{name}\"? Esta acción no se puede deshacer.",
     "admin": "Administrador",
     "user": "Usuario",
+    "globalRole": "Rol Global",
+    "viewTenantMemberships": "Ver Membresías de Inquilino",
+    "tenantMemberships": "Membresías de Inquilino",
+    "noTenantMemberships": "Este usuario no tiene membresías de inquilino",
     "selectUser": "Seleccionar Usuario",
     "manageTenants": "Administrar Inquilinos",
     "addToTenant": "Agregar al Inquilino",

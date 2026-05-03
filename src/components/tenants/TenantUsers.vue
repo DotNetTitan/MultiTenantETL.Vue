@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
+      <!-- Only SuperAdmin can add users to a tenant -->
       <v-btn
+        v-if="isSuperAdmin"
         color="primary"
         size="small"
         @click="showAddUserDialog = true"
@@ -29,19 +31,29 @@
         </v-chip>
       </template>
       <template #item.actions="{ item }">
-        <v-btn
-          icon="mdi-pencil"
-          size="small"
-          variant="text"
-          @click="openEditRole(item)"
-        />
-        <v-btn
-          icon="mdi-delete"
-          size="small"
-          variant="text"
-          color="error"
-          @click="confirmRemove(item)"
-        />
+        <!-- Only SuperAdmin can edit roles, and SuperAdmin rows cannot be modified -->
+        <template v-if="isSuperAdmin && !isSuperAdminRow(item)">
+          <v-btn
+            icon="mdi-pencil"
+            size="small"
+            variant="text"
+            @click="openEditRole(item)"
+          />
+          <v-btn
+            icon="mdi-delete"
+            size="small"
+            variant="text"
+            color="error"
+            @click="confirmRemove(item)"
+          />
+        </template>
+        <!-- Show a lock icon for SuperAdmin rows to make it clear they are protected -->
+        <v-tooltip v-else-if="isSuperAdminRow(item)" location="left">
+          <template #activator="{ props: tooltipProps }">
+            <v-icon v-bind="tooltipProps" color="grey" size="small">mdi-lock</v-icon>
+          </template>
+          {{ $t('tenants.superAdminProtected') }}
+        </v-tooltip>
       </template>
     </v-data-table>
 
@@ -136,9 +148,20 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { tenantService } from '@/services/tenantService'
 import { userService } from '@/services/userService'
+import { useAuthStore } from '@/stores/auth'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Only the global SuperAdmin role can manage tenant membership and roles
+const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin')
+
+// Returns true if the given tenant user row belongs to a SuperAdmin (must not be editable)
+function isSuperAdminRow(item) {
+  const role = item.roleCode || item.role || ''
+  return role.toLowerCase() === 'superadmin'
+}
 
 const props = defineProps({
   tenantId: {

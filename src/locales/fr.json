@@ -647,6 +647,7 @@
     "switchSuccess": "Passé à {name}",
     "adminRequired": "Des privilèges d'administrateur sont requis pour accéder à cette page.",
     "superAdminRequired": "Des privilèges de super administrateur sont requis pour accéder à cette page.",
+    "superAdminProtected": "Le rôle SuperAdmin ne peut pas être modifié",
     "errors": {
       "switchFailed": "Échec du changement de locataire"
     }
@@ -666,6 +667,10 @@
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{name}\"? Cette action ne peut pas être annulée.",
     "admin": "Administrateur",
     "user": "Utilisateur",
+    "globalRole": "Rôle Global",
+    "viewTenantMemberships": "Voir les Adhésions aux Locataires",
+    "tenantMemberships": "Adhésions aux Locataires",
+    "noTenantMemberships": "Cet utilisateur n'a aucune adhésion à un locataire",
     "selectUser": "Sélectionner un Utilisateur",
     "manageTenants": "Gérer les Locataires",
     "addToTenant": "Ajouter au Locataire",

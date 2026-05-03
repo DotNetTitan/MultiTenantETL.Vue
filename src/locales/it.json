@@ -644,6 +644,7 @@
     "switchSuccess": "Passato a {name}",
     "adminRequired": "Sono richiesti i privilegi di amministratore per accedere a questa pagina.",
     "superAdminRequired": "Sono richiesti i privilegi di super amministratore per accedere a questa pagina.",
+    "superAdminProtected": "Il ruolo SuperAdmin non può essere modificato",
     "errors": {
       "switchFailed": "Impossibile cambiare tenant"
     }
@@ -663,6 +664,10 @@
     "deleteConfirm": "Sei sicuro di voler eliminare l'utente \"{name}\"? Questa azione non può essere annullata.",
     "admin": "Admin",
     "user": "Utente",
+    "globalRole": "Ruolo Globale",
+    "viewTenantMemberships": "Visualizza Appartenenze Tenant",
+    "tenantMemberships": "Appartenenze Tenant",
+    "noTenantMemberships": "Questo utente non ha appartenenze tenant",
     "selectUser": "Seleziona Utente",
     "manageTenants": "Gestisci Tenant",
     "addToTenant": "Aggiungi al Tenant",
