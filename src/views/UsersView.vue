@@ -337,15 +337,22 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // Data table
-const headers = computed(() => [
-  { title: t('common.name'), key: 'name' },
-  { title: t('users.email'), key: 'email' },
-  { title: t('users.globalRole'), key: 'roles', width: '130px' },
-  { title: t('common.status'), key: 'status', width: '120px' },
-  { title: t('common.created'), key: 'createdAt', width: '150px' },
-  { title: t('users.tenantMemberships'), key: 'tenantMemberships', sortable: false, width: '200px', align: 'center' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '130px', align: 'end' }
-]);
+const headers = computed(() => {
+  const baseHeaders = [
+    { title: t('common.name'), key: 'name' },
+    { title: t('users.email'), key: 'email' },
+    { title: t('users.globalRole'), key: 'roles', width: '130px' },
+    { title: t('common.status'), key: 'status', width: '120px' },
+    { title: t('common.created'), key: 'createdAt', width: '150px' },
+    { title: t('users.tenantMemberships'), key: 'tenantMemberships', sortable: false, width: '200px', align: 'center' }
+  ];
+
+  if (authStore.user?.role === 'SuperAdmin') {
+    baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '130px', align: 'end' });
+  }
+
+  return baseHeaders;
+});
 
 // Get available roles from service
 const roles = getAvailableRoles();

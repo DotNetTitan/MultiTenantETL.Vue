@@ -185,12 +185,19 @@ const selectedUser = ref(null)
 
 const roles = ['TenantAdmin', 'User']
 
-const headers = computed(() => [
-  { title: t('common.name'), key: 'name' },
-  { title: t('users.email'), key: 'email' },
-  { title: t('users.role'), key: 'role', width: '150px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' }
-])
+const headers = computed(() => {
+  const baseHeaders = [
+    { title: t('common.name'), key: 'name' },
+    { title: t('users.email'), key: 'email' },
+    { title: t('users.role'), key: 'role', width: '150px' }
+  ]
+  
+  if (isSuperAdmin.value) {
+    baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' })
+  }
+  
+  return baseHeaders
+})
 
 function getRoleColor(role) {
   return userService.getRoleColor(role)
