@@ -12,26 +12,26 @@
       >
         <v-icon>mdi-robot</v-icon>
       </v-btn>
-      
+
       <!-- Help Hint Tooltip -->
       <div
         v-if="showHint"
         v-motion
         :initial="{ opacity: 0, x: 20, y: 0, scale: 1 }"
-        :enter="{ 
-          opacity: 1, 
-          x: 0, 
+        :enter="{
+          opacity: 1,
+          x: 0,
           scale: 1,
-          transition: { 
+          transition: {
             type: 'spring',
             stiffness: 200,
             damping: 20
           }
         }"
-        :leave="{ 
-          opacity: 0, 
-          x: 30, 
-          transition: { 
+        :leave="{
+          opacity: 0,
+          x: 30,
+          transition: {
             duration: 400,
             ease: [0.4, 0, 0.2, 1]
           }
@@ -49,13 +49,13 @@
       >
         <div class="hint-content">
           <v-icon size="small" class="mr-1">mdi-help-circle</v-icon>
-          <span 
+          <span
             v-motion
             :initial="{ opacity: 0, x: -10 }"
-            :enter="{ 
-              opacity: 1, 
-              x: 0, 
-              transition: { delay: 300, duration: 500 } 
+            :enter="{
+              opacity: 1,
+              x: 0,
+              transition: { delay: 300, duration: 500 }
             }"
           >{{ $t('chatbot.needHelp') }}</span>
         </div>
@@ -75,15 +75,15 @@
     <v-card
       v-if="isOpen"
       v-motion
-      :initial="{ 
-        opacity: 0, 
-        y: 20, 
+      :initial="{
+        opacity: 0,
+        y: 20,
         scale: 0.95,
         transformOrigin: 'bottom right'
       }"
-      :enter="{ 
-        opacity: 1, 
-        y: 0, 
+      :enter="{
+        opacity: 1,
+        y: 0,
         scale: 1,
         transition: {
           type: 'spring',
@@ -91,9 +91,9 @@
           damping: 25
         }
       }"
-      :leave="{ 
-        opacity: 0, 
-        y: 20, 
+      :leave="{
+        opacity: 0,
+        y: 20,
         scale: 0.95,
         transition: {
           duration: 300,
@@ -176,8 +176,8 @@
               </v-icon>
               <span class="text-caption">{{ msg.role === 'user' ? $t('chatbot.you') : 'Maeve' }}</span>
             </div>
-            <div 
-              class="message-text" 
+            <div
+              class="message-text"
               v-html="msg.role === 'assistant' ? renderMarkdown(msg.content) : msg.content"
             ></div>
           </div>
@@ -211,7 +211,8 @@
           :key="suggestion"
           size="small"
           class="ma-1"
-          @click="userInput = suggestion"
+          :disabled="isGuest"
+          @click="!isGuest && (userInput = suggestion)"
         >
           {{ suggestion }}
         </v-chip>
@@ -221,35 +222,40 @@
 
       <!-- Input Area -->
       <v-card-actions class="pa-3 input-area">
-        <div class="input-wrapper">
-          <v-textarea
-            v-model="userInput"
-            :placeholder="$t('chatbot.placeholder')"
-            variant="outlined"
-            rows="2"
-            auto-grow
-            max-rows="5"
-            hide-details
-            class="chat-input"
-            @keydown.enter.exact.prevent="sendMessage"
-            @keydown.shift.enter.exact="userInput += '\n'"
-          />
-          <div class="input-controls">
-            <span v-if="userInput.length > 0" class="text-caption char-counter" :class="{ 'text-error': userInput.length > 500 }">
-              {{ $t('chatbot.charLimit', { count: userInput.length }) }}
-            </span>
-            <v-spacer />
-            <v-btn
-              icon
-              size="small"
-              color="primary"
-              :disabled="!userInput.trim() || isLoading || userInput.length > 500"
-              @click="sendMessage"
-            >
-              <v-icon>mdi-send</v-icon>
-            </v-btn>
-          </div>
-        </div>
+        <v-tooltip :disabled="!isGuest" location="top" :text="$t('chatbot.guestDisabled')">
+          <template #activator="{ props: tooltipProps }">
+            <div v-bind="tooltipProps" class="input-wrapper">
+              <v-textarea
+                v-model="userInput"
+                :placeholder="isGuest ? $t('chatbot.guestDisabled') : $t('chatbot.placeholder')"
+                variant="outlined"
+                rows="2"
+                auto-grow
+                max-rows="5"
+                hide-details
+                class="chat-input"
+                :disabled="isGuest"
+                @keydown.enter.exact.prevent="sendMessage"
+                @keydown.shift.enter.exact="userInput += '\n'"
+              />
+              <div class="input-controls">
+                <span v-if="userInput.length > 0" class="text-caption char-counter" :class="{ 'text-error': userInput.length > 500 }">
+                  {{ $t('chatbot.charLimit', { count: userInput.length }) }}
+                </span>
+                <v-spacer />
+                <v-btn
+                  icon
+                  size="small"
+                  color="primary"
+                  :disabled="isGuest || !userInput.trim() || isLoading || userInput.length > 500"
+                  @click="sendMessage"
+                >
+                  <v-icon>mdi-send</v-icon>
+                </v-btn>
+              </div>
+            </div>
+          </template>
+        </v-tooltip>
       </v-card-actions>
     </v-card>
   </div>
@@ -261,9 +267,12 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { getChatResponse } from '@/services/geminiService';
 import { marked } from 'marked';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
+const isGuest = computed(() => authStore.isGuest);
 
 // Expose method to open chatbot globally
 const openChatbot = () => {
@@ -279,20 +288,20 @@ if (typeof window !== 'undefined') {
 // Check if chatbot should be visible on current route
 const shouldShowChatbot = computed(() => {
   const currentPath = route.path;
-  
+
   // Hide on login
   if (currentPath === '/login') return false;
-  
+
   // Hide on any connector form (new or edit with ID)
   if (currentPath.startsWith('/connectors/') && (currentPath.includes('/new') || currentPath.includes('/edit'))) {
     return false;
   }
-  
+
   // Hide on any pipeline form (new or edit with ID)
   if (currentPath.startsWith('/pipelines/') && (currentPath.includes('/new') || currentPath.includes('/edit'))) {
     return false;
   }
-  
+
   return true;
 });
 const isOpen = ref(sessionStorage.getItem('chatbot-is-open') === 'true');
@@ -395,7 +404,7 @@ const scrollToBottom = (smooth = false) => {
 
 const sendMessage = async () => {
   if (!userInput.value.trim() || isLoading.value) return;
-  
+
   // Check character limit
   if (userInput.value.length > 500) {
     return;
@@ -429,10 +438,10 @@ const sendMessage = async () => {
     setTimeout(() => scrollToBottom(true), 100);
   } catch (error) {
     console.error('Chat error:', error);
-    
+
     // Provide specific error message
     let errorMessage = 'Sorry, I encountered an error. Please try again.';
-    
+
     if (error && error.message) {
       const msg = error.message.toLowerCase();
       if (msg.includes('overloaded') || msg.includes('503')) {
@@ -447,12 +456,12 @@ const sendMessage = async () => {
         errorMessage = '⚠️ Rate limit exceeded. Please wait a moment before trying again.';
       }
     }
-    
+
     messages.value.push({
       role: 'assistant',
       content: errorMessage
     });
-    
+
     setTimeout(() => scrollToBottom(true), 100);
   } finally {
     isLoading.value = false;
@@ -502,14 +511,14 @@ const handleUserActivity = () => {
 // Keep messages when route changes (don't clear them anymore)
 watch(() => route.path, () => {
   // Don't reset hint dismissal - it should persist for the entire session
-  
+
   // Close chatbot when navigating to hidden routes
   if (!shouldShowChatbot.value) {
     isOpen.value = false;
   }
-  
+
   resetHintTimer();
-  
+
   // Ensure we scroll to bottom if it was open
   if (isOpen.value) {
     scrollToBottom(true);
@@ -529,7 +538,7 @@ watch(isOpen, (newValue) => {
 onMounted(() => {
   // Start hint timer on mount
   startHintTimer();
-  
+
   // Listen for user activity
   window.addEventListener('mousemove', handleUserActivity);
   window.addEventListener('keydown', handleUserActivity);
@@ -539,7 +548,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearHintTimer();
-  
+
   // Clean up event listeners
   window.removeEventListener('mousemove', handleUserActivity);
   window.removeEventListener('keydown', handleUserActivity);
@@ -941,5 +950,3 @@ onUnmounted(() => {
   }
 }
 </style>
-
-

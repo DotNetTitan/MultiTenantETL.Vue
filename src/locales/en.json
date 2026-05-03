@@ -759,7 +759,8 @@
     "whatCanIDo": "What can I do here?",
     "clearChat": "Clear chat",
     "you": "You",
-    "charLimit": "{count}/500"
+    "charLimit": "{count}/500",
+    "guestDisabled": "Sign in to chat with Maeve"
   },
   "forms": {
     "tenantName": "Tenant Name",

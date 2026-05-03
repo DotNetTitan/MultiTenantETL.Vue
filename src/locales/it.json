@@ -739,7 +739,8 @@
     "whatCanIDo": "Cosa posso fare qui?",
     "clearChat": "Pulisci Chat",
     "you": "Tu",
-    "charLimit": "{count}/500"
+    "charLimit": "{count}/500",
+    "guestDisabled": "Accedi per chattare con Maeve"
   },
   "validation": {
     "required": "{field} è richiesto",

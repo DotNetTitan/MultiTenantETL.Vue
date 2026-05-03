@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <v-btn 
+      <v-btn
         icon
         variant="text"
         class="mr-2"
@@ -25,9 +25,9 @@
       >
         <template #activator="{ props }">
           <span v-bind="props">
-            <v-btn 
-              color="primary" 
-              prepend-icon="mdi-play" 
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-play"
               :loading="running"
               :disabled="pipeline?.status === 'Running' || authStore.isGuest"
               :style="authStore.isGuest ? 'pointer-events: auto' : ''"
@@ -46,10 +46,10 @@
       >
         <template #activator="{ props }">
           <span v-bind="props">
-            <v-btn 
-              color="primary" 
+            <v-btn
+              color="primary"
               variant="outlined"
-              prepend-icon="mdi-pencil" 
+              prepend-icon="mdi-pencil"
               class="mr-2"
               :disabled="authStore.isGuest"
               :style="authStore.isGuest ? 'pointer-events: auto' : ''"
@@ -141,7 +141,7 @@
                   :ripple="false"
                 >
                   <template #prepend>
-                    <v-icon 
+                    <v-icon
                       :icon="getConnectorIcon(source.type)"
                       :color="source.direction === 'source' ? 'blue' : 'green'"
                     />
@@ -214,7 +214,6 @@
                     <th>{{ $t('dashboard.startTime') }}</th>
                     <th>{{ $t('dashboard.duration') }}</th>
                     <th>{{ $t('dashboard.rowsProcessed') }}</th>
-                    <th class="text-end">{{ $t('executions.viewDetails') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,20 +231,9 @@
                     <td>{{ formatDate(execution.startTime) }}</td>
                     <td>{{ formatDuration(execution.durationMs) }}</td>
                     <td>{{ execution.rowsProcessed?.toLocaleString() || 'N/A' }}</td>
-                    <td class="text-end">
-                      <v-btn
-                        icon
-                        variant="text"
-                        size="small"
-                        title="View details"
-                        @click="viewExecutionDetails(execution)"
-                      >
-                        <v-icon>mdi-eye</v-icon>
-                      </v-btn>
-                    </td>
                   </tr>
                   <tr v-if="recentExecutions.length === 0">
-                    <td colspan="6" class="text-center">{{ $t('dashboard.noRecentExecutions') }}</td>
+                    <td colspan="5" class="text-center">{{ $t('dashboard.noRecentExecutions') }}</td>
                   </tr>
                 </tbody>
               </v-table>
@@ -291,20 +279,20 @@
             <v-col cols="12" md="6">
               <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.executionId') }}</div>
               <p>{{ selectedExecution.id }}</p>
-              
+
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.startTime') }}</div>
               <p>{{ formatDate(selectedExecution.startTime, true) }}</p>
-              
+
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.endTime') }}</div>
               <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : $t('dashboard.running') }}</p>
-              
+
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.duration') }}</div>
               <p>{{ formatDuration(selectedExecution.durationMs) }}</p>
-              
+
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.rowsProcessed') }}</div>
               <p>{{ selectedExecution.rowsProcessed?.toLocaleString() || 'N/A' }}</p>
             </v-col>
-            
+
             <v-col cols="12" md="6">
               <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.progress') }}</div>
               <v-progress-linear
@@ -330,7 +318,7 @@
                   {{ selectedExecution.status }}
                 </template>
               </v-progress-linear>
-              
+
               <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.executionLogs') }}</div>
               <v-card
                 variant="outlined"
@@ -363,7 +351,7 @@
         <v-card-title>{{ $t('pipelines.runPipelineTitle') }}</v-card-title>
         <v-card-text>
           <p>{{ $t('pipelines.runPipelineConfirm') }}</p>
-          
+
           <v-form ref="runForm" @submit.prevent="confirmRunPipeline">
             <v-checkbox
               v-model="runOptions.saveResults"
@@ -371,14 +359,14 @@
               hide-details
               class="mb-3"
             />
-            
+
             <v-checkbox
               v-model="runOptions.notifyOnCompletion"
               :label="$t('pipelines.notifyComplete')"
               hide-details
               class="mb-3"
             />
-            
+
             <v-expansion-panels>
               <v-expansion-panel>
                 <v-expansion-panel-title>{{ $t('pipelines.advancedOptions') }}</v-expansion-panel-title>
@@ -391,7 +379,7 @@
                     persistent-hint
                     class="mb-3"
                   />
-                  
+
                   <v-checkbox
                     v-model="runOptions.debugMode"
                     :label="$t('pipelines.debugMode')"
@@ -535,7 +523,7 @@ function getConnectorIcon(type) {
 function formatDate(dateString, includeSeconds = false) {
   if (!dateString) return '-';
   const date = new Date(dateString);
-  
+
   if (includeSeconds) {
     return date.toLocaleString();
   } else {
@@ -547,21 +535,21 @@ function formatDuration(milliseconds) {
   if (milliseconds == null || milliseconds === false) {
     return '-';
   }
-  
+
   if (milliseconds < 1000) {
     return `${milliseconds}ms`;
   }
-  
+
   const seconds = Math.floor(milliseconds / 1000);
   if (seconds < 60) {
     return `${seconds}s`;
   }
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) {
     return `${minutes}m ${seconds % 60}s`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
 }
@@ -569,23 +557,23 @@ function formatDuration(milliseconds) {
 async function fetchPipelineDetails() {
   try {
     loading.value = true;
-    
+
     // Fetch pipeline from service
     const pipelineData = await fetchPipelineById(route.params.id);
-    
+
     // Build pipeline steps (async operation)
     const steps = await buildPipelineSteps(pipelineData);
-    
+
     // Fetch executions first to get lastRun if not available from pipeline data
     await fetchRecentExecutions();
-    
+
     // Determine lastRun: use pipeline's lastRunAt, or fallback to most recent execution
     let lastRun = pipelineData.lastRunAt;
     if (!lastRun && recentExecutions.value.length > 0) {
       // Get the most recent execution's start time
       lastRun = recentExecutions.value[0].startTime;
     }
-    
+
     // Transform the data to match the view's expected format
     pipeline.value = {
       id: pipelineData.id,
@@ -623,21 +611,21 @@ async function fetchPipelineDetails() {
 function formatSchedule(schedule, isScheduled) {
   // If pipeline is not scheduled, return Manual
   if (!isScheduled || !schedule) return 'Manual';
-  
+
   // Use cronDescription if available (provided by backend)
   if (schedule.cronDescription) {
     return schedule.cronDescription;
   }
-  
+
   // Fallback to cron expression if description not available
   if (schedule.cronExpression) {
     return `Cron: ${schedule.cronExpression}`;
   }
-  
+
   // Legacy support for older frequency-based model if still present
   const freq = schedule.frequency;
   const time = schedule.time || '00:00';
-  
+
   if (freq === 'Daily') {
     return `Daily at ${time}`;
   } else if (freq === 'Weekly') {
@@ -649,14 +637,14 @@ function formatSchedule(schedule, isScheduled) {
   } else if (freq === 'Custom') {
     return `Custom: ${schedule.cronExpression}`;
   }
-  
+
   return 'Manual';
 }
 
 async function buildPipelineSteps(pipelineData) {
   const steps = [];
   let stepId = 1;
-  
+
   // Extract step from source
   steps.push({
     id: `step-${stepId++}`,
@@ -664,22 +652,22 @@ async function buildPipelineSteps(pipelineData) {
     type: 'Extract',
     description: `Pull data from ${pipelineData.sourceConnectorName || 'undefined'}`
   });
-  
+
   // Transform steps based on field mappings
   if (pipelineData.fieldMappings && Array.isArray(pipelineData.fieldMappings) && pipelineData.fieldMappings.length > 0) {
     // Group transformations by type
     const transformationsByType = new Map();
-    
+
     for (const mapping of pipelineData.fieldMappings) {
       if (mapping.transformations && Array.isArray(mapping.transformations) && mapping.transformations.length > 0) {
         for (const trans of mapping.transformations) {
           // Transformations are now embedded directly in field mappings
           // They have properties: id, type, order, config, isEnabled
           if (!trans.isEnabled) continue;
-          
+
           const transType = trans.type || 'Unknown';
           const key = transType;
-          
+
           if (!transformationsByType.has(key)) {
             transformationsByType.set(key, {
               type: transType,
@@ -687,12 +675,12 @@ async function buildPipelineSteps(pipelineData) {
               fields: []
             });
           }
-          
+
           transformationsByType.get(key).fields.push(mapping.destinationField);
         }
       }
     }
-    
+
     // Create steps for each transformation type
     for (const [type, info] of transformationsByType) {
       steps.push({
@@ -703,7 +691,7 @@ async function buildPipelineSteps(pipelineData) {
       });
     }
   }
-  
+
   // If no transformations, show a placeholder
   if (steps.length === 1) {
     steps.push({
@@ -713,7 +701,7 @@ async function buildPipelineSteps(pipelineData) {
       description: 'Data will be loaded without transformations'
     });
   }
-  
+
   // Load step to destination
   steps.push({
     id: `step-${stepId++}`,
@@ -721,7 +709,7 @@ async function buildPipelineSteps(pipelineData) {
     type: 'Load',
     description: `Load processed data to ${pipelineData.destinationConnectorName || 'undefined'}`
   });
-  
+
   return steps;
 }
 
@@ -729,12 +717,12 @@ async function fetchRecentExecutions() {
   try {
     // Fetch executions from service
     const executions = await getExecutions({ pipelineId: route.params.id });
-    
+
     // Sort executions by startTime descending (most recent first)
-    const sortedExecutions = [...executions].sort((a, b) => 
+    const sortedExecutions = [...executions].sort((a, b) =>
       new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
     );
-    
+
     // Transform execution data to match view format
     recentExecutions.value = sortedExecutions.map(exec => {
       // Use API-provided durationMs (has decimal precision e.g. 234.047ms)
@@ -744,18 +732,18 @@ async function fetchRecentExecutions() {
         : (exec.endTime
             ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
             : Date.now() - new Date(exec.startTime).getTime());
-      
+
       // Format logs from array to string
       let logsText = '';
       if (exec.logs && exec.logs.length > 0) {
-        logsText = exec.logs.map(log => 
+        logsText = exec.logs.map(log =>
           `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
         ).join('\n');
       } else {
         // Fallback if no logs
         logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
       }
-      
+
       return {
         id: exec.id,
         pipelineId: exec.pipelineId,
@@ -789,13 +777,13 @@ function runPipeline() {
 async function confirmRunPipeline() {
   try {
     running.value = true;
-    
+
     // In a real app, this would be an actual API call
     // await axios.post(`/api/pipelines/${pipeline.value.id}/execute`, runOptions.value);
-    
+
     // For now, using simulated response
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Add a new execution to the recent executions
     const newExecution = {
       id: Math.random().toString(36).substring(2, 15),
@@ -808,14 +796,14 @@ async function confirmRunPipeline() {
       logs: `[${new Date().toLocaleString()}] Starting pipeline execution...\n[${new Date().toLocaleString()}] Extracting data from sources...`,
       progressPercent: 5
     };
-    
+
     recentExecutions.value.unshift(newExecution);
-    
+
     // Update the pipeline's last run time
     pipeline.value.lastRun = new Date().toISOString();
-    
+
     showRunDialog.value = false;
-    
+
     // Show a success message
     alert('Pipeline execution started successfully!');
   } catch (error) {
@@ -827,7 +815,7 @@ async function confirmRunPipeline() {
 
 onMounted(() => {
   fetchPipelineDetails();
-  
+
   // Set up polling for real-time updates (every 10 seconds)
   pollingInterval.value = setInterval(() => {
     if (recentExecutions.value.length > 0 && recentExecutions.value[0].status === 'Running') {

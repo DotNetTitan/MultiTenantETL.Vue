@@ -749,7 +749,8 @@
     "whatCanIDo": "¿Qué puedo hacer aquí?",
     "clearChat": "Limpiar chat",
     "you": "Tú",
-    "charLimit": "{count}/500"
+    "charLimit": "{count}/500",
+    "guestDisabled": "Inicia sesión para chatear con Maeve"
   },
   "validation": {
     "required": "{field} es requerido",
