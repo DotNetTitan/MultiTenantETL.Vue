@@ -43,6 +43,16 @@
           </template>
           <template #item.roles="{ item }">
             <v-chip
+              v-if="!item.roles || item.roles.length === 0"
+              :color="getRoleColor('User')"
+              text-color="white"
+              size="small"
+              class="mr-1"
+            >
+              User
+            </v-chip>
+            <v-chip
+              v-else
               v-for="role in item.roles"
               :key="role"
               :color="getRoleColor(role)"

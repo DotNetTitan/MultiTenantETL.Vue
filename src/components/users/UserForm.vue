@@ -134,6 +134,11 @@ const emailRule = v => {
 
 const updateField = (field, value) => {
   form.value[field] = value;
+  
+  if (field === 'role') {
+    form.value.roles = [value];
+  }
+  
   emit('update:user', { ...form.value });
   
   switch (field) {
