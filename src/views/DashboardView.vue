@@ -183,22 +183,35 @@
             <div v-if="loading" class="text-center my-4">
               <v-progress-circular indeterminate size="32" width="3" />
             </div>
-            <v-sheet v-else height="250" class="d-flex align-center justify-center">
+            <v-sheet v-else height="300" class="d-flex align-center justify-center bg-transparent">
               <div class="text-center w-100">
-                <div class="text-subtitle-1 mb-4">{{ $t('dashboard.pipelineStatusDistribution') }}</div>
-                <v-row>
-                  <v-col v-for="(status, index) in statusDistribution" :key="index">
+                <v-row class="ma-0">
+                  <v-col 
+                    v-for="(status, index) in statusDistribution" 
+                    :key="index"
+                    cols="6"
+                    class="pa-2"
+                  >
                     <v-hover v-slot="{ isHovering, props }">
-                      <v-sheet 
+                      <v-card 
                         v-bind="props"
-                        rounded 
-                        class="pa-4 status-card" 
-                        :color="getStatusColor(status.name)"
-                        :class="{'on-hover': isHovering}"
+                        :elevation="isHovering ? 4 : 1"
+                        class="py-4 transition-swing border-thin"
+                        height="100%"
                       >
-                        <div class="text-white">{{ $t(`executions.${status.name.toLowerCase()}`) }}</div>
-                        <div class="text-h4 text-white mt-2">{{ status.count }}</div>
-                      </v-sheet>
+                        <v-icon 
+                          :icon="getStatusIcon(status.name)" 
+                          size="32" 
+                          class="mb-2"
+                          :color="getStatusColor(status.name)"
+                        />
+                        <div class="text-caption font-weight-bold text-uppercase opacity-70 mb-1">
+                          {{ $t(`executions.${status.name.toLowerCase()}`) }}
+                        </div>
+                        <div class="text-h4 font-weight-bold">
+                          {{ status.count }}
+                        </div>
+                      </v-card>
                     </v-hover>
                   </v-col>
                 </v-row>
@@ -287,17 +300,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06) !important;
 }
 
-.status-card {
-  transition: all var(--app-transition-speed) ease;
-  text-align: center;
-  border-radius: var(--app-border-radius);
-}
-
-.status-card.on-hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(var(--v-theme-on-surface), 0.15);
-}
-
 /* Theme-specific styling */
 :deep(.v-card) {
   border-radius: var(--app-border-radius);
@@ -307,9 +309,5 @@ onUnmounted(() => {
 :deep(.v-table) {
   background-color: transparent !important;
   color: rgb(var(--v-theme-on-surface)) !important;
-}
-
-:deep(.status-card) {
-  box-shadow: 0 4px 8px rgba(var(--v-theme-on-surface), 0.15);
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <v-btn 
+      <v-btn
         icon
         variant="text"
         class="mr-2"
@@ -9,7 +9,7 @@
       >
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-      <h1 class="text-h4 mr-4">{{ pipeline?.name || 'Pipeline Details' }}</h1>
+      <h1 class="text-h4 mr-4">{{ pipeline?.name || $t('pipelines.detailsTitle') }}</h1>
       <v-chip
         v-if="pipeline?.status"
         :color="getStatusColor(pipeline.status)"
@@ -19,25 +19,48 @@
         {{ pipeline.status }}
       </v-chip>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        prepend-icon="mdi-play" 
-        :loading="running"
-        :disabled="pipeline?.status === 'Running'"
-        class="mr-2"
-        @click="runPipeline"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        Run
-      </v-btn>
-      <v-btn 
-        color="primary" 
-        variant="outlined"
-        prepend-icon="mdi-pencil" 
-        class="mr-2"
-        @click="editPipeline"
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-play"
+              :loading="running"
+              :disabled="pipeline?.status === 'Running' || authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              class="mr-2"
+              @click="runPipeline"
+            >
+              {{ $t('pipelines.runPipelineTitle') }}
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        Edit
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              variant="outlined"
+              prepend-icon="mdi-pencil"
+              class="mr-2"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="editPipeline"
+            >
+              {{ $t('common.edit') }}
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card v-if="loading" class="mb-4">
@@ -51,44 +74,74 @@
         <!-- Pipeline Information -->
         <v-col cols="12" md="4">
           <v-card class="mb-4">
-            <v-card-title>Pipeline Information</v-card-title>
+            <v-card-title>{{ $t('pipelines.information') }}</v-card-title>
             <v-card-text>
               <div class="d-flex mb-4">
-                <div class="info-label">Name:</div>
+                <div class="info-label">{{ $t('common.name') }}:</div>
                 <div>{{ pipeline.name }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Description:</div>
-                <div>{{ pipeline.description || 'No description provided' }}</div>
+                <div class="info-label">{{ $t('common.description') }}:</div>
+                <div>{{ pipeline.description || $t('pipelines.noDescription') }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Created:</div>
+                <div class="info-label">{{ $t('common.created') }}:</div>
                 <div>{{ formatDate(pipeline.createdAt) }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Last Run:</div>
-                <div>{{ pipeline.lastRun ? formatDate(pipeline.lastRun) : 'Never' }}</div>
+                <div class="info-label">{{ $t('pipelines.lastRun') }}:</div>
+                <div>{{ pipeline.lastRun ? formatDate(pipeline.lastRun) : $t('pipelines.never') }}</div>
               </div>
               <div class="d-flex mb-4">
-                <div class="info-label">Schedule:</div>
-                <div>{{ pipeline.schedule || 'Manual execution only' }}</div>
+                <div class="info-label">{{ $t('pipelines.schedule') }}:</div>
+                <div>{{ pipeline.schedule || $t('pipelines.manualExecutionOnly') }}</div>
+              </div>
+              <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
+                <div class="info-label">{{ $t('settings.notifications') }}:</div>
+                <div>
+                  <v-chip
+                    v-for="(email, idx) in pipeline.notificationEmails"
+                    :key="idx"
+                    size="small"
+                    class="mr-1 mb-1"
+                    variant="tonal"
+                  >
+                    <v-icon start size="small">mdi-email</v-icon>
+                    {{ email }}
+                  </v-chip>
+                </div>
+              </div>
+              <div v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0" class="d-flex mb-4">
+                <div class="info-label">{{ $t('settings.emailNotifications') }}:</div>
+                <div>
+                  <v-chip
+                    :color="pipeline.emailNotificationsEnabled ? 'success' : 'grey'"
+                    size="small"
+                    variant="tonal"
+                  >
+                    <v-icon start size="small">
+                      {{ pipeline.emailNotificationsEnabled ? 'mdi-bell-check' : 'mdi-bell-off' }}
+                    </v-icon>
+                    {{ pipeline.emailNotificationsEnabled ? $t('schedules.enabled') : $t('schedules.disabled') }}
+                  </v-chip>
+                </div>
               </div>
             </v-card-text>
           </v-card>
 
           <v-card>
-            <v-card-title>Data Sources</v-card-title>
+            <v-card-title>{{ $t('pipelines.dataSources') }}</v-card-title>
             <v-card-text>
               <v-list density="compact">
                 <v-list-item
                   v-for="(source, index) in pipeline.connectors"
                   :key="index"
                   :title="source.name"
-                  :subtitle="source.direction === 'source' ? 'Source' : 'Destination'"
+                  :subtitle="source.direction === 'source' ? $t('pipelines.source') : $t('pipelines.destination')"
                   :ripple="false"
                 >
                   <template #prepend>
-                    <v-icon 
+                    <v-icon
                       :icon="getConnectorIcon(source.type)"
                       :color="source.direction === 'source' ? 'blue' : 'green'"
                     />
@@ -99,7 +152,7 @@
                       size="x-small"
                       class="ml-2"
                     >
-                      {{ source.isConnected ? 'Connected' : 'Error' }}
+                      {{ source.isConnected ? $t('common.success') : $t('common.error') }}
                     </v-chip>
                   </template>
                 </v-list-item>
@@ -111,7 +164,7 @@
         <!-- Pipeline Execution Info -->
         <v-col cols="12" md="8">
           <v-card class="mb-4">
-            <v-card-title>Pipeline Workflow</v-card-title>
+            <v-card-title>{{ $t('pipelines.workflow') }}</v-card-title>
             <v-card-text>
               <v-timeline density="compact" align="start">
                 <v-timeline-item
@@ -139,60 +192,47 @@
 
           <v-card>
             <v-card-title class="d-flex align-center">
-              <span>Recent Executions</span>
+              <span>{{ $t('dashboard.recentExecutions') }}</span>
               <v-spacer />
               <v-btn
-                variant="text"
+                variant="tonal"
                 size="small"
+                color="primary"
                 to="/executions"
+                prepend-icon="mdi-history"
+                append-icon="mdi-chevron-right"
               >
-                View All
+                {{ $t('dashboard.viewAll') }}
               </v-btn>
             </v-card-title>
-            <v-card-text>
-              <v-table>
-                <thead>
-                  <tr>
-                    <th>Execution ID</th>
-                    <th>Status</th>
-                    <th>Start Time</th>
-                    <th>Duration</th>
-                    <th>Rows Processed</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="execution in recentExecutions" :key="execution.id">
-                    <td>{{ execution.id }}</td>
-                    <td>
-                      <v-chip
-                        :color="getStatusColor(execution.status)"
-                        text-color="white"
-                        size="x-small"
-                      >
-                        {{ execution.status }}
-                      </v-chip>
-                    </td>
-                    <td>{{ formatDate(execution.startTime) }}</td>
-                    <td>{{ formatDuration(execution.durationMs) }}</td>
-                    <td>{{ execution.rowsProcessed?.toLocaleString() || 'N/A' }}</td>
-                    <td>
-                      <v-btn
-                        icon
-                        variant="text"
-                        size="small"
-                        title="View details"
-                        @click="viewExecutionDetails(execution)"
-                      >
-                        <v-icon>mdi-eye</v-icon>
-                      </v-btn>
-                    </td>
-                  </tr>
-                  <tr v-if="recentExecutions.length === 0">
-                    <td colspan="6" class="text-center">No executions yet</td>
-                  </tr>
-                </tbody>
-              </v-table>
+            <v-card-text class="pa-0">
+              <v-data-table
+                :headers="executionHeaders"
+                :items="recentExecutions"
+                :items-per-page="10"
+              >
+                <template #item.status="{ item }">
+                  <v-chip
+                    :color="getStatusColor(item.status)"
+                    text-color="white"
+                    size="x-small"
+                  >
+                    {{ item.status }}
+                  </v-chip>
+                </template>
+                <template #item.startTime="{ item }">
+                  {{ formatDate(item.startTime) }}
+                </template>
+                <template #item.durationMs="{ item }">
+                  {{ formatDuration(item.durationMs) }}
+                </template>
+                <template #item.rowsProcessed="{ item }">
+                  {{ item.rowsProcessed?.toLocaleString() || 'N/A' }}
+                </template>
+                <template #no-data>
+                  {{ $t('dashboard.noRecentExecutions') }}
+                </template>
+              </v-data-table>
             </v-card-text>
           </v-card>
         </v-col>
@@ -201,7 +241,7 @@
 
     <v-card v-else>
       <v-card-text class="text-center pa-5">
-        Pipeline not found
+        {{ $t('pipelines.notFound') }}
       </v-card-text>
     </v-card>
 
@@ -212,7 +252,7 @@
     >
       <v-card v-if="selectedExecution">
         <v-card-title class="d-flex align-center">
-          <span>Execution Details</span>
+          <span>{{ $t('executions.executionDetails') }}</span>
           <v-chip
             :color="getStatusColor(selectedExecution.status)"
             text-color="white"
@@ -233,24 +273,24 @@
         <v-card-text>
           <v-row>
             <v-col cols="12" md="6">
-              <div class="text-subtitle-1 font-weight-bold mb-2">Execution ID</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.executionId') }}</div>
               <p>{{ selectedExecution.id }}</p>
-              
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Start Time</div>
+
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.startTime') }}</div>
               <p>{{ formatDate(selectedExecution.startTime, true) }}</p>
-              
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">End Time</div>
-              <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : 'Running' }}</p>
-              
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Duration</div>
+
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.endTime') }}</div>
+              <p>{{ selectedExecution.endTime ? formatDate(selectedExecution.endTime, true) : $t('dashboard.running') }}</p>
+
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.duration') }}</div>
               <p>{{ formatDuration(selectedExecution.durationMs) }}</p>
-              
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Rows Processed</div>
+
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('dashboard.rowsProcessed') }}</div>
               <p>{{ selectedExecution.rowsProcessed?.toLocaleString() || 'N/A' }}</p>
             </v-col>
-            
+
             <v-col cols="12" md="6">
-              <div class="text-subtitle-1 font-weight-bold mb-2">Progress</div>
+              <div class="text-subtitle-1 font-weight-bold mb-2">{{ $t('executions.progress') }}</div>
               <v-progress-linear
                 v-if="selectedExecution.status === 'Running'"
                 :model-value="selectedExecution.progressPercent || 0"
@@ -274,13 +314,13 @@
                   {{ selectedExecution.status }}
                 </template>
               </v-progress-linear>
-              
-              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">Execution Logs</div>
+
+              <div class="text-subtitle-1 font-weight-bold mb-2 mt-4">{{ $t('executions.executionLogs') }}</div>
               <v-card
                 variant="outlined"
                 class="app-log-container custom-scrollbar"
               >
-                <pre class="app-log-text">{{ selectedExecution.logs || 'No logs available' }}</pre>
+                <pre class="app-log-text">{{ selectedExecution.logs || $t('executions.noLogsAvailable') }}</pre>
               </v-card>
             </v-col>
           </v-row>
@@ -288,10 +328,11 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            color="primary"
             variant="text"
             @click="showExecutionDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -303,42 +344,42 @@
       max-width="500px"
     >
       <v-card>
-        <v-card-title>Run Pipeline</v-card-title>
+        <v-card-title>{{ $t('pipelines.runPipelineTitle') }}</v-card-title>
         <v-card-text>
-          <p>Are you sure you want to run this pipeline?</p>
-          
+          <p>{{ $t('pipelines.runPipelineConfirm') }}</p>
+
           <v-form ref="runForm" @submit.prevent="confirmRunPipeline">
             <v-checkbox
               v-model="runOptions.saveResults"
-              label="Save results to destination"
+              :label="$t('pipelines.saveResults')"
               hide-details
               class="mb-3"
             />
-            
+
             <v-checkbox
               v-model="runOptions.notifyOnCompletion"
-              label="Notify me when complete"
+              :label="$t('pipelines.notifyComplete')"
               hide-details
               class="mb-3"
             />
-            
+
             <v-expansion-panels>
               <v-expansion-panel>
-                <v-expansion-panel-title>Advanced Options</v-expansion-panel-title>
+                <v-expansion-panel-title>{{ $t('pipelines.advancedOptions') }}</v-expansion-panel-title>
                 <v-expansion-panel-text>
                   <v-text-field
                     v-model="runOptions.maxRows"
-                    label="Max Rows (0 for unlimited)"
+                    :label="$t('pipelines.maxRows')"
                     type="number"
-                    hint="Limit the number of rows to process"
+                    :hint="$t('pipelines.maxRowsHint')"
                     persistent-hint
                     class="mb-3"
                   />
-                  
+
                   <v-checkbox
                     v-model="runOptions.debugMode"
-                    label="Debug Mode"
-                    hint="Enable detailed logging for debugging"
+                    :label="$t('pipelines.debugMode')"
+                    :hint="$t('pipelines.debugModeHint')"
                     persistent-hint
                     hide-details
                     class="mb-3"
@@ -354,14 +395,14 @@
             variant="text"
             @click="showRunDialog = false"
           >
-            Cancel
+            {{ $t('common.cancel') }}
           </v-btn>
           <v-btn
             color="primary"
             :loading="running"
             @click="confirmRunPipeline"
           >
-            Run Now
+            {{ $t('pipelines.runNow') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -370,18 +411,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchPipelineById, executePipeline, getExecutions } from '@/services/pipelineService';
 import { fetchConnectorById } from '@/services/connectorService';
+import { useAuthStore } from '@/stores/auth';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
+const { t } = useI18n();
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Pipeline data
 const pipeline = ref(null);
 const loading = ref(false);
 const recentExecutions = ref([]);
+
+// Headers for recent executions data table
+const executionHeaders = computed(() => [
+  { title: t('executions.executionId'), key: 'id', sortable: false },
+  { title: t('common.status'), key: 'status', sortable: true },
+  { title: t('dashboard.startTime'), key: 'startTime', sortable: true },
+  { title: t('dashboard.duration'), key: 'durationMs', sortable: true },
+  { title: t('dashboard.rowsProcessed'), key: 'rowsProcessed', sortable: true },
+]);
 
 // Dialog controls
 const showExecutionDialog = ref(false);
@@ -476,7 +530,7 @@ function getConnectorIcon(type) {
 function formatDate(dateString, includeSeconds = false) {
   if (!dateString) return '-';
   const date = new Date(dateString);
-  
+
   if (includeSeconds) {
     return date.toLocaleString();
   } else {
@@ -485,20 +539,24 @@ function formatDate(dateString, includeSeconds = false) {
 }
 
 function formatDuration(milliseconds) {
-  if (!milliseconds) {
+  if (milliseconds == null || milliseconds === false) {
     return '-';
   }
-  
+
+  if (milliseconds < 1000) {
+    return `${milliseconds}ms`;
+  }
+
   const seconds = Math.floor(milliseconds / 1000);
   if (seconds < 60) {
     return `${seconds}s`;
   }
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) {
     return `${minutes}m ${seconds % 60}s`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
 }
@@ -506,23 +564,23 @@ function formatDuration(milliseconds) {
 async function fetchPipelineDetails() {
   try {
     loading.value = true;
-    
+
     // Fetch pipeline from service
     const pipelineData = await fetchPipelineById(route.params.id);
-    
+
     // Build pipeline steps (async operation)
     const steps = await buildPipelineSteps(pipelineData);
-    
+
     // Fetch executions first to get lastRun if not available from pipeline data
     await fetchRecentExecutions();
-    
+
     // Determine lastRun: use pipeline's lastRunAt, or fallback to most recent execution
     let lastRun = pipelineData.lastRunAt;
     if (!lastRun && recentExecutions.value.length > 0) {
       // Get the most recent execution's start time
       lastRun = recentExecutions.value[0].startTime;
     }
-    
+
     // Transform the data to match the view's expected format
     pipeline.value = {
       id: pipelineData.id,
@@ -560,10 +618,21 @@ async function fetchPipelineDetails() {
 function formatSchedule(schedule, isScheduled) {
   // If pipeline is not scheduled, return Manual
   if (!isScheduled || !schedule) return 'Manual';
-  
+
+  // Use cronDescription if available (provided by backend)
+  if (schedule.cronDescription) {
+    return schedule.cronDescription;
+  }
+
+  // Fallback to cron expression if description not available
+  if (schedule.cronExpression) {
+    return `Cron: ${schedule.cronExpression}`;
+  }
+
+  // Legacy support for older frequency-based model if still present
   const freq = schedule.frequency;
   const time = schedule.time || '00:00';
-  
+
   if (freq === 'Daily') {
     return `Daily at ${time}`;
   } else if (freq === 'Weekly') {
@@ -575,14 +644,14 @@ function formatSchedule(schedule, isScheduled) {
   } else if (freq === 'Custom') {
     return `Custom: ${schedule.cronExpression}`;
   }
-  
+
   return 'Manual';
 }
 
 async function buildPipelineSteps(pipelineData) {
   const steps = [];
   let stepId = 1;
-  
+
   // Extract step from source
   steps.push({
     id: `step-${stepId++}`,
@@ -590,22 +659,22 @@ async function buildPipelineSteps(pipelineData) {
     type: 'Extract',
     description: `Pull data from ${pipelineData.sourceConnectorName || 'undefined'}`
   });
-  
+
   // Transform steps based on field mappings
   if (pipelineData.fieldMappings && Array.isArray(pipelineData.fieldMappings) && pipelineData.fieldMappings.length > 0) {
     // Group transformations by type
     const transformationsByType = new Map();
-    
+
     for (const mapping of pipelineData.fieldMappings) {
       if (mapping.transformations && Array.isArray(mapping.transformations) && mapping.transformations.length > 0) {
         for (const trans of mapping.transformations) {
           // Transformations are now embedded directly in field mappings
           // They have properties: id, type, order, config, isEnabled
           if (!trans.isEnabled) continue;
-          
+
           const transType = trans.type || 'Unknown';
           const key = transType;
-          
+
           if (!transformationsByType.has(key)) {
             transformationsByType.set(key, {
               type: transType,
@@ -613,12 +682,12 @@ async function buildPipelineSteps(pipelineData) {
               fields: []
             });
           }
-          
+
           transformationsByType.get(key).fields.push(mapping.destinationField);
         }
       }
     }
-    
+
     // Create steps for each transformation type
     for (const [type, info] of transformationsByType) {
       steps.push({
@@ -629,7 +698,7 @@ async function buildPipelineSteps(pipelineData) {
       });
     }
   }
-  
+
   // If no transformations, show a placeholder
   if (steps.length === 1) {
     steps.push({
@@ -639,7 +708,7 @@ async function buildPipelineSteps(pipelineData) {
       description: 'Data will be loaded without transformations'
     });
   }
-  
+
   // Load step to destination
   steps.push({
     id: `step-${stepId++}`,
@@ -647,7 +716,7 @@ async function buildPipelineSteps(pipelineData) {
     type: 'Load',
     description: `Load processed data to ${pipelineData.destinationConnectorName || 'undefined'}`
   });
-  
+
   return steps;
 }
 
@@ -655,36 +724,40 @@ async function fetchRecentExecutions() {
   try {
     // Fetch executions from service
     const executions = await getExecutions({ pipelineId: route.params.id });
-    
+
     // Sort executions by startTime descending (most recent first)
-    const sortedExecutions = [...executions].sort((a, b) => 
+    const sortedExecutions = [...executions].sort((a, b) =>
       new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
     );
-    
+
     // Transform execution data to match view format
     recentExecutions.value = sortedExecutions.map(exec => {
-      const duration = exec.endTime 
-        ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
-        : Date.now() - new Date(exec.startTime).getTime();
-      
+      // Use API-provided durationMs (has decimal precision e.g. 234.047ms)
+      // Only fall back to timestamp math for still-running executions
+      const durationMs = exec.durationMs != null
+        ? exec.durationMs
+        : (exec.endTime
+            ? new Date(exec.endTime).getTime() - new Date(exec.startTime).getTime()
+            : Date.now() - new Date(exec.startTime).getTime());
+
       // Format logs from array to string
       let logsText = '';
       if (exec.logs && exec.logs.length > 0) {
-        logsText = exec.logs.map(log => 
+        logsText = exec.logs.map(log =>
           `[${new Date(log.timestamp).toLocaleString()}] ${log.level}: ${log.message}`
         ).join('\n');
       } else {
         // Fallback if no logs
         logsText = `[${new Date(exec.startTime).toLocaleString()}] Pipeline execution ${exec.status.toLowerCase()}`;
       }
-      
+
       return {
         id: exec.id,
         pipelineId: exec.pipelineId,
         status: exec.status,
         startTime: exec.startTime,
         endTime: exec.endTime,
-        duration: duration,
+        durationMs: durationMs,
         rowsProcessed: exec.recordsProcessed || 0,
         logs: logsText,
         progressPercent: exec.status === 'Completed' ? 100 : (exec.status === 'Running' ? 50 : 0)
@@ -701,10 +774,7 @@ function viewExecutionDetails(execution) {
 }
 
 function editPipeline() {
-  // In a real app, navigate to the pipeline edit page
-  // router.push(`/pipelines/${pipeline.value.id}/edit`);
-  
-  alert('Pipeline edit functionality would be implemented here');
+  router.push(`/pipelines/${pipeline.value.id}/edit`);
 }
 
 function runPipeline() {
@@ -714,13 +784,13 @@ function runPipeline() {
 async function confirmRunPipeline() {
   try {
     running.value = true;
-    
+
     // In a real app, this would be an actual API call
     // await axios.post(`/api/pipelines/${pipeline.value.id}/execute`, runOptions.value);
-    
+
     // For now, using simulated response
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Add a new execution to the recent executions
     const newExecution = {
       id: Math.random().toString(36).substring(2, 15),
@@ -733,14 +803,14 @@ async function confirmRunPipeline() {
       logs: `[${new Date().toLocaleString()}] Starting pipeline execution...\n[${new Date().toLocaleString()}] Extracting data from sources...`,
       progressPercent: 5
     };
-    
+
     recentExecutions.value.unshift(newExecution);
-    
+
     // Update the pipeline's last run time
     pipeline.value.lastRun = new Date().toISOString();
-    
+
     showRunDialog.value = false;
-    
+
     // Show a success message
     alert('Pipeline execution started successfully!');
   } catch (error) {
@@ -752,7 +822,7 @@ async function confirmRunPipeline() {
 
 onMounted(() => {
   fetchPipelineDetails();
-  
+
   // Set up polling for real-time updates (every 10 seconds)
   pollingInterval.value = setInterval(() => {
     if (recentExecutions.value.length > 0 && recentExecutions.value[0].status === 'Running') {

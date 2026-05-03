@@ -3,14 +3,26 @@
  * Fetched from backend on app initialization to avoid hardcoding
  */
 
-import axios from '@/services/api'
+import axios from "@/services/api";
 
 export const AppConstants = {
   roles: null,
-  oauthConfig: null,
   supportedLanguages: null,
-  _initialized: false
-}
+  _initialized: false,
+};
+
+export const ConnectorProviders = {
+  SqlServer: "SqlServer",
+  PostgreSQL: "PostgreSQL",
+  MySQL: "MySQL",
+  MongoDb: "MongoDb",
+  CosmosDb: "CosmosDb",
+  REST: "REST",
+  FTP: "FTP",
+  SFTP: "SFTP",
+  AzureBlob: "AzureBlob",
+  Email: "Email",
+};
 
 /**
  * Initialize constants from backend
@@ -19,23 +31,19 @@ export const AppConstants = {
  */
 export async function initializeConstants() {
   if (AppConstants._initialized) {
-    return
+    return;
   }
 
-  const { data } = await axios.get('/api/metadata/app-constants')
-  
-  // Handle both oAuthConfig (from backend) and oauthConfig (expected)
-  const oauthConfig = data.oAuthConfig || data.oauthConfig
-  
+  const { data } = await axios.get("/api/metadata/app-constants");
+
   // Validate response structure
-  if (!data || !oauthConfig || !data.roles) {
-    throw new Error('Invalid response structure from backend')
+  if (!data || !data.roles) {
+    throw new Error("Invalid response structure from backend");
   }
-  
-  AppConstants.roles = data.roles
-  AppConstants.oauthConfig = oauthConfig
-  AppConstants.supportedLanguages = data.supportedLanguages
-  AppConstants._initialized = true
+
+  AppConstants.roles = data.roles;
+  AppConstants.supportedLanguages = data.supportedLanguages;
+  AppConstants._initialized = true;
 }
 
 /**
@@ -44,25 +52,11 @@ export async function initializeConstants() {
  */
 export function getRoles() {
   if (!AppConstants._initialized) {
-    throw new Error('Constants not initialized. Call initializeConstants() first.')
+    throw new Error(
+      "Constants not initialized. Call initializeConstants() first.",
+    );
   }
-  return AppConstants.roles
-}
-
-/**
- * Get OAuth configuration
- * @returns {Object} OAuth config
- */
-export function getOAuthConfig() {
-  if (!AppConstants._initialized) {
-    throw new Error('Constants not initialized. Call initializeConstants() first.')
-  }
-  
-  if (!AppConstants.oauthConfig) {
-    throw new Error('OAuth config is null/undefined. Backend returned invalid data.')
-  }
-  
-  return AppConstants.oauthConfig
+  return AppConstants.roles;
 }
 
 /**
@@ -71,7 +65,9 @@ export function getOAuthConfig() {
  */
 export function getSupportedLanguages() {
   if (!AppConstants._initialized) {
-    throw new Error('Constants not initialized. Call initializeConstants() first.')
+    throw new Error(
+      "Constants not initialized. Call initializeConstants() first.",
+    );
   }
-  return AppConstants.supportedLanguages
+  return AppConstants.supportedLanguages;
 }

@@ -277,7 +277,7 @@ export const mockConnectors = [
     name: 'Local CSV Files',
     description: 'Local file system for CSV data files',
     type: 'File',
-    provider: 'Local',
+    provider: 'SFTP',
     direction: 'both',
     createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
     config: {
@@ -292,7 +292,7 @@ export const mockConnectors = [
       }
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: 'C:/data/exports',
       fileType: 'CSV',
       delimiter: ','
@@ -312,29 +312,7 @@ export const mockConnectors = [
       lastModified: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
     }
   },
-  {
-    id: '11',
-    name: 'AWS S3 Bucket',
-    description: 'Amazon S3 bucket for data lake storage',
-    type: 'File',
-    provider: 'S3',
-    direction: 'both',
-    createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'JSON',
-      bucket: 'my-data-lake',
-      region: 'us-east-1',
-      path: '/raw-data'
-    },
-    file: {
-      storageType: 'S3',
-      path: '/raw-data',
-      fileType: 'JSON'
-    },
-    isSource: true,
-    isDestination: true,
-    requiresCredentials: true
-  },
+
   {
     id: '12',
     name: 'GraphQL API',
@@ -435,46 +413,7 @@ export const mockConnectors = [
       lastModified: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
     }
   },
-  {
-    id: '15',
-    name: 'Google Cloud Storage',
-    description: 'GCS bucket for data lake',
-    type: 'File',
-    provider: 'Google Cloud Storage',
-    direction: 'both',
-    createdAt: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000).toISOString(),
-    config: {
-      format: 'Parquet',
-      gcsBucket: 'my-data-lake',
-      gcsProjectId: 'my-project-123',
-      gcsCredentials: '***',
-      path: '/raw-data/events',
-      writeConfig: {
-        filenamePattern: 'events_{date}_{time}.parquet',
-        compression: 'snappy'
-      }
-    },
-    file: {
-      storageType: 'Google Cloud Storage',
-      path: '/raw-data/events',
-      fileType: 'Parquet'
-    },
-    isSource: true,
-    isDestination: true,
-    requiresCredentials: true,
-    schema: {
-      fields: [
-        { name: 'event_id', type: 'string', required: true, nullable: false, description: 'Event ID' },
-        { name: 'event_type', type: 'string', required: true, nullable: false, description: 'Event type' },
-        { name: 'user_id', type: 'string', required: false, nullable: true, description: 'User ID' },
-        { name: 'event_data', type: 'json', required: false, nullable: true, description: 'Event payload' },
-        { name: 'created_at', type: 'timestamp', required: true, nullable: false, description: 'Event timestamp' }
-      ],
-      version: 1,
-      isManual: false,
-      lastModified: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-    }
-  },
+
   {
     id: '16',
     name: 'SOAP Web Service',
@@ -551,7 +490,7 @@ export const mockConnectors = [
     name: 'XML Data Files',
     description: 'Local XML files for legacy system integration',
     type: 'File',
-    provider: 'Local',
+    provider: 'SFTP',
     direction: 'source',
     createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
     config: {
@@ -561,7 +500,7 @@ export const mockConnectors = [
       xmlRecordElement: 'Record'
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: 'C:/data/imports/xml',
       fileType: 'XML'
     },
@@ -577,6 +516,35 @@ export const mockConnectors = [
       version: 1,
       isManual: true,
       lastModified: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+    }
+  },
+  {
+    id: '19',
+    name: 'Daily Report Email',
+    description: 'Sends daily data export to the analytics team',
+    type: 'Email',
+    provider: 'Email',
+    direction: 'destination',
+    createdAt: new Date().toISOString(),
+    config: {
+      recipients: ['analytics@example.com', 'manager@example.com'],
+      ccRecipients: [],
+      subject: 'Daily Sales Export',
+      bodyMessage: 'Please find attached the daily sales data export.',
+      attachmentFormat: 'CSV',
+      attachmentFileName: 'sales-export',
+      writeConfig: {
+        sendEmptyReport: false
+      }
+    },
+    isSource: false,
+    isDestination: true,
+    requiresCredentials: false,
+    schema: {
+      fields: [],
+      version: 1,
+      isManual: false,
+      lastModified: new Date().toISOString()
     }
   }
 ];

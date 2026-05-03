@@ -3,14 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('connectors.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        @click="createNewConnector"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('connectors.createConnector') }}</span>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="createNewConnector"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('connectors.createConnector') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -68,17 +80,7 @@
             </v-chip>
           </template>
           <template #item.provider="{ item }">
-            <v-tooltip v-if="item.provider" location="top">
-              <template #activator="{ props }">
-                <v-icon
-                  v-bind="props"
-                  :color="getProviderColor(item.provider)"
-                  :icon="getProviderIcon(item.provider)"
-                  size="24"
-                />
-              </template>
-              <span>{{ item.provider }}</span>
-            </v-tooltip>
+            <span v-if="item.provider">{{ item.provider }}</span>
             <span v-else class="text-grey">-</span>
           </template>
           <template #item.description="{ item }">
@@ -104,16 +106,25 @@
             </div>
           </template>
           <template #item.actions="{ item }">
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="editConnector(item)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.editConnector') }}</span>
+            </v-tooltip>
             <v-btn
-              icon
-              variant="text"
-              size="small"
-              :title="$t('connectors.editConnector')"
-              @click="editConnector(item)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn
+              v-if="item.type !== 'Email'"
               icon
               variant="text"
               size="small"
@@ -123,26 +134,42 @@
             >
               <v-icon>mdi-table-eye</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="success"
-              :title="$t('connectors.testConnection')"
-              @click="testConnection(item)"
-            >
-              <v-icon>mdi-connection</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              :title="$t('common.delete')"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip v-if="item.type !== 'Email'" location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="success"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="testConnection(item)"
+                  >
+                    <v-icon>mdi-connection</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.testConnection') }}</span>
+            </v-tooltip>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -269,7 +296,7 @@
                   <v-select
                     v-model="editedConnector.file.storageType"
                     label="Storage Type"
-                    :items="['Local', 'SFTP', 'S3', 'Azure Blob', 'Google Cloud Storage']"
+                    :items="['SFTP', 'S3', 'Azure Blob', 'Google Cloud Storage']"
                     :rules="[v => !!v || 'Storage type is required']"
                   />
                 </v-col>
@@ -479,6 +506,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            color="primary"
             variant="text"
             :disabled="testingConnection"
             @click="showConnectionDialog = false"
@@ -613,7 +641,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import axios from 'axios';
@@ -639,8 +667,11 @@ import { findPipelinesUsingConnector } from '@/services/pipelineService';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const tenantStore = useTenantStore();
 const { t } = useI18n();
+
+const showNotification = inject('showNotification');
 
 const { validateConnection } = useConnector();
 const { connectorTypes: metadataTypes } = useTranslatedMetadata();
@@ -750,7 +781,7 @@ function createEmptyConnector() {
       databaseName: ''
     },
     file: {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: '',
       fileType: 'CSV',
       delimiter: ','
@@ -758,7 +789,8 @@ function createEmptyConnector() {
     api: {
       baseUrl: '',
       authType: 'None',
-      dataFormat: 'JSON'
+      dataFormat: 'JSON',
+      responseFormat: 'JSON'
     },
     credentials: {
       username: '',
@@ -777,7 +809,6 @@ function createEmptyConnector() {
 
 function handleSchemaValidation(validation) {
   // Store validation result if needed
-  console.log('Schema validation:', validation);
   
   // Check if schema has changed
   if (originalSchema.value && editedConnector.value.schema) {
@@ -799,6 +830,8 @@ function getTypeColor(type) {
       return 'success';
     case 'API':
       return 'info';
+    case 'Email':
+      return 'deep-orange';
     default:
       return 'grey';
   }
@@ -826,21 +859,23 @@ function formatDate(dateString) {
 
 async function fetchConnectors() {
   const authStore = useAuthStore();
-  
+
+
   // Don't fetch if not authenticated
   if (!authStore.isAuthenticated) {
     return;
   }
-  
+
+
   try {
     loading.value = true;
-    
+
     const filters = {
       search: search.value,
       type: typeFilter.value,
       sortBy: sortBy.value
     };
-    
+
     const result = await getConnectors(filters);
     // Handle paginated response from API
     connectors.value = result.connectors || result;
@@ -865,7 +900,7 @@ function updateConnectorForm() {
     };
   } else if (editedConnector.value.type === 'File') {
     editedConnector.value.file = {
-      storageType: 'Local',
+      storageType: 'SFTP',
       path: '',
       fileType: 'CSV',
       delimiter: ','
@@ -909,10 +944,27 @@ async function deleteConnector() {
       connectors.value.splice(index, 1);
     }
     
+    showNotification(t('connectors.deleteSuccess'), 'success');
+    
     showDeleteDialog.value = false;
     connectorToDelete.value = null;
   } catch (error) {
     console.error('Error deleting connector:', error);
+    
+    // Extract error message from API response
+    let errorMessage = t('connectors.deleteError');
+    
+    if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    } else if (error.response?.data?.title) {
+      errorMessage = error.response.data.title;
+    } else if (error.userMessage) {
+      errorMessage = error.userMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    showNotification(errorMessage, 'error', 6000); // Longer timeout for error messages
   } finally {
     deletingConnector.value = false;
   }

@@ -62,11 +62,36 @@
                 />
               </v-col>
               <v-col cols="12">
-                <v-switch
-                  v-model="pipeline.isActive"
-                  :label="$t('common.active')"
+                <v-combobox
+                  v-model="pipeline.notificationEmails"
+                  :label="$t('pipelines.notificationEmails')"
+                  :placeholder="$t('pipelines.notificationEmailsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                  :hint="$t('pipelines.notificationEmailsHint')"
+                  persistent-hint
+                  :rules="emailRules"
+                >
+                  <template #chip="{ props: chipProps, item }">
+                    <v-chip
+                      v-bind="chipProps"
+                      :text="item.raw"
+                      closable
+                      size="small"
+                    />
+                  </template>
+                </v-combobox>
+              </v-col>
+              <v-col cols="12">
+                <v-checkbox
+                  v-model="pipeline.emailNotificationsEnabled"
+                  :label="$t('pipelines.enableEmailNotifications')"
+                  :disabled="!pipeline.notificationEmails || pipeline.notificationEmails.length === 0"
                   color="success"
                   hide-details
+                  density="compact"
                 />
               </v-col>
             </v-row>
@@ -92,7 +117,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.sourceRequired')]"
                   />
-
                 </v-card>
               </v-col>
               <v-col cols="12" md="6">
@@ -110,7 +134,6 @@
                     variant="outlined"
                     :rules="[v => !!v || $t('pipelines.destinationRequired')]"
                   />
-
                 </v-card>
               </v-col>
             </v-row>
@@ -125,6 +148,7 @@
               v-model="pipeline.fieldMappings"
               :source-id="getConnectorId(pipeline.sourceId)"
               :destination-id="getConnectorId(pipeline.destinationId)"
+              :is-email-destination="isEmailDestination"
               @validate="handleMappingValidation"
             />
             <v-alert v-else type="info" variant="tonal">
@@ -136,7 +160,7 @@
         <!-- Step 4: Schedule -->
         <v-stepper-window-item :value="4">
           <div class="pa-6">
-            <div class="text-center py-8" v-if="!pipeline.id">
+            <div v-if="!pipeline.id" class="text-center py-8">
               <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-calendar-clock</v-icon>
               <div class="text-h6 mb-2">{{ $t('pipelines.scheduleAfterSave') }}</div>
               <div class="text-body-2 text-grey mb-4">
@@ -254,6 +278,38 @@
                     </template>
                     <v-list-item-title>{{ $t('common.description') }}</v-list-item-title>
                     <v-list-item-subtitle>{{ pipeline.description }}</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0">
+                    <template #prepend>
+                      <v-icon>mdi-email</v-icon>
+                    </template>
+                    <v-list-item-title>{{ $t('pipelines.notificationEmails') }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip
+                        v-for="(email, idx) in pipeline.notificationEmails"
+                        :key="idx"
+                        size="small"
+                        class="mr-1 mb-1"
+                        variant="tonal"
+                      >
+                        {{ email }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-if="pipeline.notificationEmails && pipeline.notificationEmails.length > 0">
+                    <template #prepend>
+                      <v-icon>mdi-bell</v-icon>
+                    </template>
+                    <v-list-item-title>{{ $t('pipelines.enableEmailNotifications') }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip
+                        size="small"
+                        :color="pipeline.emailNotificationsEnabled ? 'success' : 'grey'"
+                        variant="tonal"
+                      >
+                        {{ pipeline.emailNotificationsEnabled ? $t('common.active') : $t('common.inactive') }}
+                      </v-chip>
+                    </v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
               </v-card-text>
@@ -377,6 +433,32 @@
                     </v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
+              </v-card-text>
+            </v-card>
+
+            <!-- Pipeline Status -->
+            <v-card variant="outlined" class="mb-4">
+              <v-card-title class="text-subtitle-1 bg-surface-variant">
+                <v-icon class="mr-2">mdi-toggle-switch</v-icon>
+                {{ $t('common.status') }}
+              </v-card-title>
+              <v-card-text>
+                <v-switch
+                  v-model="pipeline.isActive"
+                  :label="$t('common.active')"
+                  color="success"
+                  hide-details
+                  class="mt-2"
+                >
+                  <template #label>
+                    <div class="d-flex flex-column">
+                      <span class="text-body-1">{{ $t('common.active') }}</span>
+                      <span class="text-caption text-grey">
+                        {{ pipeline.isActive ? $t('pipelines.pipelineActiveDescription') : $t('pipelines.pipelineInactiveDescription') }}
+                      </span>
+                    </div>
+                  </template>
+                </v-switch>
               </v-card-text>
             </v-card>
           </div>
@@ -510,6 +592,22 @@ const currentStep = ref(1);
 const saving = ref(false);
 const mappingValidation = ref({ isValid: true, errors: [], unmappedRequiredFields: [] });
 
+// Email validation rules
+const emailRules = [
+  (v) => {
+    if (!v || v.length === 0) return true; // Optional field
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = v.filter(email => !emailPattern.test(email));
+    if (invalidEmails.length > 0) {
+      return t('validation.invalidEmails', { emails: invalidEmails.join(', ') });
+    }
+    if (v.length > 10) {
+      return t('validation.maxEmails', { max: 10 });
+    }
+    return true;
+  }
+];
+
 // Track original connector IDs to detect changes
 const originalSourceId = ref(null);
 const originalDestinationId = ref(null);
@@ -606,6 +704,18 @@ const sourceConnectors = computed(() =>
 
 const destinationConnectors = computed(() => 
   props.connectors.filter(c => c.direction === 'destination' || c.direction === 'both' || c.isDestination)
+);
+
+// Detect if the selected destination connector is Email type
+const selectedDestinationConnector = computed(() => {
+  const id = typeof props.pipeline.destinationId === 'string'
+    ? props.pipeline.destinationId
+    : props.pipeline.destinationId?.id;
+  return props.connectors.find(c => c.id === id) || null;
+});
+
+const isEmailDestination = computed(() =>
+  selectedDestinationConnector.value?.type === 'Email'
 );
 
 const canProceed = computed(() => {

@@ -10,19 +10,20 @@ export function usePipeline() {
   const { validateTransformation, getOutputSchema } = useTransformation();
   const { detectSchema } = useConnector();
   const tenantStore = useTenantStore();
-  
+
   // State
   const error = ref(null);
   const pipelines = ref([]);
   const loading = ref(false);
   const savingPipeline = ref(false);
   const deletingPipeline = ref(false);
-  
+
   // Form data
   const search = ref('');
   const statusFilter = ref('All');
+  const isActiveFilter = ref('All');
   const sortBy = ref('name_asc');
-  
+
   // Status and sort options for UI - computed to support i18n
   const statusOptions = computed(() => [
     { title: t('filters.allStatuses'), value: 'All' },
@@ -30,27 +31,39 @@ export function usePipeline() {
     { title: t('executions.running'), value: 'Running' },
     { title: t('executions.failed'), value: 'Failed' }
   ]);
-  
+
+  const activeOptions = computed(() => [
+    { title: t('common.all'), value: 'All' },
+    { title: t('common.active'), value: 'Active' },
+    { title: t('common.inactive'), value: 'Inactive' }
+  ]);
+
   const sortOptions = computed(() => [
     { title: t('filters.nameAsc'), value: 'name_asc' },
     { title: t('filters.nameDesc'), value: 'name_desc' },
     { title: t('filters.lastRunNewest'), value: 'lastRun_desc' },
     { title: t('filters.lastRunOldest'), value: 'lastRun_asc' }
   ]);
-  
+
   // Fetch pipeline list with optional filters
   const loadPipelines = async () => {
     try {
       loading.value = true;
-      
+
       const filters = {
         search: search.value,
         status: statusFilter.value,
         sortBy: sortBy.value
       };
-      
+
+      if (isActiveFilter.value === 'Active') {
+        filters.isActive = true;
+      } else if (isActiveFilter.value === 'Inactive') {
+        filters.isActive = false;
+      }
+
       const pipelineList = await fetchPipelines(filters);
-      
+
       // Backend returns camelCase JSON (sourceConnectorName, destinationConnectorName)
       // Map to sourceName/destinationName for table display
       pipelines.value = pipelineList.map(pipeline => ({
@@ -185,14 +198,14 @@ export function usePipeline() {
         return 'grey';
     }
   };
-  
+
   // Format a date string
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleString();
   };
-  
+
   // Setup tenant subscription to refresh data when tenant changes
   const setupTenantSubscription = () => {
     tenantStore.$subscribe(() => {
@@ -205,7 +218,7 @@ export function usePipeline() {
   // Validate entire pipeline including data flow and dependencies
   const validatePipeline = async (pipeline) => {
     const errors = [];
-    
+
     if (!pipeline.sourceId) {
       errors.push('Source is required');
     }
@@ -222,7 +235,7 @@ export function usePipeline() {
         // Validate individual transformation
         const validationResult = validateTransformation(transformation, currentSchema);
         if (!validationResult.isValid) {
-          errors.push(...validationResult.errors.map(err => 
+          errors.push(...validationResult.errors.map(err =>
             `Transformation "${transformation.name}": ${err}`
           ));
         }
@@ -255,7 +268,7 @@ export function usePipeline() {
   const validateSchemaCompatibility = (sourceSchema, destSchema, errors) => {
     destSchema.columns.forEach(destCol => {
       const sourceCol = sourceSchema.columns.find(c => c.name === destCol.name);
-      
+
       if (!sourceCol && !destCol.nullable) {
         errors.push(`Required destination column '${destCol.name}' is missing from pipeline output`);
       } else if (sourceCol && !isCompatibleType(sourceCol.type, destCol.type)) {
@@ -364,10 +377,12 @@ export function usePipeline() {
     deletingPipeline,
     search,
     statusFilter,
+    isActiveFilter,
     sortBy,
     statusOptions,
+    activeOptions,
     sortOptions,
-    
+
     // Methods - API related
     loadPipelines,
     getPipeline,
@@ -377,11 +392,11 @@ export function usePipeline() {
     togglePipelineStatus,
     createEmptyPipeline,
     setupTenantSubscription,
-    
+
     // UI helper methods
     getStatusColor,
     formatDate,
-    
+
     // Validation methods
     validatePipeline,
     getDependencies,

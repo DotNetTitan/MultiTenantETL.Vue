@@ -79,6 +79,10 @@ export function useTranslatedMetadata() {
     translateItems(metadata.httpMethods.value)
   );
 
+  const apiResponseFormats = computed(() => 
+    translateItems(metadata.apiResponseFormats.value)
+  );
+
   const transformationTypes = computed(() => 
     translateItems(metadata.transformationTypes.value)
   );
@@ -183,6 +187,7 @@ export function useTranslatedMetadata() {
     fileFormats,
     writeOperations,
     httpMethods,
+    apiResponseFormats,
     transformationTypes,
     dataTypes,
     scheduleFrequencies,

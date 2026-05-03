@@ -1,5 +1,5 @@
 <template>
-  <div class="tenant-selector">
+  <div v-if="showTenantSelector" class="tenant-selector">
     <v-select
       v-model="selectedTenantId"
       :items="tenantItems"
@@ -41,6 +41,11 @@ const tenantItems = computed(() => {
       title: tenant.name,
       value: tenant.id
     }));
+});
+
+// Only show tenant selector if user has access to multiple active tenants
+const showTenantSelector = computed(() => {
+  return tenantItems.value.length > 1;
 });
 
 async function changeTenant(tenantId) {
@@ -121,7 +126,6 @@ onMounted(async () => {
     if (!tenantStore.currentTenantId && tenantStore.tenants.length > 0) {
       const firstActiveTenant = tenantStore.tenants.find(t => t.isActive);
       if (firstActiveTenant) {
-        console.log('Auto-selecting first active tenant (local only):', firstActiveTenant.name);
         // Set locally without calling backend API
         tenantStore.currentTenantId = firstActiveTenant.id;
         localStorage.setItem('currentTenantId', firstActiveTenant.id);

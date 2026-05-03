@@ -13,21 +13,17 @@ import api from './api'
  * @returns {Promise<Object>} Paginated list of connector objects
  */
 export async function fetchConnectors(filters = {}) {
-  try {
-    const response = await api.post('/api/connectors/search', {
-      name: filters.search || null,
-      type: filters.type && filters.type !== 'All' ? filters.type : null,
-      provider: filters.provider || null,
-      direction: filters.direction || null,
-      isActive: filters.isActive,
-      page: filters.page || 1,
-      pageSize: filters.pageSize || 20
-    })
-    
-    return response.data
-  } catch (error) {
-    throw error
-  }
+  const response = await api.post('/api/connectors/search', {
+    name: filters.search || null,
+    type: filters.type && filters.type !== 'All' ? filters.type : null,
+    provider: filters.provider || null,
+    direction: filters.direction || null,
+    isActive: filters.isActive,
+    page: filters.page || 1,
+    pageSize: filters.pageSize || 20
+  })
+
+  return response.data
 }
 
 /**
@@ -36,12 +32,8 @@ export async function fetchConnectors(filters = {}) {
  * @returns {Promise<Object>} Connector object
  */
 export async function fetchConnectorById(id) {
-  try {
-    const response = await api.get(`/api/connectors/${id}`)
-    return response.data
-  } catch (error) {
-    throw error
-  }
+  const response = await api.get(`/api/connectors/${id}`)
+  return response.data
 }
 
 /**
@@ -50,20 +42,16 @@ export async function fetchConnectorById(id) {
  * @returns {Promise<Object>} Created connector
  */
 export async function createConnector(connector) {
-  try {
-    const response = await api.post('/api/connectors', {
-      name: connector.name,
-      description: connector.description || null,
-      type: connector.type,
-      provider: connector.provider,
-      direction: connector.direction,
-      config: connector.config,
-      schema: connector.schema || null
-    })
-    return response.data
-  } catch (error) {
-    throw error
-  }
+  const response = await api.post('/api/connectors', {
+    name: connector.name,
+    description: connector.description || null,
+    type: connector.type,
+    provider: connector.provider,
+    direction: connector.direction,
+    config: connector.config,
+    schema: connector.schema || null
+  })
+  return response.data
 }
 
 /**
@@ -73,19 +61,17 @@ export async function createConnector(connector) {
  * @returns {Promise<Object>} Updated connector
  */
 export async function updateConnector(id, connector) {
-  try {
-    const response = await api.put(`/api/connectors/${id}`, {
+const response = await api.put(`/api/connectors/${id}`, {
       name: connector.name,
       description: connector.description || null,
+      type: connector.type,
+      provider: connector.provider,
       direction: connector.direction,
       config: connector.config,
       schema: connector.schema || null,
       isActive: connector.isActive
     })
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -94,12 +80,8 @@ export async function updateConnector(id, connector) {
  * @returns {Promise<boolean>} Success indicator
  */
 export async function deleteConnector(id) {
-  try {
-    await api.delete(`/api/connectors/${id}`)
+await api.delete(`/api/connectors/${id}`)
     return true
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -108,17 +90,13 @@ export async function deleteConnector(id) {
  * @returns {Promise<Object>} Connection test result
  */
 export async function testConnection(connector) {
-  try {
-    const payload = {
+const payload = {
       type: connector.type,
       provider: connector.provider,
       config: connector.config
     };
     const response = await api.post('/api/connectors/test-connection', payload)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -127,12 +105,8 @@ export async function testConnection(connector) {
  * @returns {Promise<Object>} Connection test result
  */
 export async function testExistingConnection(id) {
-  try {
-    const response = await api.post(`/api/connectors/${id}/test`)
+const response = await api.post(`/api/connectors/${id}/test`)
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -142,15 +116,11 @@ export async function testExistingConnection(id) {
  * @returns {Promise<Object>} Schema information
  */
 export async function detectSchema(connectorId, tableOrResourceName = null) {
-  try {
-    const response = await api.post('/api/connectors/detect-schema', {
+const response = await api.post('/api/connectors/detect-schema', {
       connectorId,
       tableOrResourceName
     })
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -162,17 +132,13 @@ export async function detectSchema(connectorId, tableOrResourceName = null) {
  * @returns {Promise<Object>} Schema information
  */
 export async function detectSchemaPreview(type, provider, config, tableOrResourceName = null) {
-  try {
-    const response = await api.post('/api/connectors/detect-schema-preview', {
+const response = await api.post('/api/connectors/detect-schema-preview', {
       type,
       provider,
       config,
       tableOrResourceName
     })
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -180,12 +146,8 @@ export async function detectSchemaPreview(type, provider, config, tableOrResourc
  * @returns {Promise<Array>} List of all active connectors
  */
 export async function getAllConnectors() {
-  try {
-    const response = await api.get('/api/connectors')
+const response = await api.get('/api/connectors')
     return response.data
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -193,12 +155,8 @@ export async function getAllConnectors() {
  * @returns {Promise<Array>} List of source connectors
  */
 export async function getSourceConnectors() {
-  try {
-    const connectors = await getAllConnectors()
+const connectors = await getAllConnectors()
     return connectors.filter(c => c.isSource)
-  } catch (error) {
-    throw error
-  }
 }
 
 /**
@@ -206,12 +164,24 @@ export async function getSourceConnectors() {
  * @returns {Promise<Array>} List of destination connectors
  */
 export async function getDestinationConnectors() {
-  try {
-    const connectors = await getAllConnectors()
+const connectors = await getAllConnectors()
     return connectors.filter(c => c.isDestination)
-  } catch (error) {
-    throw error
-  }
+}
+
+/**
+ * Preview the email template with the given configuration.
+ * Returns the rendered HTML string from the backend.
+ */
+export async function previewEmailTemplate(config) {
+  const response = await api.post('/api/connectors/email-preview', {
+    bodyMessage: config.bodyMessage || null,
+    attachmentFormat: config.attachmentFormat || 'CSV',
+    attachmentFileName: config.attachmentFileName || null
+  }, {
+    responseType: 'text',
+    headers: { 'Accept': 'text/html' }
+  })
+  return response.data
 }
 
 export const connectorService = {
@@ -226,5 +196,7 @@ export const connectorService = {
   detectSchema,
   detectSchemaPreview,
   getSources: getSourceConnectors,
-  getDestinations: getDestinationConnectors
+  getDestinations: getDestinationConnectors,
+  previewEmailTemplate
 }
+

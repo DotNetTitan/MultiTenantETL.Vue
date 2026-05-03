@@ -91,22 +91,22 @@ export function useSchedule() {
   // Common cron presets for Quartz.NET (6-field format: seconds minutes hours day-of-month month day-of-week)
   // Use '?' in day-of-month OR day-of-week (not both, and not in other fields)
   const cronPresets = [
-    { text: 'Every minute', value: '0 * * * * ?' },
-    { text: 'Every 5 minutes', value: '0 */5 * * * ?' },
-    { text: 'Every 15 minutes', value: '0 */15 * * * ?' },
-    { text: 'Every 30 minutes', value: '0 */30 * * * ?' },
-    { text: 'Every hour', value: '0 0 * * * ?' },
-    { text: 'Every 2 hours', value: '0 0 */2 * * ?' },
-    { text: 'Every 6 hours', value: '0 0 */6 * * ?' },
-    { text: 'Every 12 hours', value: '0 0 */12 * * ?' },
-    { text: 'Daily at midnight', value: '0 0 0 * * ?' },
-    { text: 'Daily at 6 AM', value: '0 0 6 * * ?' },
-    { text: 'Daily at noon', value: '0 0 12 * * ?' },
-    { text: 'Daily at 6 PM', value: '0 0 18 * * ?' },
-    { text: 'Weekly on Monday at midnight', value: '0 0 0 ? * MON' },
-    { text: 'Weekly on Sunday at midnight', value: '0 0 0 ? * SUN' },
-    { text: 'First day of month at midnight', value: '0 0 0 1 * ?' },
-    { text: 'Last day of month at midnight', value: '0 0 0 L * ?' }
+    { text: 'Every minute', value: '0 * * * * ?', titleKey: 'schedules.presets.everyMinute' },
+    { text: 'Every 5 minutes', value: '0 */5 * * * ?', titleKey: 'schedules.presets.every5Minutes' },
+    { text: 'Every 15 minutes', value: '0 */15 * * * ?', titleKey: 'schedules.presets.every15Minutes' },
+    { text: 'Every 30 minutes', value: '0 */30 * * * ?', titleKey: 'schedules.presets.every30Minutes' },
+    { text: 'Every hour', value: '0 0 * * * ?', titleKey: 'schedules.presets.everyHour' },
+    { text: 'Every 2 hours', value: '0 0 */2 * * ?', titleKey: 'schedules.presets.every2Hours' },
+    { text: 'Every 6 hours', value: '0 0 */6 * * ?', titleKey: 'schedules.presets.every6Hours' },
+    { text: 'Every 12 hours', value: '0 0 */12 * * ?', titleKey: 'schedules.presets.every12Hours' },
+    { text: 'Daily at midnight', value: '0 0 0 * * ?', titleKey: 'schedules.presets.dailyMidnight' },
+    { text: 'Daily at 6 AM', value: '0 0 6 * * ?', titleKey: 'schedules.presets.dailyMorning' },
+    { text: 'Daily at noon', value: '0 0 12 * * ?', titleKey: 'schedules.presets.dailyNoon' },
+    { text: 'Daily at 6 PM', value: '0 0 18 * * ?', titleKey: 'schedules.presets.dailyEvening' },
+    { text: 'Weekly on Monday at midnight', value: '0 0 0 ? * MON', titleKey: 'schedules.presets.weeklyMonday' },
+    { text: 'Weekly on Sunday at midnight', value: '0 0 0 ? * SUN', titleKey: 'schedules.presets.weeklySunday' },
+    { text: 'First day of month at midnight', value: '0 0 0 1 * ?', titleKey: 'schedules.presets.monthlyFirst' },
+    { text: 'Last day of month at midnight', value: '0 0 0 L * ?', titleKey: 'schedules.presets.lastDayOfMonth' }
   ]
 
   // Computed properties

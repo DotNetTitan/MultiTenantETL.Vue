@@ -3,14 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('schedules.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        @click="openCreateDialog"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('schedules.createSchedule') }}</span>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="openCreateDialog"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('schedules.createSchedule') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -105,14 +117,25 @@
           </template>
 
           <template #item.isActive="{ item }">
-            <v-switch
-              :model-value="item.isActive"
-              color="success"
-              hide-details
-              density="compact"
-              :loading="togglingId === item.id"
-              @update:model-value="toggleActive(item)"
-            />
+            <v-tooltip
+              :disabled="!authStore.isGuest"
+              location="bottom"
+            >
+              <template #activator="{ props }">
+                <div v-bind="props" :style="authStore.isGuest ? 'pointer-events: auto' : ''">
+                  <v-switch
+                    :model-value="item.isActive"
+                    color="success"
+                    hide-details
+                    density="compact"
+                    :loading="togglingId === item.id"
+                    :disabled="authStore.isGuest"
+                    @update:model-value="toggleActive(item)"
+                  />
+                </div>
+              </template>
+              {{ $t('common.guestReadOnly') }}
+            </v-tooltip>
           </template>
 
           <template #item.nextRunAt="{ item }">
@@ -142,35 +165,59 @@
 
           <template #item.actions="{ item }">
             <div class="d-flex flex-nowrap">
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :title="$t('schedules.trigger')"
-                :loading="triggeringId === item.id"
-                @click="triggerScheduleNow(item)"
-              >
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                :title="$t('schedules.editSchedule')"
-                @click="editSchedule(item)"
-              >
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                color="error"
-                :title="$t('schedules.deleteSchedule')"
-                @click="confirmDelete(item)"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :loading="triggeringId === item.id"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="triggerScheduleNow(item)"
+                    >
+                      <v-icon>mdi-play</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.trigger') }}</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="editSchedule(item)"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.editSchedule') }}</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('schedules.deleteSchedule') }}</span>
+              </v-tooltip>
             </div>
           </template>
         </v-data-table>
@@ -258,12 +305,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/auth'
 import { useSchedule } from '@/composables/useSchedule'
 import { useGlobalState } from '@/composables/useGlobalState'
 import { fetchPipelines } from '@/services/pipelineService'
 import ScheduleDialog from '@/components/schedules/ScheduleDialog.vue'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 const { showSuccess, showError } = useGlobalState()
 const {
   schedules,

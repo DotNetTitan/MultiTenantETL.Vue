@@ -10,9 +10,9 @@
         </div>
         
         <v-spacer />
-        
+
         <div class="d-flex align-center ga-2">
-          <tenant-selector v-if="isAdmin" class="flex-shrink-0" />
+          <tenant-selector v-if="!authStore.isGuest" class="flex-shrink-0" />
           <language-switcher class="flex-shrink-0" />
           
           <!-- AI Chatbot Toggle -->
@@ -30,6 +30,7 @@
             </template>
           </v-tooltip>
           
+          <!-- Dark mode toggle (temporarily disabled)
           <v-switch
             v-model="isDarkMode"
             hide-details
@@ -41,6 +42,7 @@
             false-icon="mdi-weather-sunny"
             @update:model-value="toggleTheme"
           />
+          -->
           
           <!-- User Menu -->
           <v-menu offset-y min-width="240">
@@ -71,10 +73,11 @@
               </v-card-text>
               
               <v-divider />
-              
+
               <!-- Menu Items -->
               <v-list density="compact" class="py-2">
                 <v-list-item
+                  v-if="!authStore.isGuest"
                   to="/settings"
                   prepend-icon="mdi-cog"
                   class="menu-item"
@@ -82,7 +85,7 @@
                 >
                   <v-list-item-title class="text-body-2">{{ $t('nav.settings') }}</v-list-item-title>
                 </v-list-item>
-                
+
                 <v-list-item
                   prepend-icon="mdi-logout"
                   class="menu-item logout-item"
@@ -100,7 +103,7 @@
 
     <v-navigation-drawer
       v-model="drawer"
-      :permanent="!isMobile"
+      :permanent="!isMobile && drawer"
       :temporary="isMobile"
       :theme="theme.global.name.value"
       class="sidebar-drawer"
@@ -125,12 +128,12 @@
 
         <!-- Navigation Items -->
         <v-list density="compact" nav>
-          <v-list-item to="/" prepend-icon="mdi-view-dashboard" :title="$t('nav.dashboard')" rounded="lg">
+          <v-list-item to="/" prepend-icon="mdi-view-dashboard" rounded="lg">
             <template #title>{{ $t('nav.dashboard') }}</template>
           </v-list-item>
-          
-          <v-list-subheader>{{ $t('common.data') }}</v-list-subheader>
-          
+
+          <v-list-subheader class="mt-2">{{ $t('common.data') }}</v-list-subheader>
+
           <v-list-item to="/pipelines" prepend-icon="mdi-pipe" rounded="lg">
             <template #title>{{ $t('nav.pipelines') }}</template>
           </v-list-item>
@@ -143,10 +146,10 @@
           <v-list-item to="/executions" prepend-icon="mdi-history" rounded="lg">
             <template #title>{{ $t('nav.executions') }}</template>
           </v-list-item>
-          
-          <template v-if="isAdmin">
-            <v-list-subheader>{{ $t('common.administration') }}</v-list-subheader>
-            
+
+          <template v-if="isAdmin && !authStore.isGuest">
+            <v-list-subheader class="mt-2">{{ $t('common.administration') }}</v-list-subheader>
+
             <v-list-item to="/tenants" prepend-icon="mdi-office-building" rounded="lg">
               <template #title>{{ $t('nav.tenants') }}</template>
             </v-list-item>
@@ -217,7 +220,9 @@ const userInitials = computed(() => {
 });
 
 function toggleTheme() {
-  theme.global.name.value = isDarkTheme.value ? 'light' : 'dark';
+  const newTheme = isDarkTheme.value ? 'light' : 'dark';
+  theme.global.name.value = newTheme;
+  localStorage.setItem('user-theme', newTheme);
 }
 
 function logout() {
@@ -232,8 +237,9 @@ function openChatbot() {
 </script>
 
 <style>
-/* Ensure app bar text and icons are white when using primary color in light mode */
+/* Softer app bar with gradient */
 .v-theme--light .v-app-bar {
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, #1565C0 100%) !important;
   color: white !important;
 }
 
@@ -243,13 +249,19 @@ function openChatbot() {
   color: white !important;
 }
 
-/* Softer user avatar in light mode */
-.v-theme--light .v-navigation-drawer .v-avatar {
+/* Softer user avatar in light mode for all containers */
+.v-theme--light .v-avatar {
   background-color: rgba(var(--v-theme-primary), 0.12) !important;
 }
 
-.v-theme--light .v-navigation-drawer .v-avatar .text-h6 {
+/* Ensure avatar text (initials) is primary blue in light mode */
+.v-theme--light .v-avatar span {
   color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* Special case for App Bar avatar to stand out on the blue background */
+.v-theme--light .v-app-bar .v-avatar {
+  background-color: white !important;
 }
 
 /* User Menu Improvements */
@@ -291,6 +303,30 @@ function openChatbot() {
 .v-theme--light .user-menu-card {
   background: #ffffff;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Sidebar refinement */
+.sidebar-drawer {
+  border-right: 1px solid rgba(var(--v-theme-outline), 0.5) !important;
+}
+
+.sidebar-drawer .v-list-item--active {
+  background: rgba(var(--v-theme-primary), 0.08) !important;
+  color: rgb(var(--v-theme-primary)) !important;
+  
+  .v-icon {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+}
+
+.sidebar-drawer .v-list-subheader {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em !important;
+  color: rgb(var(--v-theme-on-surface-variant)) !important;
+  opacity: 0.7;
+  padding-top: 16px !important;
 }
 
 /* Dark mode menu card */

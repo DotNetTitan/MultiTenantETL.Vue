@@ -73,11 +73,13 @@ export function useTransformation() {
           }
           // Validate columns exist
           if (inputSchema) {
-            transformation.config.groupByColumns.forEach(col => {
-              if (!inputSchema.columns.find(c => c.name === col)) {
-                errors.push({ field: 'groupByColumns', message: `Group by column '${col}' not found in input schema` });
-              }
-            });
+            if (Array.isArray(transformation.config.groupByColumns)) {
+              transformation.config.groupByColumns.forEach(col => {
+                if (!inputSchema.columns.find(c => c.name === col)) {
+                  errors.push({ field: 'groupByColumns', message: `Group by column '${col}' not found in input schema` });
+                }
+              });
+            }
             if (transformation.config.aggregationColumn &&
                 !inputSchema.columns.find(c => c.name === transformation.config.aggregationColumn)) {
               errors.push({ field: 'aggregationColumn', message: `Aggregation column '${transformation.config.aggregationColumn}' not found in input schema` });

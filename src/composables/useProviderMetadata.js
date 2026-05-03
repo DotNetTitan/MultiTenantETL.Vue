@@ -113,6 +113,12 @@ export function useProviderMetadata() {
     isLoaded,
     loadProviderMetadata,
     getProviderIcon,
-    getProviderColor
+    getProviderColor,
+    // For testing only
+    _resetState: () => {
+      providerMetadata.value = null
+      loading.value = false
+      error.value = null
+    }
   }
 }

@@ -2,7 +2,10 @@
   <div>
     <v-text-field
       :model-value="modelValue.findPattern"
-      :label="$t('transformation.findPattern')"
+      :label="modelValue.useRegex ? $t('transformation.regexPattern') : $t('transformation.findPattern')"
+      :placeholder="modelValue.useRegex ? $t('transformation.regexPatternPlaceholder') : $t('transformation.findPatternPlaceholder')"
+      :hint="modelValue.useRegex ? $t('transformation.regexPatternHint') : ''"
+      :persistent-hint="!!modelValue.useRegex"
       variant="outlined"
       density="comfortable"
       class="mb-3"
@@ -11,6 +14,9 @@
     <v-text-field
       :model-value="modelValue.replaceWith"
       :label="$t('transformation.replaceWith')"
+      :placeholder="modelValue.useRegex ? $t('transformation.replaceWithRegexPlaceholder') : ''"
+      :hint="modelValue.useRegex ? $t('transformation.replaceWithRegexHint') : ''"
+      :persistent-hint="!!modelValue.useRegex"
       variant="outlined"
       density="comfortable"
       class="mb-3"

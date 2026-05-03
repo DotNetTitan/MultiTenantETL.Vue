@@ -1,117 +1,142 @@
-import axios from 'axios'
-import { API_CONFIG } from '@/config/api'
-import { useAuthStore } from '@/stores/auth'
-import { useTenantStore } from '@/stores/tenant'
+import axios from "axios";
+import { API_CONFIG } from "@/config/api";
+import { useTenantStore } from "@/stores/tenant";
+
+let csrfToken = null;
+let csrfPromise = null;
+
+async function ensureCsrfToken() {
+  if (csrfToken) return csrfToken;
+
+  if (!csrfPromise) {
+    csrfPromise = api
+      .get("/bff/csrf")
+      .then((response) => {
+        // IMPORTANT: Use the request token returned by backend, not the XSRF cookie value.
+        csrfToken = response.data?.token || null;
+        return csrfToken;
+      })
+      .finally(() => {
+        csrfPromise = null;
+      });
+  }
+
+  return csrfPromise;
+}
 
 // Create axios instance with configuration
 const api = axios.create({
   ...API_CONFIG,
+  withCredentials: true,
   timeout: 30000, // 30 second timeout for all requests
-  timeoutErrorMessage: 'Request timeout - the server took too long to respond'
-})
+  timeoutErrorMessage: "Request timeout - the server took too long to respond",
+});
 
-// Request interceptor - add auth token and tenant header
+// Request interceptor - add tenant header
 api.interceptors.request.use(
-  (config) => {
-    const authStore = useAuthStore()
-    const tenantStore = useTenantStore()
-
-    // Add auth token if it exists
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+  async (config) => {
+    const tenantStore = useTenantStore();
 
     // Add tenant ID if it exists
     if (tenantStore.currentTenantId) {
-      config.headers['X-Tenant-Id'] = tenantStore.currentTenantId
+      config.headers["X-Tenant-Id"] = tenantStore.currentTenantId;
     }
 
-    return config
+    // Add CSRF token for unsafe methods in cookie-auth mode.
+    const method = (config.method || "get").toUpperCase();
+    const isUnsafeMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+
+    if (isUnsafeMethod) {
+      const token = await ensureCsrfToken();
+      if (token) {
+        config.headers["X-CSRF-TOKEN"] = token;
+      }
+    }
+
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
-// Response interceptor - handle token refresh on 401
+// Response interceptor - handle authentication/session errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config || {};
 
-    // Prevent infinite retry loops
-    if (originalRequest._retryCount >= 3) {
-      error.userMessage = 'Maximum retry attempts reached. Please try again later.'
-      return Promise.reject(error)
+    // If CSRF fails, refresh token and retry once.
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.title === "Invalid CSRF token"
+    ) {
+      csrfToken = null;
+
+      const method = (originalRequest.method || "get").toUpperCase();
+      const isUnsafeMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(
+        method,
+      );
+
+      if (isUnsafeMethod && !originalRequest._csrfRetry) {
+        originalRequest._csrfRetry = true;
+        const freshToken = await ensureCsrfToken();
+        if (freshToken) {
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers["X-CSRF-TOKEN"] = freshToken;
+        }
+        return api(originalRequest);
+      }
     }
 
-    // If 401 and not already retried, try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
+    // Handle unauthorized errors for session-based auth
+    if (error.response?.status === 401) {
+      // Avoid redirect loops for auth/guest pages and login endpoint itself
+      const path = window.location.pathname;
+      const isGuestPage = [
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/confirm-email",
+        "/auth/confirm-email",
+        "/auth/reset-password",
+      ].some((p) => path.startsWith(p));
 
-      // Check if we have a refresh token before attempting refresh
-      const refreshToken = localStorage.getItem('refresh_token')
-      if (!refreshToken) {
-        // No refresh token - user is logged out, silently reject without error
-        // The router will handle the redirect
-        return Promise.reject({ 
-          silent: true, 
-          message: 'No authentication token' 
-        })
+      if (!isGuestPage) {
+        window.location.href = "/login";
       }
 
-      try {
-        // Import auth service dynamically to avoid circular dependency
-        const { authService } = await import('./authService')
-
-        // Attempt token refresh
-        await authService.refreshToken()
-
-        // Retry original request with new token
-        const newToken = localStorage.getItem('access_token')
-        if (newToken) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`
-        }
-
-        return api(originalRequest)
-      } catch (refreshError) {
-        // Refresh failed - logout and redirect to login
-        const authStore = useAuthStore()
-        authStore.clearAuth()
-        
-        // Use router instead of window.location for proper SPA navigation
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login'
-        }
-        
-        return Promise.reject({ 
-          silent: true, 
-          message: 'Token refresh failed' 
-        })
-      }
+      return Promise.reject({
+        silent: true,
+        message: "Authentication required",
+      });
     }
 
     // Handle timeout errors
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      error.userMessage = 'Request timeout. The server is taking too long to respond. Please try again.'
-      error.isTimeout = true
-      return Promise.reject(error)
+    if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+      error.userMessage =
+        "Request timeout. The server is taking too long to respond. Please try again.";
+      error.isTimeout = true;
+      return Promise.reject(error);
     }
 
     // Implement exponential backoff for 5xx errors (but only retry safe methods)
-    const isRetryableError = error.response?.status >= 500 && error.response?.status < 600
-    const isSafeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(originalRequest.method?.toUpperCase())
-    
+    const isRetryableError =
+      error.response?.status >= 500 && error.response?.status < 600;
+    const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(
+      originalRequest.method?.toUpperCase(),
+    );
+
     if (isRetryableError && isSafeMethod && !originalRequest._retryCount) {
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1
-      
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+
       if (originalRequest._retryCount <= 2) {
         // Exponential backoff: 1s, 2s
-        const delay = Math.pow(2, originalRequest._retryCount - 1) * 1000
-        
-        await new Promise(resolve => setTimeout(resolve, delay))
-        return api(originalRequest)
+        const delay = Math.pow(2, originalRequest._retryCount - 1) * 1000;
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return api(originalRequest);
       }
     }
 
@@ -119,54 +144,60 @@ api.interceptors.response.use(
     if (!error.userMessage) {
       if (error.response) {
         // Backend uses ProblemDetails format: { status, title, detail, instance, type, traceId }
-        const data = error.response.data
+        const data = error.response.data;
         // For 400 errors, use detail (contains specific validation message) if available
         // For other errors, use title (generic category)
-        const errorMessage = error.response.status === 400 
-          ? (data?.detail || data?.title || 'Invalid request.')
-          : (data?.title || 'An error occurred. Please try again.')
-        
+        const errorMessage =
+          error.response.status === 400
+            ? data?.detail || data?.title || "Invalid request."
+            : data?.title || "An error occurred. Please try again.";
+
         // Server responded with error status
         switch (error.response.status) {
           case 400:
-            error.userMessage = errorMessage
-            break
+            error.userMessage = errorMessage;
+            break;
           case 403:
-            error.userMessage = errorMessage || 'You do not have permission to perform this action.'
-            break
+            error.userMessage =
+              errorMessage ||
+              "You do not have permission to perform this action.";
+            break;
           case 404:
-            error.userMessage = errorMessage || 'The requested resource was not found.'
-            break
+            error.userMessage =
+              errorMessage || "The requested resource was not found.";
+            break;
           case 409:
-            error.userMessage = errorMessage
-            break
+            error.userMessage = errorMessage;
+            break;
           case 422:
-            error.userMessage = errorMessage
-            break
+            error.userMessage = errorMessage;
+            break;
           case 429:
-            error.userMessage = 'Too many requests. Please try again later.'
-            break
+            error.userMessage = "Too many requests. Please try again later.";
+            break;
           case 500:
           case 502:
           case 503:
           case 504:
-            error.userMessage = 'A server error occurred. Please try again later.'
-            break
+            error.userMessage =
+              "A server error occurred. Please try again later.";
+            break;
           default:
-            error.userMessage = errorMessage
+            error.userMessage = errorMessage;
         }
       } else if (error.request) {
         // Request made but no response received (network error)
-        error.userMessage = 'Network error. Please check your internet connection.'
-        error.isNetworkError = true
+        error.userMessage =
+          "Network error. Please check your internet connection.";
+        error.isNetworkError = true;
       } else {
         // Something else happened
-        error.userMessage = 'An unexpected error occurred.'
+        error.userMessage = "An unexpected error occurred.";
       }
     }
 
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 
-export default api
+export default api;

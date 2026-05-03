@@ -15,8 +15,9 @@
           :title="t('common.connection')"
           :subtitle="t('common.connectionDetails')"
         />
-        <v-icon class="step-arrow">mdi-chevron-right</v-icon>
+        <v-icon v-if="showSchemaStep" class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
+          v-if="showSchemaStep"
           :complete="currentStep > 3"
           :value="3"
           :title="t('common.schema')"
@@ -32,7 +33,7 @@
         />
         <v-icon class="step-arrow">mdi-chevron-right</v-icon>
         <v-stepper-item
-          :value="showWriteConfigStep ? 5 : 4"
+          :value="lastStep"
           :title="t('common.reviewAndSave')"
           :subtitle="t('common.reviewConfiguration')"
         />
@@ -65,36 +66,51 @@
                 />
               </v-col>
               <v-col cols="12" md="4">
-                <v-select
-                  v-model="connector.type"
-                  :items="connectorTypes"
-                  item-title="title"
-                  item-value="value"
-                  :label="t('connectors.type')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
-                  required
-                  @update:model-value="handleTypeChange"
-                >
-                  <template #item="{ item, props }">
-                    <v-list-item v-bind="props">
-                      <template #prepend>
-                        <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
-                      </template>
-                    </v-list-item>
+                <v-tooltip :disabled="!isEditMode" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <div v-bind="tooltipProps" class="w-100">
+                      <v-select
+                        v-model="connector.type"
+                        :items="connectorTypes"
+                        item-title="title"
+                        item-value="value"
+                        :label="t('connectors.type')"
+                        variant="outlined"
+                        :rules="[v => !!v || t('validation.required', { field: t('connectors.type') })]"
+                        required
+                        :disabled="isEditMode"
+                        @update:model-value="handleTypeChange"
+                      >
+                        <template #item="{ item, props }">
+                          <v-list-item v-bind="props">
+                            <template #prepend>
+                              <v-icon>{{ getTypeIcon(item.value) }}</v-icon>
+                            </template>
+                          </v-list-item>
+                        </template>
+                      </v-select>
+                    </div>
                   </template>
-                </v-select>
+                  {{ t('connectors.typeImmutable') }}
+                </v-tooltip>
               </v-col>
               <v-col cols="12" md="4">
-                <v-select
-                  v-model="connector.provider"
-                  :items="providerOptions"
-                  :label="t('connectors.provider')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
-                  required
-                  :disabled="!connector.type"
-                />
+                <v-tooltip :disabled="!isEditMode" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <div v-bind="tooltipProps" class="w-100">
+                      <v-select
+                        v-model="connector.provider"
+                        :items="providerOptions"
+                        :label="t('connectors.provider')"
+                        variant="outlined"
+                        :rules="[v => !!v || t('validation.required', { field: t('connectors.provider') })]"
+                        required
+                        :disabled="!connector.type || isEditMode"
+                      />
+                    </div>
+                  </template>
+                  {{ t('connectors.providerImmutable') }}
+                </v-tooltip>
               </v-col>
               <v-col cols="12" md="4">
                 <v-select
@@ -127,73 +143,170 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
-              <span class="font-weight-medium">{{ connector.provider }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
+              <span class="font-weight-medium">{{ connector.provider }}</span> ·
               <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ t('common.connectionConfiguration') }}</div>
-            
+
             <!-- Database Connection -->
             <v-row v-if="connector.type === 'Database'">
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.host"
-                  :label="t('connectors.server')"
-                  :placeholder="t('connectors.serverPlaceholder')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.server') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model.number="connector.config.port"
-                  :label="t('connectors.port')"
-                  :placeholder="getDefaultPort(connector.provider).toString()"
-                  variant="outlined"
-                  type="number"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.database"
-                  :label="t('connectors.databaseName')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.username"
-                  :label="t('connectors.username')"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="connector.config.password"
-                  :label="t('connectors.password')"
-                  type="password"
-                  variant="outlined"
-                  :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
-                  required
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-switch
-                  v-model="connector.config.useSsl"
-                  :label="t('connectors.useSsl')"
-                  color="primary"
-                  hide-details
-                />
-              </v-col>
-              
-              <!-- Source/Both: Table Name or Query -->
-              <template v-if="connector.direction === 'source' || connector.direction === 'both'">
+              <!-- MongoDB Provider -->
+              <template v-if="connector.provider === 'MongoDb'">
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="connector.config.connectionString"
+                    :label="t('connectors.connectionString')"
+                    :placeholder="t('connectors.mongodbConnectionStringPlaceholder')"
+                    variant="outlined"
+                    rows="2"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.connectionString') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.collectionName"
+                    :label="t('connectors.collectionName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.collectionName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col v-if="connector.direction === 'source' || connector.direction === 'both'" cols="12">
+                  <v-textarea
+                    v-model="connector.config.filterJson"
+                    :label="t('connectors.filterJson')"
+                    :placeholder="t('connectors.filterJsonPlaceholder')"
+                    variant="outlined"
+                    rows="3"
+                    :rules="[v => !v || isValidJson(v) || t('validation.invalidJson')]"
+                  />
+                </v-col>
+              </template>
+
+              <!-- Cosmos DB Provider -->
+              <template v-else-if="connector.provider === 'CosmosDb'">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.cosmosEndpoint"
+                    :label="t('connectors.cosmosEndpoint')"
+                    :placeholder="t('connectors.cosmosEndpointPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.cosmosEndpoint') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="connector.config.cosmosKey"
+                    :label="t('connectors.cosmosKey')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.cosmosKey') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.container"
+                    :label="t('connectors.containerName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.containerName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col v-if="connector.direction === 'source' || connector.direction === 'both'" cols="12">
+                  <v-textarea
+                    v-model="connector.config.query"
+                    :label="t('connectors.customQuery')"
+                    placeholder="SELECT * FROM c"
+                    variant="outlined"
+                    rows="3"
+                  />
+                </v-col>
+              </template>
+
+              <!-- Other Database Providers (SQL Server, PostgreSQL, MySQL) -->
+              <template v-else>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.host"
+                    :label="t('connectors.server')"
+                    :placeholder="t('connectors.serverPlaceholder')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.server') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="connector.config.port"
+                    :label="t('connectors.port')"
+                    :placeholder="getDefaultPort(connector.provider).toString()"
+                    variant="outlined"
+                    type="number"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.database"
+                    :label="t('connectors.databaseName')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.databaseName') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.username"
+                    :label="t('connectors.username')"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.username') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="connector.config.password"
+                    :label="t('connectors.password')"
+                    type="password"
+                    variant="outlined"
+                    :rules="[v => !!v || t('validation.required', { field: t('connectors.password') })]"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-switch
+                    v-model="connector.config.useSsl"
+                    :label="t('connectors.useSsl')"
+                    color="primary"
+                    hide-details
+                  />
+                </v-col>
+              </template>
+
+              <!-- Source/Both: Table Name or Query (Excluded for MongoDB and CosmosDB) -->
+              <template v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.provider !== 'MongoDb' && connector.provider !== 'CosmosDb'">
                 <v-col cols="12">
                   <v-switch
                     v-model="connector.config.useCustomQuery"
@@ -225,7 +338,7 @@
                   />
                 </v-col>
               </template>
-              
+
               <v-col cols="12">
                 <v-switch
                   v-model="connector.config.useCustomConnectionString"
@@ -282,6 +395,16 @@
               </v-col>
               <v-col cols="12" md="6">
                 <v-select
+                  v-model="connector.config.responseFormat"
+                  :items="responseFormats"
+                  :label="t('connectors.responseFormat')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.responseFormat') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
                   v-model="connector.config.authType"
                   :items="authTypes"
                   :label="t('connectors.authenticationType')"
@@ -300,7 +423,7 @@
                     :hint="t('connectors.useDynamicTokenHint')"
                   />
                 </v-col>
-                
+
                 <!-- Static Token -->
                 <v-col v-if="!connector.config.useDynamicToken" cols="12">
                   <v-text-field
@@ -312,7 +435,7 @@
                     persistent-hint
                   />
                 </v-col>
-                
+
                 <!-- Dynamic Token Configuration -->
                 <template v-else>
                   <v-col cols="12">
@@ -325,7 +448,7 @@
                       required
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-select
                       v-model="connector.config.tokenEndpointMethod"
@@ -334,7 +457,7 @@
                       variant="outlined"
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-text-field
                       v-model="connector.config.tokenResponsePath"
@@ -345,31 +468,31 @@
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12">
                     <v-textarea
                       v-model="connector.config.tokenEndpointBody"
                       :label="t('connectors.requestBody')"
-                      placeholder='{"client_id": "xxx", "client_secret": "yyy", "grant_type": "client_credentials"}'
+                      placeholder="{&quot;client_id&quot;: &quot;xxx&quot;, &quot;client_secret&quot;: &quot;yyy&quot;, &quot;grant_type&quot;: &quot;client_credentials&quot;}"
                       variant="outlined"
                       rows="3"
                       :hint="t('connectors.tokenRequestBodyHint')"
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12">
                     <v-textarea
                       v-model="connector.config.tokenEndpointHeadersText"
                       :label="t('connectors.requestHeaders')"
-                      placeholder='{"Content-Type": "application/json"}'
+                      placeholder="{&quot;Content-Type&quot;: &quot;application/json&quot;}"
                       variant="outlined"
                       rows="2"
                       :hint="t('connectors.tokenRequestHeadersHint')"
                       persistent-hint
                     />
                   </v-col>
-                  
+
                   <v-col cols="12" md="6">
                     <v-text-field
                       v-model.number="connector.config.tokenExpirySeconds"
@@ -485,19 +608,7 @@
                 />
               </v-col>
 
-              <!-- Local Storage -->
-              <template v-if="connector.provider === 'Local'">
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.path"
-                    :label="t('connectors.filePath')"
-                    :placeholder="t('connectors.filePathPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.filePath') })]"
-                    required
-                  />
-                </v-col>
-              </template>
+              <!-- Local storage option removed; SFTP/FTP and cloud providers handled below -->
 
               <!-- FTP Storage -->
               <template v-if="connector.provider === 'FTP'">
@@ -603,70 +714,8 @@
                 </v-col>
               </template>
 
-              <!-- S3 Storage -->
-              <template v-if="connector.provider === 'S3'">
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3Bucket"
-                    :label="t('connectors.bucketName')"
-                    :placeholder="t('connectors.bucketPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.bucketName') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3Region"
-                    :label="t('connectors.region')"
-                    :placeholder="t('connectors.regionPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.region') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3AccessKey"
-                    :label="t('connectors.accessKeyId')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.accessKeyId') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="connector.config.s3SecretKey"
-                    :label="t('connectors.secretAccessKey')"
-                    type="password"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.secretAccessKey') })]"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.s3Endpoint"
-                    :label="t('connectors.s3Endpoint')"
-                    :placeholder="t('connectors.s3EndpointPlaceholder')"
-                    variant="outlined"
-                    :hint="t('connectors.s3EndpointHint')"
-                    persistent-hint
-                  />
-                </v-col>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="connector.config.path"
-                    :label="t('connectors.objectKey')"
-                    :placeholder="t('connectors.objectKeyPlaceholder')"
-                    variant="outlined"
-                    :rules="[v => !!v || t('validation.required', { field: t('connectors.objectKey') })]"
-                    required
-                  />
-                </v-col>
-              </template>
 
-              <!-- Azure Blob Storage -->
+              <!-- AzureBlob Storage -->
               <template v-if="connector.provider === 'AzureBlob'">
                 <v-col cols="12" md="6">
                   <v-text-field
@@ -710,6 +759,7 @@
                 </v-col>
               </template>
 
+
               <!-- Format-specific options (CSV) -->
               <v-col v-if="connector.config.format === 'CSV'" cols="12" md="6">
                 <v-text-field
@@ -751,24 +801,118 @@
                 </div>
               </v-col>
             </v-row>
+
+            <!-- Email Connection -->
+            <v-row v-else-if="connector.type === 'Email'">
+              <v-col cols="12">
+                <v-combobox
+                  v-model="connector.config.recipients"
+                  :label="t('connectors.recipients')"
+                  :placeholder="t('connectors.recipientsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                  :rules="[v => (v && v.length > 0) || t('validation.required', { field: t('connectors.recipients') })]"
+                  :hint="t('connectors.recipientsHint')"
+                  persistent-hint
+                  required
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-combobox
+                  v-model="connector.config.ccRecipients"
+                  :label="t('connectors.ccRecipients')"
+                  :placeholder="t('connectors.ccRecipientsPlaceholder')"
+                  variant="outlined"
+                  multiple
+                  chips
+                  closable-chips
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.subject"
+                  :label="t('connectors.emailSubject')"
+                  :placeholder="t('connectors.emailSubjectPlaceholder')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.emailSubject') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="connector.config.attachmentFormat"
+                  :items="fileFormats"
+                  :label="t('connectors.attachmentFormat')"
+                  variant="outlined"
+                  :rules="[v => !!v || t('validation.required', { field: t('connectors.attachmentFormat') })]"
+                  required
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="connector.config.bodyMessage"
+                  :label="t('connectors.emailBodyMessage')"
+                  :placeholder="t('connectors.emailBodyPlaceholder')"
+                  variant="outlined"
+                  rows="3"
+                  auto-grow
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="connector.config.attachmentFileName"
+                  :label="t('connectors.attachmentFileName')"
+                  :placeholder="t('connectors.attachmentFileNamePlaceholder')"
+                  variant="outlined"
+                  :hint="t('connectors.attachmentFileNameHint')"
+                  persistent-hint
+                />
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-switch
+                  v-model="connector.config.writeConfig.sendEmptyReport"
+                  :label="t('connectors.sendEmptyReport')"
+                  color="primary"
+                  :hint="t('connectors.sendEmptyReportHint')"
+                  persistent-hint
+                />
+              </v-col>
+
+              <!-- Preview Email Button -->
+              <v-col cols="12" class="text-center mt-4">
+                <v-btn
+                  color="deep-orange"
+                  variant="outlined"
+                  prepend-icon="mdi-email-search"
+                  :loading="loadingEmailPreview"
+                  :disabled="!validateConnectionConfig()"
+                  @click="previewEmail"
+                >
+                  {{ t('connectors.previewEmail') }}
+                </v-btn>
+              </v-col>
+            </v-row>
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 3: Schema Definition -->
-        <v-stepper-window-item :value="3">
+        <!-- Step 3: Schema Definition (skipped for Email) -->
+        <v-stepper-window-item v-if="showSchemaStep" :value="3">
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
               <span class="font-weight-medium">{{ connector.provider }}</span><template v-if="connector.type === 'File'">
-                · 
+                ·
                 <span class="font-weight-medium">{{ connector.config.format }}</span>
-              </template> · 
+              </template> ·
               <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ t('connectors.schemaDefinition') }}</div>
-            
+
             <SchemaEditor
               v-model="connector.schema.fields"
               :connector-type="connector.type"
@@ -776,6 +920,7 @@
               :provider="connector.provider"
               :config="connector.config"
               @validate="handleSchemaValidation"
+              @table-name-detected="handleTableNameDetected"
             />
           </div>
         </v-stepper-window-item>
@@ -785,17 +930,17 @@
           <div class="pa-6">
             <!-- Context Summary -->
             <div class="text-caption text-medium-emphasis mb-2">
-              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> · 
+              {{ $t('common.configuring') }}: <span class="font-weight-medium">{{ connector.type }}</span> ·
               <span class="font-weight-medium">{{ connector.provider }}</span><template v-if="connector.type === 'File'">
-                · 
+                ·
                 <span class="font-weight-medium">{{ connector.config.format }}</span>
-              </template> · 
-              <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span> · 
+              </template> ·
+              <span class="font-weight-medium">{{ connector.direction === 'source' ? $t('connectors.source') : connector.direction === 'destination' ? $t('connectors.destination') : $t('connectors.sourceAndDestination') }}</span> ·
               <span class="font-weight-medium">{{ connector.schema.fields.length }} {{ $t('connectors.fields', connector.schema.fields.length) }}</span>
             </div>
-            
+
             <div class="text-h5 mb-4">{{ $t('common.writeConfiguration') }}</div>
-            
+
             <p class="text-body-2 text-medium-emphasis mb-6">
               {{ $t('connectors.writeConfigDescription') }}
             </p>
@@ -868,7 +1013,7 @@
               <v-col cols="12" md="6">
                 <v-select
                   v-model="connector.config.writeConfig.requestFormat"
-                  :items="['JSON', 'XML', 'Form Data']"
+                  :items="requestFormats"
                   :label="t('connectors.requestFormat')"
                   variant="outlined"
                   :hint="t('connectors.requestFormatHint')"
@@ -941,7 +1086,7 @@
                 </v-tooltip>
                 <v-tooltip :text="$t('connectors.pipelineTooltip')" location="top">
                   <template #activator="{ props }">
-                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipeline}</v-chip>
+                    <v-chip size="small" class="mr-2 mb-2" v-bind="props">{pipelineId}</v-chip>
                   </template>
                 </v-tooltip>
                 <v-tooltip :text="$t('connectors.executionIdTooltip')" location="top">
@@ -1042,11 +1187,11 @@
           </div>
         </v-stepper-window-item>
 
-        <!-- Step 4/5: Review & Save -->
-        <v-stepper-window-item :value="showWriteConfigStep ? 5 : 4">
+        <!-- Review & Save -->
+        <v-stepper-window-item :value="lastStep">
           <div class="pa-6">
             <div class="text-h5 mb-4">{{ t('common.reviewConfiguration') }}</div>
-            
+
             <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
@@ -1097,34 +1242,82 @@
                 <v-list density="compact">
                   <!-- Database Connection Details -->
                   <template v-if="connector.type === 'Database'">
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-server</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.server') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.server }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item v-if="connector.config.port">
-                      <template #prepend>
-                        <v-icon>mdi-network</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.port') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.port }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-database</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.database') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item>
-                      <template #prepend>
-                        <v-icon>mdi-account</v-icon>
-                      </template>
-                      <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
-                    </v-list-item>
+                    <template v-if="connector.provider === 'CosmosDb'">
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-link-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.cosmosEndpoint') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.cosmosEndpoint }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database-cog</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.containerName') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.container }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.query">
+                        <template #prepend>
+                          <v-icon>mdi-code-braces</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.customQuery') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.query }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-else-if="connector.provider === 'MongoDb'">
+                      <v-list-item v-if="connector.config.connectionString">
+                        <template #prepend>
+                          <v-icon>mdi-link-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.connectionString') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.connectionString }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database-cog</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.collectionName') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.collectionName }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.filterJson">
+                        <template #prepend>
+                          <v-icon>mdi-filter-variant</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.filterJson') }}</v-list-item-title>
+                        <v-list-item-subtitle class="text-truncate">{{ connector.config.filterJson }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                    <template v-else>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-server</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.server') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.host }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item v-if="connector.config.port">
+                        <template #prepend>
+                          <v-icon>mdi-network</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.port') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.port }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-database</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.database') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.database }}</v-list-item-subtitle>
+                      </v-list-item>
+                      <v-list-item>
+                        <template #prepend>
+                          <v-icon>mdi-account</v-icon>
+                        </template>
+                        <v-list-item-title>{{ t('connectors.username') }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ connector.config.username }}</v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
                     <v-list-item v-if="(connector.direction === 'source' || connector.direction === 'both') && connector.config.tableName">
                       <template #prepend>
                         <v-icon>mdi-table</v-icon>
@@ -1137,14 +1330,14 @@
                         <v-icon>mdi-code-braces</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.customQuery') }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.query"></v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-truncate">{{ connector.config.query }}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="connector.config.useCustomConnectionString">
                       <template #prepend>
                         <v-icon>mdi-link-variant</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.customConnectionString') }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.connectionString"></v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-truncate">{{ connector.config.connectionString }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
@@ -1169,7 +1362,7 @@
                         <v-icon>mdi-code-json</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.customHeaders') }}</v-list-item-title>
-                      <v-list-item-subtitle class="text-truncate" v-text="connector.config.headers"></v-list-item-subtitle>
+                      <v-list-item-subtitle class="text-truncate">{{ connector.config.headers }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
 
@@ -1184,10 +1377,8 @@
                     </v-list-item>
                     <v-list-item>
                       <template #prepend>
-                        <v-icon v-if="connector.provider === 'Local'">mdi-folder</v-icon>
-                        <v-icon v-else-if="connector.provider === 'FTP'">mdi-server-network</v-icon>
-                        <v-icon v-else-if="connector.provider === 'S3'">mdi-aws</v-icon>
-                        <v-icon v-else-if="connector.provider === 'Azure Blob'">mdi-microsoft-azure</v-icon>
+                        <v-icon v-if="connector.provider === 'FTP' || connector.provider === 'SFTP'">mdi-server-network</v-icon>
+                        <v-icon v-else-if="connector.provider === 'AzureBlob'">mdi-microsoft-azure</v-icon>
                         <v-icon v-else>mdi-cloud</v-icon>
                       </template>
                       <v-list-item-title>{{ t('connectors.storageProvider') }}</v-list-item-title>
@@ -1216,23 +1407,7 @@
                         <v-list-item-subtitle>{{ connector.config.ftpUsername }}</v-list-item-subtitle>
                       </v-list-item>
                     </template>
-                    <template v-if="connector.provider === 'S3'">
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-bucket</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.s3Bucket') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.s3Bucket }}</v-list-item-subtitle>
-                      </v-list-item>
-                      <v-list-item>
-                        <template #prepend>
-                          <v-icon>mdi-earth</v-icon>
-                        </template>
-                        <v-list-item-title>{{ t('connectors.region') }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ connector.config.s3Region }}</v-list-item-subtitle>
-                      </v-list-item>
-                    </template>
-                    <template v-if="connector.provider === 'Azure Blob'">
+                    <template v-if="connector.provider === 'AzureBlob'">
                       <v-list-item>
                         <template #prepend>
                           <v-icon>mdi-table-large</v-icon>
@@ -1270,6 +1445,52 @@
                       <v-list-item-subtitle>{{ connector.config.hasHeader ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
+
+                  <!-- Email Connection Details -->
+                  <template v-if="connector.type === 'Email'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-email-multiple</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.recipients') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.recipients?.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.ccRecipients && connector.config.ccRecipients.length > 0">
+                      <template #prepend>
+                        <v-icon>mdi-email-outline</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.ccRecipients') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.ccRecipients.join(', ') }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-text-short</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.emailSubject') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.subject }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-paperclip</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.attachmentFormat') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.attachmentFormat }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.attachmentFileName">
+                      <template #prepend>
+                        <v-icon>mdi-file-document-outline</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.attachmentFileName') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.attachmentFileName }}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item v-if="connector.config.bodyMessage">
+                      <template #prepend>
+                        <v-icon>mdi-message-text</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.emailBodyMessage') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.bodyMessage }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -1294,8 +1515,8 @@
               </v-card-text>
             </v-card>
 
-            <!-- Schema Fields -->
-            <v-card variant="outlined" class="mb-4">
+            <!-- Schema Fields (hidden for Email since schema step is skipped) -->
+            <v-card v-if="showSchemaStep" variant="outlined" class="mb-4">
               <v-card-title class="text-subtitle-1 bg-surface-variant">
                 <v-icon class="mr-2">mdi-table</v-icon>
                 {{ t('connectors.schemaFields') }} ({{ connector.schema.fields.length }})
@@ -1454,6 +1675,17 @@
                       <v-list-item-subtitle>{{ connector.config.writeConfig.rootKey }}</v-list-item-subtitle>
                     </v-list-item>
                   </template>
+
+                  <!-- Email Write Config -->
+                  <template v-if="connector.type === 'Email'">
+                    <v-list-item>
+                      <template #prepend>
+                        <v-icon>mdi-email-check</v-icon>
+                      </template>
+                      <v-list-item-title>{{ t('connectors.sendEmptyReport') }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ connector.config.writeConfig.sendEmptyReport ? t('common.yes') : t('common.no') }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -1469,18 +1701,18 @@
         v-if="currentStep > 1"
         variant="outlined"
         prepend-icon="mdi-chevron-left"
-        @click="currentStep--"
+        @click="goToPrevStep"
       >
         {{ t('common.back') }}
       </v-btn>
       <v-spacer />
       <v-btn
-        v-if="currentStep < (showWriteConfigStep ? 5 : 4)"
+        v-if="currentStep < lastStep"
         color="primary"
         variant="elevated"
         append-icon="mdi-chevron-right"
         :disabled="!canProceed"
-        @click="currentStep++"
+        @click="goToNextStep"
       >
         {{ t('common.next') }}
       </v-btn>
@@ -1497,17 +1729,119 @@
         <v-tooltip activator="parent" location="top">{{ t('common.saveConnector') }}</v-tooltip>
       </v-btn>
     </v-card-actions>
+
+    <!-- Email Preview Dialog -->
+    <v-dialog v-model="showEmailPreview" max-width="720">
+      <v-card>
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" color="primary">mdi-email-search</v-icon>
+          <span class="text-h6">{{ t('connectors.emailPreviewTitle') }}</span>
+          <v-spacer />
+          <v-btn icon variant="text" @click="showEmailPreview = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="pa-6" style="overflow-y: hidden;">
+          <!-- Envelope metadata section -->
+          <div class="pa-4 rounded mb-4" style="background-color: rgba(var(--v-theme-on-surface), 0.05)">
+            <!-- Subject -->
+            <div class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-email-outline</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis">{{ t('connectors.emailSubject') }}</div>
+                <div class="text-body-1 font-weight-medium">{{ connector.config.subject || '(no subject)' }}</div>
+              </div>
+            </div>
+
+            <!-- Recipients -->
+            <div class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-account-multiple</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis mb-1">{{ t('connectors.recipients') }}</div>
+                <v-chip
+                  v-for="(email, idx) in (connector.config.recipients || [])"
+                  :key="'to-' + idx"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="mr-1 mb-1"
+                >
+                  {{ email }}
+                </v-chip>
+                <span v-if="!connector.config.recipients?.length" class="text-medium-emphasis">(none)</span>
+              </div>
+            </div>
+
+            <!-- CC -->
+            <div v-if="connector.config.ccRecipients?.length" class="d-flex align-start mb-3">
+              <v-icon size="small" color="primary" class="mr-2 mt-1">mdi-account-multiple-outline</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis mb-1">{{ t('connectors.ccRecipients') }}</div>
+                <v-chip
+                  v-for="(email, idx) in connector.config.ccRecipients"
+                  :key="'cc-' + idx"
+                  size="small"
+                  variant="tonal"
+                  class="mr-1 mb-1"
+                >
+                  {{ email }}
+                </v-chip>
+              </div>
+            </div>
+
+            <!-- Attachment indicator -->
+            <div class="d-flex align-center">
+              <v-icon size="small" color="primary" class="mr-2">mdi-paperclip</v-icon>
+              <span class="text-caption text-medium-emphasis mr-2">{{ t('connectors.attachmentFormat') }}</span>
+              <v-chip size="small" variant="outlined">
+                {{ connector.config.attachmentFormat || 'CSV' }}
+              </v-chip>
+            </div>
+          </div>
+
+          <!-- Email body preview in sandboxed iframe -->
+          <div class="rounded" style="border: thin solid rgba(var(--v-theme-on-surface), 0.12); overflow: hidden;">
+            <v-progress-linear
+              v-if="loadingEmailPreview"
+              indeterminate
+              color="primary"
+            />
+            <iframe
+              v-if="emailPreviewHtml && !loadingEmailPreview"
+              :srcdoc="emailPreviewSrcdoc"
+              sandbox
+              style="width: 100%; height: clamp(300px, 50vh, 600px); border: none;"
+            />
+          </div>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn color="primary" @click="showEmailPreview = false">
+            {{ t('common.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTheme } from 'vuetify';
 import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
 import SchemaEditor from './SchemaEditor.vue';
 import ApiEndpointEditor from './ApiEndpointEditor.vue';
 
 const { t } = useI18n();
+const vuetifyTheme = useTheme();
+const isDark = computed(() => vuetifyTheme.global.current.value.dark);
 
 const props = defineProps({
   connector: {
@@ -1539,6 +1873,33 @@ const testingConnection = ref(false);
 const connectionTestResult = ref(false);
 const connectionTestSuccess = ref(false);
 const connectionTestMessage = ref('');
+const showEmailPreview = ref(false);
+const loadingEmailPreview = ref(false);
+const emailPreviewHtml = ref('');
+
+const emailPreviewSrcdoc = computed(() => {
+  if (!emailPreviewHtml.value) return '';
+  if (!isDark.value) return emailPreviewHtml.value;
+  const darkCss = `<style>
+    body { background-color: #1e1e1e !important; color: #e0e0e0 !important; }
+    .container { background: #2d2d2d !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; }
+    .content { background: #2d2d2d !important; }
+    .content h2 { color: #e0e0e0 !important; }
+    .content p, .content li { color: #ccc !important; }
+    .footer { background: #252525 !important; border-top-color: #444 !important; color: #999 !important; }
+    .footer a { color: #64b5f6 !important; }
+    .success-note { background: #1b3a1b !important; border-left-color: #4CAF50 !important; color: #a5d6a7 !important; }
+    .success-note strong { color: #a5d6a7 !important; }
+    .security-note { background: #3e2e0f !important; border-left-color: #FFA000 !important; color: #ffe0b2 !important; }
+    .security-note strong { color: #ffe0b2 !important; }
+    .divider { background: #444 !important; }
+    table td { color: #ccc !important; }
+    td[style*="font-weight: 600"] { color: #e0e0e0 !important; }
+    div[style*="background: #F5F5F5"], div[style*="background:#F5F5F5"] { background: #333 !important; }
+    tr[style*="border-top"] { border-top-color: #444 !important; }
+  </style>`;
+  return emailPreviewHtml.value.replace('</head>', darkCss + '</head>');
+});
 
 // Use translated metadata service
 const {
@@ -1547,31 +1908,56 @@ const {
   authTypes: metadataAuthTypes,
   fileFormats: metadataFileFormats,
   httpMethods: metadataHttpMethods,
+  apiResponseFormats: metadataApiResponseFormats,
   getProvidersForType
 } = useTranslatedMetadata();
 
 // Map to component format for compatibility
-const connectorTypes = computed(() => 
+const connectorTypes = computed(() =>
   metadataConnectorTypes.value.map(type => ({
     title: type.label,
     value: type.value
   }))
 );
 
-const directionOptions = computed(() => 
-  directions.value.map(dir => ({
+const directionOptions = computed(() => {
+  const allDirections = directions.value.map(dir => ({
     title: dir.label,
     value: dir.value,
     icon: dir.icon
-  }))
-);
+  }));
 
-const authTypes = computed(() => 
+  // Email connectors are destination-only
+  if (props.connector.type === 'Email') {
+    return allDirections.filter(d => d.value === 'destination');
+  }
+
+  return allDirections;
+});
+
+const authTypes = computed(() =>
   metadataAuthTypes.value.map(auth => auth.label)
 );
 
-const fileFormats = computed(() => 
+const responseFormats = computed(() =>
+  metadataApiResponseFormats.value
+    .filter(format => format.isSupported !== false)
+    .map(format => ({
+      title: format.label,
+      value: format.value
+    }))
+);
+
+const requestFormats = computed(() => responseFormats.value);
+
+const fileFormats = computed(() =>
   metadataFileFormats.value.map(format => format.value)
+);
+
+const fileFormatExtensions = computed(() =>
+  Object.fromEntries(
+    metadataFileFormats.value.map(f => [f.value, f.extension?.replace('.', '') || f.value.toLowerCase()])
+  )
 );
 
 const httpMethods = computed(() => {
@@ -1583,9 +1969,55 @@ const providerOptions = computed(() => {
   return getProvidersForType(props.connector.type);
 });
 
+const isEditMode = computed(() => {
+  return props.connector.id !== null && props.connector.id !== undefined;
+});
+
+const showSchemaStep = computed(() => {
+  return props.connector.type !== 'Email';
+});
+
 const showWriteConfigStep = computed(() => {
+  if (props.connector.type === 'Email') return false;
   return props.connector.direction === 'destination' || props.connector.direction === 'both';
 });
+
+const lastStep = computed(() => {
+  // Review step takes the next value after the last visible optional step
+  // Fixed step values: 1=Basic, 2=Connection, 3=Schema(optional), 4=WriteConfig(optional)
+  if (showWriteConfigStep.value) return 5;   // After WriteConfig(4)
+  if (showSchemaStep.value) return 4;         // After Schema(3), no WriteConfig
+  return 3;                                   // After Connection(2), no Schema/WriteConfig
+});
+
+function goToNextStep() {
+  const cur = currentStep.value;
+  if (cur === 2 && !showSchemaStep.value) {
+    // Skip schema; go to write config or review
+    currentStep.value = showWriteConfigStep.value ? 4 : lastStep.value;
+  } else if (cur === 3 && !showWriteConfigStep.value) {
+    // Skip write config; go to review
+    currentStep.value = lastStep.value;
+  } else {
+    currentStep.value = cur + 1;
+  }
+}
+
+function goToPrevStep() {
+  const cur = currentStep.value;
+  if (cur === lastStep.value && !showWriteConfigStep.value && !showSchemaStep.value) {
+    // Review -> Connection (both schema and write config are skipped)
+    currentStep.value = 2;
+  } else if (cur === lastStep.value && !showWriteConfigStep.value) {
+    // Review -> Schema (write config skipped)
+    currentStep.value = 3;
+  } else if (cur === 4 && !showSchemaStep.value) {
+    // Write Config -> Connection (schema skipped)
+    currentStep.value = 2;
+  } else {
+    currentStep.value = cur - 1;
+  }
+}
 
 // Watch for direction changes and ensure writeConfig exists
 watch(() => props.connector.direction, (newDirection) => {
@@ -1598,6 +2030,13 @@ watch(() => props.connector.direction, (newDirection) => {
 watch(() => props.connector.type, () => {
   if (showWriteConfigStep.value && !props.connector.config.writeConfig) {
     ensureWriteConfig();
+  }
+}, { immediate: true });
+
+// Watch for provider changes and ensure config is properly initialized
+watch(() => props.connector.provider, (newProvider) => {
+  if (newProvider && props.connector.type === 'Database') {
+    ensureDatabaseConfig(newProvider);
   }
 }, { immediate: true });
 
@@ -1632,7 +2071,110 @@ function ensureWriteConfig() {
   }
 }
 
+function ensureDatabaseConfig(provider) {
+  if (provider === 'Snowflake') {
+    // Ensure Snowflake-specific fields exist
+    if (!props.connector.config.account) props.connector.config.account = '';
+    if (!props.connector.config.warehouse) props.connector.config.warehouse = '';
+    if (!props.connector.config.schema) props.connector.config.schema = '';
+    if (!props.connector.config.role) props.connector.config.role = '';
+
+    // Remove fields not used by Snowflake
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.jsonCredentials;
+  } else if (provider === 'BigQuery') {
+    // Ensure BigQuery-specific fields exist
+    if (!props.connector.config.projectId) props.connector.config.projectId = '';
+    if (!props.connector.config.datasetId) props.connector.config.datasetId = '';
+    if (!props.connector.config.location) props.connector.config.location = '';
+
+    // Remove fields not used by BigQuery
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.database;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+
+    // Ensure table name is required if destination
+    if ((props.connector.direction === 'destination' || props.connector.direction === 'both') &&
+        props.connector.config.writeConfig && !props.connector.config.writeConfig.tableName) {
+      // Logic for mandatory table name is mostly handled by validateWriteConfig
+    }
+  } else if (provider === 'MongoDb') {
+    // Ensure MongoDB-specific fields exist
+    if (!props.connector.config.connectionString) props.connector.config.connectionString = '';
+    if (!props.connector.config.database) props.connector.config.database = '';
+    if (!props.connector.config.collectionName) props.connector.config.collectionName = '';
+    if (!props.connector.config.filterJson) props.connector.config.filterJson = '';
+
+    // Remove fields not used by MongoDB
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.location;
+    delete props.connector.config.jsonCredentials;
+  } else if (provider === 'CosmosDb') {
+    // Ensure Cosmos DB-specific fields exist
+    if (!props.connector.config.cosmosEndpoint) props.connector.config.cosmosEndpoint = '';
+    if (!props.connector.config.cosmosKey) props.connector.config.cosmosKey = '';
+    if (!props.connector.config.database) props.connector.config.database = '';
+    if (!props.connector.config.container) props.connector.config.container = '';
+
+    // Remove fields not used by Cosmos DB
+    delete props.connector.config.host;
+    delete props.connector.config.port;
+    delete props.connector.config.username;
+    delete props.connector.config.password;
+    delete props.connector.config.useSsl;
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.location;
+    delete props.connector.config.jsonCredentials;
+    delete props.connector.config.connectionString;
+    delete props.connector.config.collectionName;
+    delete props.connector.config.filterJson;
+  } else {
+    // Ensure traditional database fields exist for other providers
+    if (!props.connector.config.host) props.connector.config.host = '';
+    if (!props.connector.config.port) props.connector.config.port = getDefaultPort(provider);
+    if (!props.connector.config.useSsl) props.connector.config.useSsl = false;
+
+    // Remove Snowflake/BigQuery-specific fields
+    delete props.connector.config.account;
+    delete props.connector.config.warehouse;
+    delete props.connector.config.schema;
+    delete props.connector.config.role;
+    delete props.connector.config.projectId;
+    delete props.connector.config.datasetId;
+    delete props.connector.config.location;
+    delete props.connector.config.jsonCredentials;
+  }
+}
+
 const canProceed = computed(() => {
+  if (currentStep.value === lastStep.value) return true; // Review step
   switch (currentStep.value) {
     case 1:
       return !!props.connector.name && !!props.connector.type && !!props.connector.provider;
@@ -1641,29 +2183,28 @@ const canProceed = computed(() => {
     case 3:
       return schemaValidation.value.isValid && props.connector.schema.fields.length > 0;
     case 4:
-      if (showWriteConfigStep.value) {
-        return validateWriteConfig();
-      }
-      return true; // Review step
-    case 5:
-      return true; // Review step when write config is shown
+      return validateWriteConfig();
     default:
       return false;
   }
 });
 
 const canSave = computed(() => {
-  const baseValid = props.connector.name &&
+  let baseValid = props.connector.name &&
          props.connector.type &&
          props.connector.provider &&
-         validateConnectionConfig() &&
+         validateConnectionConfig();
+
+  if (showSchemaStep.value) {
+    baseValid = baseValid &&
          schemaValidation.value.isValid &&
          props.connector.schema.fields.length > 0;
-  
+  }
+
   if (showWriteConfigStep.value) {
     return baseValid && validateWriteConfig();
   }
-  
+
   return baseValid;
 });
 
@@ -1671,7 +2212,8 @@ function getTypeIcon(type) {
   const icons = {
     Database: 'mdi-database',
     API: 'mdi-api',
-    File: 'mdi-file'
+    File: 'mdi-file',
+    Email: 'mdi-email'
   };
   return icons[type] || 'mdi-help-circle';
 }
@@ -1687,12 +2229,29 @@ function getDirectionIcon(direction) {
 
 function getDirectionLabel(direction) {
   const labels = {
-    source: t('connectors.sourceOnly'),
-    destination: t('connectors.destinationOnly'),
-    both: t('connectors.both')
+    source: t('connectors.source'),
+    destination: t('connectors.destination'),
+    both: t('connectors.sourceAndDestination')
   };
   return labels[direction] || direction;
 }
+
+function handleTableNameDetected(tableName) {
+  if (!tableName) return;
+
+  // Only auto-fill for Database connectors that are destinations
+  if (props.connector.type === 'Database' &&
+      (props.connector.direction === 'destination' || props.connector.direction === 'both')) {
+
+    ensureWriteConfig();
+
+    // Only auto-fill if the table name is currently empty to avoid overwriting user input
+    if (!props.connector.config.writeConfig.tableName) {
+      props.connector.config.writeConfig.tableName = tableName;
+    }
+  }
+}
+
 
 function getMethodColor(method) {
   const colors = {
@@ -1710,14 +2269,32 @@ function getDefaultPort(provider) {
     'SQL Server': 1433,
     'SqlServer': 1433,
     'PostgreSQL': 5432,
-    'MySQL': 3306
+    'MySQL': 3306,
+    'Oracle': 1521,
+    'Snowflake': '', // Snowflake doesn't use traditional ports
+    'BigQuery': '', // BigQuery doesn't use traditional ports
+    'Redshift': 5439
   };
   return ports[provider] || '';
+}
+
+function isValidJson(str) {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function handleTypeChange() {
   props.connector.provider = '';
   props.connector.config = getDefaultConfig(props.connector.type);
+
+  // Email connectors are destination-only
+  if (props.connector.type === 'Email') {
+    props.connector.direction = 'destination';
+  }
 }
 
 function getDefaultConfig(type) {
@@ -1742,6 +2319,7 @@ function getDefaultConfig(type) {
     case 'API':
       return {
         baseUrl: '',
+        responseFormat: 'JSON',
         authType: 'None',
         authToken: null,
         useDynamicToken: false,
@@ -1790,10 +2368,14 @@ function getDefaultConfig(type) {
         s3AccessKey: null,
         s3SecretKey: null,
         s3Endpoint: null,
-        // Azure Blob fields
+        // AzureBlob fields
         azureAccountName: null,
         azureContainer: null,
         azureAccountKey: null,
+        // GCS fields
+        gcsBucket: null,
+        gcsProjectId: null,
+        gcsJsonCredentials: null,
         writeConfig: {
           writeMode: 'OVERWRITE',
           includeHeaders: true,
@@ -1805,76 +2387,135 @@ function getDefaultConfig(type) {
           rootKey: null
         }
       };
+    case 'Email':
+      return {
+        recipients: [],
+        ccRecipients: [],
+        subject: '',
+        bodyMessage: '',
+        attachmentFormat: 'CSV',
+        attachmentFileName: '',
+        writeConfig: {
+          sendEmptyReport: false
+        }
+      };
     default:
       return {};
   }
 }
 
 function validateConnectionConfig() {
-  const { type, config } = props.connector;
-  
+  const { type, provider, config } = props.connector;
+
   if (type === 'Database') {
     if (config.useCustomConnectionString) {
       return !!config.connectionString;
     }
+
+    // Snowflake-specific validation
+    if (provider === 'Snowflake') {
+      return !!config.account && !!config.warehouse && !!config.database &&
+             !!config.schema && !!config.username && !!config.password;
+    }
+
+    // BigQuery-specific validation
+    if (provider === 'BigQuery') {
+      const basicValid = !!config.projectId && !!config.datasetId;
+      if (config.jsonCredentials) {
+        return basicValid && isValidJson(config.jsonCredentials);
+      }
+      return basicValid;
+    }
+
+    // MongoDB-specific validation
+    if (provider === 'MongoDb') {
+      const basicMongoValid = !!config.connectionString && !!config.database && !!config.collectionName;
+      if (config.filterJson) {
+        return basicMongoValid && isValidJson(config.filterJson);
+      }
+      return basicMongoValid;
+    }
+
+    // Cosmos DB-specific validation
+    if (provider === 'CosmosDb') {
+      return !!config.cosmosEndpoint && !!config.cosmosKey && !!config.database && !!config.container;
+    }
+
+    // Other database providers
     return !!config.host && !!config.database && !!config.username && !!config.password;
   }
-  
+
   if (type === 'API') {
     return !!config.baseUrl;
   }
-  
+
   if (type === 'File') {
-    return !!config.path;
+    const basicValid = !!config.path;
+    if (provider === 'GCS') {
+      const gcsValid = !!config.gcsBucket && !!config.gcsProjectId;
+      if (config.gcsJsonCredentials) {
+        return gcsValid && basicValid && isValidJson(config.gcsJsonCredentials);
+      }
+      return gcsValid && basicValid;
+    }
+    return basicValid;
   }
-  
+
+  if (type === 'Email') {
+    return config.recipients?.length > 0 && !!config.subject && !!config.attachmentFormat;
+  }
+
   return false;
 }
 
 function validateWriteConfig() {
   const { type, config } = props.connector;
-  
+
   if (!config.writeConfig) return false;
-  
+
   if (type === 'Database') {
     // Table name is required
     if (!config.writeConfig.tableName) return false;
-    
+
     // For UPDATE/UPSERT operations, primary keys are required
     if (['UPDATE', 'UPSERT'].includes(config.writeConfig.operation)) {
       return config.writeConfig.primaryKeys && config.writeConfig.primaryKeys.length > 0;
     }
-    
+
     return true;
   }
-  
+
   if (type === 'API') {
     // Request format is required
     return !!config.writeConfig.requestFormat;
   }
-  
+
   if (type === 'File') {
     // Write mode is required
     if (!config.writeConfig.writeMode) return false;
-    
+
     // For CSV, column order should be defined (can be empty initially)
     if (config.format === 'CSV') {
       return config.writeConfig.columnOrder !== undefined;
     }
-    
+
     // For Excel, sheet name is required
     if (config.format === 'Excel') {
       return !!config.writeConfig.sheetName;
     }
-    
+
     // For JSON, structure is required
     if (config.format === 'JSON') {
       return !!config.writeConfig.structure;
     }
-    
+
     return true;
   }
-  
+
+  if (type === 'Email') {
+    return true; // writeConfig fields are all optional with defaults
+  }
+
   return false;
 }
 
@@ -1882,14 +2523,30 @@ function handleSchemaValidation(validation) {
   schemaValidation.value = validation;
 }
 
+async function previewEmail() {
+  loadingEmailPreview.value = true;
+  try {
+    const { previewEmailTemplate } = await import('@/services/connectorService');
+    emailPreviewHtml.value = await previewEmailTemplate(props.connector.config);
+    showEmailPreview.value = true;
+  } catch (error) {
+    console.error('Error loading email preview:', error);
+  } finally {
+    loadingEmailPreview.value = false;
+  }
+}
+
 async function testConnectionBeforeSave() {
   testingConnection.value = true;
   connectionTestResult.value = false;
-  
+
   try {
     const { testConnection } = await import('@/services/connectorService');
+
+    // Always test with the current form config (whether creating or editing),
+    // so unsaved changes to the connection settings are reflected in the test.
     const result = await testConnection(props.connector);
-    
+
     connectionTestSuccess.value = result.success;
     connectionTestMessage.value = result.message;
     connectionTestResult.value = true;
@@ -1906,7 +2563,7 @@ async function testConnectionBeforeSave() {
 
 function parseHeadersFromText(headersText) {
   if (!headersText) return {};
-  
+
   try {
     return JSON.parse(headersText);
   } catch (e) {
@@ -1924,19 +2581,19 @@ function parseHeadersFromText(headersText) {
 
 async function handleSave() {
   if (!canSave.value) return;
-  
+
   saving.value = true;
   try {
     // Parse and set custom headers
     if (props.connector.type === 'API') {
       props.connector.config.headers = parseHeadersFromText(customHeadersText.value);
-      
+
       // Parse and set token endpoint headers if using dynamic tokens
       if (props.connector.config.useDynamicToken) {
         props.connector.config.tokenEndpointHeaders = parseHeadersFromText(props.connector.config.tokenEndpointHeadersText);
       }
     }
-    
+
     emit('save', props.connector);
   } finally {
     saving.value = false;

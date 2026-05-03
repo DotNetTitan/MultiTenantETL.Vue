@@ -28,6 +28,7 @@
               :source-schema="sourceSchema"
               :destination-schema="destinationSchema"
               :mappings="localMappings"
+              :is-email-destination="isEmailDestination"
             />
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -42,7 +43,9 @@
                 <v-icon size="24" class="mr-2">mdi-map-marker-path</v-icon>
                 <div>
                   <span class="text-h6">{{ $t('pipeline.fieldMappings') }}</span>
-                  <span class="text-caption text-grey ml-2">({{ localMappings.length }} {{ localMappings.length === 1 ? 'mapping' : 'mappings' }})</span>
+                  <span class="text-caption text-grey ml-2">
+                    ({{ $t('pipeline.mappingCount', localMappings.length, { count: localMappings.length }) }})
+                  </span>
                 </div>
               </div>
             </v-expansion-panel-title>
@@ -68,6 +71,7 @@
                   :mapping="mapping"
                   :source-fields="sourceSchema.fields || []"
                   :destination-fields="destinationSchema.fields || []"
+                  :is-email-destination="isEmailDestination"
                   :index="index"
                   :can-move-up="index > 0"
                   :can-move-down="index < localMappings.length - 1"
@@ -77,7 +81,7 @@
                   @move-up="moveUp(index)"
                   @move-down="moveDown(index)"
                 />
-                
+
                 <!-- Add Mapping Button at Bottom -->
                 <v-btn
                   color="primary"
@@ -157,9 +161,9 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { 
-  fetchSchema, 
-  validateFieldMappings 
+import {
+  fetchSchema,
+  validateFieldMappings
 } from '@/services/schemaService';
 import { saveSchema } from '@/services/schemaService';
 import { detectSchema } from '@/services/connectorService';
@@ -181,6 +185,10 @@ const props = defineProps({
   modelValue: {
     type: Array,
     default: () => []
+  },
+  isEmailDestination: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -207,7 +215,7 @@ const validationResult = ref({
 
 // Check if there are any complete mappings (with at least source or destination filled)
 const hasCompleteMappings = computed(() => {
-  return localMappings.value.some(m => 
+  return localMappings.value.some(m =>
     (m.sourceFields && m.sourceFields.length > 0) || m.destinationField
   );
 });
@@ -236,30 +244,43 @@ async function fetchSchemas() {
     console.warn('Source or destination ID is missing');
     return;
   }
-  
+
   loading.value = true;
   error.value = null;
-  
+
   try {
-    const [source, destination] = await Promise.all([
-      fetchSchema(props.sourceId),
-      fetchSchema(props.destinationId)
-    ]);
-    
-    sourceSchema.value = source;
-    destinationSchema.value = destination;
-    
-    // Check if either schema is using auto-detection
-    usingAutoDetection.value = !source.isManual || !destination.isManual;
-    
-    // Track which data sources are using auto-detection
-    if (!source.isManual) {
-      autoDetectedSourceId.value = props.sourceId;
+    if (props.isEmailDestination) {
+      // Email destinations have no schema; only fetch source
+      const source = await fetchSchema(props.sourceId);
+      sourceSchema.value = source;
+      destinationSchema.value = { fields: [], isManual: true };
+
+      usingAutoDetection.value = !source.isManual;
+      if (!source.isManual) {
+        autoDetectedSourceId.value = props.sourceId;
+      }
+      autoDetectedDestinationId.value = null;
+    } else {
+      const [source, destination] = await Promise.all([
+        fetchSchema(props.sourceId),
+        fetchSchema(props.destinationId)
+      ]);
+
+      sourceSchema.value = source;
+      destinationSchema.value = destination;
+
+      // Check if either schema is using auto-detection
+      usingAutoDetection.value = !source.isManual || !destination.isManual;
+
+      // Track which data sources are using auto-detection
+      if (!source.isManual) {
+        autoDetectedSourceId.value = props.sourceId;
+      }
+      if (!destination.isManual) {
+        autoDetectedDestinationId.value = props.destinationId;
+      }
     }
-    if (!destination.isManual) {
-      autoDetectedDestinationId.value = props.destinationId;
-    }
-    
+
     // Validate existing mappings
     validateMappings();
   } catch (err) {
@@ -298,7 +319,7 @@ function moveUp(index) {
     const temp = localMappings.value[index];
     localMappings.value[index] = localMappings.value[index - 1];
     localMappings.value[index - 1] = temp;
-    
+
     // Update order
     localMappings.value.forEach((m, i) => {
       m.order = i + 1;
@@ -311,7 +332,7 @@ function moveDown(index) {
     const temp = localMappings.value[index];
     localMappings.value[index] = localMappings.value[index + 1];
     localMappings.value[index + 1] = temp;
-    
+
     // Update order
     localMappings.value.forEach((m, i) => {
       m.order = i + 1;
@@ -320,9 +341,9 @@ function moveDown(index) {
 }
 
 function validateMappings() {
-  if (!sourceSchema.value?.fields || !destinationSchema.value?.fields) {
+  if (!sourceSchema.value?.fields) {
     validationResult.value = {
-      isValid: true, // Don't block if schemas aren't loaded yet
+      isValid: true,
       errors: [],
       warnings: [],
       unmappedRequiredFields: []
@@ -330,12 +351,45 @@ function validateMappings() {
     emit('validate', validationResult.value);
     return;
   }
-  
+
+  // Email destinations have no schema to validate against
+  if (props.isEmailDestination) {
+    const completeMappings = localMappings.value.filter(m =>
+      m.sourceFields && m.sourceFields.length > 0 && m.destinationField
+    );
+
+    // Check for duplicate destination field names
+    const destFields = completeMappings.map(m => m.destinationField);
+    const duplicates = destFields.filter((item, index) => destFields.indexOf(item) !== index);
+    const errors = [...new Set(duplicates)].map(f => `Column header '${f}' is used multiple times`);
+
+    const result = {
+      isValid: errors.length === 0,
+      errors,
+      warnings: [],
+      unmappedRequiredFields: []
+    };
+    validationResult.value = result;
+    emit('validate', result);
+    return;
+  }
+
+  if (!destinationSchema.value?.fields) {
+    validationResult.value = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      unmappedRequiredFields: []
+    };
+    emit('validate', validationResult.value);
+    return;
+  }
+
   // Only validate complete mappings (ignore empty/incomplete ones)
-  const completeMappings = localMappings.value.filter(m => 
+  const completeMappings = localMappings.value.filter(m =>
     m.sourceFields && m.sourceFields.length > 0 && m.destinationField
   );
-  
+
   // If there are no complete mappings at all, don't show validation errors yet
   // This prevents showing "unmapped required fields" errors when user is just starting
   if (completeMappings.length === 0) {
@@ -348,13 +402,13 @@ function validateMappings() {
     emit('validate', validationResult.value);
     return;
   }
-  
+
   const result = validateFieldMappings(
     completeMappings,
     sourceSchema.value,
     destinationSchema.value
   );
-  
+
   validationResult.value = result;
   emit('validate', result);
 }
@@ -362,24 +416,24 @@ function validateMappings() {
 async function convertToManualSchema() {
   try {
     convertingSchema.value = true;
-    
+
     // Convert source schema if it's auto-detected
     if (autoDetectedSourceId.value) {
       const autoSchema = await detectSchema(autoDetectedSourceId.value);
       const fields = transformAutoSchemaToManual(autoSchema);
       await saveSchema(autoDetectedSourceId.value, fields);
     }
-    
+
     // Convert destination schema if it's auto-detected
     if (autoDetectedDestinationId.value) {
       const autoSchema = await detectSchema(autoDetectedDestinationId.value);
       const fields = transformAutoSchemaToManual(autoSchema);
       await saveSchema(autoDetectedDestinationId.value, fields);
     }
-    
+
     // Refresh schemas
     await fetchSchemas();
-    
+
     showConversionDialog.value = false;
   } catch (err) {
     error.value = `Failed to convert schema: ${err.message}`;
@@ -391,11 +445,11 @@ async function convertToManualSchema() {
 
 function transformAutoSchemaToManual(autoSchema) {
   let fields = [];
-  
+
   if (autoSchema.tables && autoSchema.tables.length > 0) {
     // Database schema with tables
     const autoGeneratedFields = ['id', 'createdat', 'updatedat', 'created_at', 'updated_at'];
-    
+
     fields = autoSchema.tables[0].columns.map((col, index) => {
       const isAutoGenerated = autoGeneratedFields.includes(col.name.toLowerCase());
       return {
@@ -432,7 +486,7 @@ function transformAutoSchemaToManual(autoSchema) {
       order: index + 1
     }));
   }
-  
+
   return fields;
 }
 </script>

@@ -2,7 +2,7 @@
   <div class="api-endpoint-editor">
     <div class="d-flex align-center mb-4">
       <div class="flex-grow-1">
-        <h4 class="text-subtitle-1">API Endpoints</h4>
+        <h4 class="text-subtitle-1">{{ $t('connectors.apiEndpoints') }}</h4>
         <p class="text-caption text-grey">{{ getRequirementText() }}</p>
       </div>
       <v-btn
@@ -11,14 +11,14 @@
         prepend-icon="mdi-plus"
         @click="addEndpoint"
       >
-        Add Endpoint
+        {{ $t('connectors.apiEndpointConfig.addEndpoint') }}
       </v-btn>
     </div>
 
     <div v-if="localEndpoints.length === 0" class="text-center py-8">
       <v-icon size="64" color="grey-lighten-2">mdi-api-off</v-icon>
-      <p class="mt-2 text-grey">No endpoints configured</p>
-      <p class="text-caption text-grey">Add endpoints based on data source direction</p>
+      <p class="mt-2 text-grey">{{ $t('connectors.apiEndpointConfig.noEndpoints') }}</p>
+      <p class="text-caption text-grey">{{ $t('connectors.apiEndpointConfig.addEndpointsHint') }}</p>
     </div>
 
     <v-expansion-panels v-else class="mb-4">
@@ -31,7 +31,7 @@
             <v-chip :color="getMethodColor(endpoint.method)" size="small" class="mr-2">
               {{ endpoint.method }}
             </v-chip>
-            <span class="font-weight-medium">{{ endpoint.path || 'Untitled Endpoint' }}</span>
+            <span class="font-weight-medium">{{ endpoint.path || $t('connectors.apiEndpointConfig.untitledEndpoint') }}</span>
             <v-spacer />
             <v-btn
               icon
@@ -53,7 +53,7 @@
                 <v-select
                   v-model="endpoint.method"
                   :items="availableMethods"
-                  label="HTTP Method"
+                  :label="$t('connectors.apiEndpointConfig.httpMethod')"
                   variant="outlined"
                   density="compact"
                   required
@@ -62,12 +62,12 @@
               <v-col cols="12" md="9">
                 <v-text-field
                   v-model="endpoint.path"
-                  label="Endpoint Path"
-                  placeholder="/customers or /customers/{id}"
+                  :label="$t('connectors.apiEndpointConfig.endpointPath')"
+                  :placeholder="$t('connectors.apiEndpointConfig.pathPlaceholder')"
                   variant="outlined"
                   density="compact"
                   required
-                  hint="Use {id} for path parameters"
+                  :hint="$t('connectors.apiEndpointConfig.pathHint')"
                   persistent-hint
                 />
               </v-col>
@@ -76,36 +76,36 @@
               <v-col cols="12">
                 <v-text-field
                   v-model="endpoint.description"
-                  label="Description"
-                  placeholder="Brief description of this endpoint"
+                  :label="$t('common.description')"
+                  :placeholder="$t('connectors.apiEndpointConfig.descPlaceholder')"
                   variant="outlined"
                   density="compact"
                 />
               </v-col>
 
-              <!-- Request Schema (for POST/PUT/PATCH) -->
-              <v-col v-if="['POST', 'PUT', 'PATCH'].includes(endpoint.method)" cols="12">
+              <!-- Request Schema (for POST/PUT) -->
+              <v-col v-if="requestBodyMethods.includes(endpoint.method)" cols="12">
                 <v-divider class="mb-3" />
-                <h5 class="text-subtitle-2 mb-2">Request Configuration</h5>
+                <h5 class="text-subtitle-2 mb-2">{{ $t('connectors.apiEndpointConfig.requestConfig') }}</h5>
                 <v-textarea
                   v-model="endpoint.requestSchema"
-                  label="Request Schema (JSON)"
+                  :label="$t('connectors.apiEndpointConfig.requestSchema')"
                   placeholder="{&quot;customer&quot;: {&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}}"
                   variant="outlined"
                   rows="4"
-                  hint="Full request body structure"
+                  :hint="$t('connectors.apiEndpointConfig.requestSchemaHint')"
                   persistent-hint
                 />
               </v-col>
 
-              <v-col v-if="['POST', 'PUT', 'PATCH'].includes(endpoint.method)" cols="12">
+              <v-col v-if="requestBodyMethods.includes(endpoint.method)" cols="12">
                 <v-text-field
                   v-model="endpoint.requestDataPath"
-                  label="Request Data Path"
+                  :label="$t('connectors.apiEndpointConfig.requestDataPath')"
                   placeholder="customer"
                   variant="outlined"
                   density="compact"
-                  hint="Where to place mapped data in request (e.g., 'customer' or 'data.customer')"
+                  :hint="$t('connectors.apiEndpointConfig.requestDataPathHint')"
                   persistent-hint
                 />
               </v-col>
@@ -113,14 +113,14 @@
               <!-- Response Schema -->
               <v-col cols="12">
                 <v-divider class="mb-3" />
-                <h5 class="text-subtitle-2 mb-2">Response Configuration</h5>
+                <h5 class="text-subtitle-2 mb-2">{{ $t('connectors.apiEndpointConfig.responseConfig') }}</h5>
                 <v-textarea
                   v-model="endpoint.responseSchema"
-                  label="Response Schema (JSON)"
+                  :label="$t('connectors.apiEndpointConfig.responseSchema')"
                   placeholder="{&quot;status&quot;: &quot;success&quot;, &quot;data&quot;: {&quot;customer&quot;: {...}}}"
                   variant="outlined"
                   rows="4"
-                  hint="Full response structure"
+                  :hint="$t('connectors.apiEndpointConfig.responseSchemaHint')"
                   persistent-hint
                 />
               </v-col>
@@ -128,11 +128,11 @@
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="endpoint.responseDataPath"
-                  label="Response Data Path"
+                  :label="$t('connectors.apiEndpointConfig.responseDataPath')"
                   placeholder="data.customer or data.customers"
                   variant="outlined"
                   density="compact"
-                  hint="Path to business data in response"
+                  :hint="$t('connectors.apiEndpointConfig.responseDataPathHint')"
                   persistent-hint
                   required
                 />
@@ -141,11 +141,11 @@
               <v-col cols="12" md="6">
                 <v-text-field
                   v-model="endpoint.errorPath"
-                  label="Error Path (Optional)"
+                  :label="$t('connectors.apiEndpointConfig.errorPath')"
                   placeholder="error.message"
                   variant="outlined"
                   density="compact"
-                  hint="Path to error message in response"
+                  :hint="$t('connectors.apiEndpointConfig.errorPathHint')"
                   persistent-hint
                 />
               </v-col>
@@ -159,6 +159,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useTranslatedMetadata } from '@/composables/useTranslatedMetadata';
+
+const { t } = useI18n();
+const { httpMethods: metadataHttpMethods } = useTranslatedMetadata();
 
 const props = defineProps({
   modelValue: {
@@ -175,15 +180,19 @@ const emit = defineEmits(['update:modelValue']);
 
 const localEndpoints = ref([...props.modelValue]);
 
-// Available methods based on direction
+const endpointDirectionMethodMap = {
+  source: ['GET'],
+  destination: ['POST', 'PUT'],
+  both: ['GET', 'POST', 'PUT']
+};
+
+const requestBodyMethods = ['POST', 'PUT'];
+
+// Available methods based on direction and backend metadata
 const availableMethods = computed(() => {
-  if (props.direction === 'source') {
-    return ['GET'];
-  } else if (props.direction === 'destination') {
-    return ['POST', 'PUT', 'PATCH'];
-  } else { // both
-    return ['GET', 'POST', 'PUT', 'PATCH'];
-  }
+  const allowedByDirection = endpointDirectionMethodMap[props.direction] || endpointDirectionMethodMap.source;
+  const metadataValues = metadataHttpMethods.value.map(method => method.value);
+  return allowedByDirection.filter(method => metadataValues.includes(method));
 });
 
 // Watch for changes - emit updates
@@ -200,8 +209,9 @@ watch(() => props.modelValue, (newVal) => {
 });
 
 function addEndpoint() {
-  const defaultMethod = props.direction === 'destination' ? 'POST' : 'GET';
-  
+  const fallbackMethod = props.direction === 'destination' ? 'POST' : 'GET';
+  const defaultMethod = availableMethods.value[0] || fallbackMethod;
+
   localEndpoints.value.push({
     id: `endpoint-${Date.now()}-${Math.random()}`,
     method: defaultMethod,
@@ -224,7 +234,6 @@ function getMethodColor(method) {
     GET: 'blue',
     POST: 'green',
     PUT: 'orange',
-    PATCH: 'purple',
     DELETE: 'red'
   };
   return colors[method] || 'grey';
@@ -232,11 +241,11 @@ function getMethodColor(method) {
 
 function getRequirementText() {
   if (props.direction === 'source') {
-    return 'Required: At least one GET endpoint';
+    return t('connectors.apiEndpointConfig.reqSource');
   } else if (props.direction === 'destination') {
-    return 'Required: At least one POST, PUT, or PATCH endpoint';
+    return t('connectors.apiEndpointConfig.reqDestination');
   } else { // both
-    return 'Required: At least one GET endpoint and one POST/PUT/PATCH endpoint';
+    return t('connectors.apiEndpointConfig.reqBoth');
   }
 }
 </script>

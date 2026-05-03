@@ -68,6 +68,8 @@ const pipeline = ref({
   destinationId: null,
   transformations: [],
   fieldMappings: [],
+  notificationEmails: [],
+  emailNotificationsEnabled: true,
   isScheduled: false,
   isActive: true,
   schedule: {
@@ -116,6 +118,8 @@ async function loadPipeline() {
       sourceId: data.sourceConnectorId,
       destinationId: data.destinationConnectorId,
       fieldMappings: data.fieldMappings || [],
+      notificationEmails: data.notificationEmails || [],
+      emailNotificationsEnabled: data.emailNotificationsEnabled ?? true,
       isScheduled: data.isScheduled,
       isActive: data.isActive ?? true,
       schedule: data.schedule || {

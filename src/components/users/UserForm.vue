@@ -37,7 +37,7 @@
           prepend-icon="mdi-shield-account"
           variant="outlined"
           :error-messages="errors.role"
-          hint="Global system role"
+          :hint="$t('forms.globalSystemRole')"
           persistent-hint
           @update:model-value="updateField('role', $event)"
         />
@@ -134,6 +134,11 @@ const emailRule = v => {
 
 const updateField = (field, value) => {
   form.value[field] = value;
+  
+  if (field === 'role') {
+    form.value.roles = [value];
+  }
+  
   emit('update:user', { ...form.value });
   
   switch (field) {

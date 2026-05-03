@@ -67,6 +67,8 @@ export function useDashboard() {
         return 'success';
       case 'running':
         return 'info';
+      case 'queued':
+        return 'blue-grey';
       case 'failed':
         return 'error';
       case 'cancelled':
@@ -87,6 +89,8 @@ export function useDashboard() {
         return 'mdi-check-circle';
       case 'running':
         return 'mdi-progress-clock';
+      case 'queued':
+        return 'mdi-clock-outline';
       case 'failed':
         return 'mdi-alert-circle';
       case 'cancelled':
@@ -135,11 +139,11 @@ export function useDashboard() {
    */
   function formatDuration(milliseconds) {
     if (!milliseconds && milliseconds !== 0) return '-';
-    
+
     const seconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes % 60}m`;
     } else if (minutes > 0) {
@@ -158,13 +162,13 @@ export function useDashboard() {
     try {
       loading.value = true;
       error.value = null;
-      
+
       const data = await fetchDashboardData();
-      
+
       stats.value = data.stats;
       statusDistribution.value = data.statusDistribution;
       recentExecutions.value = data.recentExecutions;
-      
+
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       error.value = err.message || 'Failed to load dashboard data';
@@ -191,7 +195,7 @@ export function useDashboard() {
         totalRecordsProcessed: executionStats.totalRecordsProcessed,
         lastExecutionTime: executionStats.lastExecutionTime
       };
-      
+
       statusDistribution.value = [
         { name: 'Completed', count: executionStats.completedExecutions || 0 },
         { name: 'Running', count: executionStats.runningExecutions || 0 },
@@ -245,13 +249,13 @@ export function useDashboard() {
     stats,
     recentExecutions,
     statusDistribution,
-    
+
     // Computed
     formattedSuccessRate,
     formattedTotalRecords,
     formattedAverageDuration,
     hasRunningExecutions,
-    
+
     // Methods
     getStatusColor,
     getStatusIcon,

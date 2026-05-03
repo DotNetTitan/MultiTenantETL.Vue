@@ -1,145 +1,169 @@
 <template>
   <div>
-    <div class="d-flex align-center mb-4">
-      <h1 class="text-h4">{{ $t('tenants.title') }}</h1>
-      <v-spacer />
-      <v-btn
-        color="primary"
-        @click="openCreateDialog"
-      >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.add') }}</span>
-        <span v-else>{{ $t('tenants.addTenant') }}</span>
-      </v-btn>
-    </div>
+    <!-- Access denied message for non-admin users -->
+    <v-alert
+      v-if="!authStore.isAdmin"
+      type="warning"
+      variant="tonal"
+      class="mb-4"
+    >
+      <v-icon class="mr-2">mdi-shield-alert</v-icon>
+      {{ $t('common.accessDenied') }}
+      <div class="text-body-2 mt-1">
+        {{ $t('tenants.adminRequired') }}
+      </div>
+    </v-alert>
 
-    <v-card>
-      <v-card-text>
-        <table-filters
-          v-model:search="searchQuery"
-          :search-label="$t('tenants.searchTenants')"
-          :filters="availableFilters"
-          :sort-options="sortOptions"
-          @filter="handleFilter"
-          @sort="handleSort"
-        />
-
-        <v-data-table
-          :headers="headers"
-          :items="tenants"
-          :loading="loading"
-          :items-per-page="10"
-          class="mt-2"
+    <!-- Admin content -->
+    <div v-else>
+      <div class="d-flex align-center mb-4">
+        <h1 class="text-h4">{{ $t('tenants.title') }}</h1>
+        <v-spacer />
+        <!-- Only SuperAdmin can add new tenants -->
+        <v-btn
+          v-if="authStore.user?.role === 'SuperAdmin'"
+          color="primary"
+          @click="openCreateDialog"
         >
-          <template #item.isActive="{ item }">
-            <v-chip
-              :color="item.isActive ? 'success' : 'error'"
-              size="small"
+          <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+          <span v-if="$vuetify.display.xs">{{ $t('common.add') }}</span>
+          <span v-else>{{ $t('tenants.addTenant') }}</span>
+        </v-btn>
+      </div>
+
+      <v-card>
+        <v-card-text>
+          <table-filters
+            v-model:search="searchQuery"
+            :search-label="$t('tenants.searchTenants')"
+            :filters="availableFilters"
+            :sort-options="sortOptions"
+            @filter="handleFilter"
+            @sort="handleSort"
+          />
+
+          <v-data-table
+            :headers="headers"
+            :items="tenants"
+            :loading="loading"
+            :items-per-page="10"
+            class="mt-2"
+          >
+            <template #item.isActive="{ item }">
+              <v-chip
+                :color="item.isActive ? 'success' : 'error'"
+                size="small"
+              >
+                {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
+              </v-chip>
+            </template>
+            <template #item.createdAt="{ item }">
+              {{ tenantService.formatDate(item.createdAt) }}
+            </template>
+            <template #item.actions="{ item }">
+              <!-- Manage users button (available to all admins) -->
+              <v-btn
+                icon="mdi-account-multiple"
+                size="small"
+                variant="text"
+                color="primary"
+                @click="openUsersDialog(item)"
+              />
+              <!-- Edit button (SuperAdmin only) -->
+              <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin'"
+                icon="mdi-pencil"
+                size="small"
+                variant="text"
+                @click="openEditDialog(item)"
+              />
+              <!-- Delete button (SuperAdmin only) -->
+              <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin'"
+                icon="mdi-delete"
+                size="small"
+                variant="text"
+                color="error"
+                @click="confirmDelete(item)"
+              />
+            </template>
+          </v-data-table>
+        </v-card-text>
+      </v-card>
+
+      <!-- Tenant Form Dialog -->
+      <v-dialog v-model="showCreateDialog" max-width="600">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            {{ isEditing ? $t('tenants.editTenant') : $t('tenants.createTenant') }}
+            <v-spacer />
+            <v-btn
+              icon
+              variant="text"
+              :disabled="loading"
+              @click="closeDialog"
             >
-              {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
-            </v-chip>
-          </template>
-          <template #item.createdAt="{ item }">
-            {{ tenantService.formatDate(item.createdAt) }}
-          </template>
-          <template #item.actions="{ item }">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-card-text>
+            <tenant-form
+              :tenant="editedTenant"
+              :loading="loading"
+              :error="error"
+              @update:tenant="editedTenant = $event"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
             <v-btn
-              icon="mdi-account-multiple"
-              size="small"
-              variant="text"
+              :disabled="loading"
+              @click="closeDialog"
+            >
+              {{ $t('common.close') }}
+            </v-btn>
+            <v-btn
               color="primary"
-              @click="openUsersDialog(item)"
-            />
+              :loading="loading"
+              @click="saveTenant"
+            >
+              {{ $t('common.save') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Confirmation Dialog -->
+      <confirmation-dialog
+        v-model:show="showDeleteDialog"
+        :title="$t('tenants.deleteTenant')"
+        :message="$t('tenants.deleteConfirm')"
+        @confirm="deleteTenant"
+      />
+
+      <!-- Tenant Users Dialog -->
+      <v-dialog v-model="showUsersDialog" max-width="800">
+        <v-card>
+          <v-card-title class="d-flex align-center">
+            {{ $t('tenants.manageUsers') }} - {{ selectedTenant?.name }}
+            <v-spacer />
             <v-btn
-              icon="mdi-pencil"
-              size="small"
+              icon
               variant="text"
-              @click="openEditDialog(item)"
+              @click="showUsersDialog = false"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-card-text>
+            <tenant-users
+              v-if="selectedTenant"
+              :tenant-id="selectedTenant.id"
             />
-            <v-btn
-              icon="mdi-delete"
-              size="small"
-              variant="text"
-              color="error"
-              @click="confirmDelete(item)"
-            />
-          </template>
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-
-    <!-- Tenant Form Dialog -->
-    <v-dialog v-model="showCreateDialog" max-width="600">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          {{ isEditing ? $t('tenants.editTenant') : $t('tenants.createTenant') }}
-          <v-spacer />
-          <v-btn
-            icon
-            variant="text"
-            :disabled="loading"
-            @click="closeDialog"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <tenant-form
-            :tenant="editedTenant"
-            :loading="loading"
-            :error="error"
-            @update:tenant="editedTenant = $event"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            :disabled="loading"
-            @click="closeDialog"
-          >
-            {{ $t('common.close') }}
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="loading"
-            @click="saveTenant"
-          >
-            {{ $t('common.save') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Confirmation Dialog -->
-    <confirmation-dialog
-      v-model:show="showDeleteDialog"
-      :title="$t('tenants.deleteTenant')"
-      :message="$t('tenants.deleteConfirm')"
-      @confirm="deleteTenant"
-    />
-
-    <!-- Tenant Users Dialog -->
-    <v-dialog v-model="showUsersDialog" max-width="800">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          {{ $t('tenants.manageUsers') }} - {{ selectedTenant?.name }}
-          <v-spacer />
-          <v-btn
-            icon
-            variant="text"
-            @click="showUsersDialog = false"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <tenant-users
-            v-if="selectedTenant"
-            :tenant-id="selectedTenant.id"
-          />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -207,11 +231,13 @@ function createEmptyTenant() {
 
 // UI-specific methods
 function openCreateDialog() {
+  if (authStore.user?.role !== 'SuperAdmin') return;
   editedTenant.value = createEmptyTenant();
   showCreateDialog.value = true;
 }
 
 function openEditDialog(tenant) {
+  if (authStore.user?.role !== 'SuperAdmin') return;
   editedTenant.value = { ...tenant };
   showCreateDialog.value = true;
 }
@@ -236,10 +262,26 @@ async function fetchTenants() {
   try {
     loading.value = true;
     error.value = null;
-    allTenants.value = await tenantService.getAll({
-      status: statusFilter.value,
-      sort: sortBy.value
-    });
+
+    if (authStore.user?.role === 'SuperAdmin') {
+      // SuperAdmin can see all tenants
+      allTenants.value = await tenantService.getAll({
+        status: statusFilter.value,
+        sort: sortBy.value
+      });
+    } else {
+      // TenantAdmin can see their own tenant(s)
+      const userTenants = await tenantService.getMyTenants();
+      // Convert user tenant format to tenant format for display
+      allTenants.value = userTenants.map(ut => ({
+        id: ut.tenantId,
+        name: ut.tenantName,
+        slug: ut.tenantSlug,
+        isActive: ut.isActive,
+        createdAt: new Date() // We don't have this info, but it's needed for display
+      }));
+    }
+
     filterTenants();
   } catch (err) {
     console.error('Error fetching tenants:', err);
@@ -271,6 +313,8 @@ watch(searchQuery, () => {
 });
 
 async function saveTenant() {
+  if (authStore.user?.role !== 'SuperAdmin') return;
+
   try {
     loading.value = true;
     error.value = null;
@@ -281,7 +325,9 @@ async function saveTenant() {
       await tenantService.create(editedTenant.value);
     }
 
-    await fetchTenants();
+    if (authStore.isAdmin) {
+      await fetchTenants();
+    }
     closeDialog();
   } catch (err) {
     console.error('Error saving tenant:', err);
@@ -292,13 +338,17 @@ async function saveTenant() {
 }
 
 async function deleteTenant() {
+  if (authStore.user?.role !== 'SuperAdmin') return;
+
   if (!selectedTenant.value) return;
 
   try {
     loading.value = true;
     error.value = null;
     await tenantService.delete(selectedTenant.value.id);
-    await fetchTenants();
+    if (authStore.isAdmin) {
+      await fetchTenants();
+    }
     showDeleteDialog.value = false;
   } catch (err) {
     console.error('Error deleting tenant:', err);
@@ -314,48 +364,23 @@ async function deleteTenant() {
 function handleFilter({ key, value }) {
   if (key === 'status') {
     statusFilter.value = value;
-    fetchTenants();
+    if (authStore.isAdmin) {
+      fetchTenants();
+    }
   }
 }
 
 function handleSort(value) {
   sortBy.value = value;
-  fetchTenants();
+  if (authStore.isAdmin) {
+    fetchTenants();
+  }
 }
 
 onMounted(() => {
-  // Log current user info for debugging
-  console.log('Current user:', authStore.user);
-  console.log('User role:', authStore.user?.role);
-  console.log('Is admin:', authStore.isAdmin);
-  
-  // Log the actual tokens to inspect
-  const idToken = localStorage.getItem('id_token');
-  const accessToken = localStorage.getItem('access_token');
-  
-  console.log('ID Token (first 50 chars):', idToken?.substring(0, 50));
-  console.log('Access Token (first 50 chars):', accessToken?.substring(0, 50));
-  
-  if (idToken) {
-    try {
-      const decoded = JSON.parse(atob(idToken.split('.')[1]));
-      console.log('Decoded ID token:', decoded);
-      console.log('Role claim in ID token:', decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']);
-    } catch (e) {
-      console.error('Failed to decode ID token:', e);
-    }
+  // Only fetch tenants if user is admin
+  if (authStore.isAdmin) {
+    fetchTenants();
   }
-  
-  if (accessToken) {
-    try {
-      const decoded = JSON.parse(atob(accessToken.split('.')[1]));
-      console.log('Decoded Access token:', decoded);
-      console.log('Role claim in Access token:', decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']);
-    } catch (e) {
-      console.log('Access token is encrypted (JWE) or not a JWT - this is normal for OpenIddict');
-    }
-  }
-  
-  fetchTenants();
 });
 </script>

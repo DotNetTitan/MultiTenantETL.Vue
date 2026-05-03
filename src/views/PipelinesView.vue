@@ -3,14 +3,26 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 mr-4">{{ $t('pipelines.title') }}</h1>
       <v-spacer />
-      <v-btn 
-        color="primary" 
-        @click="openCreatePipelineDialog"
+      <v-tooltip
+        :disabled="!authStore.isGuest"
+        location="bottom"
       >
-        <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
-        <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
-        <span v-else>{{ $t('pipelines.createPipeline') }}</span>
-      </v-btn>
+        <template #activator="{ props }">
+          <span v-bind="props">
+            <v-btn
+              color="primary"
+              :disabled="authStore.isGuest"
+              :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+              @click="openCreatePipelineDialog"
+            >
+              <v-icon v-if="$vuetify.display.smAndUp" class="mr-2">mdi-plus</v-icon>
+              <span v-if="$vuetify.display.xs">{{ $t('common.create') }}</span>
+              <span v-else>{{ $t('pipelines.createPipeline') }}</span>
+            </v-btn>
+          </span>
+        </template>
+        {{ $t('common.guestReadOnly') }}
+      </v-tooltip>
     </div>
 
     <v-card>
@@ -32,6 +44,17 @@
               v-model="statusFilter"
               :label="$t('common.status')"
               :items="statusOptions"
+              density="compact"
+              hide-details
+              class="mb-4"
+              @update:model-value="loadPipelines"
+            />
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-select
+              v-model="isActiveFilter"
+              :label="$t('common.active')"
+              :items="activeOptions"
               density="compact"
               hide-details
               class="mb-4"
@@ -80,14 +103,24 @@
             <span v-else class="text-grey">—</span>
           </template>
           <template #item.isActive="{ item }">
-            <v-switch
-              :model-value="item.isActive"
-              color="success"
-              hide-details
-              density="compact"
-              :disabled="item.status === 'Running'"
-              @update:model-value="handleToggleActive(item)"
-            />
+            <v-tooltip
+              :disabled="!authStore.isGuest"
+              location="bottom"
+            >
+              <template #activator="{ props }">
+                <div v-bind="props" :style="authStore.isGuest ? 'pointer-events: auto' : ''">
+                  <v-switch
+                    :model-value="item.isActive"
+                    color="success"
+                    hide-details
+                    density="compact"
+                    :disabled="item.status === 'Running' || authStore.isGuest"
+                    @update:model-value="handleToggleActive(item)"
+                  />
+                </div>
+              </template>
+              {{ $t('common.guestReadOnly') }}
+            </v-tooltip>
           </template>
           <template #item.actions="{ item }">
             <v-btn
@@ -99,15 +132,23 @@
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :title="$t('common.edit')"
-              @click="openEditDialog(item)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="openEditDialog(item)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.edit') }}</span>
+            </v-tooltip>
             <v-btn
               icon
               variant="text"
@@ -118,27 +159,51 @@
             >
               <v-icon>mdi-map-marker-path</v-icon>
             </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="success"
-              :disabled="item.status === 'Running' || !item.isActive"
-              :title="$t('pipelines.executePipeline')"
-              @click="handleExecutePipeline(item)"
-            >
-              <v-icon>mdi-play</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              :title="$t('common.delete')"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="success"
+                    :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="handleExecutePipeline(item)"
+                  >
+                    <v-icon>mdi-play</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>
+                {{ authStore.isGuest
+                  ? $t('common.guestReadOnly')
+                  : !item.isActive
+                    ? 'Pipeline must be active to execute'
+                    : item.status === 'Running'
+                      ? 'Pipeline is already running'
+                      : $t('pipelines.executePipeline')
+                }}
+              </span>
+            </v-tooltip>
+            <v-tooltip location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -202,13 +267,14 @@
       max-width="1200px"
     >
       <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon class="mr-2">mdi-map-marker-path</v-icon>
-          {{ selectedPipeline?.name }} - {{ $t('pipelines.fieldMappings') }}
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" color="primary">mdi-map-marker-path</v-icon>
+          <span class="text-h5 font-weight-medium">{{ selectedPipeline?.name }} - {{ $t('pipelines.fieldMappings') }}</span>
           <v-spacer />
           <v-btn
             icon
             variant="text"
+            density="comfortable"
             @click="showMappingsDialog = false"
           >
             <v-icon>mdi-close</v-icon>
@@ -227,124 +293,12 @@
           </div>
           
           <div v-else-if="pipelineMappings">
-            <!-- Pipeline Info -->
-            <v-card variant="outlined" class="mb-4">
-              <v-card-text>
-                <v-row dense>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('pipelines.source') }}</div>
-                    <div class="text-body-1">
-                      <v-icon size="small" color="blue" class="mr-1">mdi-database</v-icon>
-                      {{ selectedPipeline?.sourceName }}
-                    </div>
-                  </v-col>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('pipelines.destination') }}</div>
-                    <div class="text-body-1">
-                      <v-icon size="small" color="green" class="mr-1">mdi-database</v-icon>
-                      {{ selectedPipeline?.destinationName }}
-                    </div>
-                  </v-col>
-                  <v-col cols="12">
-                    <div class="text-caption text-grey">{{ $t('pipelines.totalMappings') }}</div>
-                    <div class="text-h6">{{ pipelineMappings.length }}</div>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-
             <!-- Mappings List -->
-            <div v-if="pipelineMappings.length === 0" class="text-center py-8">
-              <v-icon size="64" color="grey">mdi-map-marker-off</v-icon>
-              <div class="mt-4 text-grey">{{ $t('pipelines.noMappingsDefine') }}</div>
-            </div>
-            
-            <v-expansion-panels v-else>
-              <v-expansion-panel
-                v-for="(mapping, index) in pipelineMappings"
-                :key="index"
-              >
-                <v-expansion-panel-title>
-                  <div class="d-flex align-center w-100">
-                    <v-chip size="small" class="mr-2">{{ index + 1 }}</v-chip>
-                    <div class="flex-grow-1">
-                      <div>
-                        <strong>{{ mapping.sourceField }}</strong>
-                        <v-chip v-if="mapping.sourceFieldType" size="x-small" variant="tonal" class="ml-1">
-                          {{ mapping.sourceFieldType }}
-                        </v-chip>
-                      </div>
-                      <v-icon class="mx-2">mdi-arrow-right</v-icon>
-                      <div>
-                        <strong>{{ mapping.destinationField }}</strong>
-                        <v-chip v-if="mapping.destinationFieldType" size="x-small" variant="tonal" class="ml-1">
-                          {{ mapping.destinationFieldType }}
-                        </v-chip>
-                      </div>
-                    </div>
-                    <v-chip
-                      v-if="mapping.transformation"
-                      size="small"
-                      :color="getTransformationColor(mapping.transformation.type)"
-                      class="ml-2"
-                    >
-                      <v-icon start size="small">{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                      {{ mapping.transformation.type }}
-                    </v-chip>
-                  </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-row dense>
-                    <v-col cols="12" md="5">
-                      <v-card variant="outlined">
-                        <v-card-subtitle>{{ $t('pipelines.sourceField') }}</v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.sourceField }}</strong>
-                          </div>
-                          <div v-if="mapping.sourceFieldType" class="text-caption">
-                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.sourceFieldType }}</v-chip>
-                          </div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                    
-                    <v-col cols="12" md="2" class="d-flex align-center justify-center">
-                      <v-icon size="large" color="primary">mdi-arrow-right-thick</v-icon>
-                    </v-col>
-                    
-                    <v-col cols="12" md="5">
-                      <v-card variant="outlined">
-                        <v-card-subtitle>{{ $t('pipelines.destinationField') }}</v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.destinationField }}</strong>
-                          </div>
-                          <div v-if="mapping.destinationFieldType" class="text-caption">
-                            Type: <v-chip size="x-small" variant="tonal">{{ mapping.destinationFieldType }}</v-chip>
-                          </div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                    
-                    <v-col v-if="mapping.transformation" cols="12" class="mt-3">
-                      <v-card variant="outlined" color="info">
-                        <v-card-subtitle>
-                          <v-icon start>{{ getTransformationIcon(mapping.transformation.type) }}</v-icon>
-                          {{ $t('pipelines.transformationApplied') }}
-                        </v-card-subtitle>
-                        <v-card-text>
-                          <div class="mb-2">
-                            <strong>{{ mapping.transformation.name }}</strong>
-                          </div>
-                          <div class="text-caption">{{ mapping.transformation.description }}</div>
-                        </v-card-text>
-                      </v-card>
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
+            <MappingViewer 
+              :mappings="pipelineMappings" 
+              :source-name="selectedPipeline?.sourceName"
+              :destination-name="selectedPipeline?.destinationName"
+            />
           </div>
         </v-card-text>
         
@@ -354,7 +308,7 @@
             color="primary"
             @click="showMappingsDialog = false"
           >
-            Close
+            {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -366,8 +320,10 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import PipelineWizard from '@/components/pipeline/PipelineWizard.vue';
 import FieldMappingEditor from '@/components/pipeline/FieldMappingEditor.vue';
+import MappingViewer from '@/components/pipeline/MappingViewer.vue';
 import { fetchPipelineById } from '@/services/pipelineService';
 import { usePipeline } from '@/composables/usePipeline';
 import { usePipelineForm } from '@/composables/usePipelineForm';
@@ -375,6 +331,7 @@ import { usePipelineForm } from '@/composables/usePipelineForm';
 const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 // Get functionality from main pipeline composable
 const {
@@ -384,8 +341,10 @@ const {
   deletingPipeline,
   search,
   statusFilter,
+  isActiveFilter,
   sortBy,
   statusOptions,
+  activeOptions,
   sortOptions,
   loadPipelines,
   savePipeline,
@@ -518,45 +477,7 @@ function getStatusLabel(status) {
   return statusMap[status] || status;
 }
 
-function getTransformationColor(type) {
-  const colors = {
-    'Filter': 'blue',
-    'Map': 'green',
-    'Aggregation': 'orange',
-    'Script': 'purple',
-    'Join': 'teal',
-    'Trim': 'cyan',
-    'Case Convert': 'indigo',
-    'Substring': 'pink',
-    'Replace': 'amber',
-    'Split': 'lime'
-  };
-  // Handle multiple types (e.g., "Script, Map") - use first type's color or 'primary' for mixed
-  if (type && type.includes(', ')) {
-    return 'primary';
-  }
-  return colors[type] || 'grey';
-}
 
-function getTransformationIcon(type) {
-  const icons = {
-    'Filter': 'mdi-filter',
-    'Map': 'mdi-map',
-    'Aggregation': 'mdi-chart-bar',
-    'Script': 'mdi-code-braces',
-    'Join': 'mdi-link-variant',
-    'Trim': 'mdi-content-cut',
-    'Case Convert': 'mdi-format-letter-case',
-    'Substring': 'mdi-contain',
-    'Replace': 'mdi-find-replace',
-    'Split': 'mdi-call-split'
-  };
-  // Handle multiple types (e.g., "Script, Map") - use generic transform icon
-  if (type && type.includes(', ')) {
-    return 'mdi-vector-polyline';
-  }
-  return icons[type] || 'mdi-cog';
-}
 
 async function viewMappings(pipeline) {
   try {
@@ -661,17 +582,21 @@ onMounted(async () => {
   // Check if there's a status filter in the URL query parameter
   if (route.query.status) {
     const statusFromUrl = route.query.status.toLowerCase();
-    // Map URL status to internal status values
-    const statusMap = {
-      'active': 'Running',
-      'running': 'Running',
-      'idle': 'Idle',
-      'failed': 'Failed',
-      'completed': 'Completed'
-    };
     
-    if (statusMap[statusFromUrl]) {
-      statusFilter.value = statusMap[statusFromUrl];
+    if (statusFromUrl === 'active') {
+      isActiveFilter.value = 'Active';
+    } else {
+      // Map URL status to internal status values for execution status
+      const statusMap = {
+        'running': 'Running',
+        'idle': 'Idle',
+        'failed': 'Failed',
+        'completed': 'Completed'
+      };
+      
+      if (statusMap[statusFromUrl]) {
+        statusFilter.value = statusMap[statusFromUrl];
+      }
     }
   }
   

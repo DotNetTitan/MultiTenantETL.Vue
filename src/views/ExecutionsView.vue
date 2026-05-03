@@ -86,17 +86,24 @@
             >
               <v-icon>mdi-eye</v-icon>
             </v-btn>
-            <v-btn
-              v-if="item.status === 'Running'"
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              title="Cancel execution"
-              @click="cancelExecution(item)"
-            >
-              <v-icon>mdi-stop</v-icon>
-            </v-btn>
+            <v-tooltip v-if="item.status === 'Running'" location="top">
+              <template #activator="{ props }">
+                <span v-bind="props">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="authStore.isGuest"
+                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                    @click="cancelExecution(item)"
+                  >
+                    <v-icon>mdi-stop</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : 'Cancel execution' }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>
@@ -134,7 +141,7 @@
 
         <v-divider></v-divider>
 
-        <v-card-text class="pa-0" style="max-height: 60vh; overflow-y: auto;">
+        <v-card-text class="pa-0 custom-scrollbar" style="max-height: 60vh; overflow-y: auto;">
           <v-window v-model="activeTab">
             <!-- Overview Tab - KEEP AS IS -->
             <v-window-item value="overview">
@@ -243,16 +250,28 @@
                             >
                               {{ getStatusLabel(selectedExecution.status) }}
                             </v-chip>
-                            <v-btn
+                            <v-tooltip
                               v-if="selectedExecution.status === 'Running'"
-                              color="error"
-                              variant="tonal"
-                              size="small"
-                              @click="cancelExecution(selectedExecution)"
+                              :disabled="!authStore.isGuest"
+                              location="bottom"
                             >
-                              <v-icon start size="small">mdi-stop</v-icon>
-                              {{ $t('common.cancel') }}
-                            </v-btn>
+                              <template #activator="{ props }">
+                                <span v-bind="props">
+                                  <v-btn
+                                    color="error"
+                                    variant="tonal"
+                                    size="small"
+                                    :disabled="authStore.isGuest"
+                                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                                    @click="cancelExecution(selectedExecution)"
+                                  >
+                                    <v-icon start size="small">mdi-stop</v-icon>
+                                    {{ $t('common.cancel') }}
+                                  </v-btn>
+                                </span>
+                              </template>
+                              {{ $t('common.guestReadOnly') }}
+                            </v-tooltip>
                           </div>
                         </div>
                       </v-card-text>
@@ -284,7 +303,30 @@
                   variant="outlined"
                   class="logs-container custom-scrollbar"
                 >
-                  <pre class="logs-content">{{ selectedExecution.logs || $t('executions.noLogsAvailable') }}</pre>
+                  <div v-if="!selectedExecution.logs || selectedExecution.logs.length === 0" class="pa-4 text-center">
+                    <v-icon size="48" color="grey-lighten-1" class="mb-2">mdi-text-box-outline</v-icon>
+                    <div class="text-body-1 text-grey">{{ $t('executions.noLogsAvailable') }}</div>
+                  </div>
+                  <div v-else class="logs-entries">
+                    <div
+                      v-for="(log, index) in selectedExecution.logs"
+                      :key="index"
+                      class="log-entry"
+                      :class="`log-${log.level?.toLowerCase()}`"
+                    >
+                      <div class="log-row">
+                        <div class="log-left">
+                          <span class="log-timestamp">{{ formatDate(log.timestamp, true) }}</span>
+                        </div>
+                        <div class="log-message">{{ formatLogSingleLine(log) }}</div>
+                        <div class="log-right">
+                          <v-chip size="small" :color="getLogLevelColor(log.level)" text-color="white" class="log-level-chip">
+                            {{ log.level }}
+                          </v-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </v-card>
               </v-card-text>
             </v-window-item>
@@ -309,28 +351,25 @@
                       v-for="(step, index) in getExecutionSteps()"
                       :key="index"
                       :dot-color="step.color"
-                      :size="step.important ? 'x-small' : 'x-small'"
-                      :icon="step.important ? step.icon : undefined"
-                      :icon-color="step.important ? 'white' : undefined"
+                      :icon="step.icon"
                       class="app-timeline-item"
+                      :class="`timeline-${step.level}`"
                     >
                       <template #opposite>
                         <div class="text-caption text-grey timeline-time">{{ formatTimelineTime(step.time) }}</div>
                       </template>
                     
-                      <v-card variant="outlined" :color="step.color + '-lighten-5'" class="app-timeline-card" density="compact">
-                        <v-card-title class="text-subtitle-2 pb-1 pt-2 px-3 d-flex align-center">
-                          <v-icon :color="step.color" size="small" class="mr-2">
-                            {{ step.icon }}
-                          </v-icon>
-                          <span class="timeline-title">{{ step.title }}</span>
-                        </v-card-title>
-                        <v-card-text v-if="step.description" class="pt-0 pb-2 px-3">
-                          <p class="text-body-2 timeline-description">{{ step.description }}</p>
+                      <v-card variant="outlined" class="app-timeline-card" :class="`card-${step.level}`" density="compact">
+                        <v-card-text class="pa-2 d-flex align-center" style="gap: 12px;">
+                          <v-icon size="18" :color="step.color">{{ step.icon }}</v-icon>
+                          <div class="timeline-text">
+                            <div class="timeline-title">{{ step.title }}</div>
+                            <div v-if="step.description" class="timeline-desc">{{ step.description }}</div>
+                          </div>
                         </v-card-text>
                       </v-card>
                     </v-timeline-item>
-                  </v-timeline>
+                  </v-timeline> 
                 </div>
               </v-card-text>
             </v-window-item>
@@ -385,16 +424,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import { useTenantStore } from '@/stores/tenant';
 import { useTheme } from 'vuetify';
-import { getExecutions } from '@/services/pipelineService';
+import { getExecutions, getExecutionById } from '@/services/pipelineService';
 import { useGlobalState } from '@/composables/useGlobalState';
 
 const { t } = useI18n();
 const { showSuccess, showError, showInfo } = useGlobalState();
 
+const authStore = useAuthStore();
 const tenantStore = useTenantStore();
 const theme = useTheme();
 
@@ -432,7 +473,8 @@ function getStatusLabel(status) {
     'Running': t('executions.running'),
     'Completed': t('executions.completed'),
     'Failed': t('executions.failed'),
-    'Cancelled': t('executions.cancelled')
+    'Cancelled': t('executions.cancelled'),
+    'Queued': t('executions.queued')
   };
   return statusMap[status] || status;
 }
@@ -462,14 +504,36 @@ function getStatusIcon(status) {
       return 'mdi-alert-circle';
     case 'cancelled':
       return 'mdi-stop-circle';
+    case 'queued':
+      return 'mdi-clock-outline';
     default:
       return 'mdi-help-circle';
   }
 }
 
+function getLogLevelColor(level) {
+  switch (level?.toLowerCase()) {
+    case 'error':
+      return 'error';
+    case 'warn':
+    case 'warning':
+      return 'warning';
+    case 'info':
+      return 'info';
+    case 'debug':
+      return 'grey';
+    default:
+      return 'primary';
+  }
+}
+
 function copyLogs() {
-  if (selectedExecution.value?.logs) {
-    navigator.clipboard.writeText(selectedExecution.value.logs)
+  if (selectedExecution.value?.logs && selectedExecution.value.logs.length > 0) {
+    const logText = selectedExecution.value.logs
+      .map(log => `[${formatDate(log.timestamp, true)}] ${log.level}: ${formatLogSingleLine(log)}`)
+      .join('\n');
+    
+    navigator.clipboard.writeText(logText)
       .then(() => {
         showInfo(t('executions.logsCopied'), t('executions.title'));
       })
@@ -480,12 +544,18 @@ function copyLogs() {
   }
 }
 
+// Single-line formatter for message + details
+function formatLogSingleLine(log) {
+  const msg = (log.message || '').toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim();
+  const details = log.details ? (' — ' + log.details.toString().replace(/\s+/g, ' ').replace(/\n/g, ' ↵ ').trim()) : '';
+  return `${msg}${details}`;
+}
+
 // Format time for timeline display
 function formatTimelineTime(timeString) {
   try {
-    // Extract time portion from "[2025-03-14 22:15:01]" format
-    const matches = timeString.match(/\d{2}:\d{2}:\d{2}/);
-    return matches ? matches[0] : timeString;
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (e) {
     return timeString;
   }
@@ -493,83 +563,87 @@ function formatTimelineTime(timeString) {
 
 // Improve the getExecutionSteps function for better timeline display
 function getExecutionSteps() {
-  if (!selectedExecution.value || !selectedExecution.value.logs) return [];
+  if (!selectedExecution.value || !selectedExecution.value.logs || selectedExecution.value.logs.length === 0) return [];
   
-  // Parse logs to extract timeline events
-  const logs = selectedExecution.value.logs || '';
-  const lines = logs.split('\n');
-  
-  const steps = [];
-  
-  // Parse each log line to create timeline events
-  lines.forEach(line => {
-    if (!line.trim()) return;
+  return selectedExecution.value.logs.map((log, index) => {
+    // Determine step type, icon and level based on log level and message content
+    let color = 'primary';
+    let icon = 'mdi-information';
+    let level = (log.level || '').toLowerCase() || 'info';
     
-    // Extract timestamp and message
-    const match = line.match(/\[(.*?)\]\s*(.*)/);
-    if (match) {
-      const time = match[1];
-      const message = match[2];
-      
-      // Determine step type and icon
-      let color = 'primary';
-      let icon = 'mdi-information';
-      let important = false;
-      
-      if (message.toLowerCase().includes('starting')) {
-        color = 'blue';
-        icon = 'mdi-play-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('extracted')) {
-        color = 'cyan';
-        icon = 'mdi-database-export';
-      } else if (message.toLowerCase().includes('transformation')) {
-        color = 'purple';
-        icon = 'mdi-autorenew';
-      } else if (message.toLowerCase().includes('loading')) {
-        color = 'indigo';
-        icon = 'mdi-database-import';
-      } else if (message.toLowerCase().includes('successfully')) {
-        color = 'success';
-        icon = 'mdi-check-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('error') || message.toLowerCase().includes('fail')) {
-        color = 'error';
-        icon = 'mdi-alert-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('cancelled')) {
-        color = 'warning';
-        icon = 'mdi-stop-circle';
-        important = true;
-      } else if (message.toLowerCase().includes('processing batch')) {
-        color = 'teal';
-        icon = 'mdi-buffer';
-      }
-      
-      // Create a title from the message
-      let title = message;
-      let description = '';
-      
-      // If the message has a colon, split into title and description
-      if (message.includes(':')) {
-        const parts = message.split(':');
-        title = parts[0].trim();
-        description = parts.slice(1).join(':').trim();
-      }
-      
-      steps.push({
-        time,
-        title,
-        description,
-        color,
-        icon,
-        important
-      });
+    const message = (log.message || '').toLowerCase();
+
+      // If message mentions failed counts, only mark error when failed > 0
+    const failedMatch = message.match(/(\d+)\s+failed/);
+    // Prefer source-based mapping for specific components like FieldMapping/DataReader/DataWriter
+    const source = (log.source || '').toLowerCase();
+    if (source.includes('field') || source.includes('fieldmapping')) {
+      color = 'purple';
+      icon = 'mdi-autorenew';
+      level = 'info';
+    } else if (source.includes('datareader')) {
+      color = 'teal';
+      icon = 'mdi-database-export';
+      level = 'info';
+    } else if (source.includes('datawriter')) {
+      color = 'indigo';
+      icon = 'mdi-database-import';
+      level = 'info';
+    } else if (failedMatch && parseInt(failedMatch[1], 10) > 0) {
+      color = 'error';
+      icon = 'mdi-alert-circle';
+      level = 'error';
+    } else if (level === 'error' || message.includes('error')) {
+      color = 'error';
+      icon = 'mdi-alert-circle';
+      level = 'error';
+    } else if (level === 'warn' || level === 'warning') {
+      color = 'warning';
+      icon = 'mdi-alert';
+      level = 'warning';
+    } else if (message.includes('completed') || message.includes('success') || message.includes('succeeded')) {
+      color = 'success';
+      icon = 'mdi-check-circle';
+      level = 'success';
+    } else if (message.includes('starting') || message.includes('started')) {
+      color = 'info';
+      icon = 'mdi-play-circle';
+      level = 'info';
+    } else if (message.includes('read') || message.includes('extracted')) {
+      color = 'teal';
+      icon = 'mdi-database-export';
+      level = 'info';
+    } else if (message.includes('writing') || message.includes('write')) {
+      color = 'indigo';
+      icon = 'mdi-database-import';
+      level = 'info';
+    } else if (message.includes('batch')) {
+      color = 'primary';
+      icon = 'mdi-buffer';
+      level = level || 'info';
     }
+    
+    return {
+      time: log.timestamp,
+      title: `${log.source}: ${log.message}`,
+      description: log.details,
+      color,
+      icon,
+      level
+    };
   });
-  
-  return steps;
 }
+
+function scrollToFirstError() {
+  try {
+    const el = document.querySelector('.app-timeline-item.timeline-error');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } catch (e) {
+    // ignore
+  }
+} 
 
 function getStatusColor(status) {
   switch (status?.toLowerCase()) {
@@ -581,6 +655,8 @@ function getStatusColor(status) {
       return 'error';
     case 'cancelled':
       return 'warning';
+    case 'queued':
+      return 'blue-grey';
     default:
       return 'grey';
   }
@@ -598,8 +674,12 @@ function formatDate(dateString, includeSeconds = false) {
 }
 
 function formatDuration(milliseconds) {
-  if (!milliseconds && milliseconds !== 0) {
+  if (milliseconds == null || milliseconds === false) {
     return '-';
+  }
+  
+  if (milliseconds < 1000) {
+    return `${milliseconds}ms`;
   }
   
   const seconds = Math.floor(milliseconds / 1000);
@@ -610,11 +690,8 @@ function formatDuration(milliseconds) {
     return `${hours}h ${minutes % 60}m`;
   } else if (minutes > 0) {
     return `${minutes}m ${seconds % 60}s`;
-  } else if (seconds > 0) {
-    return `${seconds}s`;
   } else {
-    // Show milliseconds for sub-second durations
-    return `${milliseconds}ms`;
+    return `${seconds}s`;
   }
 }
 
@@ -693,10 +770,25 @@ const handleRefresh = () => {
 };
 
 
-function viewExecutionDetails(execution) {
-  selectedExecution.value = { ...execution };
-  showDetailsDialog.value = true;
-}
+async function viewExecutionDetails(execution) {
+  try {
+    // Fetch detailed execution data including logs
+    const detailedExecution = await getExecutionById(execution.id);
+    // Transform API response to match view format
+    selectedExecution.value = {
+      ...detailedExecution,
+      rowsProcessed: detailedExecution.recordsProcessed || 0
+    };
+    showDetailsDialog.value = true;
+
+    // Wait for DOM update then scroll to first error (if any)
+    await nextTick();
+    scrollToFirstError();
+  } catch (error) {
+    console.error('Failed to fetch execution details:', error);
+    showError(t('executions.errors.fetchDetailsFailed'), t('common.error'));
+  }
+} 
 
 function cancelExecution(execution) {
   executionToCancel.value = execution;
@@ -860,19 +952,13 @@ async function confirmCancelExecution() {
   align-items: flex-start;
 }
 
-/* Added scrollable container styles */
+/* Timeline container styles - scrolling handled by outer v-card-text */
 .timeline-scrollable-container {
-  max-height: 400px;
-  overflow-y: auto;
   border-radius: var(--app-border-radius);
 }
 
 /* Mobile responsive adjustments */
 @media (max-width: 600px) {
-  .timeline-scrollable-container {
-    max-height: 300px;
-  }
-  
   :deep(.v-timeline-item__opposite) {
     display: none !important;
   }
@@ -889,8 +975,6 @@ async function confirmCancelExecution() {
 
 /* Updated logs styling for better light/dark mode support */
 .logs-container {
-  max-height: 450px;
-  overflow-y: auto;
   border-radius: var(--app-border-radius);
   font-family: 'Consolas', 'Monaco', monospace;
   white-space: pre-wrap;
@@ -922,18 +1006,117 @@ async function confirmCancelExecution() {
 
 /* Timeline cards */
 :deep(.app-timeline-card) {
-  border-left: 3px solid rgb(var(--v-theme-primary));
-  transition: all 0.2s ease;
+  border-left: 3px solid rgba(0,0,0,0.1);
+  transition: all 0.18s ease;
+  background: rgba(var(--v-theme-surface), 0.02);
 }
 
 :deep(.app-timeline-card:hover) {
-  border-left-color: rgb(var(--v-theme-secondary));
-  box-shadow: 0 4px 12px rgba(var(--v-theme-on-surface), 0.1);
+  border-left-color: rgba(var(--v-theme-secondary), 0.7);
+  box-shadow: 0 6px 18px rgba(var(--v-theme-on-surface), 0.08);
 }
+
+:deep(.app-timeline-card .timeline-title) {
+  font-weight: 600;
+}
+
+:deep(.app-timeline-card .timeline-desc) {
+  font-size: 0.9rem;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+:deep(.card-error) { border-left-color: rgb(var(--v-theme-error)); }
+:deep(.card-warning) { border-left-color: rgb(var(--v-theme-warning)); }
+:deep(.card-success) { border-left-color: rgb(var(--v-theme-success)); }
+:deep(.card-info) { border-left-color: rgb(var(--v-theme-info)); }
+
+/* Timeline container padding */
+.timeline-scrollable-container { padding-right: 8px; }
+
 
 /* Make execution dialog consistent between themes */
 :deep(.v-dialog > .v-card) {
   border-radius: var(--app-border-radius);
   overflow: hidden;
 }
+
+/* Log entries styling */
+.logs-entries {
+  /* Scrolling handled by the outer v-card-text container */
+}
+
+.log-entry {
+  padding: 12px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry.log-error {
+  background-color: rgba(var(--v-theme-error), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-error));
+}
+
+.log-entry.log-warn,
+.log-entry.log-warning {
+  background-color: rgba(var(--v-theme-warning), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-warning));
+}
+
+.log-entry.log-info {
+  background-color: rgba(var(--v-theme-info), 0.05);
+  border-left: 3px solid rgb(var(--v-theme-info));
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-left {
+  flex: 0 0 170px; /* fixed-ish column for timestamp */
+}
+
+.log-right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-timestamp {
+  color: rgb(var(--v-theme-on-surface-variant));
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.log-level-chip {
+  font-size: 0.72rem;
+  height: 22px;
+  min-width: 56px;
+}
+
+.log-source {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.log-message {
+  color: rgb(var(--v-theme-on-surface));
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* details are merged into the single-line representation */
+.log-details { display: none; } 
+
 </style>

@@ -5,9 +5,7 @@
         <v-card class="login-card" elevation="24">
           <!-- Header Section with Icon -->
           <div class="login-header">
-            <v-avatar size="64" class="mb-4" color="primary">
-              <v-icon size="40" color="white">mdi-database-sync</v-icon>
-            </v-avatar>
+            <img :src="logoUrl" alt="Logo" class="login-logo mb-4" />
             <h1 class="text-h4 font-weight-bold mb-2 text-primary">ETL Portal</h1>
             <p class="text-subtitle-1 text-medium-emphasis">Multi-Tenant ETL Platform</p>
           </div>
@@ -36,7 +34,7 @@
               <p class="text-body-1 text-center text-medium-emphasis mb-6">
                 {{ $t('auth.signInPrompt') || 'Sign in to access your ETL pipelines and data integrations.' }}
               </p>
-              
+
               <!-- Error alert for API server offline -->
               <v-alert
                 v-if="authStore.apiOffline"
@@ -72,14 +70,29 @@
                 color="primary"
                 size="large"
                 block
-                :loading="authStore.loading"
-                :disabled="authStore.loading"
+                :loading="authStore.loading && !guestLoading"
+                :disabled="authStore.loading || guestLoading"
                 class="text-none font-weight-bold"
                 elevation="2"
                 @click="handleLogin"
               >
                 <v-icon start>mdi-login</v-icon>
                 {{ $t('auth.signIn') || 'Sign In' }}
+              </v-btn>
+
+              <!-- Guest Login Button -->
+              <v-btn
+                variant="outlined"
+                color="primary"
+                size="large"
+                block
+                :loading="guestLoading"
+                :disabled="authStore.loading || guestLoading"
+                class="text-none font-weight-medium mt-3"
+                @click="handleGuestLogin"
+              >
+                <v-icon start>mdi-account-eye</v-icon>
+                Try as Guest
               </v-btn>
 
               <div class="text-center mt-6">
@@ -105,11 +118,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import logoUrl from '@/assets/logo.png';
 import { API_CONFIG } from '@/config/api';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const isRedirecting = ref(false);
+const guestLoading = ref(false);
 
 // Reset state on mount
 onMounted(() => {
@@ -136,6 +153,23 @@ async function handleLogin() {
     console.warn('Login initiation failed:', error.message);
   }
 }
+
+/**
+ * Login as guest via secure BFF session
+ */
+async function handleGuestLogin() {
+  try {
+    guestLoading.value = true;
+    await authStore.loginAsGuest();
+
+    // Redirect to dashboard on success
+    await router.push('/dashboard');
+  } catch (error) {
+    guestLoading.value = false;
+    // Error is already handled in the store
+    console.warn('Guest login failed:', error.message);
+  }
+}
 </script>
 
 <style scoped>
@@ -146,8 +180,8 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  background: linear-gradient(135deg, 
-    rgba(var(--v-theme-primary), 0.03) 0%, 
+  background: linear-gradient(135deg,
+    rgba(var(--v-theme-primary), 0.03) 0%,
     rgba(var(--v-theme-primary), 0.08) 100%);
 }
 
@@ -162,5 +196,15 @@ async function handleLogin() {
 .login-header {
   text-align: center;
   padding: 48px 32px 0;
+  --login-logo-size: 128px;
 }
+
+.login-logo {
+  height: var(--login-logo-size);
+  width: var(--login-logo-size);
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
 </style>

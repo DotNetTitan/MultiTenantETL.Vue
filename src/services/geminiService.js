@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import api from './api';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -298,46 +299,34 @@ What is a Tenant?
 
 Tenant List displays:
 - Tenant Name
-- Identifier (unique code, used in API calls)
-- Contact Email
-- Contact Phone
+- Slug / Identifier (unique code used in API calls)
 - Status (Active/Inactive)
-- User Count (number of users in tenant)
-- Pipeline Count
-- Actions: Edit, Switch To, Deactivate/Activate, Delete
+- Created date
+- Actions: Edit (pencil icon), Add user to tenant (person icon), Delete (red icon)
+
+IMPORTANT: The tenant list does NOT show Pipeline Count, User Count, Contact Email, or Contact Phone columns. To see pipelines, navigate to the Pipelines page.
 
 Creating a Tenant:
-1. Click "Create Tenant" button
-2. Enter: Tenant Name, Identifier (unique, alphanumeric)
-3. Add Contact Email and Phone
-4. Set Active status
-5. Save
+1. Click "+ ADD TENANT" button (top right)
+2. Enter: Tenant Name, Slug/Identifier (unique, alphanumeric)
+3. Set Active status
+4. Save
 
 Switching Tenants (Admin only):
-- Click "Switch To" button on any tenant
+- Use the "Select Tenant" dropdown in the top navigation bar
 - All data (pipelines, connectors, etc.) switches to that tenant's context
-- Current tenant shown in top navigation bar
 - Allows admins to manage multiple customer environments
 
 Tenant Status:
 - Active: Users can log in and use the system
-- Inactive: All users in tenant cannot log in
-- Useful for suspending entire customer accounts
-
-Data Isolation:
-- Each tenant's data is completely separate
-- Users can only see data for their assigned tenant
-- Pipelines cannot access connectors from other tenants
-- Executions are isolated per tenant
-- API keys are scoped to tenant`,
+- Inactive: All users in tenant cannot log in`,
     features: [
-      'Search tenants by name or identifier',
+      'Search tenants by name',
       'Filter by status (All, Active, Inactive)',
-      'Sort by name, user count, or pipeline count',
-      'View tenant statistics (users, pipelines, connectors)',
-      'Edit tenant details and contact information',
-      'Delete tenants (only if no users or data exist)',
-      'Tenant identifier used in API authentication'
+      'Sort by name',
+      'Edit tenant name and slug',
+      'Delete tenants',
+      'Switch between tenants via the top navigation bar dropdown'
     ]
   },
   settings: {
@@ -399,22 +388,151 @@ API Key Usage:
   }
 };
 
+// ── Live context helpers ─────────────────────────────────────────────────
+
+function fmt(ms) {
+  if (ms == null) return '-';
+  if (ms < 1000) return `${ms}ms`;
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleString();
+}
+
+/**
+ * Formats an execution's key log entries into a compact text block.
+ * Keeps Error/Warning logs plus the first and last Info log to stay within token limits.
+ */
+function fmtLogs(logs) {
+  if (!logs || logs.length === 0) return '    (no logs)';
+  const errorWarn = logs.filter(l => l.level === 'Error' || l.level === 'Warning');
+  const info = logs.filter(l => l.level !== 'Error' && l.level !== 'Warning');
+  const selected = [
+    ...errorWarn,
+    ...(info.length > 0 ? [info[0]] : []),
+    ...(info.length > 1 ? [info[info.length - 1]] : [])
+  ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  return selected
+    .map(l => `    [${l.level}] ${l.message || ''}${l.details ? ' — ' + l.details : ''}`)
+    .join('\n');
+}
+
+/**
+ * Fetches live data scoped to the current page.
+ * Returns a formatted text block, or null if fetching fails or the page has no live data.
+ */
+async function fetchLiveContext(page) {
+  try {
+    const now = new Date().toLocaleString();
+
+    // Pages that don't need live data
+    if (['users', 'tenants', 'settings'].includes(page)) return null;
+
+    if (page === 'dashboard') {
+      const [statsRes, execRes, pipeRes, connRes] = await Promise.allSettled([
+        api.get('/api/executions/stats'),
+        api.get('/api/executions', { params: { page: 1, pageSize: 5, sortBy: 'start_time_desc' } }),
+        api.get('/api/pipelines', { params: { page: 1, pageSize: 1 } }),
+        api.post('/api/connectors/search', { page: 1, pageSize: 1 })
+      ]);
+      const stats = statsRes.status === 'fulfilled' ? statsRes.value.data : null;
+      const execs = execRes.status === 'fulfilled' ? (execRes.value.data.executions || []) : [];
+      const totalPipelines = pipeRes.status === 'fulfilled' ? (pipeRes.value.data.totalCount ?? '?') : '?';
+      const totalConnectors = connRes.status === 'fulfilled' ? (connRes.value.data.totalCount ?? '?') : '?';
+
+      let out = `=== LIVE DATA (as of ${now}) ===\n`;
+      if (stats) {
+        out += `Execution Stats:\n`;
+        out += `  Total: ${stats.totalExecutions}, Running: ${stats.runningExecutions}, Completed: ${stats.completedExecutions}, Failed: ${stats.failedExecutions}, Cancelled: ${stats.cancelledExecutions}\n`;
+        out += `  Success rate: ${stats.successRate != null ? Math.round(stats.successRate) + '%' : '-'}, Avg duration: ${fmt(stats.averageDurationMs)}, Total rows: ${(stats.totalRecordsProcessed || 0).toLocaleString()}\n`;
+      }
+      out += `Totals: ${totalPipelines} pipelines, ${totalConnectors} connectors\n`;
+      if (execs.length > 0) {
+        out += `\nRecent Executions:\n`;
+        execs.forEach(e => {
+          out += `  - ${e.pipelineName}: ${e.status} | started ${fmtDate(e.startTime)} | ${fmt(e.durationMs)} | ${(e.recordsProcessed || 0).toLocaleString()} rows\n`;
+        });
+      }
+      return out;
+    }
+
+    if (page === 'pipelines') {
+      const res = await api.get('/api/pipelines', { params: { page: 1, pageSize: 50 } });
+      const pipelines = res.data.pipelines || [];
+      if (pipelines.length === 0) return `=== LIVE DATA (as of ${now}) ===\nNo pipelines found.\n`;
+      let out = `=== LIVE DATA (as of ${now}) ===\nPipelines (${pipelines.length} total):\n`;
+      pipelines.forEach(p => {
+        out += `  - "${p.name}" | ${p.isActive ? 'Active' : 'Inactive'} | `;
+        out += `Schedule: ${p.schedule || 'Manual'} | `;
+        out += `Source: ${p.sourceConnectorName || '-'} → Dest: ${p.destinationConnectorName || '-'}\n`;
+      });
+      return out;
+    }
+
+    if (page === 'executions') {
+      const res = await api.get('/api/executions', { params: { page: 1, pageSize: 10, sortBy: 'start_time_desc' } });
+      const execs = res.data.executions || [];
+      if (execs.length === 0) return `=== LIVE DATA (as of ${now}) ===\nNo executions found.\n`;
+      let out = `=== LIVE DATA (as of ${now}) ===\nRecent Executions (${execs.length} shown):\n`;
+      execs.forEach(e => {
+        out += `  - "${e.pipelineName}" | ${e.status} | started ${fmtDate(e.startTime)} | ${fmt(e.durationMs)} | ${(e.recordsProcessed || 0).toLocaleString()} rows\n`;
+        if (e.logs && e.logs.length > 0) {
+          out += `    Key logs:\n${fmtLogs(e.logs)}\n`;
+        }
+      });
+      return out;
+    }
+
+    if (page === 'connectors') {
+      const res = await api.get('/api/connectors');
+      const connectors = Array.isArray(res.data) ? res.data : [];
+      if (connectors.length === 0) return `=== LIVE DATA (as of ${now}) ===\nNo connectors found.\n`;
+      let out = `=== LIVE DATA (as of ${now}) ===\nConnectors (${connectors.length} total):\n`;
+      connectors.forEach(c => {
+        out += `  - "${c.name}" | Type: ${c.type} (${c.provider}) | Direction: ${c.direction} | ${c.isActive ? 'Active' : 'Inactive'}\n`;
+      });
+      return out;
+    }
+
+    if (page === 'transformations') {
+      const res = await api.get('/api/transformations', { params: { page: 1, pageSize: 50 } });
+      const transforms = res.data.transformations || res.data || [];
+      if (transforms.length === 0) return `=== LIVE DATA (as of ${now}) ===\nNo transformations found.\n`;
+      let out = `=== LIVE DATA (as of ${now}) ===\nTransformations (${transforms.length} total):\n`;
+      transforms.forEach(t => {
+        out += `  - "${t.name}" | Type: ${t.type}\n`;
+      });
+      return out;
+    }
+
+    return null;
+  } catch (err) {
+    // Best-effort: live context is optional, never block the chat
+    console.warn('[Maeve] Could not fetch live context:', err?.message);
+    return null;
+  }
+}
+
 // Retry helper with exponential backoff
 async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
-      const isRetryable = error.message?.includes('503') || 
-                          error.message?.includes('overloaded') ||
-                          error.message?.includes('429');
-      
+      const isRetryable = error.message?.includes('503') ||
+        error.message?.includes('overloaded') ||
+        error.message?.includes('429');
+
       const isLastAttempt = attempt === maxRetries - 1;
-      
+
       if (!isRetryable || isLastAttempt) {
         throw error;
       }
-      
+
       // Exponential backoff: 1s, 2s, 4s
       const delay = initialDelay * Math.pow(2, attempt);
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -423,12 +541,9 @@ async function retryWithBackoff(fn, maxRetries = 3, initialDelay = 1000) {
 }
 
 export async function getChatResponse(message, currentPage, conversationHistory = [], userLanguage = 'en') {
+  // Fetch live data for the current page before calling Gemini
+  const liveContext = await fetchLiveContext(currentPage);
   return retryWithBackoff(async () => {
-    // Use gemini-2.5-flash (stable, fast, and widely supported)
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash'
-    });
-    
     // Language instruction based on user's locale
     const languageInstructions = {
       'en': 'Respond in English.',
@@ -439,7 +554,7 @@ export async function getChatResponse(message, currentPage, conversationHistory 
       'pt': 'Responda em português (Portuguese).'
     };
     const languageInstruction = languageInstructions[userLanguage] || languageInstructions['en'];
-    
+
     // Build context-aware system prompt
     const pageContext = pageContexts[currentPage] || pageContexts.dashboard;
     const systemPrompt = `You are Maeve, a helpful AI assistant for the Multi-Tenant ETL Platform application. ${languageInstruction} 
@@ -467,7 +582,7 @@ Core Concepts:
 
 IMPORTANT LIMITATIONS:
 - Script transformations support ONLY JavaScript and C# (NOT Python, Ruby, or any other language)
-- Database support is ONLY SQL Server, PostgreSQL, and MySQL (NOT Oracle, MongoDB, etc.)
+- Database support is ONLY SQL Server, PostgreSQL, MySQL, and Oracle (NOT MongoDB, etc.)
 - File formats are ONLY CSV, Excel (.xlsx), and JSON (NOT XML, Parquet, Avro, etc.)
 - HTTP methods for APIs are ONLY GET, POST, PUT (NOT DELETE, PATCH, etc.)
 
@@ -492,28 +607,38 @@ Navigation:
 
 CRITICAL - DO NOT HALLUCINATE:
 - ONLY suggest JavaScript or C# for script transformations (NEVER Python, Ruby, etc.)
-- ONLY mention SQL Server, PostgreSQL, or MySQL for databases (NEVER Oracle, MongoDB, etc.)
+- ONLY mention SQL Server, PostgreSQL, MySQL, or Oracle for databases (NEVER MongoDB, etc.)
 - ONLY mention CSV, Excel, or JSON for files (NEVER XML, Parquet, etc.)
 - ONLY mention the 7 transformation types listed above (NEVER suggest custom plugins, extensions, etc.)
 - If a user asks about unsupported features, politely explain what IS supported instead
-- Do not invent features, integrations, or capabilities that are not explicitly mentioned in this context`;
+- Do not invent features, integrations, or capabilities that are not explicitly mentioned in this context
 
-    // Build conversation history
-    const history = conversationHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
-    }));
+${liveContext ? liveContext + '\nIMPORTANT: When the user asks about their data (pipelines, executions, connectors, logs), ALWAYS use the live data above to give specific, accurate answers with real names, statuses, timestamps, and log messages. Do not give generic answers when you have real data available.' : '(No live data available for this page — answer from general knowledge of the app.)'}`;
+
+    // Build conversation history (excluding the current user message to avoid duplication)
+    const history = conversationHistory
+      .filter(msg => msg.content !== message) // Remove current message if it was already pushed
+      .map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      }));
+
+    // Use gemini-2.5-flash with systemInstruction for better role-play consistency
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: systemPrompt
+    });
 
     const chat = model.startChat({
       history,
       generationConfig: {
-        maxOutputTokens: 2000,
+        maxOutputTokens: 2500,
         temperature: 0.7,
       },
     });
 
     try {
-      const result = await chat.sendMessage(`${systemPrompt}\n\nUser question: ${message}`);
+      const result = await chat.sendMessage(message);
       const response = result.response;
       return response.text();
     } catch (error) {
@@ -529,7 +654,7 @@ CRITICAL - DO NOT HALLUCINATE:
       } else if (error.message?.includes('404')) {
         throw new Error('Model not found. Please check your API configuration.');
       }
-      
+
       throw error;
     }
   });
