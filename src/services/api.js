@@ -98,6 +98,9 @@ api.interceptors.response.use(
         "/register",
         "/forgot-password",
         "/reset-password",
+        "/confirm-email",
+        "/auth/confirm-email",
+        "/auth/reset-password",
       ].some((p) => path.startsWith(p));
 
       if (!isGuestPage) {
