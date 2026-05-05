@@ -477,7 +477,7 @@ describe('User Service', () => {
     it('should return available roles', () => {
       const result = userService.getAvailableRoles()
 
-      expect(result).toEqual(['SuperAdmin', 'TenantAdmin', 'User'])
+      expect(result).toEqual(['SuperAdmin', 'PlatformAdmin', 'User'])
     })
   })
 

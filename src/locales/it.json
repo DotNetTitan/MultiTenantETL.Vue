@@ -661,6 +661,7 @@
     "role": "Ruolo",
     "activateUser": "Attiva Utente",
     "deactivateUser": "Disattiva Utente",
+    "superAdminProtected": "Il ruolo SuperAdmin non può essere modificato",
     "deleteConfirm": "Sei sicuro di voler eliminare l'utente \"{name}\"? Questa azione non può essere annullata.",
     "admin": "Admin",
     "user": "Utente",
@@ -978,5 +979,12 @@
     "selectTenant": "Seleziona Tenant",
     "tenantMemberships": "Appartenenze Tenant",
     "globalSystemRole": "Ruolo di sistema globale"
+  },
+  "roles": {
+    "superAdmin": "Super Amministratore",
+    "platformAdmin": "Amministratore di Piattaforma",
+    "tenantAdmin": "Amministratore Tenant",
+    "user": "Utente",
+    "viewer": "Visualizzatore"
   }
 }

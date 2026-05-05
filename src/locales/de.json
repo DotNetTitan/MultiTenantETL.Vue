@@ -672,6 +672,7 @@
     "role": "Rolle",
     "activateUser": "Benutzer aktivieren",
     "deactivateUser": "Benutzer deaktivieren",
+    "superAdminProtected": "Die SuperAdmin-Rolle kann nicht geändert werden",
     "deleteConfirm": "Sind Sie sicher, dass Sie den Benutzer \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "admin": "Admin",
     "user": "Benutzer",
@@ -1093,5 +1094,12 @@
     "filterByAction": "Nach Aktion filtern",
     "filterByResource": "Nach Ressourcentyp filtern",
     "filterBySeverity": "Nach Schweregrad filtern"
+  },
+  "roles": {
+    "superAdmin": "Superadministrator",
+    "platformAdmin": "Plattformadministrator",
+    "tenantAdmin": "Mandantenadministrator",
+    "user": "Benutzer",
+    "viewer": "Betrachter"
   }
 }

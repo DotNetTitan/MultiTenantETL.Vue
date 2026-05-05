@@ -1,9 +1,9 @@
 <template>
   <div>
     <div class="d-flex align-center mb-4">
-      <!-- Only SuperAdmin can add users to a tenant -->
+      <!-- Only global admins can add users to a tenant -->
       <v-btn
-        v-if="isSuperAdmin"
+        v-if="canManageTenantUsers"
         color="primary"
         size="small"
         @click="showAddUserDialog = true"
@@ -27,12 +27,12 @@
           :color="getRoleColor(item.roleCode || item.role)"
           size="small"
         >
-          {{ item.roleCode || item.role }}
+          {{ roleLabel(item.roleCode || item.role) }}
         </v-chip>
       </template>
       <template #item.actions="{ item }">
-        <!-- Only SuperAdmin can edit roles, and SuperAdmin rows cannot be modified -->
-        <template v-if="isSuperAdmin && !isSuperAdminRow(item)">
+        <!-- Only global admins can edit roles, and SuperAdmin rows cannot be modified -->
+        <template v-if="canManageTenantUsers && !isSuperAdminRow(item)">
           <v-btn
             icon="mdi-pencil"
             size="small"
@@ -154,8 +154,11 @@ import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 const { t } = useI18n()
 const authStore = useAuthStore()
 
-// Only the global SuperAdmin role can manage tenant membership and roles
-const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin')
+const isSuperAdmin = computed(() => authStore.isSuperAdmin)
+const isPlatformAdmin = computed(() => authStore.isPlatformAdmin)
+const canManageTenantUsers = computed(() => {
+  return isSuperAdmin.value || isPlatformAdmin.value
+})
 
 // Returns true if the given tenant user row belongs to a SuperAdmin (must not be editable)
 function isSuperAdminRow(item) {
@@ -192,7 +195,7 @@ const headers = computed(() => {
     { title: t('users.role'), key: 'role', width: '150px' }
   ]
   
-  if (isSuperAdmin.value) {
+  if (canManageTenantUsers.value) {
     baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' })
   }
   
@@ -201,6 +204,13 @@ const headers = computed(() => {
 
 function getRoleColor(role) {
   return userService.getRoleColor(role)
+}
+
+function roleLabel(role) {
+  if (!role) return ''
+  const key = role.charAt(0).toLowerCase() + role.slice(1)
+  const translated = t(`roles.${key}`)
+  return translated === `roles.${key}` ? role : translated
 }
 
 async function fetchUsers() {

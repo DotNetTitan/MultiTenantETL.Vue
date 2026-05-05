@@ -152,7 +152,7 @@ const router = createRouter({
       path: "/audit-logs",
       name: "audit-logs",
       component: () => import("@/views/AuditLogsView.vue"),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      meta: { requiresAuth: true, requiresPlatformAdmin: true },
     },
   ],
 });
@@ -161,6 +161,9 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some((record) => record.meta.requiresAdmin);
+  const requiresPlatformAdmin = to.matched.some(
+    (record) => record.meta.requiresPlatformAdmin,
+  );
   const requiresSuperAdmin = to.matched.some(
     (record) => record.meta.requiresSuperAdmin,
   );
@@ -195,10 +198,20 @@ router.beforeEach((to, from, next) => {
     }
   } else if (
     requiresSuperAdmin &&
-    (!authStore.user || authStore.user.role !== "SuperAdmin")
+    !authStore.isSuperAdmin
   ) {
     window.dispatchEvent(new CustomEvent("route-loading-end"));
     // Prevent infinite redirect loop
+    if (to.path !== "/dashboard") {
+      next("/dashboard");
+    } else {
+      next();
+    }
+  } else if (
+    requiresPlatformAdmin &&
+    !(authStore.isSuperAdmin || authStore.isPlatformAdmin)
+  ) {
+    window.dispatchEvent(new CustomEvent("route-loading-end"));
     if (to.path !== "/dashboard") {
       next("/dashboard");
     } else {

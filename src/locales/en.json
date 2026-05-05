@@ -684,6 +684,7 @@
     "role": "Role",
     "activateUser": "Activate user",
     "deactivateUser": "Deactivate user",
+    "superAdminProtected": "SuperAdmin role cannot be modified",
     "deleteConfirm": "Are you sure you want to delete the user \"{name}\"? This action cannot be undone.",
     "admin": "Admin",
     "user": "User",
@@ -1173,5 +1174,12 @@
     "sortNextRunDesc": "Next run (latest first)",
     "sortCreatedDesc": "Created (newest first)",
     "sortPipelineAsc": "Pipeline (A-Z)"
+  },
+  "roles": {
+    "superAdmin": "Super Administrator",
+    "platformAdmin": "Platform Administrator",
+    "tenantAdmin": "Tenant Administrator",
+    "user": "User",
+    "viewer": "Viewer"
   }
 }

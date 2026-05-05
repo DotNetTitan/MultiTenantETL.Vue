@@ -240,7 +240,7 @@
                     size="small"
                     variant="flat"
                   >
-                    {{ tenantRole }}
+                    {{ roleLabel(tenantRole) }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -260,7 +260,7 @@
                     size="small"
                     variant="flat"
                   >
-                    {{ globalRole }}
+                    {{ roleLabel(globalRole) }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -388,6 +388,13 @@ function getRoleColor(role) {
     default:
       return 'blue';
   }
+}
+
+function roleLabel(role) {
+  if (!role) return '';
+  const key = role.charAt(0).toLowerCase() + role.slice(1);
+  const translated = t(`roles.${key}`);
+  return translated === `roles.${key}` ? role : translated;
 }
 
 // Load user profile

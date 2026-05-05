@@ -59,7 +59,7 @@
               size="small"
               class="mr-1"
             >
-              {{ role }}
+              {{ roleLabel(role) }}
             </v-chip>
           </template>
           <template #item.createdAt="{ item }">
@@ -81,7 +81,7 @@
             <div class="d-flex justify-start flex-wrap ga-1">
               <!-- Only SuperAdmin can edit user details -->
               <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin'"
+                v-if="canManageUsers && canEditUser(item)"
                 icon
                 variant="text"
                 size="small"
@@ -90,9 +90,24 @@
               >
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
+              <v-tooltip
+                v-else-if="canManageUsers && isSuperAdminUser(item)"
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <v-icon
+                    v-bind="tooltipProps"
+                    color="grey"
+                    size="small"
+                  >
+                    mdi-lock
+                  </v-icon>
+                </template>
+                <span>{{ $t('users.superAdminProtected') }}</span>
+              </v-tooltip>
               <!-- Only SuperAdmin can activate/deactivate users -->
               <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
+                v-if="isSuperAdmin && item.status !== 1"
                 icon
                 variant="text"
                 size="small"
@@ -103,7 +118,7 @@
                 <v-icon>mdi-check-circle-outline</v-icon>
               </v-btn>
               <v-btn
-                v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
+                v-else-if="isSuperAdmin && item.status === 1"
                 icon
                 variant="text"
                 size="small"
@@ -118,7 +133,7 @@
                 <template v-slot:activator="{ props }">
                   <span v-bind="props" class="d-inline-block">
                     <v-btn
-                      v-if="authStore.user?.role === 'SuperAdmin'"
+                      v-if="isSuperAdmin"
                       icon
                       variant="text"
                       size="small"
@@ -173,7 +188,7 @@
               <v-spacer />
               <!-- Only SuperAdmin can add users to tenants from this dialog -->
               <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin'"
+                v-if="isSuperAdmin"
                 size="small"
                 color="primary"
                 @click="showAddTenantDialog = true"
@@ -194,7 +209,7 @@
           </v-btn>
           <!-- Only SuperAdmin can save changes to other users -->
           <v-btn
-            v-if="authStore.user?.role === 'SuperAdmin'"
+            v-if="canManageUsers"
             color="primary"
             :loading="savingUser"
             @click="saveUser"
@@ -306,7 +321,7 @@
                   size="x-small"
                   class="mt-1"
                 >
-                  {{ membership.roleCode }}
+                  {{ roleLabel(membership.roleCode) }}
                 </v-chip>
               </v-list-item-subtitle>
             </v-list-item>
@@ -364,7 +379,7 @@ const headers = computed(() => {
     { title: t('users.tenantMemberships'), key: 'tenantMemberships', sortable: false, width: '200px', align: 'center' }
   ];
 
-  if (authStore.user?.role === 'SuperAdmin') {
+  if (canManageUsers.value) {
     baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' });
   }
 
@@ -420,6 +435,28 @@ const availableTenants = ref([]);
 const selectedTenantId = ref(null);
 const selectedTenantRole = ref('User');
 const tenantRoles = ['TenantAdmin', 'User'];
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
+const isPlatformAdmin = computed(() => authStore.isPlatformAdmin);
+const canManageUsers = computed(() => isSuperAdmin.value || isPlatformAdmin.value);
+
+const roleLabel = (role) => {
+  if (!role) return '';
+  const key = role.charAt(0).toLowerCase() + role.slice(1);
+  const translated = t(`roles.${key}`);
+  return translated === `roles.${key}` ? role : translated;
+};
+
+const isSuperAdminUser = (user) => {
+  if (!user) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  return roles.includes('SuperAdmin');
+};
+
+const canEditUser = (user) => {
+  if (isSuperAdmin.value) return true;
+  if (isPlatformAdmin.value) return !isSuperAdminUser(user);
+  return false;
+};
 
 async function fetchUsers() {
   try {
@@ -430,7 +467,7 @@ async function fetchUsers() {
     };
 
     // TenantAdmins should only see users within their own tenant
-    if (authStore.user?.role !== 'SuperAdmin' && authStore.user?.currentTenantId) {
+    if (!canManageUsers.value && authStore.user?.currentTenantId) {
       filters.tenantId = authStore.user.currentTenantId;
     }
 
@@ -470,7 +507,7 @@ async function openMembershipsDialog(user) {
   try {
     const allMemberships = await userService.getUserTenants(user.id);
     // TenantAdmins should only see the memberships within their own tenant
-    if (authStore.user?.role !== 'SuperAdmin' && authStore.user?.currentTenantId) {
+    if (!canManageUsers.value && authStore.user?.currentTenantId) {
       memberships.value = allMemberships.filter(
         m => m.tenantId === authStore.user.currentTenantId
       );
@@ -546,8 +583,8 @@ async function saveUser() {
 
       await userService.update(editedUser.value.id, editedUser.value);
 
-      // Keep global roles aligned with the selected single role from the form
-      if (selectedRole) {
+      // Only SuperAdmin can mutate global roles
+      if (isSuperAdmin.value && selectedRole) {
         const rolesToRemove = existingRoles.filter(role => role !== selectedRole);
 
         for (const roleName of rolesToRemove) {

@@ -672,6 +672,7 @@
     "role": "Rôle",
     "activateUser": "Activer l'Utilisateur",
     "deactivateUser": "Désactiver l'utilisateur",
+    "superAdminProtected": "Le rôle SuperAdmin ne peut pas être modifié",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{name}\"? Cette action ne peut pas être annulée.",
     "admin": "Administrateur",
     "user": "Utilisateur",
@@ -1093,5 +1094,12 @@
     "filterByAction": "Filtrer par Action",
     "filterByResource": "Filtrer par Type de Ressource",
     "filterBySeverity": "Filtrer par Gravité"
+  },
+  "roles": {
+    "superAdmin": "Super Administrateur",
+    "platformAdmin": "Administrateur de Plateforme",
+    "tenantAdmin": "Administrateur de Locataire",
+    "user": "Utilisateur",
+    "viewer": "Lecteur"
   }
 }

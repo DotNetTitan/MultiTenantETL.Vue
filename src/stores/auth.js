@@ -14,6 +14,20 @@ export const useAuthStore = defineStore("auth", () => {
 
   // Computed properties
   const isAuthenticated = computed(() => !!user.value && !loggingOut.value);
+  const isSuperAdmin = computed(() => user.value?.role === "SuperAdmin");
+  const isPlatformAdmin = computed(() => {
+    if (!user.value) return false;
+    const globalRoles = Array.isArray(user.value.roles) ? user.value.roles : [];
+    return globalRoles.includes("PlatformAdmin");
+  });
+  const isTenantAdminCurrentTenant = computed(() => {
+    if (!user.value) return false;
+    const currentTenantId = user.value.currentTenantId;
+    const currentTenantMembership = Array.isArray(user.value.tenants)
+      ? user.value.tenants.find((tenant) => tenant.tenantId === currentTenantId)
+      : null;
+    return currentTenantMembership?.roleCode === "TenantAdmin";
+  });
   const isAdmin = computed(() => {
     if (!user.value) return false;
 
@@ -26,8 +40,10 @@ export const useAuthStore = defineStore("auth", () => {
 
     return (
       effectiveRole === "SuperAdmin" ||
+      effectiveRole === "PlatformAdmin" ||
       effectiveRole === "TenantAdmin" ||
       globalRoles.includes("SuperAdmin") ||
+      globalRoles.includes("PlatformAdmin") ||
       currentTenantMembership?.roleCode === "TenantAdmin"
     );
   });
@@ -325,6 +341,9 @@ export const useAuthStore = defineStore("auth", () => {
 
     // Computed
     isAuthenticated,
+    isSuperAdmin,
+    isPlatformAdmin,
+    isTenantAdminCurrentTenant,
     isAdmin,
     isGuest,
 

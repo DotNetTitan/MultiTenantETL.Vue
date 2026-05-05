@@ -21,7 +21,7 @@
         <v-spacer />
         <!-- Only SuperAdmin can add new tenants -->
         <v-btn
-          v-if="authStore.user?.role === 'SuperAdmin'"
+          v-if="canCreateOrEditTenants"
           color="primary"
           @click="openCreateDialog"
         >
@@ -80,7 +80,7 @@
                 />
                 <!-- Edit button (SuperAdmin only) -->
                 <v-btn
-                  v-if="authStore.user?.role === 'SuperAdmin'"
+                  v-if="canCreateOrEditTenants"
                   icon="mdi-pencil"
                   size="small"
                   variant="text"
@@ -89,7 +89,7 @@
                 />
                 <!-- Activate/Deactivate button (SuperAdmin only) -->
                 <v-btn
-                  v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
+                  v-if="canCreateOrEditTenants && item.status !== 1"
                   icon
                   size="small"
                   variant="text"
@@ -100,7 +100,7 @@
                   <v-icon>mdi-check-circle-outline</v-icon>
                 </v-btn>
                 <v-btn
-                  v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
+                  v-else-if="canCreateOrEditTenants && item.status === 1"
                   icon
                   size="small"
                   variant="text"
@@ -115,7 +115,7 @@
                   <template v-slot:activator="{ props }">
                     <span v-bind="props" class="d-inline-block">
                       <v-btn
-                        v-if="authStore.user?.role === 'SuperAdmin'"
+                        v-if="isSuperAdmin"
                         icon
                         size="small"
                         variant="text"
@@ -223,6 +223,9 @@ import TenantUsers from '@/components/tenants/TenantUsers.vue';
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
 
 const authStore = useAuthStore();
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
+const isPlatformAdmin = computed(() => authStore.isPlatformAdmin);
+const canCreateOrEditTenants = computed(() => isSuperAdmin.value || isPlatformAdmin.value);
 
 const loading = ref(false);
 const error = ref(null);
@@ -275,13 +278,13 @@ function createEmptyTenant() {
 
 // UI-specific methods
 function openCreateDialog() {
-  if (authStore.user?.role !== 'SuperAdmin') return;
+  if (!canCreateOrEditTenants.value) return;
   editedTenant.value = createEmptyTenant();
   showCreateDialog.value = true;
 }
 
 function openEditDialog(tenant) {
-  if (authStore.user?.role !== 'SuperAdmin') return;
+  if (!canCreateOrEditTenants.value) return;
   editedTenant.value = { ...tenant };
   showCreateDialog.value = true;
 }
@@ -307,7 +310,7 @@ async function fetchTenants() {
     loading.value = true;
     error.value = null;
 
-    if (authStore.user?.role === 'SuperAdmin') {
+    if (canCreateOrEditTenants.value) {
       // SuperAdmin can see all tenants
       allTenants.value = await tenantService.getAll({
         status: statusFilter.value,
@@ -357,7 +360,7 @@ watch(searchQuery, () => {
 });
 
 async function saveTenant() {
-  if (authStore.user?.role !== 'SuperAdmin') return;
+  if (!canCreateOrEditTenants.value) return;
 
   try {
     loading.value = true;
@@ -399,7 +402,7 @@ async function toggleTenantStatus(tenant) {
 }
 
 async function deleteTenant() {
-  if (authStore.user?.role !== 'SuperAdmin') return;
+  if (!isSuperAdmin.value) return;
 
   if (!selectedTenant.value) return;
 

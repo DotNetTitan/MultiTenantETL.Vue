@@ -200,7 +200,7 @@ export const userService = {
    * Get available roles
    */
   getAvailableRoles() {
-    return ['SuperAdmin', 'TenantAdmin', 'User']
+    return ['SuperAdmin', 'PlatformAdmin', 'User']
   },
 
   /**

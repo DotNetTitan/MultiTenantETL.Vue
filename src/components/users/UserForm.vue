@@ -32,7 +32,9 @@
       <v-col cols="12" md="6">
         <v-select
           v-model="form.role"
-          :items="roles"
+          :items="roleOptions"
+          item-title="title"
+          item-value="value"
           :label="$t('forms.globalRole')"
           prepend-icon="mdi-shield-account"
           variant="outlined"
@@ -76,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import FormInput from '@/components/form/FormInput.vue';
 import { useFormValidation } from '@/composables/useFormValidation';
@@ -116,6 +118,13 @@ const statusOptions = [
   { title: t('common.inactive'), value: 2 }
 ];
 
+const roleOptions = computed(() =>
+  props.roles.map(role => ({
+    value: role,
+    title: roleLabel(role)
+  }))
+);
+
 const form = ref(initializeForm(props.user));
 
 // Clear errors when form changes
@@ -133,6 +142,12 @@ const removeTenant = (tenantId) => {
 };
 
 const required = v => !!v || 'This field is required';
+const roleLabel = (role) => {
+  if (!role) return '';
+  const key = role.charAt(0).toLowerCase() + role.slice(1);
+  const translated = t(`roles.${key}`);
+  return translated === `roles.${key}` ? role : translated;
+};
 const emailRule = v => {
   if (!v) return 'Email is required';
   const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

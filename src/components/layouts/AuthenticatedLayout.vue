@@ -145,7 +145,7 @@
             <template #title>{{ $t('nav.executions') }}</template>
           </v-list-item>
 
-          <template v-if="isAdmin && !authStore.isGuest">
+          <template v-if="canAccessAdminPages && !authStore.isGuest">
             <v-list-subheader class="mt-2">{{ $t('common.administration') }}</v-list-subheader>
 
             <v-list-item to="/tenants" prepend-icon="mdi-office-building" rounded="lg">
@@ -154,7 +154,12 @@
             <v-list-item to="/users" prepend-icon="mdi-account-group" rounded="lg">
               <template #title>{{ $t('nav.users') }}</template>
             </v-list-item>
-            <v-list-item to="/audit-logs" prepend-icon="mdi-shield-check" rounded="lg">
+            <v-list-item
+              v-if="canAccessGlobalAdminPages"
+              to="/audit-logs"
+              prepend-icon="mdi-shield-check"
+              rounded="lg"
+            >
               <template #title>{{ $t('nav.auditLogs') }}</template>
             </v-list-item>
           </template>
@@ -192,7 +197,10 @@ const authStore = useAuthStore();
 const isMobile = computed(() => mobile.value);
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
-const isAdmin = computed(() => authStore.isAdmin);
+const canAccessAdminPages = computed(() => authStore.isAdmin);
+const canAccessGlobalAdminPages = computed(
+  () => authStore.isSuperAdmin || authStore.isPlatformAdmin
+);
 const isDarkMode = computed({
   get: () => isDarkTheme.value,
   set: () => {} // Toggle is handled by toggleTheme function

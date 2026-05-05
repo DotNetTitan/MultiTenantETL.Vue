@@ -661,6 +661,7 @@
     "role": "Função",
     "activateUser": "Ativar Usuário",
     "deactivateUser": "Desativar Usuário",
+    "superAdminProtected": "O papel SuperAdmin não pode ser modificado",
     "deleteConfirm": "Tem certeza de que deseja excluir o usuário \"{name}\"? Esta ação não pode ser desfeita.",
     "admin": "Admin",
     "user": "Usuário",
@@ -978,5 +979,12 @@
     "selectTenant": "Selecionar Locatário",
     "tenantMemberships": "Associações de Locatários",
     "globalSystemRole": "Função global do sistema"
+  },
+  "roles": {
+    "superAdmin": "Super Administrador",
+    "platformAdmin": "Administrador de Plataforma",
+    "tenantAdmin": "Administrador de Locatário",
+    "user": "Usuário",
+    "viewer": "Visualizador"
   }
 }

@@ -34,11 +34,14 @@ export const authService = {
 
     // Effective role for UI/route access:
     // 1) SuperAdmin always wins
-    // 2) Otherwise use current tenant membership role
-    // 3) Fallback to first global role or User
+    // 2) PlatformAdmin global role wins next
+    // 3) Otherwise use current tenant membership role
+    // 4) Fallback to first global role or User
     const effectiveRole = globalRoles.includes("SuperAdmin")
       ? "SuperAdmin"
-      : currentTenantMembership?.roleCode || globalRoles[0] || "User";
+      : globalRoles.includes("PlatformAdmin")
+        ? "PlatformAdmin"
+        : currentTenantMembership?.roleCode || globalRoles[0] || "User";
 
     return {
       id: data.id,

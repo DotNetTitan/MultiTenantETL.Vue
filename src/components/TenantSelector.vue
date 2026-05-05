@@ -75,8 +75,8 @@ onMounted(async () => {
     const { useAuthStore } = await import('@/stores/auth');
     const authStore = useAuthStore();
     
-    // Try to get all tenants if SuperAdmin, fallback to user's tenants if 403
-    if (authStore.user?.role === 'SuperAdmin') {
+    // Try to get all tenants if SuperAdmin/PlatformAdmin, fallback to user's tenants if 403
+    if (authStore.isSuperAdmin || authStore.isPlatformAdmin) {
       try {
         const allTenants = await tenantService.getAll();
         tenantStore.tenants = allTenants;
