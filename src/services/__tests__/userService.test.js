@@ -90,7 +90,7 @@ describe('User Service', () => {
     })
 
     it('should get all users with active status filter', async () => {
-      const mockUsers = [{ id: 1, email: 'active@example.com', firstName: 'Active', lastName: 'User', isActive: true }]
+      const mockUsers = [{ id: 1, email: 'active@example.com', firstName: 'Active', lastName: 'User', status: 1 }]
       const filters = { status: 'Active' }
 
       const mockResponse = { data: mockUsers }
@@ -99,13 +99,13 @@ describe('User Service', () => {
       const result = await userService.getAll(filters)
 
       expect(api.get).toHaveBeenCalledWith('/api/Users', {
-        params: { isActive: true }
+        params: { status: 1 }
       })
       expect(result).toEqual(mockUsers)
     })
 
     it('should get all users with inactive status filter', async () => {
-      const mockUsers = [{ id: 2, email: 'inactive@example.com', firstName: 'Inactive', lastName: 'User', isActive: false }]
+      const mockUsers = [{ id: 2, email: 'inactive@example.com', firstName: 'Inactive', lastName: 'User', status: 2 }]
       const filters = { status: 'Inactive' }
 
       const mockResponse = { data: mockUsers }
@@ -114,7 +114,7 @@ describe('User Service', () => {
       const result = await userService.getAll(filters)
 
       expect(api.get).toHaveBeenCalledWith('/api/Users', {
-        params: { isActive: false }
+        params: { status: 2 }
       })
       expect(result).toEqual(mockUsers)
     })
@@ -152,7 +152,7 @@ describe('User Service', () => {
         email: 'current@example.com',
         firstName: 'Current',
         lastName: 'User',
-        isActive: true
+        status: 1
       }
 
       const mockResponse = { data: mockUser }
@@ -232,15 +232,15 @@ describe('User Service', () => {
   describe('updateStatus', () => {
     it('should update user status', async () => {
       const userId = 1
-      const isActive = false
-      const mockResult = { id: 1, isActive: false }
+      const status = 2
+      const mockResult = { id: 1, status: 2 }
 
       const mockResponse = { data: mockResult }
       api.put.mockResolvedValue(mockResponse)
 
-      const result = await userService.updateStatus(userId, isActive)
+      const result = await userService.updateStatus(userId, status)
 
-      expect(api.put).toHaveBeenCalledWith('/api/Users/1/status', { isActive: false })
+      expect(api.put).toHaveBeenCalledWith('/api/Users/1/status', { status: 2 })
       expect(result).toEqual(mockResult)
     })
   })
@@ -248,8 +248,8 @@ describe('User Service', () => {
   describe('toggleStatus', () => {
     it('should toggle user status from active to inactive', async () => {
       const userId = 1
-      const mockUser = { id: 1, isActive: true }
-      const mockResult = { id: 1, isActive: false }
+      const mockUser = { id: 1, status: 1 }
+      const mockResult = { id: 1, status: 2 }
 
       // Mock getById to return active user
       api.get.mockResolvedValueOnce({ data: mockUser })
@@ -259,14 +259,14 @@ describe('User Service', () => {
       const result = await userService.toggleStatus(userId)
 
       expect(api.get).toHaveBeenCalledWith('/api/Users/1')
-      expect(api.put).toHaveBeenCalledWith('/api/Users/1/status', { isActive: false })
+      expect(api.put).toHaveBeenCalledWith('/api/Users/1/status', { status: 2 })
       expect(result).toEqual(mockResult)
     })
 
     it('should toggle user status from inactive to active', async () => {
       const userId = 2
-      const mockUser = { id: 2, isActive: false }
-      const mockResult = { id: 2, isActive: true }
+      const mockUser = { id: 2, status: 2 }
+      const mockResult = { id: 2, status: 1 }
 
       // Mock getById to return inactive user
       api.get.mockResolvedValueOnce({ data: mockUser })
@@ -276,7 +276,7 @@ describe('User Service', () => {
       const result = await userService.toggleStatus(userId)
 
       expect(api.get).toHaveBeenCalledWith('/api/Users/2')
-      expect(api.put).toHaveBeenCalledWith('/api/Users/2/status', { isActive: true })
+      expect(api.put).toHaveBeenCalledWith('/api/Users/2/status', { status: 1 })
       expect(result).toEqual(mockResult)
     })
   })
@@ -468,7 +468,7 @@ describe('User Service', () => {
         lastName: '',
         email: '',
         role: 'User',
-        isActive: true
+        status: 1
       })
     })
   })
@@ -483,9 +483,9 @@ describe('User Service', () => {
 
   describe('applyFilters', () => {
     const mockUsers = [
-      { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', isActive: true, createdAt: '2023-01-01' },
-      { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', isActive: false, createdAt: '2023-01-02' },
-      { id: 3, firstName: 'Bob', lastName: 'Johnson', email: 'bob@example.com', isActive: true, createdAt: '2023-01-03' }
+      { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', status: 1, createdAt: '2023-01-01' },
+      { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', status: 2, createdAt: '2023-01-02' },
+      { id: 3, firstName: 'Bob', lastName: 'Johnson', email: 'bob@example.com', status: 1, createdAt: '2023-01-03' }
     ]
 
     it('should return all users when no filters', () => {

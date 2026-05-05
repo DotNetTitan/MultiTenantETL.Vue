@@ -31,8 +31,8 @@ describe('Tenant Service', () => {
   describe('getAll', () => {
     it('should get all tenants without filters', async () => {
       const mockTenants = [
-        { id: 1, name: 'Tenant 1', isActive: true },
-        { id: 2, name: 'Tenant 2', isActive: false }
+        { id: 1, name: 'Tenant 1', status: 1 },
+        { id: 2, name: 'Tenant 2', status: 2 }
       ]
 
       const mockResponse = { data: mockTenants }
@@ -45,7 +45,7 @@ describe('Tenant Service', () => {
     })
 
     it('should get all tenants with search filter', async () => {
-      const mockTenants = [{ id: 1, name: 'Test Tenant', isActive: true }]
+      const mockTenants = [{ id: 1, name: 'Test Tenant', status: 1 }]
       const filters = { search: 'test' }
 
       const mockResponse = { data: mockTenants }
@@ -60,7 +60,7 @@ describe('Tenant Service', () => {
     })
 
     it('should get all tenants with active status filter', async () => {
-      const mockTenants = [{ id: 1, name: 'Active Tenant', isActive: true }]
+      const mockTenants = [{ id: 1, name: 'Active Tenant', status: 1 }]
       const filters = { status: 'active' }
 
       const mockResponse = { data: mockTenants }
@@ -69,13 +69,13 @@ describe('Tenant Service', () => {
       const result = await tenantService.getAll(filters)
 
       expect(api.get).toHaveBeenCalledWith('/api/Tenants', {
-        params: { isActive: true }
+        params: { status: 1 }
       })
       expect(result).toEqual(mockTenants)
     })
 
     it('should get all tenants with inactive status filter', async () => {
-      const mockTenants = [{ id: 2, name: 'Inactive Tenant', isActive: false }]
+      const mockTenants = [{ id: 2, name: 'Inactive Tenant', status: 2 }]
       const filters = { status: 'inactive' }
 
       const mockResponse = { data: mockTenants }
@@ -84,7 +84,7 @@ describe('Tenant Service', () => {
       const result = await tenantService.getAll(filters)
 
       expect(api.get).toHaveBeenCalledWith('/api/Tenants', {
-        params: { isActive: false }
+        params: { status: 2 }
       })
       expect(result).toEqual(mockTenants)
     })
@@ -110,7 +110,7 @@ describe('Tenant Service', () => {
   describe('getById', () => {
     it('should get tenant by ID', async () => {
       const tenantId = 1
-      const mockTenant = { id: 1, name: 'Test Tenant', isActive: true }
+      const mockTenant = { id: 1, name: 'Test Tenant', status: 1 }
 
       const mockResponse = { data: mockTenant }
       api.get.mockResolvedValue(mockResponse)
@@ -128,7 +128,7 @@ describe('Tenant Service', () => {
         name: 'New Tenant',
         slug: 'new-tenant',
         description: 'A new tenant',
-        isActive: true
+        status: 1
       }
       const mockCreatedTenant = { id: 3, ...tenantData, createdAt: '2023-01-01T00:00:00Z' }
 
@@ -145,7 +145,7 @@ describe('Tenant Service', () => {
   describe('update', () => {
     it('should update tenant', async () => {
       const tenantId = 1
-      const tenantData = { name: 'Updated Tenant', isActive: false }
+      const tenantData = { name: 'Updated Tenant', status: 2 }
       const mockUpdatedTenant = { id: 1, ...tenantData, updatedAt: '2023-01-02T00:00:00Z' }
 
       const mockResponse = { data: mockUpdatedTenant }
@@ -280,9 +280,9 @@ describe('Tenant Service', () => {
 
   describe('applyFilters', () => {
     const mockTenants = [
-      { id: 1, name: 'Alpha Corp', slug: 'alpha', description: 'First tenant', isActive: true, createdAt: '2023-01-01' },
-      { id: 2, name: 'Beta LLC', slug: 'beta', description: 'Second tenant', isActive: false, createdAt: '2023-01-02' },
-      { id: 3, name: 'Gamma Inc', slug: 'gamma', description: 'Third tenant', isActive: true, createdAt: '2023-01-03' }
+      { id: 1, name: 'Alpha Corp', slug: 'alpha', description: 'First tenant', status: 1, createdAt: '2023-01-01' },
+      { id: 2, name: 'Beta LLC', slug: 'beta', description: 'Second tenant', status: 2, createdAt: '2023-01-02' },
+      { id: 3, name: 'Gamma Inc', slug: 'gamma', description: 'Third tenant', status: 1, createdAt: '2023-01-03' }
     ]
 
     it('should return all tenants when no filters', () => {
