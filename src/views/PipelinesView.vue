@@ -123,87 +123,89 @@
             </v-tooltip>
           </template>
           <template #item.actions="{ item }">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              :to="`/pipelines/${item.id}`"
-              :title="$t('pipelines.viewDetails')"
-            >
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="openEditDialog(item)"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
+            <div class="d-flex justify-start flex-wrap ga-1">
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                :to="`/pipelines/${item.id}`"
+                :title="$t('pipelines.viewDetails')"
+              >
+                <v-icon>mdi-eye</v-icon>
+              </v-btn>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="openEditDialog(item)"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.edit') }}</span>
+              </v-tooltip>
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                color="info"
+                :title="$t('pipelines.viewMappings')"
+                @click="viewMappings(item)"
+              >
+                <v-icon>mdi-map-marker-path</v-icon>
+              </v-btn>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="success"
+                      :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="handleExecutePipeline(item)"
+                    >
+                      <v-icon>mdi-play</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>
+                  {{ authStore.isGuest
+                    ? $t('common.guestReadOnly')
+                    : !item.isActive
+                      ? 'Pipeline must be active to execute'
+                      : item.status === 'Running'
+                        ? 'Pipeline is already running'
+                        : $t('pipelines.executePipeline')
+                  }}
                 </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.edit') }}</span>
-            </v-tooltip>
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="info"
-              :title="$t('pipelines.viewMappings')"
-              @click="viewMappings(item)"
-            >
-              <v-icon>mdi-map-marker-path</v-icon>
-            </v-btn>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="success"
-                    :disabled="item.status === 'Running' || !item.isActive || authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="handleExecutePipeline(item)"
-                  >
-                    <v-icon>mdi-play</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>
-                {{ authStore.isGuest
-                  ? $t('common.guestReadOnly')
-                  : !item.isActive
-                    ? 'Pipeline must be active to execute'
-                    : item.status === 'Running'
-                      ? 'Pipeline is already running'
-                      : $t('pipelines.executePipeline')
-                }}
-              </span>
-            </v-tooltip>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="error"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="confirmDelete(item)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
-            </v-tooltip>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
+              </v-tooltip>
+            </div>
           </template>
         </v-data-table>
       </v-card-text>
@@ -388,7 +390,7 @@ const headers = computed(() => [
   { title: t('pipelines.lastRun'), key: 'lastRunAt', width: '150px' },
   { title: t('pipelines.scheduled'), key: 'isScheduled', width: '100px' },
   { title: t('common.active'), key: 'isActive', sortable: false, width: '100px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ]);
 
 // Dialog controls

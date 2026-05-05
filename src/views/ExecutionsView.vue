@@ -77,33 +77,35 @@
             {{ formatDuration(item.durationMs) }}
           </template>
           <template #item.actions="{ item }">
-            <v-btn
-              icon
-              variant="text"
-              size="small"
-              title="View details"
-              @click="viewExecutionDetails(item)"
-            >
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>
-            <v-tooltip v-if="item.status === 'Running'" location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="error"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="cancelExecution(item)"
-                  >
-                    <v-icon>mdi-stop</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : 'Cancel execution' }}</span>
-            </v-tooltip>
+            <div class="d-flex justify-start flex-wrap ga-1">
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                title="View details"
+                @click="viewExecutionDetails(item)"
+              >
+                <v-icon>mdi-eye</v-icon>
+              </v-btn>
+              <v-tooltip v-if="item.status === 'Running'" location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="cancelExecution(item)"
+                    >
+                      <v-icon>mdi-stop</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : 'Cancel execution' }}</span>
+              </v-tooltip>
+            </div>
           </template>
         </v-data-table>
       </v-card-text>
@@ -447,7 +449,7 @@ const headers = computed(() => [
   { title: t('executions.endTime'), key: 'endTime', width: '150px' },
   { title: t('dashboard.duration'), key: 'durationMs', width: '100px' },
   { title: t('dashboard.rowsProcessed'), key: 'rowsProcessed', width: '120px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '100px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ]);
 
 // Filters and sorting

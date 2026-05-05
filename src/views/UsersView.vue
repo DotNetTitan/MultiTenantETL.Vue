@@ -78,59 +78,61 @@
             </v-btn>
           </template>
           <template #item.actions="{ item }">
-            <!-- Only SuperAdmin can edit user details -->
-            <v-btn
-              v-if="authStore.user?.role === 'SuperAdmin'"
-              icon
-              variant="text"
-              size="small"
-              :title="$t('users.editUser')"
-              @click="editUser(item)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-            <!-- Only SuperAdmin can activate/deactivate users -->
-            <v-btn
-              v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
-              icon
-              variant="text"
-              size="small"
-              color="success"
-              :title="$t('users.activateUser')"
-              @click="toggleUserStatus(item)"
-            >
-              <v-icon>mdi-check-circle-outline</v-icon>
-            </v-btn>
-            <v-btn
-              v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
-              icon
-              variant="text"
-              size="small"
-              color="warning"
-              :title="$t('users.deactivateUser')"
-              @click="toggleUserStatus(item)"
-            >
-              <v-icon>mdi-minus-circle-outline</v-icon>
-            </v-btn>
-            <!-- Only SuperAdmin can delete users -->
-            <v-tooltip location="top">
-              <template v-slot:activator="{ props }">
-                <span v-bind="props" class="d-inline-block">
-                  <v-btn
-                    v-if="authStore.user?.role === 'SuperAdmin'"
-                    icon
-                    variant="text"
-                    size="small"
-                    color="error"
-                    :disabled="item.status === 1"
-                    @click="confirmDelete(item)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ item.status === 1 ? $t('users.deactivateFirst') : $t('users.deleteUser') }}</span>
-            </v-tooltip>
+            <div class="d-flex justify-start flex-wrap ga-1">
+              <!-- Only SuperAdmin can edit user details -->
+              <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin'"
+                icon
+                variant="text"
+                size="small"
+                :title="$t('users.editUser')"
+                @click="editUser(item)"
+              >
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+              <!-- Only SuperAdmin can activate/deactivate users -->
+              <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
+                icon
+                variant="text"
+                size="small"
+                color="success"
+                :title="$t('users.activateUser')"
+                @click="toggleUserStatus(item)"
+              >
+                <v-icon>mdi-check-circle-outline</v-icon>
+              </v-btn>
+              <v-btn
+                v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
+                icon
+                variant="text"
+                size="small"
+                color="warning"
+                :title="$t('users.deactivateUser')"
+                @click="toggleUserStatus(item)"
+              >
+                <v-icon>mdi-minus-circle-outline</v-icon>
+              </v-btn>
+              <!-- Only SuperAdmin can delete users -->
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props" class="d-inline-block">
+                    <v-btn
+                      v-if="authStore.user?.role === 'SuperAdmin'"
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="item.status === 1"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ item.status === 1 ? $t('users.deactivateFirst') : $t('users.deleteUser') }}</span>
+              </v-tooltip>
+            </div>
           </template>
         </v-data-table>
       </v-card-text>
@@ -363,7 +365,7 @@ const headers = computed(() => {
   ];
 
   if (authStore.user?.role === 'SuperAdmin') {
-    baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '130px', align: 'end' });
+    baseHeaders.push({ title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' });
   }
 
   return baseHeaders;

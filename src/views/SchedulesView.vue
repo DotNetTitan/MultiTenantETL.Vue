@@ -164,7 +164,7 @@
           </template>
 
           <template #item.actions="{ item }">
-            <div class="d-flex flex-nowrap">
+            <div class="d-flex justify-start flex-wrap ga-1">
               <v-tooltip location="top">
                 <template #activator="{ props }">
                   <span v-bind="props">
@@ -353,7 +353,7 @@ const headers = computed(() => [
   { title: t('schedules.isActive'), key: 'isActive', sortable: false, width: '100px' },
   { title: t('schedules.nextRun'), key: 'nextRunAt', sortable: false },
   { title: t('schedules.lastRun'), key: 'lastRunAt', sortable: false },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '150px' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ])
 
 const statusOptions = computed(() => [

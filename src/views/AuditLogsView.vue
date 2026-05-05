@@ -90,12 +90,14 @@
             {{ auditService.formatDate(item.createdAt) }}
           </template>
           <template #item.actions="{ item }">
-            <v-btn
-              icon="mdi-eye"
-              size="small"
-              variant="text"
-              @click="viewDetails(item)"
-            />
+            <div class="d-flex justify-start flex-wrap ga-1">
+              <v-btn
+                icon="mdi-eye"
+                size="small"
+                variant="text"
+                @click="viewDetails(item)"
+              />
+            </div>
           </template>
         </v-data-table>
       </v-card-text>
@@ -306,7 +308,7 @@ const headers = computed(() => [
   { title: t('auditLogs.severity'), key: 'severity', width: '100px' },
   { title: t('auditLogs.status'), key: 'success', width: '80px' },
   { title: t('auditLogs.timestamp'), key: 'createdAt', width: '180px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '80px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ])
 
 const resourceTypes = [

@@ -106,70 +106,72 @@
             </div>
           </template>
           <template #item.actions="{ item }">
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="editConnector(item)"
-                  >
-                    <v-icon>mdi-pencil</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.editConnector') }}</span>
-            </v-tooltip>
-            <v-btn
-              v-if="item.type !== 'Email'"
-              icon
-              variant="text"
-              size="small"
-              color="info"
-              :title="$t('connectors.viewSchema')"
-              @click="viewSchema(item)"
-            >
-              <v-icon>mdi-table-eye</v-icon>
-            </v-btn>
-            <v-tooltip v-if="item.type !== 'Email'" location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="success"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="testConnection(item)"
-                  >
-                    <v-icon>mdi-connection</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.testConnection') }}</span>
-            </v-tooltip>
-            <v-tooltip location="top">
-              <template #activator="{ props }">
-                <span v-bind="props">
-                  <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="error"
-                    :disabled="authStore.isGuest"
-                    :style="authStore.isGuest ? 'pointer-events: auto' : ''"
-                    @click="confirmDelete(item)"
-                  >
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
-                </span>
-              </template>
-              <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
-            </v-tooltip>
+            <div class="d-flex justify-start flex-wrap ga-1">
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="editConnector(item)"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.editConnector') }}</span>
+              </v-tooltip>
+              <v-btn
+                v-if="item.type !== 'Email'"
+                icon
+                variant="text"
+                size="small"
+                color="info"
+                :title="$t('connectors.viewSchema')"
+                @click="viewSchema(item)"
+              >
+                <v-icon>mdi-table-eye</v-icon>
+              </v-btn>
+              <v-tooltip v-if="item.type !== 'Email'" location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="success"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="testConnection(item)"
+                    >
+                      <v-icon>mdi-connection</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('connectors.testConnection') }}</span>
+              </v-tooltip>
+              <v-tooltip location="top">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <v-btn
+                      icon
+                      variant="text"
+                      size="small"
+                      color="error"
+                      :disabled="authStore.isGuest"
+                      :style="authStore.isGuest ? 'pointer-events: auto' : ''"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ authStore.isGuest ? $t('common.guestReadOnly') : $t('common.delete') }}</span>
+              </v-tooltip>
+            </div>
           </template>
         </v-data-table>
       </v-card-text>
@@ -695,7 +697,7 @@ const headers = computed(() => [
   { title: t('connectors.provider'), key: 'provider', width: '140px' },
   { title: t('common.description'), key: 'description' },
   { title: t('connectors.direction'), key: 'direction', width: '150px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ]);
 
 // Filters and sorting

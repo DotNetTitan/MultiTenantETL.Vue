@@ -69,65 +69,67 @@
               {{ tenantService.formatDate(item.createdAt) }}
             </template>
             <template #item.actions="{ item }">
-              <!-- Manage users button (available to all admins) -->
-              <v-btn
-                icon="mdi-account-multiple"
-                size="small"
-                variant="text"
-                color="primary"
-                @click="openUsersDialog(item)"
-              />
-              <!-- Edit button (SuperAdmin only) -->
-              <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin'"
-                icon="mdi-pencil"
-                size="small"
-                variant="text"
-                :title="$t('common.edit')"
-                @click="openEditDialog(item)"
-              />
-              <!-- Activate/Deactivate button (SuperAdmin only) -->
-              <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
-                icon
-                size="small"
-                variant="text"
-                color="success"
-                :title="$t('tenants.activateTenant')"
-                @click="toggleTenantStatus(item)"
-              >
-                <v-icon>mdi-check-circle-outline</v-icon>
-              </v-btn>
-              <v-btn
-                v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
-                icon
-                size="small"
-                variant="text"
-                color="warning"
-                :title="$t('tenants.deactivateTenant')"
-                @click="toggleTenantStatus(item)"
-              >
-                <v-icon>mdi-minus-circle-outline</v-icon>
-              </v-btn>
-              <!-- Delete button (SuperAdmin only) -->
-              <v-tooltip location="top">
-                <template v-slot:activator="{ props }">
-                  <span v-bind="props" class="d-inline-block">
-                    <v-btn
-                      v-if="authStore.user?.role === 'SuperAdmin'"
-                      icon
-                      size="small"
-                      variant="text"
-                      color="error"
-                      :disabled="item.status === 1"
-                      @click="confirmDelete(item)"
-                    >
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </span>
-                </template>
-                <span>{{ item.status === 1 ? $t('tenants.deactivateFirst') : $t('tenants.deleteTenant') }}</span>
-              </v-tooltip>
+              <div class="d-flex justify-start flex-wrap ga-1">
+                <!-- Manage users button (available to all admins) -->
+                <v-btn
+                  icon="mdi-account-multiple"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="openUsersDialog(item)"
+                />
+                <!-- Edit button (SuperAdmin only) -->
+                <v-btn
+                  v-if="authStore.user?.role === 'SuperAdmin'"
+                  icon="mdi-pencil"
+                  size="small"
+                  variant="text"
+                  :title="$t('common.edit')"
+                  @click="openEditDialog(item)"
+                />
+                <!-- Activate/Deactivate button (SuperAdmin only) -->
+                <v-btn
+                  v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
+                  icon
+                  size="small"
+                  variant="text"
+                  color="success"
+                  :title="$t('tenants.activateTenant')"
+                  @click="toggleTenantStatus(item)"
+                >
+                  <v-icon>mdi-check-circle-outline</v-icon>
+                </v-btn>
+                <v-btn
+                  v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
+                  icon
+                  size="small"
+                  variant="text"
+                  color="warning"
+                  :title="$t('tenants.deactivateTenant')"
+                  @click="toggleTenantStatus(item)"
+                >
+                  <v-icon>mdi-minus-circle-outline</v-icon>
+                </v-btn>
+                <!-- Delete button (SuperAdmin only) -->
+                <v-tooltip location="top">
+                  <template v-slot:activator="{ props }">
+                    <span v-bind="props" class="d-inline-block">
+                      <v-btn
+                        v-if="authStore.user?.role === 'SuperAdmin'"
+                        icon
+                        size="small"
+                        variant="text"
+                        color="error"
+                        :disabled="item.status === 1"
+                        @click="confirmDelete(item)"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </span>
+                  </template>
+                  <span>{{ item.status === 1 ? $t('tenants.deactivateFirst') : $t('tenants.deleteTenant') }}</span>
+                </v-tooltip>
+              </div>
             </template>
           </v-data-table>
         </v-card-text>
@@ -260,7 +262,7 @@ const headers = computed(() => [
   { title: t('tenants.slug'), key: 'slug' },
   { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('common.created'), key: 'createdAt', width: '180px' },
-  { title: t('common.actions'), key: 'actions', sortable: false, width: '200px', align: 'end' }
+  { title: t('common.actions'), key: 'actions', sortable: false, width: '120px', align: 'start' }
 ]);
 
 function createEmptyTenant() {
