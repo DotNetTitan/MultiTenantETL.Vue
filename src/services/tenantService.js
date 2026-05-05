@@ -12,7 +12,7 @@ export const tenantService = {
     }
     
     if (filters.status && filters.status !== 'all') {
-      params.isActive = filters.status === 'active'
+      params.status = filters.status === 'active' ? 1 : 2
     }
 
     const response = await api.get('/api/Tenants', { params })
@@ -49,6 +49,23 @@ export const tenantService = {
   async update(id, tenantData) {
     const response = await api.put(`/api/Tenants/${id}`, tenantData)
     return response.data
+  },
+
+  /**
+   * Activate/deactivate tenant (SuperAdmin only)
+   */
+  async updateStatus(id, status) {
+    const response = await api.put(`/api/Tenants/${id}`, { status })
+    return response.data
+  },
+
+  /**
+   * Toggle tenant status
+   */
+  async toggleStatus(id) {
+    const tenant = await this.getById(id)
+    const newStatus = tenant.status === 1 ? 2 : 1
+    return await this.updateStatus(id, newStatus)
   },
 
   /**
@@ -111,8 +128,8 @@ export const tenantService = {
     let filtered = [...tenants]
     
     if (filters.status && filters.status !== 'all') {
-      const isActive = filters.status === 'active'
-      filtered = filtered.filter(tenant => tenant.isActive === isActive)
+      const statusValue = filters.status === 'active' ? 1 : 2
+      filtered = filtered.filter(tenant => tenant.status === statusValue)
     }
 
     if (filters.search) {

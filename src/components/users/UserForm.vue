@@ -43,12 +43,14 @@
         />
       </v-col>
       <v-col cols="12" md="6">
-        <v-switch
-          v-model="form.isActive"
-          :label="$t('forms.active')"
-          color="success"
+        <v-select
+          v-model="form.status"
+          :items="statusOptions"
+          :label="$t('common.status')"
+          prepend-icon="mdi-check-circle"
+          variant="outlined"
           hide-details
-          @update:model-value="updateField('isActive', $event)"
+          @update:model-value="updateField('status', $event)"
         />
       </v-col>
       <v-col v-if="form.tenants && form.tenants.length > 0" cols="12">
@@ -108,6 +110,11 @@ const initializeForm = (user) => {
   
   return formData;
 };
+
+const statusOptions = [
+  { title: t('common.active'), value: 1 },
+  { title: t('common.inactive'), value: 2 }
+];
 
 const form = ref(initializeForm(props.user));
 

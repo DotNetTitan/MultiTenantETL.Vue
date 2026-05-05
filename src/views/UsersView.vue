@@ -31,11 +31,10 @@
         >
           <template #item.status="{ item }">
             <v-chip
-              :color="item.isActive ? 'success' : 'error'"
-              text-color="white"
+              :color="item.status === 1 ? 'success' : (item.status === 2 ? 'warning' : 'error')"
               size="small"
             >
-              {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
+              {{ item.status === 1 ? $t('common.active') : (item.status === 2 ? $t('common.inactive') : $t('common.deleted')) }}
             </v-chip>
           </template>
           <template #item.name="{ item }">
@@ -92,7 +91,7 @@
             </v-btn>
             <!-- Only SuperAdmin can activate/deactivate users -->
             <v-btn
-              v-if="authStore.user?.role === 'SuperAdmin' && !item.isActive"
+              v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
               icon
               variant="text"
               size="small"
@@ -100,10 +99,10 @@
               :title="$t('users.activateUser')"
               @click="toggleUserStatus(item)"
             >
-              <v-icon>mdi-check</v-icon>
+              <v-icon>mdi-check-circle-outline</v-icon>
             </v-btn>
             <v-btn
-              v-else-if="authStore.user?.role === 'SuperAdmin' && item.isActive"
+              v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
               icon
               variant="text"
               size="small"
@@ -111,7 +110,7 @@
               :title="$t('users.deactivateUser')"
               @click="toggleUserStatus(item)"
             >
-              <v-icon>mdi-close</v-icon>
+              <v-icon>mdi-minus-circle-outline</v-icon>
             </v-btn>
             <!-- Only SuperAdmin can delete users -->
             <v-btn
@@ -121,7 +120,7 @@
               size="small"
               color="error"
               :title="$t('users.deleteUser')"
-              :disabled="item.isActive"
+              :disabled="item.status === 1"
               @click="confirmDelete(item)"
             >
               <v-icon>mdi-delete</v-icon>
@@ -513,8 +512,9 @@ async function deleteUser() {
   try {
     deletingUser.value = true;
     await userService.delete(userToDelete.value.id);
-    await fetchUsers();
     showDeleteDialog.value = false;
+    // Full page refresh to ensure all components (like user list) are updated
+    window.location.reload();
     userToDelete.value = null;
     showSuccess(t('users.deleteSuccess'), t('users.title'));
   } catch (error) {
@@ -569,7 +569,7 @@ async function toggleUserStatus(user) {
     await userService.toggleStatus(user.id);
     await fetchUsers();
     showSuccess(
-      user.isActive ? t('users.deactivateSuccess') : t('users.activateSuccess'),
+      user.status === 1 ? t('users.deactivateSuccess') : t('users.activateSuccess'),
       t('users.title')
     );
   } catch (error) {

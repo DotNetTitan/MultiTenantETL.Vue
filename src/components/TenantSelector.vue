@@ -36,7 +36,7 @@ const tenantItems = computed(() => {
   if (tenantStore.error) return [];
   // Filter out inactive tenants - users shouldn't see or switch to them
   return tenantStore.tenants
-    .filter(tenant => tenant.isActive)
+    .filter(tenant => tenant.status === 1)
     .map(tenant => ({
       title: tenant.name,
       value: tenant.id
@@ -86,12 +86,12 @@ onMounted(async () => {
           console.warn('SuperAdmin check failed, falling back to user tenants');
           const userTenants = await tenantService.getMyTenants();
           tenantStore.tenants = userTenants.map(ut => {
-            const { tenantId, tenantName, tenantSlug, isActive } = ut;
+            const { tenantId, tenantName, tenantSlug, status } = ut;
             return {
               id: tenantId,
               name: tenantName,
               slug: tenantSlug,
-              isActive: isActive
+              status: status
             };
           });
         } else {
@@ -101,19 +101,19 @@ onMounted(async () => {
     } else {
       const userTenants = await tenantService.getMyTenants();
       tenantStore.tenants = userTenants.map(ut => {
-        const { tenantId, tenantName, tenantSlug, isActive } = ut;
+        const { tenantId, tenantName, tenantSlug, status } = ut;
         return {
           id: tenantId,
           name: tenantName,
           slug: tenantSlug,
-          isActive: isActive
+          status: status
         };
       });
     }
     
     // Validate that current tenant ID exists in user's tenant list
     if (tenantStore.currentTenantId) {
-      const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId && t.isActive);
+      const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId && t.status === 1);
       if (!tenantExists) {
         localStorage.removeItem('currentTenantId');
         tenantStore.currentTenantId = null;
@@ -124,7 +124,7 @@ onMounted(async () => {
     // Auto-select the first active tenant if none is currently selected
     // Only update local state - don't call API to avoid unnecessary tenant switch logs
     if (!tenantStore.currentTenantId && tenantStore.tenants.length > 0) {
-      const firstActiveTenant = tenantStore.tenants.find(t => t.isActive);
+      const firstActiveTenant = tenantStore.tenants.find(t => t.status === 1);
       if (firstActiveTenant) {
         // Set locally without calling backend API
         tenantStore.currentTenantId = firstActiveTenant.id;

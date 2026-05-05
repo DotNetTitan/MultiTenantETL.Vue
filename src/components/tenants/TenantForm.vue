@@ -32,12 +32,14 @@
         />
       </v-col>
       <v-col v-if="form.id" cols="12">
-        <v-switch
-          v-model="form.isActive"
-          :label="$t('forms.active')"
-          color="success"
+        <v-select
+          v-model="form.status"
+          :items="statusOptions"
+          :label="$t('common.status')"
+          prepend-icon="mdi-check-circle"
+          variant="outlined"
           hide-details
-          @update:model-value="updateField('isActive', $event)"
+          @update:model-value="updateField('status', $event)"
         />
       </v-col>
     </v-row>
@@ -61,6 +63,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:tenant', 'submit']);
 const { errors, validateField, validateForm, clearErrors } = useFormValidation();
+
+const statusOptions = [
+  { title: t('common.active'), value: 1 },
+  { title: t('common.inactive'), value: 2 }
+];
+
 const form = ref({ ...props.tenant });
 
 // Clear errors when form changes

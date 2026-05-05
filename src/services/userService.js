@@ -20,7 +20,7 @@ export const userService = {
     }
 
     if (filters.status && filters.status !== 'All') {
-      params.isActive = filters.status === 'Active'
+      params.status = filters.status === 'Active' ? 1 : 2
     }
 
     if (filters.tenantId) {
@@ -81,8 +81,8 @@ export const userService = {
   /**
    * Activate/deactivate user (SuperAdmin only)
    */
-  async updateStatus(id, isActive) {
-    const response = await api.put(`/api/Users/${id}/status`, { isActive })
+  async updateStatus(id, status) {
+    const response = await api.put(`/api/Users/${id}/status`, { status })
     return response.data
   },
 
@@ -92,7 +92,8 @@ export const userService = {
   async toggleStatus(id) {
     // Get current user to toggle status
     const user = await this.getById(id)
-    return await this.updateStatus(id, !user.isActive)
+    const newStatus = user.status === 1 ? 2 : 1
+    return await this.updateStatus(id, newStatus)
   },
 
   /**
@@ -191,7 +192,7 @@ export const userService = {
       lastName: '',
       email: '',
       role: 'User',
-      isActive: true
+      status: 1
     }
   },
 
@@ -218,8 +219,8 @@ export const userService = {
     }
 
     if (filters.status && filters.status !== 'All') {
-      const isActive = filters.status === 'Active'
-      filtered = filtered.filter(user => user.isActive === isActive)
+      const statusValue = filters.status === 'Active' ? 1 : 2
+      filtered = filtered.filter(user => user.status === statusValue)
     }
 
     if (filters.sort) {

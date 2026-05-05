@@ -49,12 +49,20 @@
             :items-per-page="10"
             class="mt-2"
           >
-            <template #item.isActive="{ item }">
+            <template #item.status="{ item }">
               <v-chip
-                :color="item.isActive ? 'success' : 'error'"
+                v-if="item.status !== undefined"
+                :color="item.status === 1 ? 'success' : (item.status === 2 ? 'warning' : 'error')"
                 size="small"
               >
-                {{ item.isActive ? $t('common.active') : $t('common.inactive') }}
+                {{ item.status === 1 ? $t('common.active') : (item.status === 2 ? $t('common.inactive') : $t('common.deleted')) }}
+              </v-chip>
+              <v-chip
+                v-else
+                color="grey"
+                size="small"
+              >
+                {{ $t('common.loading') }}
               </v-chip>
             </template>
             <template #item.createdAt="{ item }">
@@ -75,17 +83,45 @@
                 icon="mdi-pencil"
                 size="small"
                 variant="text"
+                :title="$t('common.edit')"
                 @click="openEditDialog(item)"
               />
+              <!-- Activate/Deactivate button (SuperAdmin only) -->
+              <v-btn
+                v-if="authStore.user?.role === 'SuperAdmin' && item.status !== 1"
+                icon
+                size="small"
+                variant="text"
+                color="success"
+                :title="$t('tenants.activateTenant')"
+                @click="toggleTenantStatus(item)"
+              >
+                <v-icon>mdi-check-circle-outline</v-icon>
+              </v-btn>
+              <v-btn
+                v-else-if="authStore.user?.role === 'SuperAdmin' && item.status === 1"
+                icon
+                size="small"
+                variant="text"
+                color="warning"
+                :title="$t('tenants.deactivateTenant')"
+                @click="toggleTenantStatus(item)"
+              >
+                <v-icon>mdi-minus-circle-outline</v-icon>
+              </v-btn>
               <!-- Delete button (SuperAdmin only) -->
               <v-btn
                 v-if="authStore.user?.role === 'SuperAdmin'"
-                icon="mdi-delete"
+                icon
                 size="small"
                 variant="text"
                 color="error"
+                :title="$t('tenants.deleteTenant')"
+                :disabled="item.status === 1"
                 @click="confirmDelete(item)"
-              />
+              >
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
             </template>
           </v-data-table>
         </v-card-text>
@@ -216,7 +252,7 @@ const sortOptions = computed(() => [
 const headers = computed(() => [
   { title: t('common.name'), key: 'name' },
   { title: t('tenants.slug'), key: 'slug' },
-  { title: t('common.status'), key: 'isActive', width: '120px' },
+  { title: t('common.status'), key: 'status', width: '120px' },
   { title: t('common.created'), key: 'createdAt', width: '180px' },
   { title: t('common.actions'), key: 'actions', sortable: false, width: '200px', align: 'end' }
 ]);
@@ -277,7 +313,7 @@ async function fetchTenants() {
         id: ut.tenantId,
         name: ut.tenantName,
         slug: ut.tenantSlug,
-        isActive: ut.isActive,
+        status: ut.status,
         createdAt: new Date() // We don't have this info, but it's needed for display
       }));
     }
@@ -337,6 +373,23 @@ async function saveTenant() {
   }
 }
 
+async function toggleTenantStatus(tenant) {
+  try {
+    loading.value = true;
+    await tenantService.toggleStatus(tenant.id);
+    await fetchTenants();
+    showSuccess(
+      tenant.status === 1 ? t('tenants.deactivateSuccess') : t('tenants.activateSuccess'),
+      t('tenants.title')
+    );
+  } catch (err) {
+    console.error('Error toggling tenant status:', err);
+    showError(t('common.error'), t('tenants.title'));
+  } finally {
+    loading.value = false;
+  }
+}
+
 async function deleteTenant() {
   if (authStore.user?.role !== 'SuperAdmin') return;
 
@@ -346,10 +399,9 @@ async function deleteTenant() {
     loading.value = true;
     error.value = null;
     await tenantService.delete(selectedTenant.value.id);
-    if (authStore.isAdmin) {
-      await fetchTenants();
-    }
     showDeleteDialog.value = false;
+    // Full page refresh to ensure all components (like tenant selector) are updated
+    window.location.reload();
   } catch (err) {
     console.error('Error deleting tenant:', err);
     error.value = 'Failed to delete tenant';
