@@ -404,6 +404,7 @@ const showDeleteDialog = ref(false);
 const showAddTenantDialog = ref(false);
 const userToDelete = ref(null);
 const editedUser = ref(createEmpty());
+const originalEditedRoles = ref([]);
 
 // Global notification
 const { showSuccess, showError } = useGlobalState();
@@ -488,6 +489,7 @@ async function editUser(user) {
   try {
     // Fetch full user details including tenants
     const fullUser = await userService.getById(user.id);
+    originalEditedRoles.value = Array.isArray(fullUser.roles) ? [...fullUser.roles] : [];
 
     // Convert roles array to single role for the form
     const role = Array.isArray(fullUser.roles) && fullUser.roles.length > 0
@@ -509,6 +511,7 @@ async function editUser(user) {
 function closeCreateDialog() {
   showCreateDialog.value = false;
   editedUser.value = createEmpty();
+  originalEditedRoles.value = [];
 }
 
 function confirmDelete(user) {
@@ -538,9 +541,7 @@ async function saveUser() {
     savingUser.value = true;
 
     if (editedUser.value.id) {
-      const existingRoles = Array.isArray(editedUser.value.roles)
-        ? [...editedUser.value.roles]
-        : [];
+      const existingRoles = [...originalEditedRoles.value];
       const selectedRole = editedUser.value.role;
 
       await userService.update(editedUser.value.id, editedUser.value);
@@ -562,6 +563,7 @@ async function saveUser() {
     await fetchUsers();
     showCreateDialog.value = false;
     editedUser.value = createEmpty();
+    originalEditedRoles.value = [];
     showSuccess(t('users.saveSuccess'), t('users.title'));
   } catch (error) {
     console.error('Error saving user:', error);
