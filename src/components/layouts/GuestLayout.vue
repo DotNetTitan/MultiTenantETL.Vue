@@ -11,7 +11,6 @@
       
       <v-spacer />
       
-      <!-- Dark mode toggle (temporarily disabled)
       <v-switch
         v-model="isDarkMode"
         hide-details
@@ -23,7 +22,6 @@
         false-icon="mdi-weather-sunny"
         @update:model-value="toggleTheme"
       />
-      -->
     </v-app-bar>
 
     <v-main>

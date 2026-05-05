@@ -30,7 +30,6 @@
             </template>
           </v-tooltip>
           
-          <!-- Dark mode toggle (temporarily disabled)
           <v-switch
             v-model="isDarkMode"
             hide-details
@@ -42,7 +41,6 @@
             false-icon="mdi-weather-sunny"
             @update:model-value="toggleTheme"
           />
-          -->
           
           <!-- User Menu -->
           <v-menu offset-y min-width="240">
@@ -111,16 +109,16 @@
       <template #default>
         <!-- User profile section -->
         <v-list>
-          <v-list-item>
+          <v-list-item class="px-4 py-3">
             <template #prepend>
-              <v-avatar color="primary">
+              <v-avatar color="primary" size="40" class="elevation-1">
                 <template #default>
-                  <span class="text-h6 text-white">{{ userInitials }}</span>
+                  <span class="text-h6 text-white font-weight-bold">{{ userInitials }}</span>
                 </template>
               </v-avatar>
             </template>
-            <v-list-item-title>{{ userName }}</v-list-item-title>
-            <v-list-item-subtitle>{{ userRole }}</v-list-item-subtitle>
+            <v-list-item-title class="font-weight-bold text-subtitle-1">{{ userName }}</v-list-item-title>
+            <v-list-item-subtitle class="text-caption">{{ userRole }}</v-list-item-subtitle>
           </v-list-item>
         </v-list>
 
@@ -239,7 +237,7 @@ function openChatbot() {
 <style>
 /* Softer app bar with gradient */
 .v-theme--light .v-app-bar {
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, #1565C0 100%) !important;
+  background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%) !important;
   color: white !important;
 }
 
@@ -306,8 +304,9 @@ function openChatbot() {
 }
 
 /* Sidebar refinement */
-.sidebar-drawer {
-  border-right: 1px solid rgba(var(--v-theme-outline), 0.5) !important;
+.v-theme--light .v-navigation-drawer {
+  background-color: #F8FAFC;
+  border-right: 1px solid #E2E8F0 !important;
 }
 
 .sidebar-drawer .v-list-item--active {

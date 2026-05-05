@@ -408,7 +408,8 @@ provide('handleError', handleError);
 
 /* Light mode card improvements */
 .v-theme--light .v-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #E2E8F0 !important;
 }
 
 .v-theme--light .v-card:hover {
@@ -421,7 +422,7 @@ provide('handleError', handleError);
 }
 
 .v-theme--light .v-card-text {
-  color: #424242;
+  color: #1A202C;
 }
 
 .v-theme--light .bg-surface-variant {
@@ -483,7 +484,7 @@ provide('handleError', handleError);
 }
 
 .v-theme--light .v-stepper-item {
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .v-theme--light .v-stepper-item--selected,
@@ -492,34 +493,43 @@ provide('handleError', handleError);
 }
 
 .v-theme--light .v-stepper-item__avatar {
-  border: 2px solid #BDBDBD;
-  background-color: #FAFAFA;
-  color: #757575;
+  border: 2px solid #94A3B8;
+  background-color: #F1F5F9;
+  color: #1E293B;
+  font-weight: 700;
 }
 
-.v-theme--light .v-stepper-item--selected .v-stepper-item__avatar {
-  border-color: var(--v-theme-primary);
-  background-color: var(--v-theme-primary);
-  color: #FFFFFF;
+/* Force active/selected step to be solid blue */
+.v-theme--light .v-stepper-item--selected .v-stepper-item__avatar,
+.v-theme--light .v-stepper-item--active .v-stepper-item__avatar,
+.v-theme--light .v-stepper-item[aria-selected="true"] .v-stepper-item__avatar {
+  background-color: #1E88E5 !important;
+  border-color: #1E88E5 !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
 }
 
+/* Force completed steps to be solid green */
 .v-theme--light .v-stepper-item--complete .v-stepper-item__avatar {
-  border-color: var(--v-theme-success);
-  background-color: var(--v-theme-success);
-  color: #FFFFFF;
+  background-color: #2E7D32 !important;
+  border-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
 }
 
 .v-theme--light .v-stepper-item__title {
   color: #424242;
 }
 
-.v-theme--light .v-stepper-item--selected .v-stepper-item__title {
-  color: var(--v-theme-primary);
-  font-weight: 600;
+.v-theme--light .v-stepper-item--selected .v-stepper-item__title,
+.v-theme--light .v-stepper-item--active .v-stepper-item__title {
+  color: #1E88E5 !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
 }
 
 .v-theme--light .v-stepper-item__subtitle {
-  color: #757575;
+  color: #475569;
 }
 
 /* Light mode alert improvements */
@@ -599,7 +609,7 @@ provide('handleError', handleError);
 
 /* Light mode form field improvements */
 .v-theme--light .v-field--variant-outlined {
-  background-color: #FFFFFF;
+  background-color: #F8FAFC;
 }
 
 .v-theme--light .v-field--variant-outlined:hover .v-field__outline {
@@ -696,8 +706,8 @@ provide('handleError', handleError);
 
 /* Light mode navigation drawer improvements */
 .v-theme--light .v-navigation-drawer {
-  background-color: #FFFFFF;
-  border-right: 1px solid #E0E0E0;
+  background-color: #F8FAFC;
+  border-right: 1px solid #E2E8F0;
 }
 
 .v-theme--light .v-navigation-drawer .v-list {
