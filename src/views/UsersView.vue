@@ -113,18 +113,24 @@
               <v-icon>mdi-minus-circle-outline</v-icon>
             </v-btn>
             <!-- Only SuperAdmin can delete users -->
-            <v-btn
-              v-if="authStore.user?.role === 'SuperAdmin'"
-              icon
-              variant="text"
-              size="small"
-              color="error"
-              :title="$t('users.deleteUser')"
-              :disabled="item.status === 1"
-              @click="confirmDelete(item)"
-            >
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
+            <v-tooltip location="top">
+              <template v-slot:activator="{ props }">
+                <span v-bind="props" class="d-inline-block">
+                  <v-btn
+                    v-if="authStore.user?.role === 'SuperAdmin'"
+                    icon
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :disabled="item.status === 1"
+                    @click="confirmDelete(item)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </span>
+              </template>
+              <span>{{ item.status === 1 ? $t('users.deactivateFirst') : $t('users.deleteUser') }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-card-text>

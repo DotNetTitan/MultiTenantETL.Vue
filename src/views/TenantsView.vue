@@ -110,18 +110,24 @@
                 <v-icon>mdi-minus-circle-outline</v-icon>
               </v-btn>
               <!-- Delete button (SuperAdmin only) -->
-              <v-btn
-                v-if="authStore.user?.role === 'SuperAdmin'"
-                icon
-                size="small"
-                variant="text"
-                color="error"
-                :title="$t('tenants.deleteTenant')"
-                :disabled="item.status === 1"
-                @click="confirmDelete(item)"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
+              <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props" class="d-inline-block">
+                    <v-btn
+                      v-if="authStore.user?.role === 'SuperAdmin'"
+                      icon
+                      size="small"
+                      variant="text"
+                      color="error"
+                      :disabled="item.status === 1"
+                      @click="confirmDelete(item)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+                <span>{{ item.status === 1 ? $t('tenants.deactivateFirst') : $t('tenants.deleteTenant') }}</span>
+              </v-tooltip>
             </template>
           </v-data-table>
         </v-card-text>
