@@ -1119,6 +1119,19 @@ async function confirmCancelExecution() {
 }
 
 /* details are merged into the single-line representation */
-.log-details { display: none; } 
+.log-details { display: none; }
+
+/* Basic Information section - increase label/value contrast */
+:deep(.v-list-item-title) {
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.7;
+  font-size: 0.75rem;
+}
+
+:deep(.v-list-item-subtitle) {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 600;
+  font-size: 0.875rem;
+}
 
 </style>
