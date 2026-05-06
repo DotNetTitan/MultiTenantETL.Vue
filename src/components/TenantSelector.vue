@@ -83,7 +83,7 @@ onMounted(async () => {
       } catch (error) {
         // If 403, user might not actually be SuperAdmin, fallback to their tenants
         if (error.response?.status === 403) {
-          console.warn('SuperAdmin check failed, falling back to user tenants');
+          console.warn('Global admin tenant access check failed, falling back to user tenants');
           const userTenants = await tenantService.getMyTenants();
           tenantStore.tenants = userTenants.map(ut => {
             const { tenantId, tenantName, tenantSlug, status } = ut;
