@@ -50,9 +50,7 @@
                 v-bind="props"
                 class="flex-shrink-0 user-menu-btn"
               >
-                <v-avatar size="32" color="primary">
-                  <span class="text-caption text-white font-weight-bold">{{ userInitials }}</span>
-                </v-avatar>
+                <v-icon>mdi-account</v-icon>
               </v-btn>
             </template>
 
@@ -61,7 +59,7 @@
               <v-card-text class="pa-4 pb-3">
                 <div class="d-flex align-center">
                   <v-avatar size="40" color="primary" class="mr-3">
-                    <span class="text-h6 text-white font-weight-bold">{{ userInitials }}</span>
+                    <v-icon>mdi-account</v-icon>
                   </v-avatar>
                   <div class="flex-grow-1">
                     <div class="text-subtitle-1 font-weight-medium">{{ userName }}</div>
@@ -111,10 +109,8 @@
         <v-list>
           <v-list-item class="px-4 py-3">
             <template #prepend>
-              <v-avatar color="primary" size="40" class="elevation-1">
-                <template #default>
-                  <span class="text-h6 text-white font-weight-bold">{{ userInitials }}</span>
-                </template>
+              <v-avatar size="40" color="primary" class="elevation-1">
+                <v-icon>mdi-account</v-icon>
               </v-avatar>
             </template>
             <v-list-item-title class="font-weight-bold text-subtitle-1">{{ userName }}</v-list-item-title>
@@ -214,16 +210,6 @@ const appBarColor = computed(() =>
 // User data computed properties
 const userName = computed(() => authStore.user?.name || 'User');
 const userRole = computed(() => authStore.user?.role || 'User');
-const userInitials = computed(() => {
-  const name = userName.value;
-  if (!name) return 'U';
-
-  const nameParts = name.split(' ');
-  if (nameParts.length > 1) {
-    return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
-  }
-  return name.charAt(0).toUpperCase();
-});
 
 function toggleTheme() {
   const newTheme = isDarkTheme.value ? 'light' : 'dark';
@@ -279,6 +265,27 @@ function openChatbot() {
 /* Special case for App Bar avatar to stand out on the blue background */
 .v-theme--light .v-app-bar .v-avatar {
   background-color: white !important;
+}
+
+/* App Bar user icon - white background in light mode */
+.v-theme--light .v-app-bar .user-menu-btn .v-icon {
+  color: white !important;
+}
+
+/* Sidebar user avatar - solid blue in light mode */
+.v-theme--light .sidebar-drawer .v-list-item .v-avatar {
+  background-color: #2196F3 !important;
+}
+.v-theme--light .sidebar-drawer .v-list-item .v-avatar .v-icon {
+  color: white !important;
+}
+
+/* User menu card avatar - solid blue in light mode */
+.v-theme--light .user-menu-card .v-avatar {
+  background-color: #2196F3 !important;
+}
+.v-theme--light .user-menu-card .v-avatar .v-icon {
+  color: white !important;
 }
 
 /* User Menu Improvements */
