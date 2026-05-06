@@ -91,7 +91,7 @@
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
               <v-tooltip
-                v-else-if="canManageUsers && isSuperAdminUser(item)"
+                v-else-if="canManageUsers && getProtectedEditReason(item)"
                 location="top"
               >
                 <template #activator="{ props: tooltipProps }">
@@ -103,7 +103,7 @@
                     mdi-lock
                   </v-icon>
                 </template>
-                <span>{{ $t('users.superAdminProtected') }}</span>
+                <span>{{ getProtectedEditReason(item) }}</span>
               </v-tooltip>
               <!-- Only SuperAdmin can activate/deactivate users -->
               <v-btn
@@ -176,6 +176,7 @@
           <UserForm
             v-model:user="editedUser"
             :roles="roles"
+            :can-remove-tenant-memberships="canManageTenantMembershipsForEditedUser"
             @submit="saveUser"
             @remove-tenant="handleRemoveTenant"
           />
@@ -188,7 +189,7 @@
               <v-spacer />
               <!-- Only SuperAdmin can add users to tenants from this dialog -->
               <v-btn
-                v-if="isSuperAdmin"
+                v-if="canManageTenantMembershipsForEditedUser"
                 size="small"
                 color="primary"
                 @click="showAddTenantDialog = true"
@@ -438,6 +439,10 @@ const tenantRoles = ['TenantAdmin', 'User'];
 const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 const isPlatformAdmin = computed(() => authStore.isPlatformAdmin);
 const canManageUsers = computed(() => isSuperAdmin.value || isPlatformAdmin.value);
+const canManageTenantMembershipsForEditedUser = computed(() => {
+  if (!editedUser.value?.id) return false;
+  return canEditUser(editedUser.value);
+});
 
 const roleLabel = (role) => {
   if (!role) return '';
@@ -452,10 +457,38 @@ const isSuperAdminUser = (user) => {
   return roles.includes('SuperAdmin');
 };
 
+const isPlatformAdminUser = (user) => {
+  if (!user) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  return roles.includes('PlatformAdmin');
+};
+
+const isCurrentUser = (user) => {
+  if (!user || !authStore.user?.id) return false;
+  return String(user.id) === String(authStore.user.id);
+};
+
 const canEditUser = (user) => {
   if (isSuperAdmin.value) return true;
-  if (isPlatformAdmin.value) return !isSuperAdminUser(user);
+  if (isPlatformAdmin.value) {
+    // PlatformAdmin can edit self and lower-level users only
+    return isCurrentUser(user) || (!isSuperAdminUser(user) && !isPlatformAdminUser(user));
+  }
   return false;
+};
+
+const getProtectedEditReason = (user) => {
+  if (!user || canEditUser(user)) return '';
+
+  if (isSuperAdminUser(user)) {
+    return t('users.superAdminProtected');
+  }
+
+  if (isPlatformAdmin.value && isPlatformAdminUser(user) && !isCurrentUser(user)) {
+    return 'Only this platform admin or a super admin can edit this account.';
+  }
+
+  return t('common.accessDenied');
 };
 
 async function fetchUsers() {
@@ -523,6 +556,11 @@ async function openMembershipsDialog(user) {
 }
 
 async function editUser(user) {
+  if (!canEditUser(user)) {
+    showError(t('common.accessDenied'), t('common.error'));
+    return;
+  }
+
   try {
     // Fetch full user details including tenants
     const fullUser = await userService.getById(user.id);
@@ -640,6 +678,11 @@ function handleSort(value) {
 }
 
 async function handleRemoveTenant(tenantId) {
+  if (!canManageTenantMembershipsForEditedUser.value) {
+    showError(t('common.accessDenied'), t('common.error'));
+    return;
+  }
+
   try {
     loading.value = true;
     await userService.removeUserFromTenant(editedUser.value.id, tenantId);
@@ -658,6 +701,11 @@ async function handleRemoveTenant(tenantId) {
 }
 
 async function addUserToTenant() {
+  if (!canManageTenantMembershipsForEditedUser.value) {
+    showError(t('common.accessDenied'), t('common.error'));
+    return;
+  }
+
   try {
     addingToTenant.value = true;
     await userService.addUserToTenant(

@@ -1,120 +1,78 @@
-# Role Permission Matrix
+# Role Permission Matrix (Current State)
 
-## Goal
-Create clear functional separation between:
-- `SuperAdmin` (global)
-- `PlatformAdmin` (global, renamed from current global `TenantAdmin`)
-- `TenantAdmin` (tenant membership role only)
-- `User` (tenant membership role)
+This document reflects how authorization and UI behavior are **actually implemented now** across frontend and backend.
 
-## Recommended Model
+## Roles in Use
 
 ### Global roles
-- `SuperAdmin`: full system control, including security-critical operations.
-- `PlatformAdmin`: cross-tenant operational admin, but no security-critical global actions.
-- `User`: no global admin rights.
+- `SuperAdmin`
+- `PlatformAdmin`
+- `User` (no global admin rights)
 
 ### Tenant membership roles
-- `TenantAdmin`: admin rights within assigned tenant(s) only.
-- `User`: regular tenant user rights.
+- `TenantAdmin`
+- `User`
 
-## Permission Matrix
+## Effective Policy (Implemented)
 
 | Capability | SuperAdmin | PlatformAdmin (global) | TenantAdmin (membership) | User |
 |---|---|---|---|---|
-| View all tenants | Yes | Yes | No (own tenant(s) only) | No |
-| Create/edit/deactivate/delete tenant | Yes | Yes (optional: except delete) | No | No |
-| View all users | Yes | Yes | No (own tenant(s) only) | No |
-| Edit user profile (name/email) globally | Yes | Yes | No | No |
-| Change global role | Yes | No | No | No |
-| Assign/remove tenant membership | Yes | Yes | Yes (own tenant only) | No |
-| Change tenant membership role | Yes | Yes | Yes (own tenant only, cannot elevate to global) | No |
-| View global audit logs | Yes | Yes (read-only recommended) | No | No |
-| Manage connectors/pipelines/schedules in tenant | Yes | Yes | Yes (own tenant only) | Yes/limited by resource policy |
-| Security operations (password reset admin, lockout, role escalation) | Yes | No | No | No |
+| View all tenants list | Yes | Yes | No | No |
+| Create tenant | Yes | Yes | No | No |
+| Edit tenant details | Yes | Yes | No | No |
+| Deactivate/activate tenant | Yes | Yes | No | No |
+| Delete tenant | Yes | No | No | No |
+| View all users | Yes | Yes | Tenant-scoped only | No |
+| Edit user profile (name/email) | Yes | Yes, but only self or lower-level users | No | No |
+| Edit another PlatformAdmin profile | Yes | No | No | No |
+| Edit SuperAdmin profile | Yes | No | No | No |
+| Change global role (assign/remove) | Yes | No | No | No |
+| Update user status (active/inactive) | Yes | No | No | No |
+| Delete user | Yes | No | No | No |
+| Admin reset password | Yes | No | No | No |
+| Assign/remove tenant membership | Yes | Yes, but not for SuperAdmin/PlatformAdmin targets | No | No |
+| Change tenant membership role | Yes | Yes, but not for SuperAdmin/PlatformAdmin targets | No | No |
+| View tenant users | Yes | Yes | Yes (own current tenant only) | No |
+| View global audit logs (`/audit-logs`) | Yes | Yes | No | No |
+| View own audit logs (`/auditlogs/my-logs`) | Yes | Yes | Yes | Yes |
+| Manage connectors/pipelines/schedules/executions in current tenant | Yes | Yes | Yes (tenant-scoped) | Yes (policy/resource-scoped) |
+| Switch tenant | Yes (any active tenant) | Yes (any active tenant) | Membership-only | Membership-only |
 
-## Frontend Changes (This Repo)
+## Important Special Rules
 
-## 1) Introduce explicit role helpers
-File: `src/stores/auth.js`
-- Add:
+1. `PlatformAdmin` cannot mutate `SuperAdmin` or `PlatformAdmin` accounts (except own profile edit).
+2. `PlatformAdmin` can edit lower-level user profiles.
+3. Tenant membership mutations are restricted to global admins only (`SuperAdmin`/`PlatformAdmin`).
+4. `TenantAdmin` is view-only in tenant/user admin pages in current implementation.
+
+## Frontend Status (Implemented)
+
+- Role helpers exist in `src/stores/auth.js`:
   - `isSuperAdmin`
   - `isPlatformAdmin`
   - `isTenantAdminCurrentTenant`
-  - Keep `isAdmin` as union for broad access if needed.
-- Stop using `authStore.user?.role === 'SuperAdmin'` checks directly in views.
+  - `isAdmin`
+- Routes:
+  - `/tenants`: admin-access page
+  - `/users`: admin-access page
+  - `/audit-logs`: global admin only (`SuperAdmin` or `PlatformAdmin`)
+- Users page behavior:
+  - `PlatformAdmin` sees edit for self and lower-level users.
+  - `PlatformAdmin` cannot edit peer `PlatformAdmin` or `SuperAdmin` rows.
+  - Tenant membership add/remove controls are hidden/blocked for protected targets.
+- Tenant users dialog is mutation-enabled only for global admins.
 
-## 2) Replace hard-coded SuperAdmin checks in views
-Files:
-- `src/views/UsersView.vue`
-- `src/views/TenantsView.vue`
-- `src/components/tenants/TenantUsers.vue`
+## Backend Status (Implemented)
 
-Required split:
-- Global role mutation and security actions: `isSuperAdmin` only.
-- Cross-tenant operational actions: `isSuperAdmin || isPlatformAdmin`.
-- Tenant-scoped membership actions: allow tenant admin only for current tenant.
+- Global role mutation endpoints are SuperAdmin-only.
+- Security-sensitive user operations (status update, delete, admin password reset) are SuperAdmin-only.
+- Tenant and user mutation endpoints enforce role checks server-side.
+- Audit log list/detail endpoints are limited to global admins.
+- Tenant switching allows:
+  - `SuperAdmin` and `PlatformAdmin`: any active tenant
+  - non-global users: only tenants where they have active membership
 
-## 3) Route-level policy split
-File: `src/router/index.js`
-- Replace generic `requiresAdmin` for sensitive pages with role-specific meta:
-  - `requiresPlatformAdmin` for `/tenants`, `/users`, `/audit-logs` (if desired)
-  - `requiresSuperAdmin` for security-only screens/actions
-- Keep route guard logic explicit and centralized.
+## Notes
 
-## 4) UI labeling cleanup
-Files:
-- `src/services/userService.js` (`getAvailableRoles`)
-- i18n labels in `src/locales/*.json`
-
-Changes:
-- Replace global `TenantAdmin` option with `PlatformAdmin`.
-- Keep tenant role dropdowns as `TenantAdmin`/`User` only.
-
-## Backend/API Changes (Required for Real Security)
-
-Frontend-only checks are not enough. API authorization must enforce the same matrix.
-
-## 1) Global role endpoints
-Endpoints like:
-- `POST /api/Users/{id}/roles`
-- `DELETE /api/Users/{id}/roles`
-
-Policy:
-- Only `SuperAdmin` can change global roles.
-- Block assigning `SuperAdmin` except by existing `SuperAdmin`.
-
-## 2) Tenant membership endpoints
-Endpoints like:
-- `POST /api/Users/{id}/tenants`
-- `DELETE /api/Users/{id}/tenants/{tenantId}`
-- `PUT /api/Users/{id}/tenants/{tenantId}/role`
-
-Policy:
-- `SuperAdmin` and `PlatformAdmin`: any tenant.
-- `TenantAdmin`: own tenant only.
-- Prevent privilege escalation to global roles.
-
-## 3) Data scoping
-List/read endpoints must filter by caller scope:
-- Tenant admin sees own tenant users/resources only.
-- Platform admin can query cross-tenant.
-
-## Rollout Plan
-
-1. Add new auth computed helpers in frontend.
-2. Update route guards and page action guards to use helper-based policy.
-3. Rename global role `TenantAdmin` -> `PlatformAdmin` in UI/API contracts.
-4. Enforce backend policies for each endpoint.
-5. Add integration tests:
-- global role mutation forbidden for non-superadmin
-- tenant admin can manage only own tenant memberships
-- platform admin cannot perform security-critical actions
-
-## Minimal Next Implementation Slice
-
-If implemented incrementally, start with:
-1. Frontend helper refactor (`auth.js`) + replacing direct `SuperAdmin` checks.
-2. Backend lock for global role mutation to `SuperAdmin` only.
-3. Tenant membership endpoint scope checks for tenant admins.
-
+- This file is a snapshot of implemented behavior, not a proposal.
+- If policy changes, update both frontend guards and backend authorization together.

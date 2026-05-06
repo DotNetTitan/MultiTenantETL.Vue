@@ -65,7 +65,7 @@
               v-for="tenant in form.tenants"
               :key="tenant.tenantId"
               class="ma-1"
-              closable
+              :closable="props.canRemoveTenantMemberships"
               @click:close="removeTenant(tenant.tenantId)"
             >
               {{ tenant.tenantName }} ({{ tenant.roleCode }})
@@ -93,6 +93,10 @@ const props = defineProps({
   roles: {
     type: Array,
     required: true
+  },
+  canRemoveTenantMemberships: {
+    type: Boolean,
+    default: true
   }
 });
 
@@ -102,14 +106,14 @@ const { errors, validateField, validateForm, clearErrors } = useFormValidation()
 // Initialize form with proper role handling
 const initializeForm = (user) => {
   const formData = { ...user };
-  
+
   // Handle roles array - convert to single role for form
   if (Array.isArray(user.roles) && user.roles.length > 0) {
     formData.role = user.roles[0];
   } else if (!formData.role) {
     formData.role = 'User';
   }
-  
+
   return formData;
 };
 
@@ -156,13 +160,13 @@ const emailRule = v => {
 
 const updateField = (field, value) => {
   form.value[field] = value;
-  
+
   if (field === 'role') {
     form.value.roles = [value];
   }
-  
+
   emit('update:user', { ...form.value });
-  
+
   switch (field) {
     case 'firstName':
     case 'lastName':
