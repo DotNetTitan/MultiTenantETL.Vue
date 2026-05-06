@@ -51,11 +51,11 @@ const showTenantSelector = computed(() => {
 async function changeTenant(tenantId) {
   try {
     await tenantStore.setCurrentTenant(tenantId);
-    
+
     // Find tenant name for notification
     const tenant = tenantStore.tenants.find(t => t.id === tenantId);
     const tenantName = tenant?.name || 'tenant';
-    
+
     // Show success notification
     showSuccess(t('tenants.switchSuccess', { name: tenantName }), t('tenants.title'));
   } catch (error) {
@@ -74,7 +74,7 @@ onMounted(async () => {
     const { tenantService } = await import('@/services/tenantService');
     const { useAuthStore } = await import('@/stores/auth');
     const authStore = useAuthStore();
-    
+
     // Try to get all tenants if SuperAdmin/PlatformAdmin, fallback to user's tenants if 403
     if (authStore.isSuperAdmin || authStore.isPlatformAdmin) {
       try {
@@ -110,7 +110,7 @@ onMounted(async () => {
         };
       });
     }
-    
+
     // Validate that current tenant ID exists in user's tenant list
     if (tenantStore.currentTenantId) {
       const tenantExists = tenantStore.tenants.some(t => t.id === tenantStore.currentTenantId && t.status === 1);
@@ -120,7 +120,7 @@ onMounted(async () => {
         selectedTenantId.value = null;
       }
     }
-    
+
     // Auto-select the first active tenant if none is currently selected
     // Only update local state - don't call API to avoid unnecessary tenant switch logs
     if (!tenantStore.currentTenantId && tenantStore.tenants.length > 0) {
@@ -145,12 +145,29 @@ onMounted(async () => {
   margin: 0 16px;
 }
 
-.tenant-select :deep(.v-field__input) {
-  color: white;
+.tenant-select :deep(.v-field) {
+  color: white !important;
 }
 
-.tenant-select :deep(.v-field__append-inner) {
-  color: white;
+.tenant-select :deep(.v-field__input) {
+  color: white !important;
+}
+
+.tenant-select :deep(.v-label),
+.tenant-select :deep(.v-field-label),
+.tenant-select :deep(.v-field__prepend-inner),
+.tenant-select :deep(.v-field__append-inner),
+.tenant-select :deep(.v-icon),
+.tenant-select :deep(.v-select__menu-icon) {
+  color: rgba(255, 255, 255, 0.92) !important;
+  opacity: 1 !important;
+}
+
+.tenant-select :deep(.v-field--focused .v-label),
+.tenant-select :deep(.v-field--active .v-label),
+.tenant-select :deep(.v-field--focused .v-field-label),
+.tenant-select :deep(.v-field--active .v-field-label) {
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .tenant-select :deep(.v-field--error) {

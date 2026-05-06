@@ -59,11 +59,11 @@
         height="3"
         style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999;"
       />
-      
+
       <!-- Use guest layout for public routes, otherwise use auth-based layout -->
       <guest-layout v-if="isPublicRoute || !isAuthenticated" />
       <authenticated-layout v-else />
-      
+
       <!-- AI Chatbot (only for authenticated users on non-public routes) -->
       <ai-chatbot v-if="isAuthenticated && !isPublicRoute" />
     </template>
@@ -186,16 +186,16 @@ const hideGlobalLoading = () => {
 
 const handleError = (error, context = '') => {
   console.error(`Error ${context}:`, error);
-  
+
   errorCount.value++;
-  
+
   // If too many errors occur, show error boundary
   if (errorCount.value >= maxErrorsBeforeBoundary) {
     hasGlobalError.value = true;
     globalErrorMessage.value = 'Multiple errors occurred. The application needs to be reloaded.';
     return;
   }
-  
+
   // Show user-friendly error message
   const message = error.userMessage || error.message || 'An unexpected error occurred.';
   showNotification(message, 'error', 7000);
@@ -252,7 +252,7 @@ const handleRouteLoadingStart = () => {
 const handleRouteLoadingEnd = () => {
   const elapsed = Date.now() - loadingStartTime;
   const remaining = MIN_LOADING_TIME - elapsed;
-  
+
   if (remaining > 0) {
     // Keep loading bar visible for minimum time
     setTimeout(() => {
@@ -272,7 +272,7 @@ onMounted(async () => {
     console.warn('Failed to initialize metadata:', error);
     // App will continue with cached or default values
   }
-  
+
   // Listen for route loading events
   window.addEventListener('route-loading-start', handleRouteLoadingStart);
   window.addEventListener('route-loading-end', handleRouteLoadingEnd);
@@ -340,21 +340,45 @@ provide('handleError', handleError);
 
 /* Light mode improvements */
 .v-theme--light {
-  --v-border-color: #E0E0E0;
+  --v-border-color: #DADCE0;
 }
 
 .v-theme--light .v-card {
-  border: 1px solid #E0E0E0;
+  border: 1px solid #E8EAED;
 }
 
 .v-theme--light .v-select,
 .v-theme--light .v-text-field,
 .v-theme--light .v-textarea {
-  --v-field-border-opacity: 0.38;
+  --v-field-border-opacity: 0.55;
 }
 
 .v-theme--light .v-field--variant-outlined .v-field__outline {
-  --v-field-border-opacity: 0.38;
+  --v-field-border-opacity: 0.55;
+}
+
+.v-theme--light .v-field {
+  color: #202124;
+}
+
+.v-theme--light .v-label,
+.v-theme--light .v-field__prepend-inner .v-icon,
+.v-theme--light .v-field__append-inner .v-icon {
+  color: #5F6368 !important;
+  opacity: 1;
+}
+
+.v-theme--light .v-field__input,
+.v-theme--light input,
+.v-theme--light textarea {
+  color: #202124 !important;
+}
+
+.v-theme--light .v-field__input::placeholder,
+.v-theme--light input::placeholder,
+.v-theme--light textarea::placeholder {
+  color: #5F6368 !important;
+  opacity: 1;
 }
 
 .v-theme--light .v-alert {
@@ -408,25 +432,25 @@ provide('handleError', handleError);
 
 /* Light mode card improvements */
 .v-theme--light .v-card {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.1) !important;
+  border: 1px solid #E8EAED !important;
 }
 
 .v-theme--light .v-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.15) !important;
 }
 
 .v-theme--light .v-card-title {
-  color: #1A1A1A;
+  color: #202124;
   font-weight: 600;
 }
 
 .v-theme--light .v-card-text {
-  color: #1A202C;
+  color: #3C4043;
 }
 
 .v-theme--light .bg-surface-variant {
-  background-color: #F5F5F5 !important;
+  background-color: #F1F3F4 !important;
 }
 
 /* Light mode error/warning cards - comprehensive selectors */
@@ -609,11 +633,11 @@ provide('handleError', handleError);
 
 /* Light mode form field improvements */
 .v-theme--light .v-field--variant-outlined {
-  background-color: #F8FAFC;
+  background-color: #FFFFFF;
 }
 
 .v-theme--light .v-field--variant-outlined:hover .v-field__outline {
-  --v-field-border-opacity: 0.6;
+  --v-field-border-opacity: 0.75;
 }
 
 .v-theme--light .v-field--variant-outlined.v-field--focused .v-field__outline {

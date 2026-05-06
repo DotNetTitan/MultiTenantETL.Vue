@@ -1,5 +1,5 @@
 <template>
-  <v-card class="wizard-card" elevation="0">
+  <v-card :class="['wizard-card', { 'light-mode': !isDark }]" elevation="0">
     <v-stepper v-model="currentStep" alt-labels flat class="wizard-stepper">
       <v-stepper-header>
         <v-stepper-item
@@ -2701,5 +2701,64 @@ watch(() => props.connector.type, (newType) => {
   background: transparent !important;
 }
 
+/* Light-mode only readability pass for connector forms */
+.wizard-card.light-mode {
+  background: #FFFFFF;
+  border: 1px solid #E8EAED;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12) !important;
+}
+
+.wizard-card.light-mode .wizard-stepper :deep(.v-stepper-header) {
+  background: #F8F9FA;
+  border-bottom: 1px solid #E8EAED;
+}
+
+.wizard-card.light-mode :deep(.text-h5) {
+  color: #202124;
+}
+
+.wizard-card.light-mode :deep(.text-caption),
+.wizard-card.light-mode :deep(.text-medium-emphasis) {
+  color: #5F6368 !important;
+  opacity: 1;
+}
+
+.wizard-card.light-mode :deep(.v-field--variant-outlined) {
+  background-color: #FFFFFF;
+}
+
+.wizard-card.light-mode :deep(.v-field--variant-outlined .v-field__outline) {
+  --v-field-border-opacity: 0.65;
+}
+
+.wizard-card.light-mode :deep(.v-field--variant-outlined:hover .v-field__outline) {
+  --v-field-border-opacity: 0.8;
+}
+
+.wizard-card.light-mode :deep(.v-field__input) {
+  color: #202124 !important;
+}
+
+.wizard-card.light-mode :deep(.v-label),
+.wizard-card.light-mode :deep(.v-field__prepend-inner .v-icon),
+.wizard-card.light-mode :deep(.v-field__append-inner .v-icon),
+.wizard-card.light-mode :deep(.v-messages__message) {
+  color: #5F6368 !important;
+  opacity: 1;
+}
+
+.wizard-card.light-mode :deep(.v-btn.v-btn--variant-outlined) {
+  border-color: #DADCE0 !important;
+}
+
+.wizard-card.light-mode :deep(.v-btn.v-btn--variant-outlined.text-success) {
+  border-color: rgba(24, 128, 56, 0.45) !important;
+  color: #188038 !important;
+}
+
+.wizard-card.light-mode :deep(.v-btn.v-btn--variant-outlined.text-deep-orange) {
+  border-color: rgba(234, 134, 0, 0.45) !important;
+  color: #EA8600 !important;
+}
 
 </style>

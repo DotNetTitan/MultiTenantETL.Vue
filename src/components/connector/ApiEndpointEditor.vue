@@ -3,7 +3,7 @@
     <div class="d-flex align-center mb-4">
       <div class="flex-grow-1">
         <h4 class="text-subtitle-1">{{ $t('connectors.apiEndpoints') }}</h4>
-        <p class="text-caption text-grey">{{ getRequirementText() }}</p>
+        <p class="text-caption text-medium-emphasis">{{ getRequirementText() }}</p>
       </div>
       <v-btn
         size="small"
@@ -16,9 +16,9 @@
     </div>
 
     <div v-if="localEndpoints.length === 0" class="text-center py-8">
-      <v-icon size="64" color="grey-lighten-2">mdi-api-off</v-icon>
-      <p class="mt-2 text-grey">{{ $t('connectors.apiEndpointConfig.noEndpoints') }}</p>
-      <p class="text-caption text-grey">{{ $t('connectors.apiEndpointConfig.addEndpointsHint') }}</p>
+      <v-icon size="64" color="grey-lighten-1">mdi-api-off</v-icon>
+      <p class="mt-2 text-medium-emphasis">{{ $t('connectors.apiEndpointConfig.noEndpoints') }}</p>
+      <p class="text-caption text-medium-emphasis">{{ $t('connectors.apiEndpointConfig.addEndpointsHint') }}</p>
     </div>
 
     <v-expansion-panels v-else class="mb-4">
@@ -253,5 +253,33 @@ function getRequirementText() {
 <style scoped>
 .api-endpoint-editor {
   width: 100%;
+}
+
+/* Scoped light-mode readability tuning */
+.v-theme--light .api-endpoint-editor :deep(.v-expansion-panel-title) {
+  background: #FFFFFF;
+}
+
+.v-theme--light .api-endpoint-editor :deep(.v-expansion-panel-text__wrapper) {
+  background: #F8F9FA;
+}
+
+.v-theme--light .api-endpoint-editor :deep(.v-field--variant-outlined) {
+  background: #FFFFFF;
+}
+
+.v-theme--light .api-endpoint-editor :deep(.v-field--variant-outlined .v-field__outline) {
+  --v-field-border-opacity: 0.65;
+}
+
+.v-theme--light .api-endpoint-editor :deep(.v-field--variant-outlined:hover .v-field__outline) {
+  --v-field-border-opacity: 0.8;
+}
+
+.v-theme--light .api-endpoint-editor :deep(.v-label),
+.v-theme--light .api-endpoint-editor :deep(.v-messages__message),
+.v-theme--light .api-endpoint-editor :deep(.text-subtitle-2) {
+  color: #5F6368 !important;
+  opacity: 1;
 }
 </style>

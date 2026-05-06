@@ -12,7 +12,7 @@
       </v-btn>
       <div>
         <h1 class="text-h4">{{ isEdit ? t('connectors.editConnector') : t('connectors.createNewConnector') }}</h1>
-        <p class="text-caption text-grey">{{ isEdit ? t('connectors.updateConnectorConfiguration') : t('connectors.configureNewConnector') }}</p>
+        <p class="text-caption text-medium-emphasis">{{ isEdit ? t('connectors.updateConnectorConfiguration') : t('connectors.configureNewConnector') }}</p>
       </div>
     </div>
 
@@ -77,23 +77,23 @@ async function loadConnector() {
     loading.value = true;
     error.value = null;
     const data = await fetchConnectorById(route.params.id);
-    
+
     // Ensure schema property exists
     const loadedConnector = {
       ...data,
       schema: data.schema || { fields: [] }
     };
-    
+
     // Ensure config object exists
     if (!loadedConnector.config) {
       loadedConnector.config = {};
     }
-    
+
     // Ensure responseFormat exists for API connectors
     if (loadedConnector.type === 'API' && !loadedConnector.config.responseFormat) {
       loadedConnector.config.responseFormat = 'JSON';
     }
-    
+
     // Ensure writeConfig exists for destination/both connectors
     if (loadedConnector.direction === 'destination' || loadedConnector.direction === 'both') {
       if (!loadedConnector.config.writeConfig) {
@@ -126,7 +126,7 @@ async function loadConnector() {
         }
       }
     }
-    
+
     connector.value = loadedConnector;
   } catch (err) {
     error.value = `Failed to load connector: ${err.message}`;

@@ -8,13 +8,13 @@
             ETL Portal
           </v-app-bar-title>
         </div>
-        
+
         <v-spacer />
 
         <div class="d-flex align-center ga-2">
           <tenant-selector v-if="!authStore.isGuest" class="flex-shrink-0" />
           <language-switcher class="flex-shrink-0" />
-          
+
           <!-- AI Chatbot Toggle -->
           <v-tooltip :text="$t('chatbot.openAssistant')" location="bottom">
             <template #activator="{ props }">
@@ -29,7 +29,7 @@
               </v-btn>
             </template>
           </v-tooltip>
-          
+
           <v-switch
             v-model="isDarkMode"
             hide-details
@@ -41,7 +41,7 @@
             false-icon="mdi-weather-sunny"
             @update:model-value="toggleTheme"
           />
-          
+
           <!-- User Menu -->
           <v-menu offset-y min-width="240">
             <template #activator="{ props }">
@@ -55,7 +55,7 @@
                 </v-avatar>
               </v-btn>
             </template>
-            
+
             <v-card elevation="8" class="user-menu-card">
               <!-- User Info Header -->
               <v-card-text class="pa-4 pb-3">
@@ -69,7 +69,7 @@
                   </div>
                 </div>
               </v-card-text>
-              
+
               <v-divider />
 
               <!-- Menu Items -->
@@ -165,7 +165,7 @@
           </template>
         </v-list>
       </template>
-      
+
       <template #append>
         <v-divider></v-divider>
         <div class="px-2 py-1 text-center text-caption text-disabled">
@@ -207,7 +207,7 @@ const isDarkMode = computed({
 });
 
 // Compute app bar color based on theme
-const appBarColor = computed(() => 
+const appBarColor = computed(() =>
   isDarkTheme.value ? 'grey-darken-3' : 'primary'
 );
 
@@ -217,7 +217,7 @@ const userRole = computed(() => authStore.user?.role || 'User');
 const userInitials = computed(() => {
   const name = userName.value;
   if (!name) return 'U';
-  
+
   const nameParts = name.split(' ');
   if (nameParts.length > 1) {
     return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
@@ -253,6 +253,17 @@ function openChatbot() {
 .v-theme--light .v-app-bar .v-btn,
 .v-theme--light .v-app-bar .v-icon {
   color: white !important;
+}
+
+/* Keep tenant selector text/icons high-contrast on blue app bar */
+.v-theme--light .v-app-bar .tenant-selector .v-field,
+.v-theme--light .v-app-bar .tenant-selector .v-label,
+.v-theme--light .v-app-bar .tenant-selector .v-field__input,
+.v-theme--light .v-app-bar .tenant-selector .v-field__prepend-inner .v-icon,
+.v-theme--light .v-app-bar .tenant-selector .v-field__append-inner .v-icon,
+.v-theme--light .v-app-bar .tenant-selector .v-select__menu-icon {
+  color: rgba(255, 255, 255, 0.95) !important;
+  opacity: 1 !important;
 }
 
 /* Softer user avatar in light mode for all containers */
@@ -320,7 +331,7 @@ function openChatbot() {
 .sidebar-drawer .v-list-item--active {
   background: rgba(var(--v-theme-primary), 0.08) !important;
   color: rgb(var(--v-theme-primary)) !important;
-  
+
   .v-icon {
     color: rgb(var(--v-theme-primary)) !important;
   }
