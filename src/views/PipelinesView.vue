@@ -271,7 +271,7 @@
       <v-card>
         <v-card-title class="d-flex align-center pa-4">
           <v-icon class="mr-2" color="primary">mdi-map-marker-path</v-icon>
-          <span class="text-h5 font-weight-medium">{{ selectedPipeline?.name }} - {{ $t('pipelines.fieldMappings') }}</span>
+          <span class="text-h5 font-weight-medium">{{ selectedPipeline?.name }}</span>
           <v-spacer />
           <v-btn
             icon

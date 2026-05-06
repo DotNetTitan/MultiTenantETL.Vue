@@ -13,9 +13,11 @@
             </div>
           </div>
 
-          <div class="d-flex flex-column align-center px-4">
+          <div class="mapping-header-center">
             <v-icon color="grey-lighten-1" size="default">mdi-arrow-right</v-icon>
-            <div class="text-caption text-medium-emphasis mt-1">{{ $t('pipeline.fieldsMapped', mappings.length, { count: mappings.length }) }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ $t('pipeline.fieldsMapped', mappings.length, { count: mappings.length }) }}
+            </div>
           </div>
 
           <div class="d-flex align-center text-right">
@@ -185,5 +187,12 @@ function getTransformationIcon(type) {
 
 .bg-surface-lighten-1 {
     background-color: rgba(var(--v-theme-surface), 0.5); /* Subtle background for header card */
+}
+
+.mapping-header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 </style>
