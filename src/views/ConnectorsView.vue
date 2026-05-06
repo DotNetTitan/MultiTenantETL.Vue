@@ -535,7 +535,7 @@
       <v-card>
         <v-card-title class="d-flex align-center">
           <v-icon class="mr-2">mdi-table-eye</v-icon>
-          {{ selectedConnector?.name }} - {{ $t('common.schema') }}
+          {{ selectedConnector?.name }}
           <v-spacer />
           <v-btn
             icon
