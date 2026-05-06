@@ -1,17 +1,19 @@
 <template>
   <v-layout>
-    <v-app-bar 
-      :color="appBarColor" 
-      density="compact" 
+    <v-app-bar
+      v-if="!isLoginRoute"
+      :color="appBarColor"
+      density="compact"
       elevation="1"
     >
       <v-app-bar-title class="text-truncate font-weight-medium" :class="titleColor">
         ETL Portal
       </v-app-bar-title>
-      
+
       <v-spacer />
-      
+
       <v-switch
+        v-if="showThemeToggle"
         v-model="isDarkMode"
         hide-details
         inset
@@ -25,7 +27,7 @@
     </v-app-bar>
 
     <v-main>
-      <v-container fluid class="fill-height">
+      <v-container fluid class="fill-height pa-0">
         <router-view v-if="!route.meta.requiresAuth" />
       </v-container>
     </v-main>
@@ -33,7 +35,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useTheme } from 'vuetify';
 import { useRoute } from 'vue-router';
 
@@ -41,18 +43,21 @@ const theme = useTheme();
 const route = useRoute();
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
+const isLoginRoute = computed(() => route.path === '/login');
+const showThemeToggle = computed(() => !isLoginRoute.value);
+const previousTheme = ref(null);
 const isDarkMode = computed({
   get: () => isDarkTheme.value,
   set: () => {} // Toggle is handled by toggleTheme function
 });
 
 // Compute app bar color based on theme - matching AuthenticatedLayout
-const appBarColor = computed(() => 
+const appBarColor = computed(() =>
   isDarkTheme.value ? 'grey-darken-3' : 'primary'
 );
 
 // Ensure text is visible in both themes
-const titleColor = computed(() => 
+const titleColor = computed(() =>
   isDarkTheme.value ? 'text-white' : 'text-white'
 );
 
@@ -61,6 +66,25 @@ function toggleTheme() {
   theme.global.name.value = newTheme;
   localStorage.setItem('user-theme', newTheme);
 }
+
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    if (newPath === '/login') {
+      if (previousTheme.value === null) {
+        previousTheme.value = theme.global.name.value;
+      }
+      theme.global.name.value = 'dark';
+      return;
+    }
+
+    if (oldPath === '/login' && previousTheme.value !== null) {
+      theme.global.name.value = previousTheme.value;
+      previousTheme.value = null;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style>

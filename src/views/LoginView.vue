@@ -190,7 +190,11 @@ async function handleGuestLogin() {
   overflow: hidden;
   backdrop-filter: blur(10px);
   background: rgba(var(--v-theme-surface), 0.95) !important;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.login-card :deep(.v-btn--variant-outlined) {
+  border-color: transparent !important;
 }
 
 .login-header {
