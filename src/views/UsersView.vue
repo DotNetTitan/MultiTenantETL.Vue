@@ -51,8 +51,8 @@
               User
             </v-chip>
             <v-chip
-              v-else
               v-for="role in item.roles"
+              v-else
               :key="role"
               :color="getRoleColor(role)"
               text-color="white"
@@ -113,7 +113,7 @@
                 size="small"
                 color="success"
                 :title="$t('users.activateUser')"
-                @click="toggleUserStatus(item)"
+                @click="promptActivateUser(item)"
               >
                 <v-icon>mdi-check-circle-outline</v-icon>
               </v-btn>
@@ -124,13 +124,13 @@
                 size="small"
                 color="warning"
                 :title="$t('users.deactivateUser')"
-                @click="toggleUserStatus(item)"
+                @click="promptDeactivateUser(item)"
               >
                 <v-icon>mdi-minus-circle-outline</v-icon>
               </v-btn>
               <!-- Only SuperAdmin can delete users -->
               <v-tooltip location="top">
-                <template v-slot:activator="{ props }">
+                <template #activator="{ props }">
                   <span v-bind="props" class="d-inline-block">
                     <v-btn
                       v-if="isSuperAdmin"
@@ -220,6 +220,30 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Deactivate Confirmation Dialog -->
+    <ConfirmationDialog
+      v-model:show="showDeactivateDialog"
+      :title="$t('users.deactivateUser')"
+      :confirm-text="$t('common.deactivate')"
+      confirm-color="warning"
+      :loading="loading"
+      @confirm="confirmDeactivateUser"
+    >
+      {{ $t('users.deactivateConfirm', { name: `${userToDeactivate?.firstName} ${userToDeactivate?.lastName}` }) }}
+    </ConfirmationDialog>
+
+    <!-- Activate Confirmation Dialog -->
+    <ConfirmationDialog
+      v-model:show="showActivateDialog"
+      :title="$t('users.activateUser')"
+      :confirm-text="$t('common.activate')"
+      confirm-color="success"
+      :loading="loading"
+      @confirm="confirmActivateUser"
+    >
+      {{ $t('users.activateConfirm', { name: `${userToActivate?.firstName} ${userToActivate?.lastName}` }) }}
+    </ConfirmationDialog>
 
     <!-- Delete Confirmation Dialog -->
     <ConfirmationDialog
@@ -338,7 +362,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </div>
 </template>
 
@@ -417,8 +440,12 @@ const addingToTenant = ref(false);
 // Dialog controls
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showDeactivateDialog = ref(false);
+const showActivateDialog = ref(false);
 const showAddTenantDialog = ref(false);
 const userToDelete = ref(null);
+const userToDeactivate = ref(null);
+const userToActivate = ref(null);
 const editedUser = ref(createEmpty());
 const originalEditedRoles = ref([]);
 
@@ -648,15 +675,42 @@ async function saveUser() {
   }
 }
 
-async function toggleUserStatus(user) {
+function promptDeactivateUser(user) {
+  userToDeactivate.value = user;
+  showDeactivateDialog.value = true;
+}
+
+async function confirmDeactivateUser() {
+  if (!userToDeactivate.value) return;
   try {
     loading.value = true;
-    await userService.toggleStatus(user.id);
+    await userService.toggleStatus(userToDeactivate.value.id);
     await fetchUsers();
-    showSuccess(
-      user.status === 1 ? t('users.deactivateSuccess') : t('users.activateSuccess'),
-      t('users.title')
-    );
+    showDeactivateDialog.value = false;
+    showSuccess(t('users.deactivateSuccess'), t('users.title'));
+    userToDeactivate.value = null;
+  } catch (error) {
+    console.error('Error toggling user status:', error);
+    showError(t('users.errors.statusUpdateFailed'), t('common.error'));
+  } finally {
+    loading.value = false;
+  }
+}
+
+function promptActivateUser(user) {
+  userToActivate.value = user;
+  showActivateDialog.value = true;
+}
+
+async function confirmActivateUser() {
+  if (!userToActivate.value) return;
+  try {
+    loading.value = true;
+    await userService.toggleStatus(userToActivate.value.id);
+    await fetchUsers();
+    showActivateDialog.value = false;
+    showSuccess(t('users.activateSuccess'), t('users.title'));
+    userToActivate.value = null;
   } catch (error) {
     console.error('Error toggling user status:', error);
     showError(t('users.errors.statusUpdateFailed'), t('common.error'));

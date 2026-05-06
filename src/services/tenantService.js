@@ -55,8 +55,9 @@ export const tenantService = {
    * Activate/deactivate tenant (SuperAdmin only)
    */
   async updateStatus(id, status) {
-    const response = await api.put(`/api/Tenants/${id}`, { status })
-    return response.data
+    const tenant = await this.getById(id);
+    const response = await api.put(`/api/Tenants/${id}`, { name: tenant.name, status });
+    return response.data;
   },
 
   /**

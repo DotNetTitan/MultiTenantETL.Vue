@@ -95,7 +95,7 @@
                   variant="text"
                   color="success"
                   :title="$t('tenants.activateTenant')"
-                  @click="toggleTenantStatus(item)"
+                  @click="promptActivateTenant(item)"
                 >
                   <v-icon>mdi-check-circle-outline</v-icon>
                 </v-btn>
@@ -106,13 +106,13 @@
                   variant="text"
                   color="warning"
                   :title="$t('tenants.deactivateTenant')"
-                  @click="toggleTenantStatus(item)"
+                  @click="promptDeactivateTenant(item)"
                 >
                   <v-icon>mdi-minus-circle-outline</v-icon>
                 </v-btn>
                 <!-- Delete button (SuperAdmin only) -->
                 <v-tooltip location="top">
-                  <template v-slot:activator="{ props }">
+                  <template #activator="{ props }">
                     <span v-bind="props" class="d-inline-block">
                       <v-btn
                         v-if="isSuperAdmin"
@@ -182,7 +182,28 @@
         v-model:show="showDeleteDialog"
         :title="$t('tenants.deleteTenant')"
         :message="$t('tenants.deleteConfirm')"
+        confirm-color="error"
         @confirm="deleteTenant"
+      />
+
+      <!-- Deactivate Confirmation Dialog -->
+      <confirmation-dialog
+        v-model:show="showDeactivateDialog"
+        :title="$t('tenants.deactivateTenant')"
+        :message="$t('tenants.deactivateConfirm', { name: tenantToDeactivate?.name })"
+        confirm-color="warning"
+        :confirm-text="$t('common.deactivate')"
+        @confirm="confirmDeactivateTenant"
+      />
+
+      <!-- Activate Confirmation Dialog -->
+      <confirmation-dialog
+        v-model:show="showActivateDialog"
+        :title="$t('tenants.activateTenant')"
+        :message="$t('tenants.activateConfirm', { name: tenantToActivate?.name })"
+        confirm-color="success"
+        :confirm-text="$t('common.activate')"
+        @confirm="confirmActivateTenant"
       />
 
       <!-- Tenant Users Dialog -->
@@ -221,8 +242,10 @@ import TableFilters from '@/components/table/TableFilters.vue';
 import TenantForm from '@/components/tenants/TenantForm.vue';
 import TenantUsers from '@/components/tenants/TenantUsers.vue';
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue';
+import { useGlobalState } from '@/composables/useGlobalState';
 
 const authStore = useAuthStore();
+const { showSuccess, showError } = useGlobalState();
 const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 const isPlatformAdmin = computed(() => authStore.isPlatformAdmin);
 const canCreateOrEditTenants = computed(() => isSuperAdmin.value || isPlatformAdmin.value);
@@ -233,8 +256,12 @@ const allTenants = ref([]);
 const tenants = ref([]);
 const showCreateDialog = ref(false);
 const showDeleteDialog = ref(false);
+const showDeactivateDialog = ref(false);
+const showActivateDialog = ref(false);
 const showUsersDialog = ref(false);
 const selectedTenant = ref(null);
+const tenantToDeactivate = ref(null);
+const tenantToActivate = ref(null);
 const statusFilter = ref('all');
 const sortBy = ref('name');
 const searchQuery = ref('');
@@ -385,15 +412,46 @@ async function saveTenant() {
 }
 
 async function toggleTenantStatus(tenant) {
+  // This function is no longer used directly - deactivation now goes through promptDeactivateTenant
+}
+
+function promptDeactivateTenant(tenant) {
+  tenantToDeactivate.value = tenant;
+  showDeactivateDialog.value = true;
+}
+
+async function confirmDeactivateTenant() {
+  if (!tenantToDeactivate.value) return;
   try {
     loading.value = true;
-    await tenantService.toggleStatus(tenant.id);
+    await tenantService.toggleStatus(tenantToDeactivate.value.id);
     await fetchTenants();
-    showSuccess(
-      tenant.status === 1 ? t('tenants.deactivateSuccess') : t('tenants.activateSuccess'),
-      t('tenants.title')
-    );
+    showDeactivateDialog.value = false;
+    showSuccess(t('tenants.deactivateSuccess'), t('tenants.title'));
+    tenantToDeactivate.value = null;
   } catch (err) {
+    console.error('Error toggling tenant status:', err);
+    showError(t('common.error'), t('tenants.title'));
+  } finally {
+    loading.value = false;
+  }
+}
+
+function promptActivateTenant(tenant) {
+  tenantToActivate.value = tenant;
+  showActivateDialog.value = true;
+}
+
+async function confirmActivateTenant() {
+  if (!tenantToActivate.value) return;
+  try {
+    loading.value = true;
+    await tenantService.toggleStatus(tenantToActivate.value.id);
+    await fetchTenants();
+    showActivateDialog.value = false;
+    showSuccess(t('tenants.activateSuccess'), t('tenants.title'));
+    tenantToActivate.value = null;
+} catch (err) {
     console.error('Error toggling tenant status:', err);
     showError(t('common.error'), t('tenants.title'));
   } finally {
