@@ -4,8 +4,8 @@
       <v-card-text>
         <div class="d-flex justify-space-between align-center">
           <div class="d-flex align-center">
-            <div class="d-flex flex-column align-center mr-4">
-              <v-icon color="primary" icon="mdi-database" size="large" class="mb-1"></v-icon>
+            <div class="d-flex align-center mr-4">
+              <v-icon color="primary" icon="mdi-database" size="default" class="mr-2"></v-icon>
               <span class="text-caption font-weight-medium text-primary">{{ $t('pipelines.source').toUpperCase() }}</span>
             </div>
             <div>
@@ -14,7 +14,7 @@
           </div>
 
           <div class="d-flex flex-column align-center px-4">
-            <v-icon color="grey-lighten-1" size="x-large">mdi-arrow-right</v-icon>
+            <v-icon color="grey-lighten-1" size="default">mdi-arrow-right</v-icon>
             <div class="text-caption text-medium-emphasis mt-1">{{ $t('pipeline.fieldsMapped', mappings.length, { count: mappings.length }) }}</div>
           </div>
 
@@ -22,9 +22,9 @@
             <div>
               <div class="text-h6 font-weight-medium">{{ destinationName }}</div>
             </div>
-            <div class="d-flex flex-column align-center ml-4">
-              <v-icon color="success" icon="mdi-database" size="large" class="mb-1"></v-icon>
-              <span class="text-caption font-weight-medium text-success">{{ $t('pipelines.destination').toUpperCase() }}</span>
+            <div class="d-flex align-center ml-4">
+              <span class="text-caption font-weight-medium text-success mr-2">{{ $t('pipelines.destination').toUpperCase() }}</span>
+              <v-icon color="success" icon="mdi-database" size="default"></v-icon>
             </div>
           </div>
         </div>
@@ -35,9 +35,9 @@
       <thead>
         <tr>
           <th class="text-left" style="width: 50px">#</th>
-          <th class="text-left" style="width: 40%">{{ $t('pipelines.sourceField') }}</th>
-          <th class="text-center" style="width: 10%">{{ $t('transformations.categoryTransformation') }}</th>
-          <th class="text-left" style="width: 40%">{{ $t('pipelines.destinationField') }}</th>
+          <th class="text-left">{{ $t('pipelines.sourceField') }}</th>
+          <th class="text-center">{{ $t('transformations.categoryTransformation') }}</th>
+          <th class="text-right">{{ $t('pipelines.destinationField') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -59,7 +59,7 @@
             </div>
           </td>
           <td class="text-center">
-            <div v-if="mapping.transformation" class="d-flex justify-center">
+            <div v-if="mapping.transformation" class="d-flex justify-center align-center">
               <v-tooltip location="top">
                 <template #activator="{ props }">
                   <v-avatar
@@ -77,10 +77,12 @@
                 </div>
               </v-tooltip>
             </div>
-            <v-icon v-else color="grey-lighten-2" icon="mdi-arrow-right-thin"></v-icon>
+            <div v-else class="d-flex justify-center align-center">
+              <v-icon color="grey-lighten-2" icon="mdi-arrow-right-thin"></v-icon>
+            </div>
           </td>
           <td>
-            <div class="d-flex align-center">
+            <div class="d-flex align-center justify-end">
               <span class="font-weight-medium">{{ mapping.destinationField }}</span>
               <v-chip
                 v-if="mapping.destinationFieldType"
