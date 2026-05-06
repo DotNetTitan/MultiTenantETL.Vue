@@ -685,6 +685,7 @@
     "activateUser": "Activate user",
     "deactivateUser": "Deactivate user",
     "superAdminProtected": "SuperAdmin role cannot be modified",
+    "platformAdminPeerProtected": "Only this platform admin or a super admin can edit this account.",
     "deleteConfirm": "Are you sure you want to delete the user \"{name}\"? This action cannot be undone.",
     "admin": "Admin",
     "user": "User",

@@ -673,6 +673,7 @@
     "activateUser": "Activer l'Utilisateur",
     "deactivateUser": "Désactiver l'utilisateur",
     "superAdminProtected": "Le rôle SuperAdmin ne peut pas être modifié",
+    "platformAdminPeerProtected": "Seul cet administrateur de plateforme ou un super administrateur peut modifier ce compte.",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{name}\"? Cette action ne peut pas être annulée.",
     "admin": "Administrateur",
     "user": "Utilisateur",

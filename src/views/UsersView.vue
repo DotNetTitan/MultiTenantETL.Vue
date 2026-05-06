@@ -485,7 +485,7 @@ const getProtectedEditReason = (user) => {
   }
 
   if (isPlatformAdmin.value && isPlatformAdminUser(user) && !isCurrentUser(user)) {
-    return 'Only this platform admin or a super admin can edit this account.';
+    return t('users.platformAdminPeerProtected');
   }
 
   return t('common.accessDenied');

@@ -59,6 +59,7 @@ This document reflects how authorization and UI behavior are **actually implemen
 - Users page behavior:
   - `PlatformAdmin` sees edit for self and lower-level users.
   - `PlatformAdmin` cannot edit peer `PlatformAdmin` or `SuperAdmin` rows.
+  - Protected-row lock tooltip reasons are localized via i18n (`users.superAdminProtected`, `users.platformAdminPeerProtected`).
   - Tenant membership add/remove controls are hidden/blocked for protected targets.
 - Tenant users dialog is mutation-enabled only for global admins.
 
@@ -67,7 +68,10 @@ This document reflects how authorization and UI behavior are **actually implemen
 - Global role mutation endpoints are SuperAdmin-only.
 - Security-sensitive user operations (status update, delete, admin password reset) are SuperAdmin-only.
 - Tenant and user mutation endpoints enforce role checks server-side.
+- Global-admin checks are centralized in `IAdminAuthorizationService` / `AdminAuthorizationService` and reused across controllers.
+- Protected-target checks (SuperAdmin/PlatformAdmin target mutation restrictions) are centralized and reused.
 - Audit log list/detail endpoints are limited to global admins.
+- `GET /api/AuditLogs/{id}` now uses a dedicated service lookup by ID (`GetAuditLogByIdAsync`) instead of paged-list probing.
 - Tenant switching allows:
   - `SuperAdmin` and `PlatformAdmin`: any active tenant
   - non-global users: only tenants where they have active membership
@@ -76,3 +80,4 @@ This document reflects how authorization and UI behavior are **actually implemen
 
 - This file is a snapshot of implemented behavior, not a proposal.
 - If policy changes, update both frontend guards and backend authorization together.
+- Keep backend authorization helper usage consistent when adding new admin endpoints (prefer `IAdminAuthorizationService` over duplicating inline role checks).
