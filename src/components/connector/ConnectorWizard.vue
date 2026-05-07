@@ -1194,7 +1194,7 @@
 
             <!-- Basic Information -->
             <v-card variant="outlined" class="mb-4">
-              <v-card-title class="text-subtitle-1 bg-surface-variant">
+              <v-card-title class="text-subtitle-1 review-section-header">
                 <v-icon class="mr-2">mdi-information</v-icon>
                 {{ t('executions.basicInformation') }}
               </v-card-title>
@@ -1234,7 +1234,7 @@
 
             <!-- Connection Details -->
             <v-card variant="outlined" class="mb-4">
-              <v-card-title class="text-subtitle-1 bg-surface-variant">
+              <v-card-title class="text-subtitle-1 review-section-header">
                 <v-icon class="mr-2">mdi-connection</v-icon>
                 {{ t('common.connectionDetails') }}
               </v-card-title>
@@ -1497,7 +1497,7 @@
 
             <!-- API Endpoints (if applicable) -->
             <v-card v-if="connector.type === 'API' && connector.config.endpoints && connector.config.endpoints.length > 0" variant="outlined" class="mb-4">
-              <v-card-title class="text-subtitle-1 bg-surface-variant">
+              <v-card-title class="text-subtitle-1 review-section-header">
                 <v-icon class="mr-2">mdi-api</v-icon>
                 {{ t('connectors.apiEndpoints') }} ({{ connector.config.endpoints.length }})
               </v-card-title>
@@ -1517,7 +1517,7 @@
 
             <!-- Schema Fields (hidden for Email since schema step is skipped) -->
             <v-card v-if="showSchemaStep" variant="outlined" class="mb-4">
-              <v-card-title class="text-subtitle-1 bg-surface-variant">
+              <v-card-title class="text-subtitle-1 review-section-header">
                 <v-icon class="mr-2">mdi-table</v-icon>
                 {{ t('connectors.schemaFields') }} ({{ connector.schema.fields.length }})
               </v-card-title>
@@ -1553,7 +1553,7 @@
 
             <!-- Write Configuration (if destination) -->
             <v-card v-if="showWriteConfigStep && connector.config.writeConfig" variant="outlined" class="mb-4">
-              <v-card-title class="text-subtitle-1 bg-surface-variant">
+              <v-card-title class="text-subtitle-1 review-section-header">
                 <v-icon class="mr-2">mdi-pencil</v-icon>
                 {{ t('common.writeConfiguration') }}
               </v-card-title>
@@ -2759,6 +2759,26 @@ watch(() => props.connector.type, (newType) => {
 .wizard-card.light-mode :deep(.v-btn.v-btn--variant-outlined.text-deep-orange) {
   border-color: rgba(234, 134, 0, 0.45) !important;
   color: #EA8600 !important;
+}
+
+.wizard-card.light-mode :deep(.review-section-header) {
+  background: #E8EAEF !important;
+  border-bottom: 2px solid #DADCE0;
+  color: #202124;
+  font-weight: 700;
+  padding: 12px 16px !important;
+}
+
+.wizard-card.light-mode :deep(.review-section-header) ~ .v-card-text .v-list-item-title {
+  color: #000000;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.wizard-card.light-mode :deep(.review-section-header) ~ .v-card-text .v-list-item-subtitle {
+  color: #202124;
+  font-weight: 400;
+  font-size: 0.9rem;
 }
 
 </style>
