@@ -331,7 +331,7 @@
     "deleteConfirm": "¿Está seguro de que desea eliminar la fuente de datos \"{name}\"? Esta acción no se puede deshacer.",
     "schema": "Esquema",
     "totalFields": "Total de Campos",
-    "schemaVersion": "Versión de Esquema",
+    
     "lastModified": "Última Modificación",
     "loadingSchema": "Cargando esquema...",
     "fieldName": "Nombre del Campo",

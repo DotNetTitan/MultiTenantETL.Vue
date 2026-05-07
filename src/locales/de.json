@@ -331,7 +331,7 @@
     "deleteConfirm": "Sind Sie sicher, dass Sie die Datensource \"{name}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "schema": "Schema",
     "totalFields": "Gesamte Felder",
-    "schemaVersion": "Schema-Version",
+    
     "lastModified": "Zuletzt geändert",
     "loadingSchema": "Schema laden...",
     "fieldName": "Feldname",

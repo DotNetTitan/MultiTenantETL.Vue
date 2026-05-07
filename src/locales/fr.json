@@ -331,7 +331,7 @@
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer la source de données \"{name}\"? Cette action ne peut pas être annulée.",
     "schema": "Schéma",
     "totalFields": "Total des Champs",
-    "schemaVersion": "Version du Schéma",
+    
     "lastModified": "Dernière Modification",
     "loadingSchema": "Chargement du schéma...",
     "fieldName": "Nom du Champ",

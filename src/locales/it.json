@@ -327,7 +327,7 @@
     "deleteConfirm": "Sei sicuro di voler eliminare la sorgente dati \"{name}\"? Questa azione non può essere annullata.",
     "schema": "Schema",
     "totalFields": "Totale Campi",
-    "schemaVersion": "Versione Schema",
+    
     "lastModified": "Ultima Modifica",
     "loadingSchema": "Caricamento schema...",
     "fieldName": "Nome Campo",

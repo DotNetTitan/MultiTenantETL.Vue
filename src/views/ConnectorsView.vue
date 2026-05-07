@@ -566,10 +566,6 @@
                     <div class="text-caption text-grey">{{ $t('connectors.totalFields') }}</div>
                     <div class="text-h6">{{ connectorSchema.fields.length }}</div>
                   </v-col>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('connectors.schemaVersion') }}</div>
-                    <div class="text-h6">{{ connectorSchema.version || 1 }}</div>
-                  </v-col>
                   <v-col v-if="connectorSchema.lastModified" cols="12">
                     <div class="text-caption text-grey">{{ $t('connectors.lastModified') }}</div>
                     <div class="text-body-2">{{ formatDate(connectorSchema.lastModified) }}</div>

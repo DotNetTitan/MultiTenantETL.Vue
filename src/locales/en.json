@@ -343,7 +343,7 @@
     "deleteConfirm": "Are you sure you want to delete the connector \"{name}\"? This action cannot be undone.",
     "schema": "Schema",
     "totalFields": "Total Fields",
-    "schemaVersion": "Schema Version",
+    
     "lastModified": "Last Modified",
     "loadingSchema": "Loading schema...",
     "fieldName": "Field Name",
