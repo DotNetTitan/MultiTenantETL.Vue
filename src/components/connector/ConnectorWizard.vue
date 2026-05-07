@@ -2781,4 +2781,13 @@ watch(() => props.connector.type, (newType) => {
   font-size: 0.9rem;
 }
 
+.wizard-card.light-mode :deep(.review-section-header) ~ .v-card-text .v-table {
+  border: none !important;
+}
+
+.wizard-card.light-mode :deep(.review-section-header) ~ .v-card-text .v-table table {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 </style>
