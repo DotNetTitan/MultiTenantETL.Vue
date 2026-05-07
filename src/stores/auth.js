@@ -50,10 +50,30 @@ export const useAuthStore = defineStore("auth", () => {
   const isGuest = computed(() => authService.isGuestSession(user.value));
   const token = computed(() => null); // Backward compatibility
 
+  const GUEST_ROUTES = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/confirm-email",
+    "/auth/confirm-email",
+    "/auth/reset-password",
+    "/auth/login",
+  ];
+
   /**
    * Initialize auth state from backend session.
    */
   async function initialize() {
+    const path = window.location.pathname;
+    const isGuestRoute = GUEST_ROUTES.some((p) => path.startsWith(p));
+
+    if (isGuestRoute) {
+      user.value = null;
+      initialized.value = true;
+      return;
+    }
+
     try {
       const currentUser = await authService.getCurrentUser();
       user.value = currentUser;
@@ -62,7 +82,6 @@ export const useAuthStore = defineStore("auth", () => {
         localStorage.setItem("currentTenantId", user.value.currentTenantId);
       }
     } catch (err) {
-      // Not authenticated is an expected startup state.
       if (err?.response?.status === 401 || err?.silent) {
         user.value = null;
         return;
