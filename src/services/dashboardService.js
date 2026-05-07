@@ -38,9 +38,11 @@ async function fetchActivePipelinesCount() {
  */
 async function fetchConnectorCount() {
   try {
-    const response = await api.post('/api/connectors/search', { 
-      page: 1, 
-      pageSize: 1 
+    const response = await api.get('/api/connectors', { 
+      params: { 
+        page: 1, 
+        pageSize: 1 
+      } 
     })
     return response.data.totalCount || 0
   } catch (error) {

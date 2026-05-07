@@ -437,7 +437,7 @@ async function fetchLiveContext(page) {
         api.get('/api/executions/stats'),
         api.get('/api/executions', { params: { page: 1, pageSize: 5, sortBy: 'start_time_desc' } }),
         api.get('/api/pipelines', { params: { page: 1, pageSize: 1 } }),
-        api.post('/api/connectors/search', { page: 1, pageSize: 1 })
+        api.get('/api/connectors', { params: { page: 1, pageSize: 1 } })
       ]);
       const stats = statsRes.status === 'fulfilled' ? statsRes.value.data : null;
       const execs = execRes.status === 'fulfilled' ? (execRes.value.data.executions || []) : [];
