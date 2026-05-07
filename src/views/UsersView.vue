@@ -356,7 +356,7 @@
         <v-divider />
         <v-card-actions class="pa-3">
           <v-spacer />
-          <v-btn variant="text" @click="showMembershipsDialog = false">
+          <v-btn color="primary" variant="text" @click="showMembershipsDialog = false">
             {{ $t('common.close') }}
           </v-btn>
         </v-card-actions>
