@@ -13,32 +13,32 @@ import api from './api'
  * @returns {Promise<Object>} Paginated list of connector objects
  */
 export async function fetchConnectors(filters = {}) {
-  const params = new URLSearchParams()
+  const params = {
+    page: filters.page || 1,
+    pageSize: filters.pageSize || 20
+  }
   
   if (filters.search) {
-    params.append('name', filters.search)
+    params.name = filters.search
   }
   if (filters.type && filters.type !== 'All') {
-    params.append('type', filters.type)
+    params.type = filters.type
   }
   if (filters.provider) {
-    params.append('provider', filters.provider)
+    params.provider = filters.provider
   }
   if (filters.direction) {
-    params.append('direction', filters.direction)
+    params.direction = filters.direction
   }
   if (filters.isActive !== undefined) {
-    params.append('isActive', filters.isActive)
+    params.isActive = filters.isActive
   }
-  if (filters.page) {
-    params.append('page', filters.page)
-  }
-  if (filters.pageSize) {
-    params.append('pageSize', filters.pageSize)
+  if (filters.sortBy) {
+    params.sortBy = filters.sortBy
   }
 
-  const queryString = params.toString()
-  const response = await api.get(`/api/connectors${queryString ? `?${queryString}` : ''}`)
+  const queryString = new URLSearchParams(params).toString()
+  const response = await api.get(`/api/connectors?${queryString}`)
 
   return response.data
 }

@@ -25,7 +25,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      "/connect": {
+      "/connect/token": {
+        target: backendTarget,
+        changeOrigin: true,
+        secure: false,
+      },
+      "/connect/revoke": {
+        target: backendTarget,
+        changeOrigin: true,
+        secure: false,
+      },
+      "/connect/authorize": {
         target: backendTarget,
         changeOrigin: true,
         secure: false,
