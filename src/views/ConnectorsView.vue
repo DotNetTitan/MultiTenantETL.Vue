@@ -558,22 +558,6 @@
           </div>
           
           <div v-else-if="connectorSchema && connectorSchema.fields">
-            <!-- Schema Metadata -->
-            <v-card variant="outlined" class="mb-4">
-              <v-card-text>
-                <v-row dense>
-                  <v-col cols="6">
-                    <div class="text-caption text-grey">{{ $t('connectors.totalFields') }}</div>
-                    <div class="text-h6">{{ connectorSchema.fields.length }}</div>
-                  </v-col>
-                  <v-col v-if="connectorSchema.lastModified" cols="12">
-                    <div class="text-caption text-grey">{{ $t('connectors.lastModified') }}</div>
-                    <div class="text-body-2">{{ formatDate(connectorSchema.lastModified) }}</div>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
-
             <!-- Fields Table -->
             <v-table density="comfortable" hover>
               <thead>
