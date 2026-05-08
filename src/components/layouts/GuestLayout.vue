@@ -1,31 +1,5 @@
 <template>
   <v-layout>
-    <v-app-bar
-      v-if="!isLoginRoute"
-      :color="appBarColor"
-      density="compact"
-      elevation="1"
-    >
-      <v-app-bar-title class="text-truncate font-weight-medium" :class="titleColor">
-        ETL Portal
-      </v-app-bar-title>
-
-      <v-spacer />
-
-      <v-switch
-        v-if="showThemeToggle"
-        v-model="isDarkMode"
-        hide-details
-        inset
-        density="compact"
-        color="purple"
-        class="mt-1 mr-3"
-        true-icon="mdi-weather-night"
-        false-icon="mdi-weather-sunny"
-        @update:model-value="toggleTheme"
-      />
-    </v-app-bar>
-
     <v-main>
       <v-container fluid class="fill-height pa-0">
         <router-view v-if="!route.meta.requiresAuth" />
@@ -35,7 +9,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useTheme } from 'vuetify';
 import { useRoute } from 'vue-router';
 
@@ -43,48 +17,14 @@ const theme = useTheme();
 const route = useRoute();
 
 const isDarkTheme = computed(() => theme.global.current.value.dark);
-const isLoginRoute = computed(() => route.path === '/login');
-const showThemeToggle = computed(() => !isLoginRoute.value);
-const previousTheme = ref(null);
-const isDarkMode = computed({
-  get: () => isDarkTheme.value,
-  set: () => {} // Toggle is handled by toggleTheme function
+
+const guestPages = ['/login', '/register', '/forgot-password', '/confirm-email', '/reset-password'];
+const isLoginRoute = computed(() => guestPages.includes(route.path));
+const showThemeToggle = computed(() => false);
+
+onMounted(() => {
+  theme.global.name.value = 'dark';
 });
-
-// Compute app bar color based on theme - matching AuthenticatedLayout
-const appBarColor = computed(() =>
-  isDarkTheme.value ? 'grey-darken-3' : 'primary'
-);
-
-// Ensure text is visible in both themes
-const titleColor = computed(() =>
-  isDarkTheme.value ? 'text-white' : 'text-white'
-);
-
-function toggleTheme() {
-  const newTheme = isDarkTheme.value ? 'light' : 'dark';
-  theme.global.name.value = newTheme;
-  localStorage.setItem('user-theme', newTheme);
-}
-
-watch(
-  () => route.path,
-  (newPath, oldPath) => {
-    if (newPath === '/login') {
-      if (previousTheme.value === null) {
-        previousTheme.value = theme.global.name.value;
-      }
-      theme.global.name.value = 'dark';
-      return;
-    }
-
-    if (oldPath === '/login' && previousTheme.value !== null) {
-      theme.global.name.value = previousTheme.value;
-      previousTheme.value = null;
-    }
-  },
-  { immediate: true }
-);
 </script>
 
 <style>
